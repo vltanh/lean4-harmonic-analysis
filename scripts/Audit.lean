@@ -14,6 +14,7 @@ import all HarmonicAnalysis.Complex.Wirtinger
 import all HarmonicAnalysis.Complex.WirtingerRadial
 import all HarmonicAnalysis.FourierMultiplier.Basic
 import all HarmonicAnalysis.FourierMultiplier.Duality
+import all HarmonicAnalysis.FourierMultiplier.Norming
 import all HarmonicAnalysis.Torus.Cube
 import all HarmonicAnalysis.Torus.Poisson
 import all HarmonicAnalysis.Torus.TrigPoly

@@ -10,6 +10,7 @@ public import HarmonicAnalysis.Complex.WirtingerRadial
 public import HarmonicAnalysis.Complex.RadialIntegral
 public import HarmonicAnalysis.FourierMultiplier.Basic
 public import HarmonicAnalysis.FourierMultiplier.Duality
+public import HarmonicAnalysis.FourierMultiplier.Norming
 public import HarmonicAnalysis.Torus.TrigPoly
 public import HarmonicAnalysis.Torus.Cube
 public import HarmonicAnalysis.Torus.Poisson
