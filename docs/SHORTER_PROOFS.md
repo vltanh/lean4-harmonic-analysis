@@ -63,11 +63,12 @@ elsewhere"; "on paper" (written out or sketched, not compiled). References are i
 | # | Result | Shorter proof | Status |
 | --- | --- | --- | --- |
 | 30 | [MC, Thm 1.1], from (3.7) to (3.2) | partitions of growing intervals `[0, A_N]` with mesh `→ 0`: `−16 g_N → T_m f` directly, without `T_m^A` and with one use of Fatou's lemma (the error must be bounded uniformly in `A`, by the exponential decay of `w`) | on paper (about 100 lines less) |
-| 31 | [MC, (3.3)] | the primitive `−(w − y w_y + ½ y² w_yy)` does both integrations by parts at once; or, on the Fourier side, `∫_0^∞ y² t³ e^{−4ty} dy = 1/32` | the second compiled |
+| 31 | [MC, (3.3)] | the primitive `−(w − y w_y + ½ y² w_yy)` of `−½ y² w_yyy` does both integrations by parts at once; or, on the Fourier side, `∫_0^∞ y² t³ e^{−4ty} dy = 1/32` | the first on paper, the second in the history (`beab475`) |
 | 32 | [MC, (3.5)–(3.6)], equal parts | on the Fourier side the sum is a difference quotient times a Riemann sum of a continuous function; no error estimate | compiled |
 | 33 | [MC, Lemma 3.1] for `n = 1` | the two cases `\|s\| < y`, `\|s\| ≥ y` are added instead of separated: the constant `17` | in the library |
 | 34 | [MC, (2.1)], complex coefficients | the factor `π/2` instead of `2`, from the complex UMD constant of BanachProbability | on paper |
-| 35 | [MC, Thm 1.3], the two uses of (2.1) for Rademacher sums | Kahane's contraction principle, which holds in every Banach space: `C β⁶ ħ²` in place of `C β⁸ ħ²` | compiled |
+| 35 | [MC, Thm 1.3], the two uses of (2.1) for Rademacher sums | Kahane's contraction principle, which holds in every Banach space: `C β⁶ ħ²` in place of `C β⁸ ħ²` | history (`beab475`) |
 | 36 | [MC, Thm 1.3], the two last uses of Theorem 1.1 | `T_M T_{m_1}` is itself the multiplier `Σ ξ_j φ (2^{2j} \|·\|)`, which satisfies (3.1): one use | compiled |
 | 37 | [MC, Thm 1.3], the reduction to `f̂ = 0` on `λ < 0` | one-sided bumps `φ (2^{2j} ·)`: no reduction, one factor `ħ` less | on paper |
 | 38 | [MC, Thm 1.3] | from both inequalities of [HNVW, Thm 5.3.24]: the random signs absorb the `ε_j`, without Theorem 1.1 (only the right-hand inequality is in the library) | on paper |
+| 39 | [MC, p. 751], the last step | let the sum in (3.11) run to `j = 2N − 1` and start at `z_{2N} = 2A`, so that the chain need not be cut at `z_{2N−1}`; take the `x`-integral first: translation invariance and `‖u (·, y)‖_p ≤ ‖f‖_p` | history (`beab475`) |

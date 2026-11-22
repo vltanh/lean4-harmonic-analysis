@@ -71,9 +71,9 @@ after
   `‖Σ_k ε_k Δ̃_k f‖_{L^p (𝕋 × Ω; X)} ≤ C_β ‖f‖_p` with the same `C_β`.
 * `mihlin_multiplier` ([MC, Theorem 1.1], `n = 1`): if `m` is of class `C²` on `ℝ ∖ {0}` with
   `|ξ|^k |m^{(k)} (ξ)| ≤ c`, `k ≤ 2`, then `‖𝓕⁻ (m G)‖_p ≤ C c β² ‖𝓕⁻ G‖_p`, `C` absolute.
-* `littlewoodPaley_signs` ([MC, Theorem 1.3], `n = 1`, the implication from UMD to (1.13)): for every
-  choice of the signs `ε_j`, `ε'_j`, the multiplier `m` equal to `ε_j` on `[2^j, 2^{j+1})` and to
-  `ε'_j` on `(−2^{j+1}, −2^j]` satisfies `c⁻¹ ‖f‖_p ≤ ‖T_m f‖_p ≤ c ‖f‖_p`,
+* `littlewoodPaley_signs` ([MC, Theorem 1.3], `n = 1`, the implication from UMD to (1.13)): for
+  every choice of the signs `ε_j`, `ε'_j`, the multiplier `m` equal to `ε_j` on `[2^j, 2^{j+1})` and
+  to `ε'_j` on `(−2^{j+1}, −2^j]` satisfies `c⁻¹ ‖f‖_p ≤ ‖T_m f‖_p ≤ c ‖f‖_p`,
   `c = C β⁸ (4 β² + 11)²`, `C` absolute.
 * `eLpNormRad_rpow`: the `p`-th power of `eLpNormRad` is the average over the signs (a check).
 
@@ -252,7 +252,7 @@ theorem hilbert_bounded_innerProductSpace {H : Type*} [NormedAddCommGroup H]
 /-- **Mihlin's multiplier theorem on UMD spaces** ([MC, Theorem 1.1], `n = 1`): let `m` be of class
 `C²` on `ℝ ∖ {0}` with `|ξ|^k |m^{(k)} (ξ)| ≤ c` for `k ≤ 2` and `ξ ≠ 0`. Then
 `‖𝓕⁻ (m G)‖_p ≤ C c β² ‖𝓕⁻ G‖_p` for `G ∈ L¹ (ℝ; X)`, with an absolute constant `C`. ([MC]: `m` real
-and `C²` on `ℝ`; the constant depends on `c`, `p` and `X`.) -/
+and `C²` on `ℝ`; the constants "depend only on `c_m`, `n` and `p`", for a given `X`.) -/
 theorem mihlin_multiplier : ∃ C : NNReal, ∀ (X : Type*) [NormedAddCommGroup X] [NormedSpace ℂ X]
     [CompleteSpace X] (p : ℝ), 1 < p → ∀ β : ℝ≥0∞, HarmonicAnalysis.IsUMDBound X p β →
     ∀ (m : ℝ → ℂ) (c : ℝ), ContDiffOn ℝ 2 m {0}ᶜ →
@@ -263,8 +263,7 @@ theorem mihlin_multiplier : ∃ C : NNReal, ∀ (X : Type*) [NormedAddCommGroup 
 
 /-- **Littlewood–Paley inequalities for every choice of the signs** ([MC, Theorem 1.3], `n = 1`, for
 UMD spaces both inequalities of (1.13)): if `m` is equal to a sign `ε_j` on `[2^j, 2^{j+1})` and to
-a sign
-`ε'_j` on `(−2^{j+1}, −2^j]`, for every `j ∈ ℤ`, then `c⁻¹ ‖f‖_p ≤ ‖T_m f‖_p ≤ c ‖f‖_p`,
+a sign `ε'_j` on `(−2^{j+1}, −2^j]`, for every `j ∈ ℤ`, then `c⁻¹ ‖f‖_p ≤ ‖T_m f‖_p ≤ c ‖f‖_p`,
 `c = C β⁸ (4 β² + 11)²`, for `f = 𝓕⁻ G ∈ L^p (ℝ; X)`, `G ∈ L¹`, with an absolute constant `C`. -/
 theorem littlewoodPaley_signs : ∃ C : NNReal, ∀ (X : Type*) [NormedAddCommGroup X]
     [NormedSpace ℂ X] [CompleteSpace X] (p : ℝ), 1 < p → ∀ β : ℝ≥0∞,

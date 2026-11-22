@@ -136,7 +136,7 @@ In alphabetical order. Entries that the [README](../README.md) cites by a key be
 - [MC] T. R. McConnell, *On Fourier multiplier transformations of Banach-valued functions*, Trans. Amer.
   Math. Soc. 285 (1984), 739–757,
   [doi:10.1090/s0002-9947-1984-0752501-x](https://doi.org/10.1090/s0002-9947-1984-0752501-x): Theorems 1.1
-  and 1.3, Lemmas 2.1–2.3, 3.1 and 3.2, for `n = 1`.
+  and 1.3, Lemmas 2.1, 2.2, 3.1 and 3.2, for `n = 1`.
 - [NV] F. Nazarov, A. Volberg, *Heating of the Ahlfors–Beurling operator, and estimates of its norm*,
   St. Petersburg Math. J. 15 (2004), 563–573,
   [doi:10.1090/S1061-0022-04-00822-2](https://doi.org/10.1090/S1061-0022-04-00822-2).

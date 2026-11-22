@@ -36,9 +36,6 @@ that theorem are not treated.
 A shorter transference: `m (ρ ·)` is constant near each integer, so that a cut-off with compactly
 supported Fourier transform and Lemma 5.7.3 suffice, without duality and Proposition 5.7.1; see the
 module docstring of `HarmonicAnalysis.VectorValued.Transference`.
-
-Also: the projections onto single frequencies are randomised bounded
-(`eLpNormRad_singleFrequency_le`), by Jensen's inequality and the contraction principle.
 -/
 
 @[expose] public section
@@ -381,67 +378,5 @@ theorem eLpNormRad_dyadicBlock_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (hβ 
         eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle :=
   eLpNormRad_dyadicBlock_le_of_line hp (fun k : Fin (2 * K + 1) => ((k : ℕ) : ℤ) - K)
     (fun G => eLpNormRad_lineBlock_le hp hβ G.integrable (memLp_fourierInv G _) K) c
-
-/-! ### Single frequencies -/
-
-omit [NormedSpace ℂ X] [CompleteSpace X] in
-/-- Jensen's inequality on the probability space `𝕋`. -/
-private theorem eLpNorm_const_integral_le [NormedSpace ℝ X] {p : ℝ} (hp : 1 ≤ p)
-    {g : UnitAddCircle → X} (hg : Continuous g) :
-    eLpNorm (fun _ : UnitAddCircle => ∫ t, g t ∂haarAddCircle) (ENNReal.ofReal p) haarAddCircle ≤
-      eLpNorm g (ENNReal.ofReal p) haarAddCircle := by
-  rw [eLpNorm_const' _ (by simpa using by linarith) ENNReal.ofReal_ne_top, measure_univ,
-    ENNReal.one_rpow, mul_one]
-  refine (enorm_integral_le_lintegral_enorm _).trans ?_
-  rw [← eLpNorm_one_eq_lintegral_enorm hg.aestronglyMeasurable]
-  exact eLpNorm_le_eLpNorm_of_exponent_le (by simpa using hp)
-
-/-- The projections onto single frequencies are randomised bounded: for trigonometric polynomials
-`f_k = Σ_n c_k (n) e_n` and any `n_k ∈ ℤ`, `‖Σ ε_k c_k (n_k) e_{n_k}‖ ≤ 4 ‖Σ ε_k f_k‖`. The proof is
-by Jensen's inequality, as `c_k (n_k)` is the mean of `e_{−n_k} f_k`, and two applications of the
-contraction principle with the factor `2` (real signs). -/
-theorem eLpNormRad_singleFrequency_le {p : ℝ} (hp : 1 ≤ p) {K : ℕ} (c : Fin K → ℤ →₀ X)
-    (n : Fin K → ℤ) :
-    eLpNormRad (fun k (t : UnitAddCircle) => fourier (n k) t • c k (n k)) p haarAddCircle ≤
-      4 * eLpNormRad (fun k => circPoly (c k)) p haarAddCircle := by
-  have hp0 : 0 < p := by linarith
-  have hcont : ∀ k, Continuous fun t : UnitAddCircle => fourier (-n k) t • circPoly (c k) t :=
-    fun k => (map_continuous (fourier (-n k))).smul (continuous_circPoly (c k))
-  -- the contraction principle
-  have h1 : eLpNormRad (fun k (t : UnitAddCircle) => fourier (n k) t • c k (n k)) p haarAddCircle ≤
-      2 * eLpNormRad (fun k (_ : UnitAddCircle) => c k (n k)) p haarAddCircle :=
-    eLpNormRad_smul_le hp (c := fun k t => fourier (n k) t)
-      (f := fun k (_ : UnitAddCircle) => c k (n k)) (fun k t => (norm_fourier_apply_eq_one _ _).le)
-      (fun k => (map_continuous (fourier (n k))).aestronglyMeasurable)
-      fun k => aestronglyMeasurable_const
-  -- Jensen's inequality, for each choice of signs
-  have h2 : eLpNormRad (fun k (_ : UnitAddCircle) => c k (n k)) p haarAddCircle ≤
-      1 * eLpNormRad (fun k (t : UnitAddCircle) => fourier (-n k) t • circPoly (c k) t) p
-        haarAddCircle := by
-    refine eLpNormRad_le_of_forall hp0 (fun k => aestronglyMeasurable_const)
-      (fun k => (hcont k).aestronglyMeasurable) fun ε => ?_
-    have hsum : Continuous fun t : UnitAddCircle =>
-        ∑ k, SignCube.coin (ε k) • fourier (-n k) t • circPoly (c k) t :=
-      continuous_finsetSum _ fun k _ => (hcont k).const_smul _
-    have h3 : ∑ k, SignCube.coin (ε k) • c k (n k) =
-        ∫ t, ∑ k, SignCube.coin (ε k) • fourier (-n k) t • circPoly (c k) t ∂haarAddCircle := by
-      rw [integral_finsetSum]
-      · refine Finset.sum_congr rfl fun k _ => ?_
-        rw [integral_smul, integral_fourier_smul_circPoly]
-      · exact fun k _ => integrable_haar_of_continuous ((hcont k).const_smul _)
-    rw [one_mul, h3]
-    exact eLpNorm_const_integral_le hp hsum
-  -- the contraction principle
-  have h4 : eLpNormRad (fun k (t : UnitAddCircle) => fourier (-n k) t • circPoly (c k) t) p
-      haarAddCircle ≤ 2 * eLpNormRad (fun k => circPoly (c k)) p haarAddCircle :=
-    eLpNormRad_smul_le hp (c := fun k t => fourier (-n k) t) (f := fun k => circPoly (c k))
-      (fun k t => (norm_fourier_apply_eq_one _ _).le)
-      (fun k => (map_continuous (fourier (-n k))).aestronglyMeasurable)
-      fun k => (continuous_circPoly _).aestronglyMeasurable
-  calc _ ≤ 2 * (1 * (2 * eLpNormRad (fun k => circPoly (c k)) p haarAddCircle)) := by
-        refine h1.trans ?_
-        gcongr
-        exact h2.trans (by gcongr)
-    _ = 4 * eLpNormRad (fun k => circPoly (c k)) p haarAddCircle := by ring
 
 end HarmonicAnalysis

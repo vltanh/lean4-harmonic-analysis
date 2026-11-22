@@ -7,7 +7,6 @@ module
 
 public import HarmonicAnalysis.VectorValued.McConnell.Multiplier
 public import Mathlib.Data.Int.Log
-import HarmonicAnalysis.VectorValued.LittlewoodPaley.Line
 import Mathlib.Analysis.Calculus.BumpFunction.InnerProduct
 import Mathlib.Analysis.SpecialFunctions.Log.Base
 import Mathlib.MeasureTheory.Function.SpecialFunctions.Basic

@@ -197,6 +197,8 @@ meta def palomarTheorems : List Name :=
    ``VectorValuedLittlewoodPaleyChallenge.littlewoodPaley_circle,
    ``VectorValuedLittlewoodPaleyChallenge.transference,
    ``VectorValuedLittlewoodPaleyChallenge.hilbert_bounded_innerProductSpace,
+   ``VectorValuedLittlewoodPaleyChallenge.mihlin_multiplier,
+   ``VectorValuedLittlewoodPaleyChallenge.littlewoodPaley_signs,
    ``VectorValuedLittlewoodPaleyChallenge.eLpNormRad_rpow]
 
 /-- Lean's standard axioms. -/

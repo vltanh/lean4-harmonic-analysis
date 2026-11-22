@@ -7,7 +7,7 @@ project:
     Lean 4 proofs of results of vector-valued harmonic analysis from Hytönen, van Neerven, Veraar
     and Weis, "Analysis in Banach Spaces I", and from McConnell (1984), for functions with values in
     a UMD Banach space X with UMD_p constant beta (real signs), 1 < p < infinity, with constants
-    explicit in beta.
+    explicit in beta (for McConnell's theorems up to an absolute constant).
 
 
     The Hilbert transform (Theorem 5.1.13, Proposition 5.2.2): the truncated Hilbert transforms
@@ -69,8 +69,9 @@ sources:
     relationship: "formalizes"
     note: >-
       Theorem 1.1 (pp. 741, 746-751) and Theorem 1.3 (pp. 742, 754-756, the implication from UMD
-      spaces to the inequalities (1.13)), for n = 1, by the paper's proofs, with (2.1), Lemmas 2.1
-      to 2.3, 3.1 and 3.2; the departures are in fidelity.divergences. With Bourgain, the origin of
+      spaces to the inequalities (1.13)), for n = 1, by the paper's proofs, with (2.1), Lemmas 2.1,
+      2.2, 3.1 and 3.2 (Lemma 2.3, the independence of the increments, is built into the chains that
+      replace X(y)); the departures are in fidelity.divergences. With Bourgain, the origin of
       the multiplier theorem (scalar symbols) and of the Littlewood-Paley inequality for UMD spaces
       (Hytönen, van Neerven, Veraar and Weis, p. 479).
     author_endorsement: "not-contacted"
@@ -247,7 +248,8 @@ fidelity:
     McConnell's theorems: the paper's proofs, with these departures, recorded in the docstrings. The
     process X(y), the place where a Brownian motion first hits the height y, is represented by its
     finite-dimensional distributions, chains with independent Cauchy increments, which are all that
-    the proof uses; the identities (2.3) to (2.6) become a reversal of these chains. Poisson
+    the proof uses; (2.3) with (2.6) becomes a reversal of these chains, and Lemma 2.2, (2.7), is
+    proved on the Fourier side; (2.4) is not needed. Poisson
     integrals are defined by their Fourier transforms, and (3.4) is proved on the Fourier side.
     Lemma 3.1 for n = 1 without separating the cases |s| < y and |s| >= y. The reduction to smooth m
     by mollification is not needed. The error estimate (3.6), sketched in the paper with a mean
@@ -257,7 +259,8 @@ fidelity:
     unless m is even). In Theorem 1.3 the sums m_i and M are cut to finite parts and the limit is
     taken at the end. Corrections to the paper: the limit of g_N (pp. 747, 748); the height from
     which the chain starts on p. 751; (3.19), which is an inequality in both directions and not an
-    equality; the function phi must be 1 near 3/2, not only at 3/2.
+    equality; phi(3/2) = 1 is not enough for psi to be smooth (here phi is 1 near 3/2). Further
+    misprints are in the docstrings.
 
 review:
   status: "agent-reviewed"
@@ -269,7 +272,8 @@ review:
     the sources (page images for the scans) and found no wrong, vacuous or weakened statement; its
     remarks on attributions, page numbers, divergences and wording were followed, and it checked the
     corrected entry again, with a few further remarks on the new text, none on a statement, which
-    were followed.
+    were followed. The two statements after McConnell, and the sentences on him, were added later
+    and compared with the paper by another agent, whose remarks were followed.
 
 alignment:
   namespace: "VectorValuedLittlewoodPaleyChallenge"

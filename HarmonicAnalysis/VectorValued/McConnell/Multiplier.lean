@@ -179,7 +179,7 @@ private theorem integral_fourierInv_smul_fourierInv {φ : ℝ → ℂ} (hφ : Co
 `w` are the Poisson integrals of `f = 𝓕⁻ G`, `M = 𝓕⁻ m` and `T_m f = M * f = 𝓕⁻ (m G)`, here for
 `y_1 > 0`. The "semigroup property of the Poisson integral", to which the source refers, is read on
 the Fourier side. -/
-private theorem integral_poissonInt_smul_poissonInt [CompleteSpace X] {m : ℝ → ℂ} {c : ℝ}
+private theorem integral_poissonInt_smul_poissonInt {m : ℝ → ℂ} {c : ℝ}
     (hm : IsMihlin m c) (hs : HasCompactSupport m) (h0 : (0 : ℝ) ∉ tsupport m) {G : ℝ → X}
     (hG : Integrable G) {y₁ y₂ : ℝ} (hy₁ : 0 < y₁) (hy₂ : 0 ≤ y₂) (x : ℝ) :
     ∫ s, poissonInt m y₁ s • poissonInt G y₂ (x - s) =
@@ -253,7 +253,7 @@ private theorem hasDerivAt_integral_smul_poissonInt {K : ℝ → ℂ} (hK : Inte
   · exact (hasDerivAt_iteratedPoissonDeriv 0 hG (hy2.trans hη) (x - s)).const_smul (K s)
 
 /-- (3.4) differentiated `k ≤ 2` times with respect to `y_1`. -/
-private theorem integral_iteratedPoissonDeriv_smul_poissonInt [CompleteSpace X] {m : ℝ → ℂ} {c : ℝ}
+private theorem integral_iteratedPoissonDeriv_smul_poissonInt {m : ℝ → ℂ} {c : ℝ}
     (hm : IsMihlin m c) (hs : HasCompactSupport m) (h0 : (0 : ℝ) ∉ tsupport m) {G : ℝ → X}
     (hG : Integrable G) {k : ℕ} (hk : k ≤ 2) {y₁ y₂ : ℝ} (hy₁ : 0 < y₁) (hy₂ : 0 ≤ y₂) (x : ℝ) :
     ∫ s, iteratedPoissonDeriv k m y₁ s • poissonInt G y₂ (x - s) =
@@ -273,7 +273,7 @@ private theorem integral_iteratedPoissonDeriv_smul_poissonInt [CompleteSpace X] 
 
 /-- McConnell (1984), p. 747: (3.4) differentiated twice with respect to `y_1` and once with respect
 to `y_2`, `w_{yyy} (x, y_1 + y_2) = ∫ v_{yy} (s, y_1) u_y (x − s, y_2) ds`. -/
-private theorem integral_mihlinKernel_smul_poissonDeriv [CompleteSpace X] {m : ℝ → ℂ} {c : ℝ}
+private theorem integral_mihlinKernel_smul_poissonDeriv {m : ℝ → ℂ} {c : ℝ}
     (hm : IsMihlin m c) (hs : HasCompactSupport m) (h0 : (0 : ℝ) ∉ tsupport m) {G : ℝ → X}
     (hG : Integrable G) {y₁ y₂ : ℝ} (hy₁ : 0 < y₁) (hy₂ : 0 < y₂) (x : ℝ) :
     ∫ s, mihlinKernel m y₁ s • poissonDeriv G y₂ (x - s) =
@@ -399,7 +399,7 @@ private theorem fourierInv_eq_integral_iteratedPoissonDeriv [CompleteSpace X] {m
 
 /-- McConnell (1984), (3.3), for `n = 1`: the integrand `∫ y² v_{yy} (s, y) u_y (x − s, 3y) ds` is
 `y² w_{yyy} (x, 4y)`. -/
-private theorem integral_mihlinKernel_smul_poissonDeriv_eq [CompleteSpace X] {m : ℝ → ℂ} {c : ℝ}
+private theorem integral_mihlinKernel_smul_poissonDeriv_eq {m : ℝ → ℂ} {c : ℝ}
     (hm : IsMihlin m c) (hs : HasCompactSupport m) (h0 : (0 : ℝ) ∉ tsupport m) {G : ℝ → X}
     (hG : Integrable G) {y : ℝ} (hy : 0 < y) (x : ℝ) :
     ∫ s, ((y : ℂ) ^ 2 * mihlinKernel m y s) • poissonDeriv G (3 * y) (x - s) =
@@ -463,7 +463,7 @@ noncomputable def mihlinRiemannSum (m : ℝ → ℂ) (G : ℝ → X) (y : ℕ �
 
 /-- The terms of (3.5), by (3.4) differentiated twice with respect to `y_1`; both sides are `0` for
 `y = 0`. -/
-private theorem integral_mihlinKernel_smul_poissonInt_sub [CompleteSpace X] {m : ℝ → ℂ} {c : ℝ}
+private theorem integral_mihlinKernel_smul_poissonInt_sub {m : ℝ → ℂ} {c : ℝ}
     (hm : IsMihlin m c) (hs : HasCompactSupport m) (h0 : (0 : ℝ) ∉ tsupport m) {G : ℝ → X}
     (hG : Integrable G) {y a b : ℝ} (hy : 0 ≤ y) (ha : 0 ≤ a) (hb : 0 ≤ b) (x : ℝ) :
     ∫ s, ((y : ℂ) ^ 2 * mihlinKernel m y s) • (poissonInt G a (x - s) - poissonInt G b (x - s)) =
@@ -484,7 +484,7 @@ private theorem integral_mihlinKernel_smul_poissonInt_sub [CompleteSpace X] {m :
     integral_iteratedPoissonDeriv_smul_poissonInt hm hs h0 hG le_rfl hy hb]
 
 /-- `g_N (x) = Σ_i y_i² [w_{yy} (x, 2y_{i+1} + 2y_i) − w_{yy} (x, 4y_i)]`. -/
-private theorem mihlinRiemannSum_eq [CompleteSpace X] {m : ℝ → ℂ} {c : ℝ} (hm : IsMihlin m c)
+private theorem mihlinRiemannSum_eq {m : ℝ → ℂ} {c : ℝ} (hm : IsMihlin m c)
     (hs : HasCompactSupport m) (h0 : (0 : ℝ) ∉ tsupport m) {G : ℝ → X} (hG : Integrable G)
     {y : ℕ → ℝ} (hy : ∀ i, 0 ≤ y i) (N : ℕ) (x : ℝ) : mihlinRiemannSum m G y N x =
       ∑ i ∈ Finset.range N, y i ^ 2 •
@@ -496,7 +496,7 @@ private theorem mihlinRiemannSum_eq [CompleteSpace X] {m : ℝ → ℂ} {c : ℝ
   congr 3 <;> ring_nf
 
 /-- `g_N` is continuous. -/
-private theorem continuous_mihlinRiemannSum [CompleteSpace X] {m : ℝ → ℂ} {c : ℝ}
+private theorem continuous_mihlinRiemannSum {m : ℝ → ℂ} {c : ℝ}
     (hm : IsMihlin m c) (hs : HasCompactSupport m) (h0 : (0 : ℝ) ∉ tsupport m) {G : ℝ → X}
     (hG : Integrable G) {y : ℕ → ℝ} (hy : ∀ i, 0 ≤ y i) (N : ℕ) :
     Continuous (mihlinRiemannSum m G y N) := by
@@ -644,7 +644,7 @@ private theorem norm_riemannSum_sub_le [NormedSpace ℝ X] [CompleteSpace X] {φ
     field_simp
 
 /-- `−(1/16) T_m^A f (x) = ∫_0^A 2 y² w_{yyy} (x, 4y) dy`. -/
-private theorem smul_truncatedMultiplier_eq [CompleteSpace X] {m : ℝ → ℂ} {c : ℝ}
+private theorem smul_truncatedMultiplier_eq {m : ℝ → ℂ} {c : ℝ}
     (hm : IsMihlin m c) (hs : HasCompactSupport m) (h0 : (0 : ℝ) ∉ tsupport m) {G : ℝ → X}
     (hG : Integrable G) {A : ℝ} (hA : 0 ≤ A) (x : ℝ) :
     (-16⁻¹ : ℂ) • truncatedMultiplier m G A x = ∫ y in (0)..A,
@@ -1281,7 +1281,7 @@ private theorem lintegral_sum_zigzagDiff_le [CompleteSpace X] {p : ℝ} (hp : 1 
 
 /-- McConnell (1984), p. 751: `‖u (x', A)‖^p ≤ E_{(x', A)} ‖f (X (0))‖^p`, `A = y_N`, "from the fact
 that `|u (s, y)|_B^p` is subharmonic": by Jensen's inequality, since `u (x', A) =
-E_{(x', A)} f (X (0))`, (2.7). -/
+E_{(x', A)} f (X (0))` by the Poisson integral formula, with the law (2.2). -/
 private theorem enorm_poissonInt_rpow_le [CompleteSpace X] {p : ℝ} (hp : 1 ≤ p) {G : ℝ → X}
     (hG : Integrable G) {y : ℕ → ℝ} (hy : Monotone y) (hy0 : y 0 = 0) (N : ℕ) (x' : ℝ) :
     ‖poissonInt G (y N) x'‖ₑ ^ p ≤ ∫⁻ ζ, ‖𝓕⁻ G (x' - chainSum ζ N)‖ₑ ^ p ∂chainLaw y N := by
@@ -1396,7 +1396,7 @@ private theorem tendsto_smul_mihlinRiemannSum [CompleteSpace X] {m : ℝ → ℂ
   rwa [smul_smul, show (-16 : ℂ) * -16⁻¹ = 1 by norm_num, one_smul] at h
 
 /-- The functions `−16 g_N` are measurable. -/
-private theorem aestronglyMeasurable_smul_mihlinRiemannSum [CompleteSpace X] {m : ℝ → ℂ} {c : ℝ}
+private theorem aestronglyMeasurable_smul_mihlinRiemannSum {m : ℝ → ℂ} {c : ℝ}
     (hm : IsMihlin m c) (hs : HasCompactSupport m) (h0 : (0 : ℝ) ∉ tsupport m) {G : ℝ → X}
     (hG : Integrable G) {A : ℝ} (hA : 0 < A) (N : ℕ) : AEStronglyMeasurable
       ((-16 : ℂ) • mihlinRiemannSum m G (fun i => i * A / (N + 1 : ℕ)) (N + 1)) volume :=
