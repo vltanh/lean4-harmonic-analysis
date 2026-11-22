@@ -44,11 +44,7 @@ order. -/
 def IsHardyTwo (f : UnitAddCircle → Matrix m n ℂ) : Prop :=
   (∀ i j, MemLp (fun t => f t i j) 2 haarAddCircle) ∧ ∀ k : ℤ, k < 0 → matFourierCoeff f k = 0
 
-/-! ### Characters, constants and continuous functions -/
-
-/-- The characters `e_k` have modulus `1`. -/
-theorem norm_fourier_apply_eq_one (k : ℤ) (t : UnitAddCircle) : ‖fourier k t‖ = 1 := by
-  rw [fourier_apply, Circle.norm_coe]
+/-! ### Constants and continuous functions -/
 
 /-- The Fourier coefficients of a constant function. -/
 theorem fourierCoeff_const (z : ℂ) (k : ℤ) :

@@ -60,7 +60,11 @@ theorem continuous_trigPoly (c : ℤ →₀ X) : Continuous (trigPoly c) := by
   unfold trigPoly Finsupp.sum
   exact continuous_finsetSum _ fun n _ => (map_continuous (fourier n)).smul continuous_const
 
-private theorem norm_fourier_apply (n : ℤ) (t : UnitAddCircle) : ‖fourier n t‖ = 1 := by
+private theorem memLp_trigPoly (c : ℤ →₀ X) (r : ℝ≥0∞) : MemLp (trigPoly c) r haarAddCircle :=
+  (continuous_trigPoly c).memLp_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
+
+/-- The characters `e_k` have modulus `1`. -/
+theorem norm_fourier_apply_eq_one (k : ℤ) (t : UnitAddCircle) : ‖fourier k t‖ = 1 := by
   rw [fourier_apply, Circle.norm_coe]
 
 /-- The Fourier coefficients of a trigonometric polynomial. -/
@@ -154,7 +158,6 @@ private theorem mul_tsum_eq_lintegral (W : ℝ → ℝ≥0∞) {ε : ℝ} (hε :
   rw [← ENNReal.tsum_mul_left, ← setLIntegral_univ, ← iUnion_Ico_add_zsmul hε 0,
     lintegral_iUnion (fun k => measurableSet_Ico) (Set.pairwise_disjoint_Ico_add_zsmul 0 ε)]
   exact (tsum_congr h1).symm
-
 
 private theorem abs_sub_le {ε : ℝ} (hε : 0 < ε) {x : ℝ} (hx : x ∈ Set.Ioc (0 : ℝ) 1) (y : ℝ) :
     |ε * (x + ⌊y / ε⌋) - y| ≤ ε := by
@@ -401,7 +404,7 @@ private theorem fourier_dilate_smul [CompleteSpace X] (φ : 𝓢(ℝ, ℂ)) {ε 
     have hc : Continuous fun x : ℝ => fourier k (x : UnitAddCircle) :=
       (map_continuous (fourier k)).comp (AddCircle.continuous_mk' 1)
     exact ((φ.integrable.comp_mul_left' hε.ne').mul_bdd (c := 1) hc.aestronglyMeasurable
-      (ae_of_all _ fun x => (norm_fourier_apply k _).le)).bdd_mul (c := 1)
+      (ae_of_all _ fun x => (norm_fourier_apply_eq_one k _).le)).bdd_mul (c := 1)
       (by fun_prop : Continuous fun x : ℝ =>
         Complex.exp (((-2 * Real.pi * x * ξ : ℝ) : ℂ) * Complex.I)).aestronglyMeasurable
       (ae_of_all _ fun x => (Complex.norm_exp_ofReal_mul_I _).le)
@@ -421,6 +424,53 @@ private theorem fourierInv_dilate_smul [CompleteSpace X] (ψ : 𝓢(ℝ, ℂ)) {
   rw [SchwartzMap.fourierInv_coe, Real.fourierInv_eq_fourier_neg, SchwartzMap.fourier_coe,
     ← mul_neg, neg_add']
 
+private theorem integrable_shift (χ : 𝓢(ℝ, ℂ)) {ε : ℝ} (hε : 0 < ε) (c : ℝ) :
+    Integrable fun ξ : ℝ => χ (ε⁻¹ * (ξ - c)) :=
+  (χ.integrable.comp_mul_left' (inv_ne_zero hε.ne')).comp_sub_right c
+
+private theorem integrable_mul_smul (χ ω : 𝓢(ℝ, ℂ)) {n : ℝ → Y} (hn : AEStronglyMeasurable n volume)
+    {M : ℝ} (hM : ∀ ξ, ‖n ξ‖ ≤ M) {ε : ℝ} (hε : 0 < ε) (c d : ℝ) :
+    Integrable fun ξ => (χ (ε⁻¹ * (ξ - c)) * ω (ε⁻¹ * (ξ - d))) • n ξ := by
+  have hω : Continuous fun ξ : ℝ => ω (ε⁻¹ * (ξ - d)) := ω.continuous.comp (by fun_prop)
+  exact ((integrable_shift χ hε c).mul_bdd hω.aestronglyMeasurable
+    (ae_of_all _ fun ξ => SchwartzMap.norm_le_seminorm ℂ ω _)).smul_bdd M hn (ae_of_all _ hM)
+
+/-- The substitution `ξ = k + ε η` in the integrand of (5.58). -/
+private theorem dilate_mul_smul (χ ω : 𝓢(ℝ, ℂ)) (n : ℝ → Y) {ε : ℝ} (hε : 0 < ε) (k l η : ℝ) :
+    (χ (ε⁻¹ * (ε * η + k - k)) * ω (ε⁻¹ * (ε * η + k - l))) • n (ε * η + k) =
+      (χ η * ω (η + ε⁻¹ * (k - l))) • n (ε * η + k) := by
+  rw [add_sub_cancel_right, inv_mul_cancel_left₀ hε.ne', add_sub_assoc, mul_add,
+    inv_mul_cancel_left₀ hε.ne']
+
+/-- The substitution `ξ = k + ε η` in the integral of (5.58). -/
+private theorem smul_integral_mul_smul (χ ω : 𝓢(ℝ, ℂ)) (n : ℝ → Y) {ε : ℝ} (hε : 0 < ε)
+    (k l : ℝ) : ((ε⁻¹ : ℝ) : ℂ) • ∫ ξ, (χ (ε⁻¹ * (ξ - k)) * ω (ε⁻¹ * (ξ - l))) • n ξ =
+      ∫ η, (χ η * ω (η + ε⁻¹ * (k - l))) • n (ε * η + k) := by
+  have h := Measure.integral_comp_mul_left (fun y =>
+    (χ (ε⁻¹ * (y + k - k)) * ω (ε⁻¹ * (y + k - l))) • n (y + k)) ε
+  rw [abs_of_pos (inv_pos.2 hε), integral_add_right_eq_self
+    (fun ξ => (χ (ε⁻¹ * (ξ - k)) * ω (ε⁻¹ * (ξ - l))) • n ξ) k] at h
+  rw [Complex.coe_smul, ← h]
+  exact integral_congr_ae (ae_of_all _ (dilate_mul_smul χ ω n hε k l))
+
+/-- The integrand of (5.58) after the substitution converges: `n` is continuous at `k`, and `ω`
+vanishes at infinity. -/
+private theorem tendsto_dilate_mul_smul (χ ω : 𝓢(ℝ, ℂ)) {n : ℝ → Y} {M : ℝ}
+    (hM : ∀ ξ, ‖n ξ‖ ≤ M) {k : ℤ} (hc : ContinuousAt n k) (l : ℤ) (η : ℝ) :
+    Tendsto (fun ε : ℝ => (χ η * ω (η + ε⁻¹ * (k - l))) • n (ε * η + k)) (𝓝[>] 0)
+      (𝓝 (if k = l then (χ η * ω η) • n k else 0)) := by
+  rcases eq_or_ne k l with rfl | hkl
+  · simp only [ite_true, sub_self, mul_zero, add_zero]
+    refine (hc.tendsto.comp (tendsto_nhdsWithin_of_tendsto_nhds ?_)).const_smul _
+    exact Continuous.tendsto' (by fun_prop) _ _ (by simp)
+  · rw [ite_eq_right hkl]
+    have h1 : Tendsto (fun ε : ℝ => η + ε⁻¹ * ((k : ℝ) - l)) (𝓝[>] 0) (cocompact ℝ) :=
+      (Homeomorph.addLeft η).isClosedEmbedding.tendsto_cocompact.comp
+        ((tendsto_cocompact_mul_right₀ (sub_ne_zero.2 (by exact_mod_cast hkl))).comp
+          (tendsto_inv_nhdsGT_zero.mono_right atTop_le_cocompact))
+    refine Tendsto.zero_smul_isBoundedUnder_le ?_ (isBoundedUnder_of ⟨M, fun ε => hM _⟩)
+    simpa using (ω.tendsto_cocompact.comp h1).const_mul (χ η)
+
 /-- HNVW I, (5.58): `ε⁻¹ ∫ φ̂ ((ξ − k) / ε) ψ̌ ((ξ − ℓ) / ε) m (ξ) x dξ → δ_{kℓ} m (k) x`, if
 `∫ φ̂ ψ̌ = 1`. Here `χ = φ̂`, `ω = ψ̌` and `n (ξ) = m (ξ) x`. -/
 private theorem tendsto_integral_mul_smul [CompleteSpace Y] {χ ω : 𝓢(ℝ, ℂ)}
@@ -430,76 +480,25 @@ private theorem tendsto_integral_mul_smul [CompleteSpace Y] {χ ω : 𝓢(ℝ, �
       (𝓝[>] 0) (𝓝 (if k = l then n k else 0)) := by
   obtain ⟨Cω, hω⟩ : ∃ Cω : ℝ, ∀ η, ‖ω η‖ ≤ Cω :=
     ⟨_, fun η => SchwartzMap.norm_le_seminorm ℂ ω η⟩
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 0)
-  -- the substitution `ξ = k + ε η`
-  set F : ℝ → ℝ → Y := fun ε ξ => (χ (ε⁻¹ * (ξ - k)) * ω (ε⁻¹ * (ξ - l))) • n ξ
-  have hF : ∀ ε : ℝ, 0 < ε → Integrable (F ε) := fun ε hε => by
-    have h1 : Integrable fun ξ => χ (ε⁻¹ * (ξ - k)) :=
-      (χ.integrable.comp_mul_left' (inv_ne_zero hε.ne')).comp_sub_right (k : ℝ)
-    have h2 : Continuous fun ξ : ℝ => ω (ε⁻¹ * (ξ - l)) := ω.continuous.comp (by fun_prop)
-    exact (h1.mul_bdd (c := Cω) h2.aestronglyMeasurable (ae_of_all _ fun ξ => hω _)).smul_bdd M hn
-      (ae_of_all _ hM)
-  have hsub : ∀ ε : ℝ, 0 < ε → ∀ η, F ε (ε * η + k) =
-      (χ η * ω (η + ε⁻¹ * (k - l))) • n (ε * η + k) := fun ε hε η => by
-    simp only [F]
-    rw [add_sub_cancel_right, inv_mul_cancel_left₀ hε.ne', add_sub_assoc, mul_add,
-      inv_mul_cancel_left₀ hε.ne']
-  have hint : ∀ ε : ℝ, 0 < ε → ((ε⁻¹ : ℝ) : ℂ) • ∫ ξ, F ε ξ =
-      ∫ η, (χ η * ω (η + ε⁻¹ * (k - l))) • n (ε * η + k) := fun ε hε => by
-    have h1 := Measure.integral_comp_mul_left (fun y => F ε (y + k)) ε
-    rw [abs_of_pos (inv_pos.2 hε), integral_add_right_eq_self (F ε) (k : ℝ)] at h1
-    rw [Complex.coe_smul, ← h1]
-    exact integral_congr_ae (ae_of_all _ (hsub ε hε))
   have hlim : (if k = l then n k else 0) = ∫ η, if k = l then (χ η * ω η) • n k else 0 := by
     split_ifs
     · rw [integral_smul_const, h, one_smul]
     · rw [integral_zero]
   rw [hlim]
   -- dominated convergence
-  have hdom : Tendsto (fun ε : ℝ => ∫ η, (χ η * ω (η + ε⁻¹ * (k - l))) • n (ε * η + k)) (𝓝[>] 0)
-      (𝓝 (∫ η, if k = l then (χ η * ω η) • n k else 0)) := by
-    refine tendsto_integral_filter_of_dominated_convergence (fun η => ‖χ η‖ * (Cω * M)) ?_ ?_
-      (χ.integrable.norm.mul_const _) (ae_of_all _ fun η => ?_)
-    · filter_upwards [self_mem_nhdsWithin] with ε hε
-      have h1 := ((hF ε hε).comp_add_right (k : ℝ)).comp_mul_left' (ne_of_gt hε)
-      exact h1.aestronglyMeasurable.congr (ae_of_all _ (hsub ε hε))
-    · refine Eventually.of_forall fun ε => ae_of_all _ fun η => ?_
-      rw [norm_smul, norm_mul, mul_assoc]
-      exact mul_le_mul_of_nonneg_left (mul_le_mul (hω _) (hM _) (norm_nonneg _)
-        ((norm_nonneg _).trans (hω 0))) (norm_nonneg _)
-    · rcases eq_or_ne k l with rfl | hkl
-      · -- `m` is continuous at `k`
-        simp only [ite_true, sub_self, mul_zero, add_zero]
-        refine Tendsto.const_smul ?_ _
-        refine hc.tendsto.comp ?_
-        have h1 : Tendsto (fun ε : ℝ => ε * η + k) (𝓝 0) (𝓝 (0 * η + k)) :=
-          ((continuous_id.mul continuous_const).add continuous_const).tendsto 0
-        rw [zero_mul, zero_add] at h1
-        exact tendsto_nhdsWithin_of_tendsto_nhds h1
-      · -- `ω` vanishes at infinity
-        rw [ite_eq_right hkl]
-        have hkl' : ((k : ℝ) - l) ≠ 0 := sub_ne_zero.2 (by exact_mod_cast hkl)
-        have h1 : Tendsto (fun ε : ℝ => η + ε⁻¹ * ((k : ℝ) - l)) (𝓝[>] 0) (cocompact ℝ) := by
-          rw [← Metric.cobounded_eq_cocompact, ← tendsto_norm_atTop_iff_cobounded]
-          refine tendsto_atTop_mono' _ ?_ (tendsto_atTop_add_const_right _ (-‖η‖)
-            (tendsto_inv_nhdsGT_zero.atTop_mul_const (norm_pos_iff.2 hkl')))
-          filter_upwards [self_mem_nhdsWithin] with ε hε
-          have h2 : ‖ε⁻¹ * ((k : ℝ) - l)‖ = ε⁻¹ * ‖(k : ℝ) - l‖ := by
-            rw [norm_mul, Real.norm_of_nonneg (inv_pos.2 hε).le]
-          have h3 := norm_sub_le (η + ε⁻¹ * ((k : ℝ) - l)) η
-          rw [add_sub_cancel_left, h2] at h3
-          linarith
-        have h2 := (ω.tendsto_cocompact.comp h1).norm
-        rw [norm_zero] at h2
-        refine squeeze_zero_norm (a := fun ε => ‖χ η‖ * ‖ω (η + ε⁻¹ * ((k : ℝ) - l))‖ * M)
-          (fun ε => ?_) ?_
-        · rw [norm_smul, norm_mul]
-          gcongr
-          exact hM _
-        · simpa using (h2.const_mul ‖χ η‖).mul_const M
-  refine hdom.congr' ?_
-  filter_upwards [self_mem_nhdsWithin] with ε hε
-  exact (hint ε hε).symm
+  refine (tendsto_integral_filter_of_dominated_convergence (fun η => ‖χ η‖ * (Cω * M)) ?_ ?_
+    (χ.integrable.norm.mul_const _)
+    (ae_of_all _ (tendsto_dilate_mul_smul χ ω hM hc l))).congr' ?_
+  · filter_upwards [self_mem_nhdsWithin] with ε hε
+    have h1 := ((integrable_mul_smul χ ω hn hM hε k l).comp_add_right (k : ℝ)).comp_mul_left'
+      (ne_of_gt hε)
+    exact h1.aestronglyMeasurable.congr (ae_of_all _ (dilate_mul_smul χ ω n hε k l))
+  · refine Eventually.of_forall fun ε => ae_of_all _ fun η => ?_
+    rw [norm_smul, norm_mul, mul_assoc]
+    exact mul_le_mul_of_nonneg_left (mul_le_mul (hω _) (hM _) (norm_nonneg _)
+      ((norm_nonneg _).trans (hω 0))) (norm_nonneg _)
+  · filter_upwards [self_mem_nhdsWithin] with ε hε
+    exact (smul_integral_mul_smul χ ω n hε k l).symm
 
 /-- `∫_𝕋 e_k e_ℓ = δ_{k,−ℓ}`. -/
 private theorem integral_fourier_mul_fourier (k l : ℤ) :
@@ -534,10 +533,6 @@ private theorem integral_trigPoly_multiplier (m : ℝ → X →L[ℂ] Y) (a : �
   rw [integral_mul_const, integral_fourier_mul_fourier]
   split_ifs <;> simp
 
-private theorem integrable_shift (χ : 𝓢(ℝ, ℂ)) {ε : ℝ} (hε : 0 < ε) (c : ℝ) :
-    Integrable fun ξ : ℝ => χ (ε⁻¹ * (ξ - c)) :=
-  (χ.integrable.comp_mul_left' (inv_ne_zero hε.ne')).comp_sub_right c
-
 /-- `m (φ (ε ·) f)^ = Σ_k ε⁻¹ φ̂ ((· − k) / ε) m a_k`. -/
 private theorem multiplier_fourier_dilate [CompleteSpace X] (m : ℝ → X →L[ℂ] Y) (φ : 𝓢(ℝ, ℂ))
     {ε : ℝ} (hε : 0 < ε) (a : ℤ →₀ X) (ξ : ℝ) :
@@ -569,15 +564,16 @@ theorem tendsto_integral_dilate_multiplier [CompleteSpace X] [CompleteSpace Y] {
         (𝓕⁻ (fun ξ => m ξ (𝓕 (fun y : ℝ => φ (ε * y) • trigPoly a (y : UnitAddCircle)) ξ)) x))
       (𝓝[>] 0)
       (𝓝 (∫ t, trigPoly b t (a.sum fun k y => fourier k t • m k y) ∂haarAddCircle)) := by
-  have hmb : ∀ k ξ, ‖m ξ (a k)‖ ≤ M * ‖a k‖ := fun k ξ => (m ξ).le_of_opNorm_le (hM ξ) _
+  have hbm : ∀ k l, AEStronglyMeasurable (fun ξ => b l (m ξ (a k))) volume := fun k l =>
+    (b l).continuous.comp_aestronglyMeasurable (hm (a k))
+  have hbM : ∀ k l ξ, ‖b l (m ξ (a k))‖ ≤ ‖b l‖ * (M * ‖a k‖) := fun k l ξ =>
+    (b l).le_opNorm_of_le ((m ξ).le_of_opNorm_le (hM ξ) _)
   -- the terms
   have hterm : ∀ k l : ℤ, Tendsto (fun ε : ℝ => ((ε⁻¹ : ℝ) : ℂ) • ∫ ξ,
       (𝓕 φ (ε⁻¹ * (ξ - k)) * 𝓕⁻ ψ (ε⁻¹ * (ξ - (-l : ℤ)))) • b l (m ξ (a k))) (𝓝[>] 0)
-      (𝓝 (if k = -l then b l (m k (a k)) else 0)) := fun k l => by
-    refine tendsto_integral_mul_smul h ((b l).continuous.comp_aestronglyMeasurable (hm (a k)))
-      (M := ‖b l‖ * (M * ‖a k‖)) (fun ξ => ?_) k (-l)
+      (𝓝 (if k = -l then b l (m k (a k)) else 0)) := fun k l =>
+    tendsto_integral_mul_smul h (hbm k l) (hbM k l) k (-l)
       ((b l).continuous.continuousAt.comp (hc k (a k)))
-    exact ((b l).le_opNorm _).trans (by gcongr; exact hmb k ξ)
   rw [integral_trigPoly_multiplier]
   refine (tendsto_finsetSum _ fun l _ => tendsto_finsetSum _ fun k _ => hterm k l).congr' ?_
   filter_upwards [self_mem_nhdsWithin] with ε hε
@@ -601,13 +597,7 @@ theorem tendsto_integral_dilate_multiplier [CompleteSpace X] [CompleteSpace Y] {
     field_simp
   have hpi : ∀ k l : ℤ, Integrable fun ξ : ℝ =>
       ((ε⁻¹ : ℝ) : ℂ) * ((𝓕 φ (ε⁻¹ * (ξ - k)) * 𝓕⁻ ψ (ε⁻¹ * (ξ - (-l : ℤ)))) • b l (m ξ (a k))) :=
-    fun k l => by
-    have hψ : Continuous fun ξ : ℝ => 𝓕⁻ ψ (ε⁻¹ * (ξ - (-l : ℤ))) :=
-      (𝓕⁻ ψ : 𝓢(ℝ, ℂ)).continuous.comp (by fun_prop)
-    exact (((integrable_shift (𝓕 φ) hε' k).mul_bdd hψ.aestronglyMeasurable
-      (ae_of_all _ fun ξ => SchwartzMap.norm_le_seminorm ℂ (𝓕⁻ ψ) _)).smul_bdd
-      (‖b l‖ * (M * ‖a k‖)) ((b l).continuous.comp_aestronglyMeasurable (hm (a k)))
-      (ae_of_all _ fun ξ => ((b l).le_opNorm _).trans (by gcongr; exact hmb k ξ))).const_mul _
+    fun k l => (integrable_mul_smul (𝓕 φ) (𝓕⁻ ψ) (hbm k l) (hbM k l) hε' k (-l : ℤ)).const_mul _
   simp only [hprod]
   rw [integral_finsetSum _ fun l _ => integrable_finsetSum _ fun k _ => hpi k l]
   refine Finset.sum_congr rfl fun l _ => ?_
@@ -774,6 +764,44 @@ private theorem eLpNorm_simpleFunc_le {α : Type*} [MeasurableSpace α] {μ : Me
   rwa [ENNReal.mul_le_mul_iff_left (ENNReal.rpow_pos (pos_iff_ne_zero.2 hN0) hNt).ne'
     (ENNReal.rpow_ne_top_of_nonneg hp1.le hNt)] at h3
 
+/-- An inequality for the pairings with all trigonometric polynomials with values in `Y*` holds for
+the pairings with all `g ∈ L^q (𝕋; Y*)`, by density. -/
+private theorem enorm_integral_le_of_forall_trigPoly {p q : ℝ} (hpq : p.HolderConjugate q)
+    {u : UnitAddCircle → Y} (hu : MemLp u (ENNReal.ofReal p) haarAddCircle) {A : ℝ≥0∞} (hA : A ≠ ∞)
+    (h : ∀ b : ℤ →₀ (Y →L[ℂ] ℂ), ‖∫ t, trigPoly b t (u t) ∂haarAddCircle‖ₑ ≤
+      A * eLpNorm (trigPoly b) (ENNReal.ofReal q) haarAddCircle) {g : UnitAddCircle → Y →L[ℂ] ℂ}
+    (hg : MemLp g (ENNReal.ofReal q) haarAddCircle) :
+    ‖∫ t, g t (u t) ∂haarAddCircle‖ₑ ≤ A * eLpNorm g (ENNReal.ofReal q) haarAddCircle := by
+  have hQ : 1 ≤ ENNReal.ofReal q := ENNReal.one_le_ofReal.2 hpq.symm.lt.le
+  set U := eLpNorm u (ENNReal.ofReal p) haarAddCircle
+  set G := eLpNorm g (ENNReal.ofReal q) haarAddCircle
+  have hδ : ∀ δ : ℝ≥0∞, δ ≠ 0 → ‖∫ t, g t (u t) ∂haarAddCircle‖ₑ ≤ A * (G + δ) + U * δ := by
+    intro δ hδ
+    obtain ⟨b, hb⟩ := exists_trigPoly_eLpNorm_sub_le hQ ENNReal.ofReal_ne_top hg hδ
+    have hgb := hg.sub (memLp_trigPoly b (ENNReal.ofReal q))
+    have h2 : ∫ t, g t (u t) ∂haarAddCircle = ∫ t, trigPoly b t (u t) ∂haarAddCircle +
+        ∫ t, (g - trigPoly b) t (u t) ∂haarAddCircle := by
+      rw [← integral_add (integrable_dual hpq hu (memLp_trigPoly b _))
+        (integrable_dual hpq hu hgb)]
+      refine integral_congr_ae (ae_of_all _ fun t => ?_)
+      simp
+    rw [h2]
+    refine (enorm_add_le _ _).trans (add_le_add ((h b).trans ?_) ((enorm_integral_dual_le hpq
+      hu.aestronglyMeasurable hgb.aestronglyMeasurable).trans ?_))
+    · gcongr
+      have h3 : trigPoly b = g - (g - trigPoly b) := by simp
+      rw [h3]
+      exact (eLpNorm_sub_le hQ).trans (add_le_add le_rfl hb)
+    · gcongr
+  have hc : Continuous fun δ : ℝ≥0∞ => A * (G + δ) + U * δ :=
+    ((ENNReal.continuous_const_mul hA).comp (continuous_const.add continuous_id)).add
+      (ENNReal.continuous_const_mul hu.eLpNorm_ne_top)
+  have hlim := tendsto_nhdsWithin_of_tendsto_nhds (s := Set.Ioi 0) (hc.tendsto 0)
+  rw [add_zero, mul_zero, add_zero] at hlim
+  refine ge_of_tendsto hlim ?_
+  filter_upwards [self_mem_nhdsWithin] with δ hδ0
+  exact hδ δ (ne_of_gt hδ0)
+
 /-- HNVW I, Proposition 1.3.1 (pp. 37–38), on `𝕋`, with trigonometric polynomials: for
 `1 < p < ∞`, the trigonometric polynomials with values in `Y*` norm `L^p (𝕋; Y)`. As in the book
 (with the roles of the two spaces exchanged), the simple function `Σ 1_{A_n} y_n` is normed by
@@ -786,73 +814,32 @@ theorem eLpNorm_le_of_forall_trigPoly {p q : ℝ} (hpq : p.HolderConjugate q) {u
     eLpNorm u (ENNReal.ofReal p) haarAddCircle ≤ A := by
   rcases eq_or_ne A ∞ with rfl | hA
   · exact le_top
-  have hP : 1 ≤ ENNReal.ofReal p := ENNReal.one_le_ofReal.2 hpq.lt.le
-  have hQ : 1 ≤ ENNReal.ofReal q := ENNReal.one_le_ofReal.2 hpq.symm.lt.le
-  set U := eLpNorm u (ENNReal.ofReal p) haarAddCircle
-  have hU : U ≠ ∞ := hu.eLpNorm_ne_top
-  -- the inequality for all `g ∈ L^q (𝕋; Y*)`
-  have h1 : ∀ g : UnitAddCircle → Y →L[ℂ] ℂ, MemLp g (ENNReal.ofReal q) haarAddCircle →
-      ‖∫ t, g t (u t) ∂haarAddCircle‖ₑ ≤
-        A * eLpNorm g (ENNReal.ofReal q) haarAddCircle := by
-    intro g hg
-    set G := eLpNorm g (ENNReal.ofReal q) haarAddCircle
-    have hδ : ∀ δ : ℝ≥0∞, δ ≠ 0 → ‖∫ t, g t (u t) ∂haarAddCircle‖ₑ ≤ A * (G + δ) + U * δ := by
-      intro δ hδ
-      obtain ⟨b, hb⟩ := exists_trigPoly_eLpNorm_sub_le hQ ENNReal.ofReal_ne_top hg hδ
-      have hbm : MemLp (trigPoly b) (ENNReal.ofReal q) haarAddCircle :=
-        (continuous_trigPoly b).memLp_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
-      have h2 : ∫ t, g t (u t) ∂haarAddCircle = ∫ t, trigPoly b t (u t) ∂haarAddCircle +
-          ∫ t, (g - trigPoly b) t (u t) ∂haarAddCircle := by
-        rw [← integral_add (integrable_dual hpq hu hbm) (integrable_dual hpq hu (hg.sub hbm))]
-        refine integral_congr_ae (ae_of_all _ fun t => ?_)
-        simp
-      rw [h2]
-      refine (enorm_add_le _ _).trans (add_le_add ((h b).trans ?_) ((enorm_integral_dual_le hpq
-        hu.aestronglyMeasurable (hg.sub hbm).aestronglyMeasurable).trans ?_))
-      · gcongr
-        have h3 : trigPoly b = g - (g - trigPoly b) := by simp
-        rw [h3]
-        exact (eLpNorm_sub_le hQ).trans (add_le_add le_rfl hb)
-      · gcongr
-    have hc : Continuous fun δ : ℝ≥0∞ => A * (G + δ) + U * δ :=
-      ((ENNReal.continuous_const_mul hA).comp (continuous_const.add continuous_id)).add
-        (ENNReal.continuous_const_mul hU)
-    have hlim := tendsto_nhdsWithin_of_tendsto_nhds (s := Set.Ioi 0) (hc.tendsto 0)
-    rw [add_zero, mul_zero, add_zero] at hlim
-    refine ge_of_tendsto hlim ?_
-    filter_upwards [self_mem_nhdsWithin] with δ hδ0
-    exact hδ δ (ne_of_gt hδ0)
+  refine ENNReal.le_of_forall_pos_le_add fun ε hε _ => ?_
   -- simple functions
-  have h2 : ∀ δ : ℝ≥0∞, δ ≠ 0 → U ≤ A + δ + δ := by
-    intro δ hδ
-    obtain ⟨s, hs, hsm⟩ := hu.exists_simpleFunc_eLpNorm_sub_lt ENNReal.ofReal_ne_top hδ
-    have hs' : AEStronglyMeasurable (u - ⇑s) haarAddCircle :=
-      hu.aestronglyMeasurable.sub s.aestronglyMeasurable
-    have hus : MemLp (u - ⇑s) (ENNReal.ofReal p) haarAddCircle := hu.sub hsm
-    have hN : eLpNorm (⇑s) (ENNReal.ofReal p) haarAddCircle ≤ A + δ := by
-      refine eLpNorm_simpleFunc_le hpq s fun g => ?_
-      have hg : MemLp (⇑g) (ENNReal.ofReal q) haarAddCircle := g.memLp_of_isFiniteMeasure _ _
-      have h3 : ∫ t, g t (s t) ∂haarAddCircle =
-          ∫ t, g t (u t) ∂haarAddCircle - ∫ t, g t ((u - ⇑s) t) ∂haarAddCircle := by
-        rw [← integral_sub (integrable_dual hpq hu hg) (integrable_dual hpq hus hg)]
-        refine integral_congr_ae (ae_of_all _ fun t => ?_)
-        simp only [Pi.sub_apply, map_sub, sub_sub_cancel]
-      rw [h3, add_mul]
-      refine enorm_sub_le.trans (add_le_add (h1 g hg) ?_)
-      refine (enorm_integral_dual_le hpq hs' hg.aestronglyMeasurable).trans ?_
-      gcongr
-    have h3 : u = ⇑s + (u - ⇑s) := by simp
-    calc U = eLpNorm (⇑s + (u - ⇑s)) (ENNReal.ofReal p) haarAddCircle := by rw [← h3]
-      _ ≤ eLpNorm (⇑s) (ENNReal.ofReal p) haarAddCircle +
-          eLpNorm (u - ⇑s) (ENNReal.ofReal p) haarAddCircle := eLpNorm_add_le hP
-      _ ≤ A + δ + δ := add_le_add hN hs.le
-  have hc : Continuous fun δ : ℝ≥0∞ => A + δ + δ :=
-    (continuous_const.add continuous_id).add continuous_id
-  have hlim := tendsto_nhdsWithin_of_tendsto_nhds (s := Set.Ioi 0) (hc.tendsto 0)
-  rw [add_zero, add_zero] at hlim
-  refine ge_of_tendsto hlim ?_
-  filter_upwards [self_mem_nhdsWithin] with δ hδ0
-  exact h2 δ (ne_of_gt hδ0)
+  obtain ⟨s, hs, hsm⟩ := hu.exists_simpleFunc_eLpNorm_sub_lt ENNReal.ofReal_ne_top
+    (ENNReal.half_pos (ENNReal.coe_pos.2 hε).ne').ne'
+  have hus : MemLp (u - ⇑s) (ENNReal.ofReal p) haarAddCircle := hu.sub hsm
+  have hN : eLpNorm (⇑s) (ENNReal.ofReal p) haarAddCircle ≤ A + ε / 2 := by
+    refine eLpNorm_simpleFunc_le hpq s fun g => ?_
+    have hg : MemLp (⇑g) (ENNReal.ofReal q) haarAddCircle := g.memLp_of_isFiniteMeasure _ _
+    have h3 : ∫ t, g t (s t) ∂haarAddCircle =
+        ∫ t, g t (u t) ∂haarAddCircle - ∫ t, g t ((u - ⇑s) t) ∂haarAddCircle := by
+      rw [← integral_sub (integrable_dual hpq hu hg) (integrable_dual hpq hus hg)]
+      refine integral_congr_ae (ae_of_all _ fun t => ?_)
+      simp only [Pi.sub_apply, map_sub, sub_sub_cancel]
+    rw [h3, add_mul]
+    refine enorm_sub_le.trans (add_le_add
+      (enorm_integral_le_of_forall_trigPoly hpq hu hA h hg)
+      ((enorm_integral_dual_le hpq hus.aestronglyMeasurable hg.aestronglyMeasurable).trans ?_))
+    gcongr
+  have h3 : u = ⇑s + (u - ⇑s) := by simp
+  calc eLpNorm u (ENNReal.ofReal p) haarAddCircle
+      = eLpNorm (⇑s + (u - ⇑s)) (ENNReal.ofReal p) haarAddCircle := by rw [← h3]
+    _ ≤ eLpNorm (⇑s) (ENNReal.ofReal p) haarAddCircle +
+        eLpNorm (u - ⇑s) (ENNReal.ofReal p) haarAddCircle :=
+        eLpNorm_add_le (ENNReal.one_le_ofReal.2 hpq.lt.le)
+    _ ≤ A + ε / 2 + ε / 2 := add_le_add hN hs.le
+    _ = A + ε := by rw [add_assoc, ENNReal.add_halves]
 
 /-! ### The Schwartz functions of the proof of Proposition 5.7.1 -/
 
@@ -970,14 +957,44 @@ private theorem eLpNorm_gaussian {p : ℝ} (hp : 0 < p) {φ : 𝓢(ℝ, ℂ)}
 
 /-! ### Proposition 5.7.1 -/
 
-private theorem continuous_fourierInv {u : ℝ → Y} (hu : Integrable u) : Continuous (𝓕⁻ u) := by
-  have h : Continuous (𝓕 u) :=
-    VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar (by fun_prop) hu
-  rw [show 𝓕⁻ u = fun x => 𝓕 u (-x) from funext fun x => Real.fourierInv_eq_fourier_neg u x]
-  exact h.comp continuous_neg
+private theorem continuous_fourierInv {u : ℝ → Y} (hu : Integrable u) : Continuous (𝓕⁻ u) :=
+  VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar
+    (continuous_inner (𝕜 := ℝ) (E := ℝ)).neg hu
 
-private theorem memLp_trigPoly (c : ℤ →₀ X) (r : ℝ≥0∞) : MemLp (trigPoly c) r haarAddCircle :=
-  (continuous_trigPoly c).memLp_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
+/-- `∫ φ̂ ψ̌ = ∫ φ ψ = 1` for the Gaussians `φ = e^{−π x² / p}` and `ψ = e^{−π x² / q}`. -/
+private theorem integral_fourier_mul_fourierInv_gaussian {p q : ℝ} (hpq : p.HolderConjugate q)
+    {φ ψ : 𝓢(ℝ, ℂ)} (hφ : ∀ x, φ x = ((Real.exp (-(Real.pi / p * x ^ 2)) : ℝ) : ℂ))
+    (hψ : ∀ x, ψ x = ((Real.exp (-(Real.pi / q * x ^ 2)) : ℝ) : ℂ)) :
+    ∫ ξ, 𝓕 φ ξ * 𝓕⁻ ψ ξ = 1 := by
+  rw [SchwartzMap.integral_fourier_mul_eq, FourierTransform.fourier_fourierInv_eq]
+  have h1 : ∀ x, φ x * ψ x = ((Real.exp (-Real.pi * x ^ 2) : ℝ) : ℂ) := fun x => by
+    rw [hφ, hψ, ← Complex.ofReal_mul, ← Real.exp_add]
+    congr 2
+    calc -(Real.pi / p * x ^ 2) + -(Real.pi / q * x ^ 2) = -Real.pi * x ^ 2 * (p⁻¹ + q⁻¹) := by
+          ring
+      _ = -Real.pi * x ^ 2 := by rw [hpq.inv_add_inv_eq_one, mul_one]
+  simp only [h1]
+  rw [integral_complex_ofReal, integral_gaussian, div_self Real.pi_ne_zero, Real.sqrt_one,
+    Complex.ofReal_one]
+
+/-- The inequality on the line, for the function `φ (ε ·) f`, whose Fourier transform is a Schwartz
+function. -/
+private theorem eLpNorm_multiplier_dilate_le [CompleteSpace X] {P : ℝ≥0∞} {m : ℝ → X →L[ℂ] Y}
+    {C : ℝ≥0∞} (hC : ∀ G : 𝓢(ℝ, X), eLpNorm (𝓕⁻ fun ξ => m ξ (G ξ)) P volume ≤
+      C * eLpNorm (𝓕⁻ (G : ℝ → X)) P volume) (φ : 𝓢(ℝ, ℂ)) {ε : ℝ} (hε : 0 < ε) (a : ℤ →₀ X) :
+    eLpNorm (𝓕⁻ fun ξ => m ξ (𝓕 (fun y : ℝ => φ (ε * y) • trigPoly a (y : UnitAddCircle)) ξ)) P
+        volume ≤
+      C * eLpNorm (fun y : ℝ => φ (ε * y) • trigPoly a (y : UnitAddCircle)) P volume := by
+  set h : ℝ → X := fun y => φ (ε * y) • trigPoly a (y : UnitAddCircle)
+  obtain ⟨G, hG⟩ := exists_schwartz_shift (𝓕 φ) hε a
+  have hGh : 𝓕 h = G := funext fun ξ => by rw [hG, fourier_dilate_smul φ hε]
+  have hcont : Continuous h := (φ.continuous.comp (continuous_const_mul ε)).smul
+    ((continuous_trigPoly a).comp (AddCircle.continuous_mk' 1))
+  have hinv : 𝓕⁻ (G : ℝ → X) = h := by
+    rw [← hGh]
+    exact hcont.fourierInv_fourier_eq (integrable_dilate_smul φ hε a) (hGh ▸ G.integrable)
+  have h1 := hC G
+  rwa [hinv, ← hGh] at h1
 
 /-- `⟨T̃_m f, g⟩` is bounded by the multiplier norm of `m` on the line (HNVW I, p. 460). -/
 private theorem enorm_integral_trigPoly_multiplier_le [CompleteSpace X] [CompleteSpace Y] {p q : ℝ}
@@ -995,18 +1012,7 @@ private theorem enorm_integral_trigPoly_multiplier_le [CompleteSpace X] [Complet
   -- the Gaussians
   obtain ⟨φ, hφ⟩ := exists_schwartz_gaussian (div_pos Real.pi_pos hp0)
   obtain ⟨ψ, hψ⟩ := exists_schwartz_gaussian (div_pos Real.pi_pos hq0)
-  have hφψ : ∫ ξ, 𝓕 φ ξ * 𝓕⁻ ψ ξ = 1 := by
-    rw [SchwartzMap.integral_fourier_mul_eq, FourierTransform.fourier_fourierInv_eq]
-    have h1 : ∀ x, φ x * ψ x = ((Real.exp (-Real.pi * x ^ 2) : ℝ) : ℂ) := fun x => by
-      rw [hφ, hψ, ← Complex.ofReal_mul, ← Real.exp_add]
-      congr 2
-      have h2 := hpq.inv_add_inv_eq_one
-      calc -(Real.pi / p * x ^ 2) + -(Real.pi / q * x ^ 2) = -Real.pi * x ^ 2 * (p⁻¹ + q⁻¹) := by
-            ring
-        _ = -Real.pi * x ^ 2 := by rw [h2, mul_one]
-    simp only [h1]
-    rw [integral_complex_ofReal, integral_gaussian, div_self Real.pi_ne_zero, Real.sqrt_one,
-      Complex.ofReal_one]
+  have hφψ := integral_fourier_mul_fourierInv_gaussian hpq hφ hψ
   -- the limits
   have hlim1 := (continuous_enorm.tendsto _).comp
     (tendsto_integral_dilate_multiplier hφψ hM hm hc a b)
@@ -1024,17 +1030,7 @@ private theorem enorm_integral_trigPoly_multiplier_le [CompleteSpace X] [Complet
   set h : ℝ → X := fun y => φ (ε * y) • trigPoly a (y : UnitAddCircle)
   set v : ℝ → Y →L[ℂ] ℂ := fun y => ψ (ε * y) • trigPoly b (y : UnitAddCircle)
   have hmult : eLpNorm (𝓕⁻ fun ξ => m ξ (𝓕 h ξ)) (ENNReal.ofReal p) volume ≤
-      C * eLpNorm h (ENNReal.ofReal p) volume := by
-    obtain ⟨G, hG⟩ := exists_schwartz_shift (𝓕 φ) hε' a
-    have hGh : 𝓕 h = G := funext fun ξ => by rw [hG, fourier_dilate_smul φ hε']
-    have hcont : Continuous h := (φ.continuous.comp (continuous_const_mul ε)).smul
-      ((continuous_trigPoly a).comp (AddCircle.continuous_mk' 1))
-    have hinv : 𝓕⁻ (G : ℝ → X) = h := by
-      rw [← hGh]
-      exact hcont.fourierInv_fourier_eq (integrable_dilate_smul φ hε' a)
-        (hGh ▸ G.integrable)
-    have h1 := hC G
-    rwa [hinv, ← hGh] at h1
+      C * eLpNorm h (ENNReal.ofReal p) volume := eLpNorm_multiplier_dilate_le hC φ hε' a
   have hpair := enorm_integral_dual_le hpq
     (continuous_fourierInv (integrable_multiplier hM hm φ hε' a)).aestronglyMeasurable
     (integrable_dilate_smul ψ hε' b).aestronglyMeasurable
@@ -1139,6 +1135,5 @@ theorem eLpNorm_fourierInv_multiplier_dilate_le {p : ℝ} (hp : 0 < p) {m : ℝ 
         gcongr
         exact hC G'
     _ = _ := by ring
-
 
 end VectorValuedHarmonicAnalysis

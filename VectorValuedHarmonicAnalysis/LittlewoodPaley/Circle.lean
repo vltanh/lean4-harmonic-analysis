@@ -61,12 +61,6 @@ private theorem trigBlock_eq_sum (s : Set ℤ) (c : ℤ →₀ X) (t : UnitAddCi
     trigBlock s c t = ∑ j ∈ c.support, if j ∈ s then fourier j t • c j else 0 := by
   rw [trigBlock, trigPoly, Finsupp.sum_filter_index, Finsupp.support_filter, Finset.sum_filter]
 
-private theorem continuous_fourierInv {G : ℝ → X} (hG : Integrable G) : Continuous (𝓕⁻ G) := by
-  have h : Continuous (𝓕 G) :=
-    VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar (by fun_prop) hG
-  rw [show 𝓕⁻ G = fun x => 𝓕 G (-x) from funext fun x => Real.fourierInv_eq_fourier_neg G x]
-  exact h.comp continuous_neg
-
 /-! ### The dilation trick
 
 HNVW I, pp. 465–466: for an irrational `ρ > 1` the functions `1_{I_k} (ρ ·)` are continuous at the
@@ -139,6 +133,22 @@ private theorem mem_lineBlock_iff {N : ℕ} {ρ : ℝ} (hρ : 1 < ρ) (hρN : ρ
   · obtain ⟨n, rfl⟩ : ∃ n : ℕ, k = (n : ℤ) + 1 := ⟨(k - 1).toNat, by omega⟩
     exact mem_lineBlock_iff_of_pos hρ hρN hj n
 
+/-- The dilation `ρ` for a finite set of frequencies (HNVW I, p. 465). -/
+private theorem exists_dilation (s : Finset ℤ) : ∃ ρ : ℝ, Irrational ρ ∧ 1 < ρ ∧
+    ∀ j ∈ s, ∀ k, ρ * j ∈ lineBlock k ↔ j ∈ dyadicBlock k := by
+  obtain ⟨N, hN, hs⟩ : ∃ N : ℕ, 1 ≤ N ∧ ∀ j ∈ s, |j| ≤ N := by
+    refine ⟨s.sup Int.natAbs + 1, by omega, fun j hj => ?_⟩
+    have h := Finset.le_sup (f := Int.natAbs) hj
+    rw [Int.abs_eq_natAbs]
+    omega
+  have hN0 : (0 : ℝ) < N := by exact_mod_cast hN
+  obtain ⟨ρ, hρi, hρ1, hρN⟩ := exists_irrational_btwn (lt_add_of_pos_right (1 : ℝ)
+    (one_div_pos.2 hN0))
+  have hρN' : ρ * N < N + 1 := by
+    calc ρ * N < (1 + 1 / N) * N := by gcongr
+      _ = N + 1 := by field_simp
+  exact ⟨ρ, hρi, hρ1, fun j hj => mem_lineBlock_iff hρ1 hρN' (hs j hj)⟩
+
 /-- The indicators of the dilated intervals are continuous at the integers. -/
 private theorem continuousAt_indicator_lineBlock {ρ : ℝ} (hρ : Irrational ρ) (k j : ℤ) :
     ContinuousAt (fun ξ => (lineBlock k).indicator (1 : ℝ → ℂ) (ρ * ξ)) j := by
@@ -193,9 +203,6 @@ private noncomputable def signOp (p : ℝ) [Fact (1 ≤ ENNReal.ofReal p)] {n : 
     (fun _ : Fin n → Bool => X)).symm.toContinuousLinearMap ∘L
       ContinuousLinearMap.pi fun ε => SignCube.coin (ε k) • ContinuousLinearMap.id ℂ X
 
-private theorem signOp_apply (k : Fin n) (x : X) (ε : Fin n → Bool) :
-    signOp p k x ε = SignCube.coin (ε k) • x := rfl
-
 private theorem sum_signOp_apply (f : Fin n → X) (ε : Fin n → Bool) :
     (∑ k, signOp p k (f k)) ε = ∑ k, SignCube.coin (ε k) • f k := by
   rw [WithLp.ofLp_sum, Finset.sum_apply]
@@ -204,25 +211,13 @@ private theorem sum_signOp_apply (f : Fin n → X) (ε : Fin n → Bool) :
 omit [NormedSpace ℂ X] in
 private theorem enorm_signFun_rpow (hp : 0 < p) (y : SignFun X p n) :
     ‖y‖ₑ ^ p = ∑ ε, ‖y ε‖ₑ ^ p := by
-  have hP : (ENNReal.ofReal p).toReal = p := ENNReal.toReal_ofReal hp.le
-  have h1 : ‖y‖ ^ p = ∑ ε, ‖y ε‖ ^ p := by
-    rw [PiLp.norm_eq_sum (by rwa [hP]), hP, ← Real.rpow_mul
-      (Finset.sum_nonneg fun ε _ => by positivity), one_div_mul_cancel hp.ne', Real.rpow_one]
-  rw [← ofReal_norm, ENNReal.ofReal_rpow_of_nonneg (norm_nonneg _) hp.le, h1,
-    ENNReal.ofReal_sum_of_nonneg fun ε _ => by positivity]
-  refine Finset.sum_congr rfl fun ε _ => ?_
-  rw [← ofReal_norm, ENNReal.ofReal_rpow_of_nonneg (norm_nonneg _) hp.le]
-
-omit [NormedSpace ℂ X] [Fact (1 ≤ ENNReal.ofReal p)] in
-private theorem eLpNorm_rpow_eq_lintegral (hp : 0 < p) {α : Type*} [MeasurableSpace α]
-    {μ : Measure α} {f : α → X} (hf : AEStronglyMeasurable f μ) :
-    eLpNorm f (ENNReal.ofReal p) μ ^ p = ∫⁻ x, ‖f x‖ₑ ^ p ∂μ := by
-  rw [eLpNorm_eq_lintegral_rpow_enorm_toReal (by simpa using hp) ENNReal.ofReal_ne_top hf,
-    ENNReal.toReal_ofReal hp.le, ← ENNReal.rpow_mul, one_div_mul_cancel hp.ne', ENNReal.rpow_one]
+  simp only [enorm_eq_nnnorm, ← ENNReal.coe_rpow_of_nonneg _ hp.le]
+  rw [PiLp.nnnorm_eq_sum ENNReal.ofReal_ne_top, ENNReal.toReal_ofReal hp.le, ← NNReal.rpow_mul,
+    one_div_mul_cancel hp.ne', NNReal.rpow_one, ENNReal.ofNNReal_finsetSum]
 
 /-- The norm of `Σ_k ε_k ⊗ f_k` in `L^p (μ; Y)`. -/
 private theorem eLpNorm_sum_signOp (hp : 0 < p) {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    [SFinite μ] {f : Fin n → α → X} (hf : ∀ k, AEStronglyMeasurable (f k) μ) :
+    {f : Fin n → α → X} (hf : ∀ k, AEStronglyMeasurable (f k) μ) :
     eLpNorm (fun x => ∑ k, signOp p k (f k x)) (ENNReal.ofReal p) μ =
       ((2 : ℝ≥0∞) ^ n) ^ (1 / p) * eLpNormRad f p μ := by
   have hm : AEStronglyMeasurable (fun x => ∑ k, signOp p k (f k x)) μ :=
@@ -233,11 +228,11 @@ private theorem eLpNorm_sum_signOp (hp : 0 < p) {α : Type*} [MeasurableSpace α
     Finset.aestronglyMeasurable_fun_sum _ fun k _ => (hf k).const_smul _
   have h1 : eLpNorm (fun x => ∑ k, signOp p k (f k x)) (ENNReal.ofReal p) μ ^ p =
       (2 : ℝ≥0∞) ^ n * eLpNormRad f p μ ^ p := by
-    rw [eLpNorm_rpow_eq_lintegral hp hm, eLpNormRad_rpow hp hf, ← mul_assoc,
+    rw [eLpNorm_ofReal_rpow_eq_lintegral hp hm, eLpNormRad_rpow hp hf, ← mul_assoc,
       ENNReal.mul_inv_cancel (by simp) (by simp), one_mul]
     simp only [enorm_signFun_rpow hp, sum_signOp_apply]
     rw [lintegral_finsetSum' _ fun ε _ => (hs ε).enorm.pow_const p]
-    exact Finset.sum_congr rfl fun ε _ => (eLpNorm_rpow_eq_lintegral hp (hs ε)).symm
+    exact Finset.sum_congr rfl fun ε _ => (eLpNorm_ofReal_rpow_eq_lintegral hp (hs ε)).symm
   rw [← ENNReal.rpow_one (eLpNorm _ _ _), ← mul_one_div_cancel hp.ne', ENNReal.rpow_mul, h1,
     ENNReal.mul_rpow_of_nonneg _ _ (by positivity), ← ENNReal.rpow_mul,
     mul_one_div_cancel hp.ne', ENNReal.rpow_one]
@@ -273,32 +268,64 @@ private theorem signMultiplier_apply_eq_sum (κ : Fin n → ℤ) (G : ℝ → X)
   rw [Set.indicator_apply, Set.indicator_apply]
   split_ifs <;> simp
 
-omit [Fact (1 ≤ ENNReal.ofReal p)] in
-private theorem fourierInv_eq_exp {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V] (F : ℝ → V)
-    (x : ℝ) : 𝓕⁻ F x =
-      ∫ v : ℝ, Complex.exp (((2 * Real.pi * (v * x) : ℝ) : ℂ) * Complex.I) • F v := by
-  rw [Real.fourierInv_eq']
-  refine integral_congr_ae (ae_of_all _ fun v => ?_)
-  simp [mul_comm]
-
 /-- `T_m f = Σ_k ε_k ⊗ Δ_{I_{κ k}} f`. -/
 private theorem fourierInv_signMultiplier [CompleteSpace X] (κ : Fin n → ℤ) {G : ℝ → X}
     (hG : Integrable G) (x : ℝ) : 𝓕⁻ (fun ξ => signMultiplier X p κ ξ (G ξ)) x =
       ∑ k, signOp p k (𝓕⁻ ((lineBlock (κ k)).indicator G) x) := by
-  have hi : ∀ k, Integrable fun v : ℝ => Complex.exp (((2 * Real.pi * (v * x) : ℝ) : ℂ) *
-      Complex.I) • (lineBlock (κ k)).indicator G v := fun k =>
-    (hG.indicator (measurableSet_lineBlock _)).bdd_smul 1
-      (by fun_prop : Continuous fun v : ℝ =>
-        Complex.exp (((2 * Real.pi * (v * x) : ℝ) : ℂ) * Complex.I)).aestronglyMeasurable
-      (ae_of_all _ fun v => (Complex.norm_exp_ofReal_mul_I _).le)
-  have hi' : ∀ k, Integrable fun v : ℝ => Complex.exp (((2 * Real.pi * (v * x) : ℝ) : ℂ) *
-      Complex.I) • signOp p k ((lineBlock (κ k)).indicator G v) := fun k => by
+  have hi : ∀ k, Integrable fun v => expChar v x • (lineBlock (κ k)).indicator G v := fun k =>
+    integrable_expChar_smul (hG.indicator (measurableSet_lineBlock _)) x
+  have hi' : ∀ k, Integrable fun v =>
+      expChar v x • signOp p k ((lineBlock (κ k)).indicator G v) := fun k => by
     simpa only [map_smul] using (signOp p k : X →L[ℂ] SignFun X p n).integrable_comp (hi k)
-  simp only [fourierInv_eq_exp, signMultiplier_apply_eq_sum, Finset.smul_sum]
+  simp only [fourierInv_eq_expChar, signMultiplier_apply_eq_sum, Finset.smul_sum]
   rw [integral_finsetSum _ fun k _ => hi' k]
   refine Finset.sum_congr rfl fun k _ => ?_
   rw [← ContinuousLinearMap.integral_comp_comm _ (hi k)]
   simp only [map_smul]
+
+/-- `m (ρ ·) x` is measurable. -/
+private theorem aestronglyMeasurable_signMultiplier (κ : Fin n → ℤ) (ρ : ℝ) (x : X) :
+    AEStronglyMeasurable (fun ξ => signMultiplier X p κ (ρ * ξ) x) volume := by
+  simp only [signMultiplier_apply]
+  exact Finset.aestronglyMeasurable_fun_sum _ fun k _ =>
+    ((measurable_one.indicator (measurableSet_lineBlock (κ k))).comp
+      (measurable_const_mul ρ)).aestronglyMeasurable.smul_const _
+
+/-- `m (ρ ·) x` is continuous at the integers. -/
+private theorem continuousAt_signMultiplier (κ : Fin n → ℤ) {ρ : ℝ} (hρ : Irrational ρ) (j : ℤ)
+    (x : X) : ContinuousAt (fun ξ => signMultiplier X p κ (ρ * ξ) x) j := by
+  simp only [signMultiplier_apply]
+  exact tendsto_finsetSum _ fun k _ =>
+    (continuousAt_indicator_lineBlock hρ (κ k) j).tendsto.smul_const _
+
+/-- The bound of the multiplier `m` on the line, from the inequality for the intervals. -/
+private theorem eLpNorm_fourierInv_signMultiplier_le [CompleteSpace X] (hp : 0 < p) (κ : Fin n → ℤ)
+    {C : ℝ≥0∞} {G : ℝ → X} (hG : Integrable G)
+    (h : eLpNormRad (fun k => 𝓕⁻ ((lineBlock (κ k)).indicator G)) p volume ≤
+      C * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume) :
+    eLpNorm (𝓕⁻ fun ξ => signMultiplier X p κ ξ (G ξ)) (ENNReal.ofReal p) volume ≤
+      ((2 : ℝ≥0∞) ^ n) ^ (1 / p) * C * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
+  rw [funext (fourierInv_signMultiplier κ hG), eLpNorm_sum_signOp hp fun k =>
+    (continuous_fourierInv_of_integrable (hG.indicator
+      (measurableSet_lineBlock _))).aestronglyMeasurable, mul_assoc]
+  gcongr
+
+/-- `T̃_{m (ρ ·)} f = Σ_k ε_k ⊗ Δ̃_{κ k} f`, as `m (ρ j) = m (j)` at the frequencies of `f`. -/
+private theorem sum_signMultiplier (κ : Fin n → ℤ) {ρ : ℝ} {c : ℤ →₀ X}
+    (hρ : ∀ j ∈ c.support, ∀ k, ρ * j ∈ lineBlock k ↔ j ∈ dyadicBlock k) (t : UnitAddCircle) :
+    (c.sum fun j y => fourier j t • signMultiplier X p κ (ρ * j) y) =
+      ∑ k, signOp p k (trigBlock (dyadicBlock (κ k)) c t) := by
+  classical
+  simp only [trigBlock_eq_sum, map_sum]
+  rw [Finset.sum_comm, Finsupp.sum]
+  refine Finset.sum_congr rfl fun j hj => ?_
+  rw [signMultiplier_apply, Finset.smul_sum]
+  refine Finset.sum_congr rfl fun k _ => ?_
+  rw [Set.indicator_apply]
+  simp only [hρ j hj]
+  split_ifs
+  · rw [Pi.one_apply, one_smul, map_smul]
+  · rw [zero_smul, smul_zero, map_zero]
 
 end
 
@@ -313,67 +340,18 @@ private theorem eLpNormRad_dyadicBlock_le_of_line [CompleteSpace X] {p : ℝ} (h
       C * eLpNorm (trigPoly c) (ENNReal.ofReal p) haarAddCircle := by
   have hp0 : 0 < p := by linarith
   have : Fact (1 ≤ ENNReal.ofReal p) := ⟨ENNReal.one_le_ofReal.2 hp.le⟩
-  -- the dilation
-  obtain ⟨N, hN, hc⟩ : ∃ N : ℕ, 1 ≤ N ∧ ∀ j ∈ c.support, |j| ≤ N := by
-    refine ⟨c.support.sup Int.natAbs + 1, by omega, fun j hj => ?_⟩
-    have h := Finset.le_sup (f := Int.natAbs) hj
-    rw [Int.abs_eq_natAbs]
-    omega
-  have hN0 : (0 : ℝ) < N := by exact_mod_cast hN
-  obtain ⟨ρ, hρi, hρ1, hρN⟩ := exists_irrational_btwn (lt_add_of_pos_right (1 : ℝ)
-    (one_div_pos.2 hN0))
-  have hρN' : ρ * N < N + 1 := by
-    calc ρ * N < (1 + 1 / N) * N := by gcongr
-      _ = N + 1 := by field_simp
-  -- the multiplier on the line
-  set A : ℝ≥0∞ := ((2 : ℝ≥0∞) ^ n) ^ (1 / p)
-  have hmult : ∀ G : 𝓢(ℝ, X), eLpNorm (𝓕⁻ fun ξ => signMultiplier X p κ ξ (G ξ))
-      (ENNReal.ofReal p) volume ≤
-        A * C * eLpNorm (𝓕⁻ (G : ℝ → X)) (ENNReal.ofReal p) volume := by
-    intro G
-    have h1 : (𝓕⁻ fun ξ => signMultiplier X p κ ξ (G ξ)) =
-        fun x => ∑ k, signOp p k (𝓕⁻ ((lineBlock (κ k)).indicator G) x) :=
-      funext (fourierInv_signMultiplier κ G.integrable)
-    have hcont : ∀ k, Continuous (𝓕⁻ ((lineBlock (κ k)).indicator G)) := fun k =>
-      continuous_fourierInv (G.integrable.indicator (measurableSet_lineBlock _))
-    rw [h1, eLpNorm_sum_signOp hp0 fun k => (hcont k).aestronglyMeasurable, mul_assoc]
-    gcongr
-    exact hline G
-  -- `m (ρ ·)` is measurable, and continuous at the integers
-  have hmeas : ∀ x : X, AEStronglyMeasurable (fun ξ => signMultiplier X p κ (ρ * ξ) x) volume := by
-    intro x
-    simp only [signMultiplier_apply]
-    refine Finset.aestronglyMeasurable_fun_sum _ fun k _ => ?_
-    exact ((measurable_one.indicator (measurableSet_lineBlock (κ k))).comp
-      (measurable_const_mul ρ)).aestronglyMeasurable.smul_const _
-  have hcont : ∀ (j : ℤ) (x : X), ContinuousAt (fun ξ => signMultiplier X p κ (ρ * ξ) x) j := by
-    intro j x
-    simp only [signMultiplier_apply]
-    exact tendsto_finsetSum _ fun k _ =>
-      (continuousAt_indicator_lineBlock hρi (κ k) j).tendsto.smul_const _
-  have h1 := eLpNorm_trigPoly_multiplier_le hp (m := fun ξ => signMultiplier X p κ (ρ * ξ))
-    (fun ξ => norm_signMultiplier_le κ _) hmeas hcont
-    (eLpNorm_fourierInv_multiplier_dilate_le hp0 hmult (by linarith)) c
-  -- `m (ρ j) = m (j)` at the frequencies of `f`
-  have h2 : (fun t : UnitAddCircle => c.sum fun j y =>
-      fourier j t • signMultiplier X p κ (ρ * j) y) =
-      fun t => ∑ k, signOp p k (trigBlock (dyadicBlock (κ k)) c t) := by
-    classical
-    funext t
-    simp only [trigBlock_eq_sum, map_sum]
-    rw [Finset.sum_comm, Finsupp.sum]
-    refine Finset.sum_congr rfl fun j hj => ?_
-    rw [signMultiplier_apply, Finset.smul_sum]
-    refine Finset.sum_congr rfl fun k _ => ?_
-    rw [Set.indicator_apply]
-    simp only [mem_lineBlock_iff hρ1 hρN' (hc j hj)]
-    split_ifs
-    · rw [Pi.one_apply, one_smul, map_smul]
-    · rw [zero_smul, smul_zero, map_zero]
-  rw [h2, eLpNorm_sum_signOp hp0 (f := fun k => trigBlock (dyadicBlock (κ k)) c)
+  -- Proposition 5.7.1 for the dilate `m (ρ ·)`, with (5.61)
+  obtain ⟨ρ, hρi, hρ1, hρ⟩ := exists_dilation c.support
+  have h := eLpNorm_trigPoly_multiplier_le hp (m := fun ξ => signMultiplier X p κ (ρ * ξ))
+    (fun ξ => norm_signMultiplier_le κ _) (aestronglyMeasurable_signMultiplier κ ρ)
+    (continuousAt_signMultiplier κ hρi)
+    (eLpNorm_fourierInv_multiplier_dilate_le hp0 (fun G =>
+      eLpNorm_fourierInv_signMultiplier_le hp0 κ G.integrable (hline G)) (by linarith)) c
+  rw [funext (sum_signMultiplier κ hρ),
+    eLpNorm_sum_signOp hp0 (f := fun k => trigBlock (dyadicBlock (κ k)) c)
     fun k => (continuous_trigPoly _).aestronglyMeasurable, mul_assoc,
-    ENNReal.mul_le_mul_iff_right] at h1
-  · exact h1
+    ENNReal.mul_le_mul_iff_right] at h
+  · exact h
   · exact (ENNReal.rpow_pos (by positivity) (by simp)).ne'
   · exact ENNReal.rpow_ne_top_of_nonneg (by positivity) (by simp)
 
@@ -410,9 +388,6 @@ theorem eLpNormRad_dyadicBlock_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (hβ 
 
 /-! ### Single frequencies -/
 
-private theorem norm_fourier_apply (n : ℤ) (t : UnitAddCircle) : ‖fourier n t‖ = 1 := by
-  rw [fourier_apply, Circle.norm_coe]
-
 omit [NormedSpace ℂ X] [CompleteSpace X] in
 /-- Jensen's inequality on the probability space `𝕋`. -/
 private theorem eLpNorm_const_integral_le [NormedSpace ℝ X] {p : ℝ} (hp : 1 ≤ p)
@@ -440,7 +415,7 @@ theorem eLpNormRad_singleFrequency_le {p : ℝ} (hp : 1 ≤ p) {K : ℕ} (c : Fi
   have h1 : eLpNormRad (fun k (t : UnitAddCircle) => fourier (n k) t • c k (n k)) p haarAddCircle ≤
       2 * eLpNormRad (fun k (_ : UnitAddCircle) => c k (n k)) p haarAddCircle :=
     eLpNormRad_smul_le hp (c := fun k t => fourier (n k) t)
-      (f := fun k (_ : UnitAddCircle) => c k (n k)) (fun k t => (norm_fourier_apply _ _).le)
+      (f := fun k (_ : UnitAddCircle) => c k (n k)) (fun k t => (norm_fourier_apply_eq_one _ _).le)
       (fun k => (map_continuous (fourier (n k))).aestronglyMeasurable)
       fun k => aestronglyMeasurable_const
   -- Jensen's inequality, for each choice of signs
@@ -465,7 +440,7 @@ theorem eLpNormRad_singleFrequency_le {p : ℝ} (hp : 1 ≤ p) {K : ℕ} (c : Fi
   have h4 : eLpNormRad (fun k (t : UnitAddCircle) => fourier (-n k) t • trigPoly (c k) t) p
       haarAddCircle ≤ 2 * eLpNormRad (fun k => trigPoly (c k)) p haarAddCircle :=
     eLpNormRad_smul_le hp (c := fun k t => fourier (-n k) t) (f := fun k => trigPoly (c k))
-      (fun k t => (norm_fourier_apply _ _).le)
+      (fun k t => (norm_fourier_apply_eq_one _ _).le)
       (fun k => (map_continuous (fourier (-n k))).aestronglyMeasurable)
       fun k => (continuous_trigPoly _).aestronglyMeasurable
   calc _ ≤ 2 * (1 * (2 * eLpNormRad (fun k => trigPoly (c k)) p haarAddCircle)) := by
