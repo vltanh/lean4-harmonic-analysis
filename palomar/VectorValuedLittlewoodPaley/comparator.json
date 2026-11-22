@@ -1,0 +1,17 @@
+{
+  "challenge_module": "VectorValuedLittlewoodPaley.Challenge",
+  "solution_module": "VectorValuedLittlewoodPaley.Solution",
+  "theorem_names": [
+    "VectorValuedLittlewoodPaleyChallenge.truncatedHilbert_bounded",
+    "VectorValuedLittlewoodPaleyChallenge.hilbert_multiplier",
+    "VectorValuedLittlewoodPaleyChallenge.hilbert_bounded",
+    "VectorValuedLittlewoodPaleyChallenge.littlewoodPaley_line",
+    "VectorValuedLittlewoodPaleyChallenge.littlewoodPaley_circle",
+    "VectorValuedLittlewoodPaleyChallenge.transference",
+    "VectorValuedLittlewoodPaleyChallenge.hilbert_bounded_innerProductSpace",
+    "VectorValuedLittlewoodPaleyChallenge.eLpNormRad_rpow"
+  ],
+  "definition_names": [],
+  "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"],
+  "enable_nanoda": true
+}

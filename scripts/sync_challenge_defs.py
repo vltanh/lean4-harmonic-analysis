@@ -1,68 +1,96 @@
 #!/usr/bin/env python3
-"""Copy the shared definitions of a library module into the Challenge, or check the copy.
+"""Copy the shared definitions of the library into the Challenges, or check the copies.
 
-Comparator requires every constant that a Challenge statement uses to be the same in the
-Challenge and in the Solution's environment. When the statements need definitions too large to
-restate inline, keep them in one module of the library, `PaperName/Defs.lean`, between the two
-marker lines below, and let this script copy that block verbatim into the Challenge,
-`palomar/PaperName/Challenge.lean`, which may not import the project.
-The Solution imports the library, so both environments then contain the same definitions.
+Comparator requires every constant that a Challenge statement uses to be the same in the Challenge
+and in the Solution's environment. A Challenge may not import the library, so the definitions that
+the Challenges need are marked blocks of a few modules of the library, each between
 
-Run from the repository root:
+    -- BEGIN SHARED DEFINITIONS: <name>
+    -- END SHARED DEFINITIONS: <name>
 
-    python3 scripts/sync_challenge_defs.py           # rewrite the block in the Challenge
-    python3 scripts/sync_challenge_defs.py --check   # exit 1 if the copy differs (for CI)
+(without `: <name>` in a module with a single block), and this script copies the blocks of each
+Challenge verbatim from those modules. A Challenge and the modules of its blocks must also import
+exactly the same modules of Mathlib (so that the definitions elaborate in the same way in both),
+which the script checks; with it, every Challenge declares the same definitions as the library.
 
-Configure the block below for the project. A repository with several papers lists one
-`(definitions module, Challenge)` pair per paper in `PAIRS` (references/multi-paper.md); every
-pair is copied, or checked, in turn.
+Run from anywhere in the repository:
+
+    python3 scripts/sync_challenge_defs.py           # rewrite the blocks in the Challenges
+    python3 scripts/sync_challenge_defs.py --check   # exit 1 if a copy differs (for CI)
 """
 
+import re
 import sys
 from pathlib import Path
 
 # ---- configuration -------------------------------------------------------------------------
-# The library module that holds the shared definitions, and the Challenge file.
-DEFS = 'HarmonicAnalysis/Defs.lean'
-CHALLENGE = 'palomar/FourierMultipliers/Challenge.lean'
-# With several papers, one (definitions module, Challenge) pair per paper, e.g.
-#   PAIRS = [('ProjectName/PaperA/Defs.lean', 'palomar/PaperA/Challenge.lean'),
-#            ('ProjectName/PaperB/Defs.lean', 'palomar/PaperB/Challenge.lean')]
-# When PAIRS is empty, the single pair (DEFS, CHALLENGE) is used.
-PAIRS = []
-# The marker lines around the shared block, in both files.
-BEGIN = '-- BEGIN SHARED DEFINITIONS\n'
-END = '-- END SHARED DEFINITIONS\n'
+# The library modules that hold the shared definitions.
+SCALAR = 'HarmonicAnalysis/Defs.lean'
+VECTOR = 'HarmonicAnalysis/VectorValued/Defs.lean'
+HARDY = 'HarmonicAnalysis/Hardy/Defs.lean'
+# The blocks of each Challenge, in order, with their modules; `None` is the block without a name.
+CHALLENGES = {
+    'palomar/FourierMultipliers/Challenge.lean': [(SCALAR, None)],
+    'palomar/VectorValuedLittlewoodPaley/Challenge.lean': [
+        (VECTOR, 'umd'), (VECTOR, 'circle'), (VECTOR, 'rademacher'), (VECTOR, 'dyadic')],
+    'palomar/HardyFactorization/Challenge.lean': [
+        (VECTOR, 'circle'), (HARDY, 'hardyOne'), (HARDY, 'hardyTwo'), (HARDY, 'outer'),
+        (HARDY, 'szego'), (HARDY, 'range'), (HARDY, 'schatten')],
+    'palomar/PaleySchatten/Challenge.lean': [(HARDY, 'hardyOne'), (HARDY, 'schatten')],
+}
+# The root of the library: its modules are not counted among the imports of a module of definitions.
+LIBRARY = 'HarmonicAnalysis'
+BEGIN, END = '-- BEGIN SHARED DEFINITIONS', '-- END SHARED DEFINITIONS'
 # ---------------------------------------------------------------------------------------------
 
 ROOT = Path(__file__).resolve().parent.parent
 
 
-def block(text: str, name: str) -> tuple[int, int]:
-    """The span of the shared block in `text`, markers included."""
-    i, j = text.find(BEGIN), text.find(END)
-    if i < 0 or j < i or text.count(BEGIN) != 1 or text.count(END) != 1:
-        sys.exit(f'{name}: expected exactly one pair of markers')
-    return i, j + len(END)
+def span(text: str, name: str, block: str | None) -> tuple[int, int]:
+    """The span of a block in `text`, markers included."""
+    suffix = '\n' if block is None else f': {block}\n'
+    begin, end = BEGIN + suffix, END + suffix
+    i, j = text.find(begin), text.find(end)
+    if i < 0 or j < i or text.count(begin) != 1 or text.count(end) != 1:
+        sys.exit(f'{name}: expected exactly one pair of markers for the block "{block}"')
+    return i, j + len(end)
 
 
-def sync(defs_name: str, chal_name: str, check: bool) -> bool:
-    """Copy (or, with `check`, compare) the shared block of one pair; return whether it was current."""
-    defs_path, chal_path = ROOT / defs_name, ROOT / chal_name
-    defs, chal = defs_path.read_text(), chal_path.read_text()
-    di, dj = block(defs, defs_name)
-    ci, cj = block(chal, chal_name)
-    shared = defs[di:dj]
-    if check:
-        if chal[ci:cj] != shared:
-            print(f'{chal_name}: the shared definitions differ from {defs_name}; '
-                  f'run python3 scripts/sync_challenge_defs.py')
-            return False
-        print(f'{chal_name}: the shared definitions match {defs_name}')
-        return True
-    chal_path.write_text(chal[:ci] + shared + chal[cj:])
-    print(f'{chal_name}: shared definitions copied from {defs_name}')
-    return True
+def imports(text: str) -> set[str]:
+    """The modules outside the library that a file imports."""
+    found = re.findall(r'^(?:public )?import (?:all )?(\S+)', text, re.M)
+    return {m for m in found if m != LIBRARY and not m.startswith(LIBRARY + '.')}
+
+
+def sync(chal_name: str, blocks: list[tuple[str, str | None]], check: bool) -> bool:
+    """Copy (or, with `check`, compare) the blocks of one Challenge; return whether it was current."""
+    path = ROOT / chal_name
+    chal, current = path.read_text(), True
+    found = re.findall(rf'^{BEGIN}(?:: (.*))?$', chal, re.M)
+    if found != [block or '' for _, block in blocks]:
+        sys.exit(f'{chal_name}: expected the blocks {blocks}, found {found}')
+    for defs_name in dict.fromkeys(name for name, _ in blocks):
+        defs = (ROOT / defs_name).read_text()
+        if imports(chal) != imports(defs):
+            print(f'{chal_name}: the imports differ from those of {defs_name}: '
+                  f'{sorted(imports(chal) ^ imports(defs))}')
+            current = False
+    for defs_name, block in blocks:
+        defs = (ROOT / defs_name).read_text()
+        di, dj = span(defs, defs_name, block)
+        ci, cj = span(chal, chal_name, block)
+        if chal[ci:cj] != defs[di:dj]:
+            current = False
+            if check:
+                print(f'{chal_name}: the block "{block}" differs from {defs_name}; '
+                      f'run python3 scripts/sync_challenge_defs.py')
+            chal = chal[:ci] + defs[di:dj] + chal[cj:]
+    if not check:
+        path.write_text(chal)
+        print(f'{chal_name}: the shared definitions are copied')
+    elif current:
+        print(f'{chal_name}: the shared definitions and the imports match the library')
+    return current
 
 
 def main() -> None:
@@ -71,9 +99,8 @@ def main() -> None:
         print(__doc__.strip())
         sys.exit(0 if args and args[0] in ('-h', '--help') else 2)
     check = '--check' in args
-    pairs = PAIRS or [(DEFS, CHALLENGE)]
-    current = [sync(d, c, check) for d, c in pairs]
-    if not all(current):
+    current = [sync(c, blocks, check) for c, blocks in CHALLENGES.items()]
+    if check and not all(current):
         sys.exit(1)
 
 

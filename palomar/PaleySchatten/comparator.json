@@ -1,0 +1,13 @@
+{
+  "challenge_module": "PaleySchatten.Challenge",
+  "solution_module": "PaleySchatten.Solution",
+  "theorem_names": [
+    "PaleySchattenChallenge.paley",
+    "PaleySchattenChallenge.khintchine_lower",
+    "PaleySchattenChallenge.schatten_conjTranspose_mul_self",
+    "PaleySchattenChallenge.schatten_two_sq"
+  ],
+  "definition_names": [],
+  "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"],
+  "enable_nanoda": true
+}

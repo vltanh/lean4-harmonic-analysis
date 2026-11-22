@@ -8,6 +8,7 @@ public meta import Lean.Elab.Command
 -- The Solution of each Palomar entry is imported, and no Challenge: a Challenge holds a copy of the
 -- definitions under the library's names.
 import all FourierMultipliers.Solution
+import all HardyFactorization.Solution
 import all HarmonicAnalysis.BeurlingAhlfors.Basic
 import all HarmonicAnalysis.BeurlingAhlfors.Duality
 import all HarmonicAnalysis.BeurlingAhlfors.LowerBound
@@ -58,6 +59,8 @@ import all HarmonicAnalysis.VectorValued.LittlewoodPaley.Circle
 import all HarmonicAnalysis.VectorValued.LittlewoodPaley.Line
 import all HarmonicAnalysis.VectorValued.RademacherNorm
 import all HarmonicAnalysis.VectorValued.Transference
+import all PaleySchatten.Solution
+import all VectorValuedLittlewoodPaley.Solution
 
 /-!
 # Axiom audit
@@ -160,7 +163,30 @@ meta def palomarTheorems : List Name :=
    ``FourierMultipliersChallenge.dragicevic_limit,
    ``FourierMultipliersChallenge.dragicevic_lower_bound,
    ``FourierMultipliersChallenge.dragicevic_lower_bound_pStar,
-   ``FourierMultipliersChallenge.pStar_sub_one_lt_beurlingPowNorm_two]
+   ``FourierMultipliersChallenge.pStar_sub_one_lt_beurlingPowNorm_two,
+   ``HardyFactorizationChallenge.jensen,
+   ``HardyFactorizationChallenge.exists_outer,
+   ``HardyFactorizationChallenge.outer_range,
+   ``HardyFactorizationChallenge.outer_closure,
+   ``HardyFactorizationChallenge.szego,
+   ``HardyFactorizationChallenge.spectral_factorization,
+   ``HardyFactorizationChallenge.outer_iff,
+   ``HardyFactorizationChallenge.analytic_range,
+   ``HardyFactorizationChallenge.factorization,
+   ``HardyFactorizationChallenge.riesz_factorization,
+   ``HardyFactorizationChallenge.rangeDet_eq,
+   ``PaleySchattenChallenge.paley,
+   ``PaleySchattenChallenge.khintchine_lower,
+   ``PaleySchattenChallenge.schatten_conjTranspose_mul_self,
+   ``PaleySchattenChallenge.schatten_two_sq,
+   ``VectorValuedLittlewoodPaleyChallenge.truncatedHilbert_bounded,
+   ``VectorValuedLittlewoodPaleyChallenge.hilbert_multiplier,
+   ``VectorValuedLittlewoodPaleyChallenge.hilbert_bounded,
+   ``VectorValuedLittlewoodPaleyChallenge.littlewoodPaley_line,
+   ``VectorValuedLittlewoodPaleyChallenge.littlewoodPaley_circle,
+   ``VectorValuedLittlewoodPaleyChallenge.transference,
+   ``VectorValuedLittlewoodPaleyChallenge.hilbert_bounded_innerProductSpace,
+   ``VectorValuedLittlewoodPaleyChallenge.eLpNormRad_rpow]
 
 /-- Lean's standard axioms. -/
 meta def standardAxioms : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -169,7 +195,9 @@ meta def standardAxioms : List Name := [``propext, ``Classical.choice, ``Quot.so
 meta def allowSorry : Bool := false
 
 /-- The modules of the Solutions of the Palomar entries. -/
-meta def palomarModules : List Name := [`FourierMultipliers.Solution]
+meta def palomarModules : List Name :=
+  [`FourierMultipliers.Solution, `HardyFactorization.Solution, `PaleySchatten.Solution,
+   `VectorValuedLittlewoodPaley.Solution]
 
 /-- Whether `m` is a module of the library or the Solution of a Palomar entry. -/
 meta def isLibraryModule (m : Name) : Bool :=

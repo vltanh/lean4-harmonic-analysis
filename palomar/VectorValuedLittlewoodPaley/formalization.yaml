@@ -1,0 +1,292 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/mathlib-initiative/formalization.yaml/main/schema/formalization.schema.json
+version: "v0.4"
+
+project:
+  name: "Littlewood-Paley theory for functions with values in UMD spaces, in Lean"
+  description: >-
+    Lean 4 proofs of results of vector-valued harmonic analysis from Hytönen, van Neerven, Veraar
+    and Weis, "Analysis in Banach Spaces I", for functions with values in a UMD Banach space X with
+    UMD_p constant beta (real signs), 1 < p < infinity, with explicit constants.
+
+
+    The Hilbert transform (Theorem 5.1.13, Proposition 5.2.2): the truncated Hilbert transforms
+    H_{eps, 2^n eps} are bounded on L^p(R; X) by 4 beta^2 + 11, uniformly; for f = F^{-1} G with G
+    integrable, H_{eps,R} f converges pointwise to the Fourier multiplier with symbol -i sgn, which
+    satisfies the same bound if f is in L^p.
+
+
+    The right-hand Littlewood-Paley inequalities with sharp cut-offs and random signs, for finite
+    sums, with the constant (144 beta + 1)(4 beta^2 + 11): on the line (Corollary 5.3.25), for the
+    dyadic intervals and their dilates, and on the circle (Theorem 5.7.10 (2)), for the dyadic
+    blocks and trigonometric polynomials. Transference (Proposition 5.7.1, d = 1): a bounded
+    operator-valued Fourier multiplier on the line, continuous at the integers, restricts to a
+    multiplier on the circle whose norm is not larger.
+  authors:
+    - "The-Anh Vu-Le"
+  license: "Apache-2.0"
+  responsible_maintainers:
+    - "The-Anh Vu-Le"
+
+classification:
+  arxiv: ["math.FA", "math.CA"]
+  msc2020: ["42B25", "42A45", "42A50", "46E40", "46B09", "60G46", "68V20"]
+
+sources:
+  - title: "Analysis in Banach Spaces, Volume I: Martingales and Littlewood-Paley Theory"
+    authors:
+      - "Tuomas Hytönen"
+      - "Jan van Neerven"
+      - "Mark Veraar"
+      - "Lutz Weis"
+    id: "Ergebnisse der Mathematik und ihrer Grenzgebiete (3) 63, Springer (2016)"
+    type: "book"
+    location: "https://doi.org/10.1007/978-3-319-48520-1"
+    relationship: "formalizes"
+    note: >-
+      Theorem 5.1.13 (pp. 385-386, the bound, for the truncations R = 2^n eps and for the limit on
+      the functions F^{-1} G in L^p, G integrable), Proposition 5.2.2 (p. 389), Corollary 5.3.25
+      (pp. 419-420, right-hand inequality, finite sums, with dilations), Proposition 5.7.1 (pp.
+      458-460, d = 1), Theorem 5.7.10 (2) (pp. 465-466, right-hand inequality). Proved along the
+      book's arguments (Sections 5.1 to 5.3 and 5.7), which also use Propositions 5.1.4, 5.1.5 and
+      5.1.10, Lemmas 5.1.9, 5.2.1, 5.3.9 and 5.3.21 to 5.3.23, Proposition 5.3.10, Lemmas 5.7.2 and
+      5.7.3, and Propositions 1.2.22, 1.3.1, 3.2.10 and 4.2.3 and Lemma 2.4.8; the departures are in
+      fidelity.divergences. The case of Hilbert spaces uses Corollary 4.5.15 (pp. 346-347), whose
+      statement on UMD constants is proved in BanachProbability (real signs).
+    author_endorsement: "not-contacted"
+  - title: "On Fourier multiplier transformations of Banach-valued functions"
+    authors:
+      - "Terry R. McConnell"
+    id: "Trans. Amer. Math. Soc. 285 (1984), 739-757"
+    type: "paper"
+    location: "https://doi.org/10.1090/s0002-9947-1984-0752501-x"
+    relationship: "background"
+    note: >-
+      With Bourgain, the origin of the multiplier theorem (scalar symbols) and of the
+      Littlewood-Paley inequality for UMD spaces, as reported by Hytönen, van Neerven, Veraar and
+      Weis (p. 479). Not consulted; the proofs follow their book.
+  - title: "Vector-valued singular integrals and the H^1-BMO duality"
+    authors:
+      - "Jean Bourgain"
+    id: "Probability theory and harmonic analysis (Cleveland, Ohio, 1983), Pure Appl. Math. 98, Dekker (1986), 1-19"
+    type: "paper"
+    location: "https://zbmath.org/?q=an:0602.42015"
+    relationship: "background"
+    note: >-
+      With McConnell (1984) and by a different method, the origin of the Littlewood-Paley inequality
+      for UMD spaces (with another article of his, of 1984), as reported by Hytönen, van Neerven,
+      Veraar and Weis (p. 479), whose treatment derives from it. Not accessible and not consulted;
+      the proofs follow their book.
+  - title: "On L_p multipliers"
+    authors:
+      - "Karel de Leeuw"
+    id: "Ann. of Math. (2) 81 (1965), 364-379"
+    type: "paper"
+    location: "https://doi.org/10.2307/1970621"
+    relationship: "background"
+    note: "The origin of the transference from the line to the circle (scalar multipliers)."
+
+related_formalizations:
+  - id: "https://github.com/vltanh/lean4-banach-probability"
+    relationship: "builds-on"
+    note: >-
+      Lean 4, same maintainer. The Solution uses it: the randomised UMD property, UMD constants of
+      Hilbert spaces, the contraction principle. The definition of a UMD constant is restated in the
+      Challenge and is equal by definition to the one of that package (isUMDBound_iff in the
+      Solution). No theorem of its entries is restated.
+  - id: "https://github.com/TauCetiProject/TauCeti"
+    relationship: "independent"
+    note: >-
+      Lean 4. For values in complex Hilbert spaces: the Mihlin-Hörmander theorem, Riesz and Hilbert
+      transforms on L^p, both Littlewood-Paley inequalities with smooth cut-offs. UMD spaces, sharp
+      cut-offs and transference were not seen there. (Search of 22 November 2026; read as text, not
+      built. No code of it is used.)
+  - id: "https://github.com/elorist/UMD_Hilberttransform"
+    relationship: "independent"
+    note: >-
+      Lean 4. Hilbert transform and UMD constants of explicit finite-dimensional spaces, p = 2; the
+      scalar Hilbert transform on L^{3/2}, L^3, L^4. The Hilbert transform on a general UMD space
+      was not seen there. (Search of 22 November 2026; read as text, not built. No code of it is
+      used.)
+  - id: "https://github.com/matthewrosenzweigwork-max/Riesz-Gases"
+    relationship: "independent"
+    note: >-
+      Lean 4. L^p transference from R^d to T^d for scalar symbols, up to a constant. (Search of 22
+      November 2026; read as text, not built. No code of it is used.)
+  - id: "https://github.com/roos-j/lean-variationalsw"
+    relationship: "independent"
+    note: >-
+      Lean 4. Scalar and l^2-valued Littlewood-Paley theory. Values in general Banach or UMD spaces
+      were not seen there. (Search of 22 November 2026; read as text, not built. No code of it is
+      used.)
+  - id: "https://github.com/fpvandoorn/carleson"
+    relationship: "independent"
+    note: >-
+      Lean 4. The scalar Hilbert transform (L^2, weak type (1, 1)), among much else. (Search of 22
+      November 2026; read as text, not built. No code of it is used.)
+  - id: "PALOMAR-2026-11-17-000007"
+    relationship: "independent"
+    note: >-
+      Lean 4. Its proof includes the Magyar-Stein-Wainger transference principle from R to Z for
+      variation norms, another result than the transference here. No code of it is used.
+
+status:
+  scope: >-
+    Formalized (the 8 theorems that Comparator checks): the uniform bound of the truncated Hilbert
+    transforms H_{eps, 2^n eps} on L^p(R; X); the pointwise convergence of H_{eps,R} f to the
+    Fourier multiplier -i sgn for f = F^{-1} G, G integrable; the bound of that multiplier on these
+    f in L^p, for UMD spaces and, with the constant p* - 1, for Hilbert spaces; the right-hand
+    Littlewood-Paley inequality on the line for finitely many dyadic intervals, their dilates and
+    the interval around 0, and on the circle for the dyadic blocks; transference from the line to
+    the circle for operator-valued symbols continuous at the integers; a description of the norm of
+    Rademacher sums.
+
+
+    Not formalized: the left-hand Littlewood-Paley inequalities; the existence of the limits of the
+    truncated Hilbert transforms in L^p and almost everywhere for all f in L^p, and the extension of
+    the multipliers from the functions F^{-1} G in L^p to all of L^p (density); infinite sums;
+    Mihlin's theorem and Theorem 5.7.10 (1) (operator-valued coefficients); dimensions d > 1;
+    integers that are only Lebesgue points in the transference; complex Rademacher variables; the
+    constants of the book; the converse (the bounds imply that X is a UMD space).
+  sorry_count: 0
+  sorry_in_definitions: 0
+  axioms: []
+
+automation:
+  methods:
+    - method: "agent"
+      models: ["claude-opus-5-5"]
+      framework: "Claude Code 2.1.330 (VS Code extension, Claude Agent SDK)"
+      tool_setup: >-
+        The formalize-math-paper skill (https://github.com/vltanh/formalize-math-paper, version
+        4.3.2, commit 8e884d5); Claude Code sessions and sub-agents that wrote the statements and
+        the proofs of the library and compared them with the sources; the number of agents was not
+        tracked for this library alone. This entry by one agent, with an independent reviewer agent.
+        Lean v4.36.0-rc2, Mathlib v4.36.0-rc2.
+      cost:
+        wall_time: >-
+          about 5 hours between the first and the last commit of the vector-valued part of the
+          library (22 November 2026, git log), with other work in parallel, and about 1.5 hours for
+          the three entries of this part together, with the additions to the library that they
+          needed and the review; agent time not tracked
+        spend_usd: "not tracked"
+        hardware: "local machine (20 cores, 62 GB RAM) and API"
+      prompting_notes: >-
+        Instructions: state the theorems of the cited sources in their general form as far as
+        feasible, follow the sources' proofs, record every deviation, use only Mathlib and packages
+        built on it.
+  spend_usd: "not tracked"
+  notes: >-
+    The AI system wrote the code and the documents. No person has reviewed the statements or the
+    proofs; Lean has checked the proofs. Independent AI agents compared the proofs of the library
+    with the cited sources, and one compared the statements of this entry with them.
+
+fidelity:
+  divergences: >-
+    Statements. UMD constants are for real predictable signs +-1, martingales started at 0 and
+    probability spaces in the universe Type; the book's beta_{p,X} has deterministic scalars of
+    modulus 1 and sigma-finite measure spaces, and its beta^R_{p,X} (p. 285) real signs (predictable
+    and deterministic signs give the same constants by its Theorem 4.2.25, and dyadic martingales on
+    [0, 1) suffice by its Corollary 4.2.6; the first is proved in BanachProbability). The Rademacher
+    variables are real signs, also for complex spaces, where the book has complex ones; by the
+    contraction principle this changes the norms by at most a constant factor (not formalized). The
+    functions on the line are f = F^{-1} G in L^p with G integrable (the book's L^p with the space
+    L^1-check, on which it defines multipliers), not all of L^p. Theorem 5.1.13: the uniform bound
+    of the truncations with R = 2^n eps on L^p, and the bound of the limit on these f; the
+    convergence in L^p and almost everywhere, and the formula for Hf as an integral of convolutions,
+    are not stated. Proposition 5.2.2: the pointwise limit; that Hf is in L^1-check is contained in
+    the formula. Corollary 5.3.25: only the right-hand inequality, for finite sums, with all
+    dilations of the intervals, which gives the finite sums of Theorem 5.3.24 by dropping terms.
+    Proposition 5.7.1: d = 1; m is bounded everywhere and each m(.)x is almost everywhere strongly
+    measurable, where the book has m in L^infinity; the integers are points of continuity of m(.)x,
+    not only Lebesgue points; the multiplier bound on the line is assumed for Schwartz functions
+    only, and C may be infinite. Theorem 5.7.10: only part (2), right-hand inequality; since f is a
+    trigonometric polynomial, the finite sums contain the sum over all k. The constants are 4 beta^2
+    + 11 in place of 2 beta^+ beta^-, and (144 beta + 1)(4 beta^2 + 11) in place of 40 hbar beta
+    (hbar the norm of the Hilbert transform). The Hilbert space case is not stated in the book in
+    this form: it is the bound with the UMD constant p* - 1 of a nonzero Hilbert space (Corollary
+    4.5.15, Burkholder's theorem).
+
+
+    Proofs. The book's, with these departures, recorded in the docstrings of the modules.
+    Propositions 5.1.4 and 5.1.5: finitely many generations, and the randomised UMD property applied
+    directly to the dyadic martingale on each unit interval (and, for the left half of 5.1.5, to the
+    martingale of the shifts) instead of Theorem 4.2.13 and the equality of laws. Lemma 5.1.9: the
+    random dyadic systems are translates of the standard one. Theorem 5.1.13: no limit of the
+    averaged shifts in L^p (Lemmas 5.1.8, 5.1.12); the bounds are uniform in the truncation, and the
+    limit is taken on the Fourier side with Fatou's lemma. Lemma 5.3.21: only for scalar weights
+    equal up to dilation, with the L^1 norm of the derivative in place of the Mihlin norm; real
+    signs, so that the contraction principle costs a factor 2. Lemma 5.3.23: the derivative is
+    bounded by pi^2 where the book has 2 pi. Corollary 5.3.25: the signs of the intervals are
+    separated first, by reflection, and the dilates come from the dilation invariance of the L^p
+    norm; the book deduces it from Theorem 5.3.24. Proposition 5.7.1: continuity at the integers.
+    Minkowski's integral inequality (Proposition 1.2.22) by a weighted Jensen inequality. The works
+    of Bourgain (1986) and McConnell (1984), from which the theory comes, were not accessible or not
+    consulted; the book's proofs, which are self-contained, replace them.
+
+review:
+  status: "agent-reviewed"
+  reviewers:
+    - "Claude Opus 5.5 (independent agents)"
+  notes: >-
+    No human review. Independent AI agents compared the proofs of the library with the cited
+    sources. Another one compared the statements of this entry, its docstrings and this file with
+    the sources (page images for the scans) and found no wrong, vacuous or weakened statement; its
+    remarks on attributions, page numbers, divergences and wording were followed, and it checked the
+    corrected entry again, with a few further remarks on the new text, none on a statement, which
+    were followed.
+
+alignment:
+  namespace: "VectorValuedLittlewoodPaleyChallenge"
+  statements:
+    - source: "HNVW I, Theorem 5.1.13 (truncations)"
+      lean: "VectorValuedLittlewoodPaleyChallenge.truncatedHilbert_bounded"
+      module: "VectorValuedLittlewoodPaley.Challenge"
+      status: "partial"
+      note: >-
+        The uniform bound of the truncations with R = 2^n eps, with another constant; the limit in
+        L^p and almost everywhere is not stated.
+    - source: "HNVW I, Proposition 5.2.2"
+      lean: "VectorValuedLittlewoodPaleyChallenge.hilbert_multiplier"
+      module: "VectorValuedLittlewoodPaley.Challenge"
+      status: "proved"
+      note: >-
+        For every complex Banach space; the Hilbert transform as a pointwise limit and as the
+        multiplier -i sgn.
+    - source: "HNVW I, Theorem 5.1.13 with Proposition 5.2.2"
+      lean: "VectorValuedLittlewoodPaleyChallenge.hilbert_bounded"
+      module: "VectorValuedLittlewoodPaley.Challenge"
+      status: "partial"
+      note: >-
+        On the functions F^{-1} G in L^p, G integrable, with the constant 4 beta^2 + 11.
+    - source: "HNVW I, Corollary 5.3.25 (right-hand inequality)"
+      lean: "VectorValuedLittlewoodPaleyChallenge.littlewoodPaley_line"
+      module: "VectorValuedLittlewoodPaley.Challenge"
+      status: "partial"
+      note: >-
+        Finite sums, real signs, another constant; for all dilates of the intervals, which gives the
+        finite sums of Theorem 5.3.24.
+    - source: "HNVW I, Theorem 5.7.10 (2) (right-hand inequality)"
+      lean: "VectorValuedLittlewoodPaleyChallenge.littlewoodPaley_circle"
+      module: "VectorValuedLittlewoodPaley.Challenge"
+      status: "partial"
+      note: "Real signs, another constant; not the left-hand inequality."
+    - source: "HNVW I, Proposition 5.7.1 (d = 1)"
+      lean: "VectorValuedLittlewoodPaleyChallenge.transference"
+      module: "VectorValuedLittlewoodPaley.Challenge"
+      status: "partial"
+      note: >-
+        d = 1; the integers are points of continuity instead of Lebesgue points. The multiplier
+        bound on the line is assumed on Schwartz functions only.
+    - source: "HNVW I, Theorem 5.1.13 with Corollary 4.5.15"
+      lean: "VectorValuedLittlewoodPaleyChallenge.hilbert_bounded_innerProductSpace"
+      module: "VectorValuedLittlewoodPaley.Challenge"
+      status: "adapted"
+      note: "The case of a complex Hilbert space, where UMD constants do not occur in the statement."
+    - source: "a check of the definitions"
+      lean: "VectorValuedLittlewoodPaleyChallenge.eLpNormRad_rpow"
+      module: "VectorValuedLittlewoodPaley.Challenge"
+      status: "proved"
+      note: "The p-th power of the norm of a Rademacher sum is the average over the signs."
+
+acknowledgements: >-
+  Mathlib; BanachProbability; Lean's Comparator and the NanoDa kernel; Palomar's validation scripts.

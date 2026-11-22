@@ -37,18 +37,22 @@ DOCS = ['README.md', 'docs/SHORTER_PROOFS.md', 'docs/REFERENCES.md']
 # a name wins.
 NAMESPACES = []
 _NAMESPACES = ['HarmonicAnalysis', 'HarmonicAnalysis.BeurlingAhlfors', 'UnitAddTorus',
-               'FourierMultipliersChallenge']
+               'FourierMultipliersChallenge', 'VectorValuedLittlewoodPaleyChallenge',
+               'HardyFactorizationChallenge', 'PaleySchattenChallenge']
 NAMESPACES_BY_DIR = {'': _NAMESPACES, 'docs': _NAMESPACES}
-# Top-level module names: the library's and the Palomar entry's.
-MODULE_ROOTS = ('HarmonicAnalysis', 'FourierMultipliers')
-# The modules whose declarations win when a name is declared in several: the entry's Challenge repeats
-# the definitions of `HarmonicAnalysis.Defs`, and its Solution repeats its theorems.
-PREFERRED_MODULE = ('HarmonicAnalysis.Defs', 'FourierMultipliers.Challenge')
+# Top-level module names: the library's and the Palomar entries'.
+_ENTRIES = ('FourierMultipliers', 'VectorValuedLittlewoodPaley', 'HardyFactorization',
+            'PaleySchatten')
+MODULE_ROOTS = ('HarmonicAnalysis', *_ENTRIES)
+# The modules whose declarations win when a name is declared in several: the Challenges repeat the
+# definitions of the library, and the Solutions repeat the theorems of the Challenges.
+PREFERRED_MODULE = ('HarmonicAnalysis.Defs', 'HarmonicAnalysis.VectorValued.Defs',
+                    'HarmonicAnalysis.Hardy.Defs', *(e + '.Challenge' for e in _ENTRIES))
 # The source directory of each module root whose `lean_lib` has a `srcDir`.
-SOURCE_DIRS = {'FourierMultipliers': 'palomar'}
+SOURCE_DIRS = {e: 'palomar' for e in _ENTRIES}
 # Directories, besides the document's own and the repository root, against which the paths in the
 # documents of a given directory are resolved.
-PATH_BASES = {'': ['.github/workflows', 'palomar/FourierMultipliers', 'scripts', 'HarmonicAnalysis', 'docs'],
+PATH_BASES = {'': ['.github/workflows', 'scripts', 'HarmonicAnalysis', 'docs'],
               'docs': ['HarmonicAnalysis']}
 # Paths that are never linked, whether or not git ignores them.
 PRIVATE = ('NEXT.md', 'notes')
