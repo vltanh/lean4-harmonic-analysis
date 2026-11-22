@@ -224,8 +224,7 @@ theorem eLpNorm_div_le_beurlingPowNorm_two {p α : ℝ} (hp : 1 < p) (hα0 : 0 <
         eLpNorm (dzbar (dzbar (testFun 2 α))) (ENNReal.ofReal p) volume ≤
       beurlingPowNorm 2 p := by
   obtain ⟨φ, hu, hv⟩ := exists_schwartz_tendsto_testFun hp.le hα0 hα
-  exact div_le_beurlingPowNorm_of_tendsto 2 hp.le (measurable_dzbar _).aestronglyMeasurable
-    (measurable_dz _).aestronglyMeasurable hu hv
+  exact div_le_beurlingPowNorm_of_tendsto 2 hp.le hu hv
 
 /-- Dragičević's lower bound (Theorem 1.1 of the 2011 article; Proposition 4.2 of the lecture
 notes), the case `n = 2`: `κ₂ (p) ≤ ‖𝓑²‖_{L^p}` for `1 < p < ∞`. The source states it for

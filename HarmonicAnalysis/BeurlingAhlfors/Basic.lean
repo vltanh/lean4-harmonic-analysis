@@ -116,14 +116,14 @@ theorem beurlingPow_dzbarCLM_pow (k : ℕ) (F : 𝓢(ℂ, ℂ)) :
 /-- Density: if Schwartz functions `φ_k` satisfy `∂̄^k φ_k → u` and `∂^k φ_k → v` in `L^p`,
 `1 ≤ p`, then `‖v‖_p / ‖u‖_p ≤ ‖𝓑^k‖_p`. -/
 theorem div_le_beurlingPowNorm_of_tendsto (k : ℕ) {p : ℝ} (hp : 1 ≤ p) {φ : ℕ → 𝓢(ℂ, ℂ)}
-    {u v : ℂ → ℂ} (hu : AEStronglyMeasurable u volume) (hv : AEStronglyMeasurable v volume)
+    {u v : ℂ → ℂ}
     (hφu : Tendsto (fun j => eLpNorm (fun z => (dzbarCLM ^ k) (φ j) z - u z) (ENNReal.ofReal p)
       volume) atTop (𝓝 0))
     (hφv : Tendsto (fun j => eLpNorm (fun z => (dzCLM ^ k) (φ j) z - v z) (ENNReal.ofReal p)
       volume) atTop (𝓝 0)) :
     eLpNorm v (ENNReal.ofReal p) volume / eLpNorm u (ENNReal.ofReal p) volume ≤
       beurlingPowNorm k p := by
-  refine div_le_multiplierNorm_of_tendsto _ hp (φ := fun j => (dzbarCLM ^ k) (φ j)) hu hv hφu ?_
+  refine div_le_multiplierNorm_of_tendsto _ hp (φ := fun j => (dzbarCLM ^ k) (φ j)) hφu ?_
   have h : ∀ j, fourierMultiplier (fun ξ => beurlingSymbol ξ ^ k) ((dzbarCLM ^ k) (φ j)) =
       ((dzCLM ^ k) (φ j) : ℂ → ℂ) := fun j => beurlingPow_dzbarCLM_pow k (φ j)
   simpa only [h] using hφv

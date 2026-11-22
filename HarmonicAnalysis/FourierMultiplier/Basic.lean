@@ -95,14 +95,10 @@ theorem eLpNorm_fourierMultiplier_le (m : V → ℂ) (p : ℝ) (f : 𝓢(V, ℂ)
           (ENNReal.div_mul_cancel h0 (f.memLp _).eLpNorm_lt_top.ne).symm
       _ ≤ _ := by gcongr
 
--- The measurability hypotheses `hu`, `hv` are not used by the proof (for `1 ≤ p` the triangle
--- inequality for `eLpNorm` holds for all functions, and `hφu`, `hφv` already imply them); they
--- stay in the statement.
-set_option linter.unusedVariables false in
 /-- Density: if Schwartz functions `φ_k` satisfy `φ_k → u` and `T_m φ_k → v` in `L^p`, `1 ≤ p`,
 then `‖v‖_p / ‖u‖_p ≤ ‖T_m‖_p`. -/
 theorem div_le_multiplierNorm_of_tendsto (m : V → ℂ) {p : ℝ} (hp : 1 ≤ p) {φ : ℕ → 𝓢(V, ℂ)}
-    {u v : V → ℂ} (hu : AEStronglyMeasurable u volume) (hv : AEStronglyMeasurable v volume)
+    {u v : V → ℂ}
     (hφu : Tendsto (fun k => eLpNorm (fun x => φ k x - u x) (ENNReal.ofReal p) volume) atTop
       (𝓝 0))
     (hφv : Tendsto (fun k => eLpNorm (fun x => fourierMultiplier m (φ k) x - v x)
