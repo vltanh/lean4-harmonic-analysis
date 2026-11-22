@@ -16,10 +16,10 @@ import Mathlib.MeasureTheory.Function.Floor
 
 `HarmonicAnalysis.tendsto_riemannSum_real`: if `φ : ℂ → ℂ` is continuous at every `ξ ≠ 0` and
 `|φ (ξ)| ≤ C (1 + |ξ|)^{−3}`, then the Riemann sums over the lattice `R⁻¹ ℤ²`,
-`Σ_{n ∈ ℤ²} R⁻² φ (n / R)`, tend to `∫_ℂ φ` as `R → ∞` (`HarmonicAnalysis.tendsto_riemannSum` for
-`R ∈ ℕ`). No continuity at `0` is needed: the cells `R⁻¹ (n + [0, 1)²)` shrink, and the step
-functions `ξ ↦ φ (⌊R ξ⌋ / R)` converge to `φ` off `0` under the integrable bound
-`C' (1 + |ξ|)^{−3}`. A continuous function with compact support satisfies the hypotheses.
+`Σ_{n ∈ ℤ²} R⁻² φ (n / R)`, tend to `∫_ℂ φ` as `R → ∞` through the reals. No continuity at `0` is
+needed: the cells `R⁻¹ (n + [0, 1)²)` shrink, and the step functions `ξ ↦ φ (⌊R ξ⌋ / R)` converge to
+`φ` off `0` under the integrable bound `C' (1 + |ξ|)^{−3}`. A continuous function with compact
+support satisfies the hypotheses.
 
 `HarmonicAnalysis.exists_tendsto_latticePoint_div`: every `ξ ∈ ℂ` is a limit of points of the
 lattices `R⁻¹ ℤ²` as `R → ∞`.
@@ -157,14 +157,6 @@ theorem tendsto_riemannSum_real {φ : ℂ → ℂ} (hφ : ∀ ξ ≠ 0, Continuo
         (zero_lt_one.trans_le hR) ξ⟩)
       (tendsto_const_nhds.div_atTop tendsto_id)
   exact hlim.congr' (eventually_atTop.mpr ⟨1, fun R hR => (hsum R hR).tsum_eq.symm⟩)
-
-/-- Lattice Riemann sums: for `φ` continuous off `0` with `|φ (ξ)| ≤ C (1 + |ξ|)^{−3}`,
-`Σ_{n ∈ ℤ²} R⁻² φ (n / R) → ∫_ℂ φ` as `R → ∞` through the natural numbers. -/
-theorem tendsto_riemannSum {φ : ℂ → ℂ} (hφ : ∀ ξ ≠ 0, ContinuousAt φ ξ) {C : ℝ}
-    (hC : ∀ ξ, ‖φ ξ‖ ≤ C * (1 + ‖ξ‖) ^ (-3 : ℝ)) :
-    Tendsto (fun R : ℕ => ∑' n : Fin 2 → ℤ, ((R : ℂ) ^ 2)⁻¹ * φ (latticePoint n / R)) atTop
-      (𝓝 (∫ ξ, φ ξ)) := by
-  simpa using! (tendsto_riemannSum_real hφ hC).comp tendsto_natCast_atTop_atTop
 
 /-- The lattices `R⁻¹ ℤ²` become dense as `R → ∞`: for every `ξ` there are `n_R ∈ ℤ²` with
 `n_R / R → ξ`. -/

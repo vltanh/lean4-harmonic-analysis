@@ -9,7 +9,6 @@ public import HarmonicAnalysis.Torus.Cube
 public import HarmonicAnalysis.Torus.Lattice
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
-public import Mathlib.Order.LiminfLimsup
 
 /-!
 # Periodisation and Poisson summation on `𝕋²`
@@ -29,10 +28,9 @@ For a Schwartz function `f` on `ℂ ≅ ℝ²` and `R > 0`:
 * `HarmonicAnalysis.tendsto_eLpNorm_tsum_fourier_mul_mFourier`, Lemma 5.7.5 of
   Hytönen–van Neerven–Veraar–Weis (HNVW) for `ℝ² ≅ ℂ` and scalar functions, with `ε = 1 / R`: for
   `1 ≤ p < ∞`, `R^{2/p} ‖Σ_n R⁻² 𝓕 f (n / R) e_n‖_{L^p (𝕋²)} → ‖f‖_{L^p (ℂ)}` as `R → ∞`.
-* `HarmonicAnalysis.limsup_eLpNorm_sampledCoeff_le`, a corollary for mean-zero series (the mean
-  removed), when `𝓕 f (0)` need not vanish: for `1 < p < ∞`,
-  `limsup_{R → ∞} R^{2/p} ‖Σ_n sampledCoeff R f (n) e_n‖_{L^p (𝕋²)} ≤ ‖f‖_{L^p (ℂ)}`. The mean
-  `R⁻² 𝓕 f (0)` removed at `n = 0` contributes `O (R^{2/p − 2})`.
+
+The coefficients `sampledCoeff`, without the mean, serve only for the summability behind Poisson
+summation, which enters the transference through Lemma 5.7.5.
 
 ## Proofs
 
@@ -486,110 +484,5 @@ theorem tendsto_eLpNorm_tsum_fourier_mul_mFourier (f : 𝓢(ℂ, ℂ)) {p : ℝ}
     exact tsub_le_iff_right.2 (hK R hR).2
   · filter_upwards [eventually_gt_atTop 0] with R hR
     exact (hK R hR).1
-
-/-- The rescaled `L^p (𝕋²)` norm of the series with the samples of `𝓕 f`, the mean removed, for
-`1 ≤ p` and `R > 0`: `R^{2/p} ‖Σ_n sampledCoeff R f (n) e_n‖_{L^p (𝕋²)} ≤ ‖f‖_p + (K R^{−3} +
-R⁻² |𝓕 f (0)|) R^{2/p}`. The estimate of HNVW, Lemma 5.7.5 (`exists_eLpNorm_periodize_le`), and the
-triangle inequality for the mean `R⁻² 𝓕 f (0)`. -/
-theorem exists_ofReal_rpow_mul_eLpNorm_le (f : 𝓢(ℂ, ℂ)) {p : ℝ} (hp : 1 ≤ p) :
-    ∃ K, 0 ≤ K ∧ ∀ R : ℝ, 0 < R →
-      ENNReal.ofReal (R ^ (2 / p)) *
-          eLpNorm (fun x => ∑' n, sampledCoeff R f n * mFourier n x) (ENNReal.ofReal p) volume ≤
-        eLpNorm (f : ℂ → ℂ) (ENNReal.ofReal p) volume +
-          ENNReal.ofReal ((K * (R ^ 3)⁻¹ + (R ^ 2)⁻¹ * ‖𝓕 (f : ℂ → ℂ) 0‖) * R ^ (2 / p)) := by
-  obtain ⟨K, hK0, hK⟩ := exists_eLpNorm_periodize_le f hp
-  have hp0 : 0 < p := by linarith
-  have hP : 1 ≤ ENNReal.ofReal p := by simpa using hp
-  refine ⟨K, hK0, fun R hR => ?_⟩
-  set G : UnitAddTorus (Fin 2) → ℂ := fun z => ∑' n : Fin 2 → ℤ, ((R : ℂ) ^ 2)⁻¹ *
-    𝓕 (f : ℂ → ℂ) (latticePoint n / R) * mFourier n z
-  set c : ℂ := ((R : ℂ) ^ 2)⁻¹ * 𝓕 (f : ℂ → ℂ) 0
-  have hc : ‖c‖ₑ = ENNReal.ofReal ((R ^ 2)⁻¹ * ‖𝓕 (f : ℂ → ℂ) 0‖) := by
-    rw [← ofReal_norm]
-    simp [c, norm_inv, norm_pow, Complex.norm_real, abs_of_pos hR]
-  -- The series without the term `n = 0`.
-  have hF : (fun z => ∑' n, sampledCoeff R f n * mFourier n z) = G - fun _ => c := by
-    funext z
-    obtain ⟨y, rfl⟩ := isOpenQuotientMap_ofComplex.surjective z
-    have hP := hasSum_periodize f hR y
-    have h := hP.update 0 0
-    have h2 : Function.update (fun n : Fin 2 → ℤ => ((R : ℂ) ^ 2)⁻¹ *
-        𝓕 (f : ℂ → ℂ) (latticePoint n / R) * mFourier n (ofComplex y)) 0 0 =
-        fun n => sampledCoeff R f n * mFourier n (ofComplex y) := by
-      funext n
-      by_cases hn : n = 0
-      · subst hn
-        simp [sampledCoeff]
-      · simp [Function.update, hn, sampledCoeff]
-    rw [h2] at h
-    simp only [G, h.tsum_eq, hP.tsum_eq, c, latticePoint_zero, zero_div, mFourier_zero,
-      ContinuousMap.one_apply, mul_one, Pi.sub_apply]
-    ring
-  have hμ : (volume : Measure (UnitAddTorus (Fin 2))) Set.univ = 1 := by
-    rw [volume_pi, Measure.pi_univ]
-    simp
-  have hcn : eLpNorm (fun _ : UnitAddTorus (Fin 2) => c) (ENNReal.ofReal p) volume = ‖c‖ₑ := by
-    rw [eLpNorm_const _ (by simpa using hp0) (by intro h; simp [h] at hμ), hμ, ENNReal.one_rpow,
-      mul_one]
-  rw [hF]
-  calc ENNReal.ofReal (R ^ (2 / p)) * eLpNorm (G - fun _ => c) (ENNReal.ofReal p) volume
-      ≤ ENNReal.ofReal (R ^ (2 / p)) * (eLpNorm G (ENNReal.ofReal p) volume + ‖c‖ₑ) := by
-        rw [← hcn]
-        gcongr
-        exact eLpNorm_sub_le hP
-    _ ≤ (eLpNorm (f : ℂ → ℂ) (ENNReal.ofReal p) volume +
-          ENNReal.ofReal (K * (R ^ 3)⁻¹ * R ^ (2 / p))) + ENNReal.ofReal (R ^ (2 / p)) * ‖c‖ₑ := by
-        rw [mul_add]
-        gcongr
-        refine (hK R hR).1.trans ?_
-        gcongr
-        exact eLpNorm_indicator_le f (measurableSet_dilatedCell R).nullMeasurableSet
-    _ = _ := by
-        rw [hc, ← ENNReal.ofReal_mul (by positivity), add_assoc,
-          ← ENNReal.ofReal_add (by positivity) (by positivity)]
-        ring_nf
-
-/-- The `L^p (𝕋²)` norms of the periodisations, rescaled:
-`limsup_{R → ∞} R^{2/p} ‖Σ_n sampledCoeff R f (n) e_n‖_{L^p (𝕋²)} ≤ ‖f‖_{L^p (ℂ)}` for
-`1 < p < ∞`. By Poisson summation, on the dilated cell `R · (−½, ½]²`, of measure `R²`, the series
-at `x / R` is `f (x) + O (R^{−3}) − R⁻² 𝓕 f (0)`
-(`HarmonicAnalysis.exists_ofReal_rpow_mul_eLpNorm_le`), so the rescaled norm is at most
-`‖f‖_p + O (R^{2/p − 3}) + O (R^{2/p − 2})`, and both error terms tend to `0` because `p > 1`. -/
-theorem limsup_eLpNorm_sampledCoeff_le (f : 𝓢(ℂ, ℂ)) {p : ℝ} (hp : 1 < p) :
-    limsup (fun R : ℕ => ENNReal.ofReal ((R : ℝ) ^ (2 / p)) *
-        eLpNorm (fun x => ∑' n, sampledCoeff R f n * mFourier n x) (ENNReal.ofReal p) volume)
-      atTop ≤ eLpNorm (f : ℂ → ℂ) (ENNReal.ofReal p) volume := by
-  obtain ⟨K, hK0, hK⟩ := exists_ofReal_rpow_mul_eLpNorm_le f hp.le
-  set c := ‖𝓕 (f : ℂ → ℂ) 0‖
-  have hp0 : 0 < p := by linarith
-  have h2p : 2 / p < 2 := by rw [div_lt_iff₀ hp0]; linarith
-  -- The error terms tend to `0`, because `2 / p − 3 < 0` and `2 / p − 2 < 0`.
-  have hlim : Tendsto (fun R : ℕ => ENNReal.ofReal
-      ((K * ((R : ℝ) ^ 3)⁻¹ + ((R : ℝ) ^ 2)⁻¹ * c) * (R : ℝ) ^ (2 / p))) atTop (nhds 0) := by
-    have h3 : Tendsto (fun R : ℝ => R ^ (-(3 - 2 / p))) atTop (nhds 0) :=
-      tendsto_rpow_neg_atTop (by linarith)
-    have h2 : Tendsto (fun R : ℝ => R ^ (-(2 - 2 / p))) atTop (nhds 0) :=
-      tendsto_rpow_neg_atTop (by linarith)
-    have hsum : Tendsto (fun R : ℝ => K * R ^ (-(3 - 2 / p)) + c * R ^ (-(2 - 2 / p))) atTop
-        (nhds 0) := by
-      simpa using (h3.const_mul K).add (h2.const_mul c)
-    have hcongr : ∀ᶠ R : ℝ in atTop, K * R ^ (-(3 - 2 / p)) + c * R ^ (-(2 - 2 / p)) =
-        (K * (R ^ 3)⁻¹ + (R ^ 2)⁻¹ * c) * R ^ (2 / p) := by
-      filter_upwards [eventually_gt_atTop 0] with R hR
-      rw [show -(3 - 2 / p) = 2 / p - ((3 : ℕ) : ℝ) by push_cast; ring,
-        show -(2 - 2 / p) = 2 / p - ((2 : ℕ) : ℝ) by push_cast; ring,
-        Real.rpow_sub_natCast hR.ne', Real.rpow_sub_natCast hR.ne']
-      ring
-    simpa using ENNReal.tendsto_ofReal
-      ((hsum.congr' hcongr).comp tendsto_natCast_atTop_atTop)
-  calc _ ≤ limsup (fun R : ℕ => eLpNorm (f : ℂ → ℂ) (ENNReal.ofReal p) volume + ENNReal.ofReal
-        ((K * ((R : ℝ) ^ 3)⁻¹ + ((R : ℝ) ^ 2)⁻¹ * c) * (R : ℝ) ^ (2 / p))) atTop := by
-        refine limsup_le_limsup ?_
-        filter_upwards [eventually_ge_atTop 1] with R hR
-        exact hK R (Nat.cast_pos.2 (by omega))
-    _ = eLpNorm (f : ℂ → ℂ) (ENNReal.ofReal p) volume := by
-        have := (tendsto_const_nhds (x := eLpNorm (f : ℂ → ℂ) (ENNReal.ofReal p) volume)).add hlim
-        rw [add_zero] at this
-        exact this.limsup_eq
 
 end HarmonicAnalysis

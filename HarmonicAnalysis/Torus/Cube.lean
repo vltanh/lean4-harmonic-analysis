@@ -29,8 +29,7 @@ public import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
   `HarmonicAnalysis.lintegral_torus_eq_dilatedCell`), for every `f : 𝕋² → [0, ∞]`;
   `R^{2/p} ‖F‖_{L^p (𝕋²)} = ‖F (· / R) 1_{R · (−½, ½]²}‖_{L^p (ℂ)}` for `0 < p` and every `F`
   (`HarmonicAnalysis.ofReal_rpow_mul_eLpNorm_torus_eq_dilatedCell`); these cells exhaust `ℂ` as
-  `R → ∞` (`HarmonicAnalysis.eventually_div_mem_centredCell`,
-  `HarmonicAnalysis.eventually_div_natCast_mem_centredCell`).
+  `R → ∞` (`HarmonicAnalysis.eventually_div_mem_centredCell`).
 
 The first two items normalise the measure on `ℝ / ℤ` as `Mathlib.Analysis.Fourier.AddCircleMulti`
 does, with its local instances; the last two items use Mathlib's global measure on `ℝ / ℤ`, which
@@ -402,10 +401,5 @@ theorem eventually_div_mem_centredCell (y : ℂ) : ∀ᶠ R : ℝ in atTop, y / 
   have h2 := abs_im_le_norm y
   refine ⟨⟨?_, ?_⟩, ?_, ?_⟩ <;>
     linarith [neg_abs_le y.re, le_abs_self y.re, neg_abs_le y.im, le_abs_self y.im]
-
-/-- The dilated cells `R · (−½, ½]²`, `R ∈ ℕ`, exhaust `ℂ` as `R → ∞`. -/
-theorem eventually_div_natCast_mem_centredCell (y : ℂ) :
-    ∀ᶠ R : ℕ in atTop, y / ((R : ℝ) : ℂ) ∈ centredCell :=
-  tendsto_natCast_atTop_atTop.eventually (eventually_div_mem_centredCell y)
 
 end HarmonicAnalysis

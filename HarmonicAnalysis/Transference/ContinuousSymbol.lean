@@ -8,6 +8,7 @@ module
 public import HarmonicAnalysis.FourierMultiplier.Basic
 public import HarmonicAnalysis.Torus.TrigPoly
 public import HarmonicAnalysis.Torus.Cube
+public import Mathlib.Order.LiminfLimsup
 import HarmonicAnalysis.FourierMultiplier.Density
 import HarmonicAnalysis.FourierMultiplier.Duality
 import HarmonicAnalysis.FourierMultiplier.Norming
