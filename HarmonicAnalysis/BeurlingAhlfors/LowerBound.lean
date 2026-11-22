@@ -114,7 +114,107 @@ theorem tendsto_eLpNorm_div_testFun {p : ℝ} (hp : 1 < p) :
         eLpNorm (dz (dz (testFun 2 α))) (ENNReal.ofReal p) volume /
           eLpNorm (dzbar (dzbar (testFun 2 α))) (ENNReal.ofReal p) volume)
       (𝓝[<] p⁻¹) (𝓝 (ENNReal.ofReal (beurlingKappa 2 p))) := by
-  sorry
+  have hp0 : 0 < p := zero_lt_one.trans hp
+  have hpi : p⁻¹ < 1 := inv_lt_one_of_one_lt₀ hp
+  have hB : MeasurableSet (Metric.ball (0 : ℂ) 1) := Metric.isOpen_ball.measurableSet
+  have hIoo : ∀ α ∈ Set.Ioo 0 p⁻¹, 0 < α ∧ α * p < 1 ∧ α ∈ Set.Icc (0 : ℝ) 1 := fun α hα =>
+    ⟨hα.1, by
+      calc α * p < p⁻¹ * p := mul_lt_mul_of_pos_right hα.2 hp0
+        _ = 1 := inv_mul_cancel₀ hp0.ne', hα.1.le, (hα.2.trans hpi).le⟩
+  -- the integrals over `Δᶜ`, bounded uniformly in `α`
+  obtain ⟨C, hC⟩ := exists_bound_testFun_compl_ball hp0
+  obtain ⟨iOut, hiOut⟩ : ∃ g : ℝ → ℝ, ∀ α, g α =
+      (∫⁻ z in (Metric.ball (0 : ℂ) 1)ᶜ, ‖dz (dz (testFun 2 α)) z‖ₑ ^ p).toReal :=
+    ⟨_, fun _ => rfl⟩
+  obtain ⟨jOut, hjOut⟩ : ∃ g : ℝ → ℝ, ∀ α, g α =
+      (∫⁻ z in (Metric.ball (0 : ℂ) 1)ᶜ, ‖dzbar (dzbar (testFun 2 α)) z‖ₑ ^ p).toReal :=
+    ⟨_, fun _ => rfl⟩
+  -- the source's equation: the ratio of the `p`-th powers of the norms, with numerator and
+  -- denominator multiplied by `1 − αp`
+  have heq : ∀ α ∈ Set.Ioo 0 p⁻¹,
+      eLpNorm (dz (dz (testFun 2 α))) (ENNReal.ofReal p) volume /
+          eLpNorm (dzbar (dzbar (testFun 2 α))) (ENNReal.ofReal p) volume =
+        ENNReal.ofReal (((Real.pi * ((2 - α) * (1 - α)) ^ p + (1 - α * p) * iOut α) /
+          (Real.pi * (α * (α + 1)) ^ p + (1 - α * p) * jOut α)) ^ (1 / p)) := by
+    intro α hα
+    obtain ⟨hα0, hαp, hα1⟩ := hIoo α hα
+    obtain ⟨hI, hJ⟩ := hC α hα1
+    have hε : 0 < 1 - α * p := by linarith
+    have hα1' : α < 1 := hα.2.trans hpi
+    have ha : 0 < Real.pi / (1 - α * p) * ((2 - α) * (1 - α)) ^ p :=
+      mul_pos (div_pos Real.pi_pos hε) (Real.rpow_pos_of_pos (by nlinarith) _)
+    have hb : 0 < Real.pi / (1 - α * p) * (α * (α + 1)) ^ p :=
+      mul_pos (div_pos Real.pi_pos hε) (Real.rpow_pos_of_pos (by positivity) _)
+    have hp' : ENNReal.ofReal p ≠ 0 := by simpa using hp0
+    rw [eLpNorm_eq_lintegral_rpow_enorm_toReal hp' ENNReal.ofReal_ne_top
+        (measurable_dz _).aestronglyMeasurable,
+      eLpNorm_eq_lintegral_rpow_enorm_toReal hp' ENNReal.ofReal_ne_top
+        (measurable_dzbar _).aestronglyMeasurable,
+      ENNReal.toReal_ofReal hp0.le, ← lintegral_add_compl (μ := volume) _ hB,
+      ← lintegral_add_compl (μ := volume) _ hB, lintegral_dz_dz_testFun_ball hp hα0 hαp,
+      lintegral_dzbar_dzbar_testFun_ball hp hα0 hαp,
+      ← ENNReal.ofReal_toReal (ne_top_of_le_ne_top ENNReal.ofReal_ne_top hI),
+      ← ENNReal.ofReal_toReal (ne_top_of_le_ne_top ENNReal.ofReal_ne_top hJ),
+      ← ENNReal.ofReal_add ha.le ENNReal.toReal_nonneg,
+      ← ENNReal.ofReal_add hb.le ENNReal.toReal_nonneg,
+      ← ENNReal.div_rpow_of_nonneg _ _ (one_div_nonneg.2 hp0.le),
+      ← ENNReal.ofReal_div_of_pos (add_pos_of_pos_of_nonneg hb ENNReal.toReal_nonneg),
+      ENNReal.ofReal_rpow_of_nonneg (div_nonneg (add_nonneg ha.le ENNReal.toReal_nonneg)
+        (add_nonneg hb.le ENNReal.toReal_nonneg)) (one_div_nonneg.2 hp0.le)]
+    congr 2
+    rw [hiOut, hjOut]
+    field_simp
+  -- as `α → 1/p`, `1 − αp → 0`, and the integrals over `Δᶜ` disappear
+  have hev : ∀ᶠ α in 𝓝[<] p⁻¹, α ∈ Set.Ioo 0 p⁻¹ := Ioo_mem_nhdsLT (inv_pos.2 hp0)
+  have hε : Tendsto (fun α : ℝ => 1 - α * p) (𝓝[<] p⁻¹) (𝓝 0) := by
+    have h : Tendsto (fun α : ℝ => 1 - α * p) (𝓝 p⁻¹) (𝓝 (1 - p⁻¹ * p)) :=
+      (continuous_const.sub (continuous_id.mul continuous_const)).tendsto p⁻¹
+    rw [inv_mul_cancel₀ hp0.ne', sub_self] at h
+    exact h.mono_left nhdsWithin_le_nhds
+  have hvanish : ∀ g : ℝ → ℝ,
+      (∀ α ∈ Set.Ioo 0 p⁻¹, 0 ≤ g α ∧ g α ≤ (ENNReal.ofReal C).toReal) →
+        Tendsto (fun α => (1 - α * p) * g α) (𝓝[<] p⁻¹) (𝓝 0) := by
+    intro g hg
+    have h0 := hε.mul_const (ENNReal.ofReal C).toReal
+    rw [zero_mul] at h0
+    refine squeeze_zero' ?_ ?_ h0
+    · filter_upwards [hev] with α hα
+      exact mul_nonneg (by linarith [(hIoo α hα).2.1]) (hg α hα).1
+    · filter_upwards [hev] with α hα
+      exact mul_le_mul_of_nonneg_left (hg α hα).2 (by linarith [(hIoo α hα).2.1])
+  have hi := hvanish iOut fun α hα => ⟨(hiOut α).symm ▸ ENNReal.toReal_nonneg,
+    (hiOut α).symm ▸ ENNReal.toReal_mono ENNReal.ofReal_ne_top (hC α (hIoo α hα).2.2).1⟩
+  have hj := hvanish jOut fun α hα => ⟨(hjOut α).symm ▸ ENNReal.toReal_nonneg,
+    (hjOut α).symm ▸ ENNReal.toReal_mono ENNReal.ofReal_ne_top (hC α (hIoo α hα).2.2).2⟩
+  have hcont : ∀ g : ℝ → ℝ, Continuous g →
+      Tendsto (fun α => Real.pi * g α ^ p) (𝓝[<] p⁻¹) (𝓝 (Real.pi * g p⁻¹ ^ p)) := fun g hg =>
+    ((continuous_const.mul (hg.rpow_const fun _ => Or.inr hp0.le)).tendsto p⁻¹).mono_left
+      nhdsWithin_le_nhds
+  have hnum : Tendsto (fun α => Real.pi * ((2 - α) * (1 - α)) ^ p + (1 - α * p) * iOut α)
+      (𝓝[<] p⁻¹) (𝓝 (Real.pi * ((2 - p⁻¹) * (1 - p⁻¹)) ^ p + 0)) :=
+    (hcont (fun α => (2 - α) * (1 - α)) (by fun_prop)).add hi
+  have hden : Tendsto (fun α => Real.pi * (α * (α + 1)) ^ p + (1 - α * p) * jOut α)
+      (𝓝[<] p⁻¹) (𝓝 (Real.pi * (p⁻¹ * (p⁻¹ + 1)) ^ p + 0)) :=
+    (hcont (fun α => α * (α + 1)) (by fun_prop)).add hj
+  have ha : 0 < (2 - p⁻¹) * (1 - p⁻¹) := mul_pos (by linarith) (by linarith)
+  have hb : 0 < p⁻¹ * (p⁻¹ + 1) := by positivity
+  have hlim := (hnum.div hden (by
+    rw [add_zero]
+    exact (mul_pos Real.pi_pos (Real.rpow_pos_of_pos hb p)).ne')).rpow_const
+    (Or.inr (one_div_nonneg.2 hp0.le))
+  -- the limit is `κ₂ (p)`
+  have hval : ((Real.pi * ((2 - p⁻¹) * (1 - p⁻¹)) ^ p + 0) /
+      (Real.pi * (p⁻¹ * (p⁻¹ + 1)) ^ p + 0)) ^ (1 / p) = beurlingKappa 2 p := by
+    rw [add_zero, add_zero, mul_div_mul_left _ _ Real.pi_ne_zero, ← Real.div_rpow ha.le hb.le,
+      ← Real.rpow_mul (div_pos ha hb).le, mul_one_div_cancel hp0.ne', Real.rpow_one]
+    simp only [beurlingKappa, ascPochhammer_succ_eval, ascPochhammer_zero, Polynomial.eval_one,
+      one_mul]
+    push_cast
+    ring
+  rw [hval] at hlim
+  refine (ENNReal.tendsto_ofReal hlim).congr' ?_
+  filter_upwards [hev] with α hα
+  exact (heq α hα).symm
 
 /-- `‖∂²f_{2,α}‖_p / ‖∂̄²f_{2,α}‖_p ≤ ‖𝓑²‖_p` for `1 < p < ∞` and `0 < α < 1/p`: Schwartz
 approximations of `f_{2,α} ∈ W^{2,p}` and `𝓑² ∂̄² = ∂²` on Schwartz functions. -/
