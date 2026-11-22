@@ -191,7 +191,7 @@ automation:
       cost:
         wall_time: >-
           about 5 hours between the first and the last commit of the vector-valued part of the
-          library (22 November 2026, git log), with other work in parallel, and about 1.5 hours for
+          library (22 November 2026, git log), with other work in parallel, and about 1 hour for
           the three entries of this part together, with the additions to the library that they
           needed and the review; agent time not tracked
         spend_usd: "not tracked"
