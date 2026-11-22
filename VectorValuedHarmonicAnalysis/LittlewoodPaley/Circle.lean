@@ -82,7 +82,6 @@ theorem eLpNormRad_dyadicBlock_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (hβ 
       (2 * littlewoodPaleyBound β + 1) * eLpNorm (trigPoly c) (ENNReal.ofReal p) haarAddCircle := by
   sorry
 
-omit [CompleteSpace X] in
 /-- The projections onto single frequencies are randomised bounded: for trigonometric polynomials
 `f_k = Σ_n c_k (n) e_n` and any `n_k ∈ ℤ`, `‖Σ ε_k c_k (n_k) e_{n_k}‖ ≤ 4 ‖Σ ε_k f_k‖`. -/
 theorem eLpNormRad_singleFrequency_le {p : ℝ} (hp : 1 ≤ p) {K : ℕ} (c : Fin K → ℤ →₀ X)

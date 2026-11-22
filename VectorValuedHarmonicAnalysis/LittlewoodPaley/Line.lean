@@ -45,8 +45,9 @@ theorem dilateConv_fourierInv {φ : ℝ → ℝ} (hφ : Integrable φ) {t : ℝ}
 
 variable [CompleteSpace X]
 
-/-- HNVW I, p. 413–414: the randomised bound for intervals, from the Hilbert transform. For any
-`a_k < b_k`, `‖Σ ε_k Δ_{(a_k, b_k)} f_k‖ ≤ 4 ħ ‖Σ ε_k f_k‖`. -/
+/-- HNVW I, pp. 413–414: the randomised bound for intervals, from the Hilbert transform. For any
+`a_k ≤ b_k`, `‖Σ ε_k Δ_{(a_k, b_k)} f_k‖ ≤ 4 ħ ‖Σ ε_k f_k‖`, the factor `4` being two applications
+of the contraction principle with the factor `2` (real signs; the book has complex ones). -/
 theorem eLpNormRad_fourierInv_Ioo_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (hβ : IsUMDBound X p β)
     {K : ℕ} {G : Fin K → ℝ → X} (hG : ∀ k, Integrable (G k))
     (hf : ∀ k, MemLp (𝓕⁻ (G k)) (ENNReal.ofReal p) volume) {a b : Fin K → ℝ}
@@ -56,7 +57,8 @@ theorem eLpNormRad_fourierInv_Ioo_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (h
   sorry
 
 /-- HNVW I, Lemmas 5.3.21 and 5.3.23: the randomised bound for the multipliers
-`1_{I_k} / φ̂ (2^{−k−1} ·)`. -/
+`1_{I_k} / φ̂ (2^{−k−1} ·)`. With `w = 1 / φ̂` on `[1/2, 1]`, the constant is
+`4 ħ (w (1/2) + ∫_{1/2}^1 |w'|) ≤ 36 ħ`. -/
 theorem eLpNormRad_fourierInv_div_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (hβ : IsUMDBound X p β)
     {K : ℕ} {G : Fin K → ℝ → X} (hG : ∀ k, Integrable (G k))
     (hf : ∀ k, MemLp (𝓕⁻ (G k)) (ENNReal.ofReal p) volume) :

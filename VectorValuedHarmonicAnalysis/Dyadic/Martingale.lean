@@ -44,15 +44,154 @@ noncomputable def dyadicAvg (j : ℕ) (f : ℝ → X) (x : ℝ) : X :=
 noncomputable def dyadicFiltration : Filtration ℕ Real.measurableSpace where
   seq j := MeasurableSpace.comap (fun x : ℝ => ⌊2 ^ j * x⌋) ⊤
   mono' := by
-    sorry
+    intro i j hij
+    -- `⌊2^i x⌋` is the floor quotient of `⌊2^j x⌋` by `2^(j − i)`
+    have h : (fun x : ℝ => ⌊2 ^ i * x⌋) =
+        (fun z : ℤ => z / ((2 ^ (j - i) : ℕ) : ℤ)) ∘ fun x : ℝ => ⌊2 ^ j * x⌋ := by
+      funext x
+      have h2 : (2 : ℝ) ^ j * x = ((2 ^ (j - i) : ℕ) : ℝ) * (2 ^ i * x) := by
+        rw [Nat.cast_pow, Nat.cast_ofNat, ← mul_assoc, ← pow_add, Nat.sub_add_cancel hij]
+      rw [Function.comp_apply, h2, Int.natCast_mul_floor_div_cancel (by positivity)]
+    change MeasurableSpace.comap (fun x : ℝ => ⌊2 ^ i * x⌋) ⊤ ≤
+      MeasurableSpace.comap (fun x : ℝ => ⌊2 ^ j * x⌋) ⊤
+    rw [h, ← MeasurableSpace.comap_comp]
+    exact MeasurableSpace.comap_mono le_top
   le' := by
-    sorry
+    intro j
+    exact (Int.measurable_floor.comp (measurable_const_mul ((2 : ℝ) ^ j))).comap_le
+
+/-- The dyadic interval `2^{−j} [n, n + 1)`. -/
+private noncomputable def dInt (j : ℕ) (n : ℤ) : Set ℝ :=
+  Set.Ico ((n : ℝ) / 2 ^ j) (((n : ℝ) + 1) / 2 ^ j)
+
+private theorem mem_dInt {j : ℕ} {n : ℤ} {x : ℝ} : x ∈ dInt j n ↔ ⌊2 ^ j * x⌋ = n := by
+  have h : (0 : ℝ) < 2 ^ j := by positivity
+  rw [dInt, Set.mem_Ico, div_le_iff₀ h, lt_div_iff₀ h, Int.floor_eq_iff, mul_comm x]
+
+private theorem dInt_floor (j : ℕ) (x : ℝ) : dInt j ⌊2 ^ j * x⌋ = dyadicInterval j x := rfl
+
+private theorem measurableSet_dInt (j : ℕ) (n : ℤ) : MeasurableSet (dInt j n) := measurableSet_Ico
+
+private theorem disjoint_dInt (j : ℕ) {n n' : ℤ} (h : n ≠ n') : Disjoint (dInt j n) (dInt j n') :=
+  Set.disjoint_left.2 fun _ hx hx' => h ((mem_dInt.1 hx).symm.trans (mem_dInt.1 hx'))
+
+private theorem measureReal_dInt (j : ℕ) (n : ℤ) : volume.real (dInt j n) = ((2 : ℝ) ^ j)⁻¹ := by
+  have h : (0 : ℝ) < 2 ^ j := by positivity
+  rw [dInt, Real.volume_real_Ico_of_le (by gcongr; linarith)]
+  field_simp
+  ring
+
+omit [NormedSpace ℝ X] in
+private theorem integrableOn_dInt {f : ℝ → X} (hf : LocallyIntegrable f) (j : ℕ) (n : ℤ) :
+    IntegrableOn f (dInt j n) :=
+  (hf.integrableOn_isCompact isCompact_Icc).mono_set Set.Ico_subset_Icc_self
+
+/-- `⌊x⌋` is the floor quotient of `⌊2^j x⌋` by `2^j`: the interval of generation `j` with index `n`
+lies in the unit interval with index `⌊n / 2^j⌋`. -/
+private theorem floor_eq_div (j : ℕ) (x : ℝ) : ⌊x⌋ = ⌊2 ^ j * x⌋ / ((2 ^ j : ℕ) : ℤ) := by
+  rw [← Int.natCast_mul_floor_div_cancel (n := 2 ^ j) (by positivity) x, Nat.cast_pow,
+    Nat.cast_ofNat, Nat.cast_pow, Nat.cast_ofNat]
+
+/-- A measurable set of generation `j` in a unit interval is a union of intervals of
+generation `j`. -/
+private theorem preimage_inter_Ico (j : ℕ) (m : ℤ) (t : Set ℤ) :
+    (fun x : ℝ => ⌊2 ^ j * x⌋) ⁻¹' t ∩ Set.Ico (m : ℝ) (m + 1) =
+      ⋃ n : {n : ℤ // n ∈ t ∧ n / ((2 ^ j : ℕ) : ℤ) = m}, dInt j n := by
+  ext x
+  simp only [Set.mem_inter_iff, Set.mem_preimage, Set.mem_iUnion, mem_dInt, Subtype.exists,
+    exists_prop, exists_eq_right', ← Int.floor_eq_iff, floor_eq_div j x, Set.mem_Ico]
+
+omit [NormedSpace ℝ X] in
+/-- On the unit intervals, functions of `⌊2^j x⌋` are bounded. -/
+private theorem exists_bound_comp_floor (j : ℕ) (m : ℤ) (G : ℤ → X) :
+    ∃ C : ℝ, ∀ x ∈ Set.Ico (m : ℝ) (m + 1), ‖G ⌊2 ^ j * x⌋‖ ≤ C := by
+  obtain ⟨C, hC⟩ := ((Set.finite_Icc (2 ^ j * m) (2 ^ j * (m + 1))).image
+    fun n => ‖G n‖).bddAbove
+  refine ⟨C, fun x hx => hC ⟨_, ⟨Int.le_floor.2 ?_, ?_⟩, rfl⟩⟩
+  · push_cast
+    gcongr
+    exact hx.1
+  · rw [← Int.lt_add_one_iff, Int.floor_lt]
+    push_cast
+    have : (2 : ℝ) ^ j * x < 2 ^ j * (m + 1) := by
+      gcongr
+      exact hx.2
+    linarith
+
+/-- A function of `⌊2^j x⌋`, times a bounded measurable function, is integrable on the unit
+intervals. -/
+theorem integrableOn_smul_comp_floor (j : ℕ) (m : ℤ) (G : ℤ → X) {c : ℝ → ℝ}
+    (hc : Measurable c) {C : ℝ} (hC : ∀ x, |c x| ≤ C) :
+    IntegrableOn (fun x : ℝ => c x • G ⌊2 ^ j * x⌋) (Set.Ico (m : ℝ) (m + 1)) := by
+  obtain ⟨D, hD⟩ := exists_bound_comp_floor j m G
+  have hfl : Measurable fun x : ℝ => ⌊2 ^ j * x⌋ :=
+    Int.measurable_floor.comp (measurable_const_mul ((2 : ℝ) ^ j))
+  refine IntegrableOn.of_bound (by simp) (hc.stronglyMeasurable.smul
+    ((StronglyMeasurable.of_discrete (f := G)).comp_measurable hfl)).aestronglyMeasurable (C * D) ?_
+  refine (ae_restrict_iff' measurableSet_Ico).2 (ae_of_all _ fun x hx => ?_)
+  rw [norm_smul, Real.norm_eq_abs]
+  exact mul_le_mul (hC x) (hD x hx) (norm_nonneg _) ((abs_nonneg _).trans (hC x))
+
+private theorem integrableOn_dyadicAvg (j : ℕ) (f : ℝ → X) (m : ℤ) :
+    IntegrableOn (dyadicAvg j f) (Set.Ico (m : ℝ) (m + 1)) := by
+  have h := integrableOn_smul_comp_floor j m (fun n => (2 : ℝ) ^ j • ∫ y in dInt j n, f y)
+    (c := fun _ => 1) measurable_const (C := 1) (by simp)
+  simp only [one_smul] at h
+  exact h
+
+/-- The dyadic averages of generation `j` are measurable for the `j`-th σ-algebra. -/
+theorem stronglyMeasurable_dyadicAvg (j : ℕ) (f : ℝ → X) :
+    StronglyMeasurable[dyadicFiltration j] (dyadicAvg j f) :=
+  (StronglyMeasurable.of_discrete
+    (f := fun n : ℤ => (2 : ℝ) ^ j • ∫ y in dInt j n, f y)).comp_measurable
+      (comap_measurable fun x : ℝ => ⌊2 ^ j * x⌋)
+
+/-- The integrals of `f` and of its averages over a dyadic interval agree. -/
+private theorem setIntegral_dyadicAvg [CompleteSpace X] (j : ℕ) (f : ℝ → X) (n : ℤ) :
+    ∫ x in dInt j n, dyadicAvg j f x = ∫ x in dInt j n, f x := by
+  have h : ∀ x ∈ dInt j n, dyadicAvg j f x = (2 : ℝ) ^ j • ∫ y in dInt j n, f y := fun x hx => by
+    rw [dyadicAvg, ← dInt_floor, mem_dInt.1 hx]
+  rw [setIntegral_congr_fun (measurableSet_dInt j n) h, setIntegral_const, measureReal_dInt,
+    smul_smul, inv_mul_cancel₀ (by positivity), one_smul]
+
+/-- On each unit interval, the dyadic averages of generation `j` are the conditional expectations
+on the `j`-th σ-algebra. -/
+theorem dyadicAvg_ae_eq_condExp [CompleteSpace X] {f : ℝ → X} (m : ℤ)
+    (hf : IntegrableOn f (Set.Ico (m : ℝ) (m + 1))) (j : ℕ) :
+    dyadicAvg j f =ᵐ[volume.restrict (Set.Ico (m : ℝ) (m + 1))]
+      (volume.restrict (Set.Ico (m : ℝ) (m + 1)))[f | dyadicFiltration j] := by
+  refine ae_eq_condExp_of_forall_setIntegral_eq (dyadicFiltration.le j) hf
+    (fun s _ _ => (integrableOn_dyadicAvg j f m).integrableOn) ?_
+    (stronglyMeasurable_dyadicAvg j f).aestronglyMeasurable
+  rintro _ ⟨t, -, rfl⟩ -
+  -- a set of the `j`-th σ-algebra is a disjoint union of intervals of generation `j`
+  have hs : MeasurableSet ((fun x : ℝ => ⌊2 ^ j * x⌋) ⁻¹' t) :=
+    Int.measurable_floor.comp (measurable_const_mul ((2 : ℝ) ^ j)) (MeasurableSet.of_discrete)
+  rw [Measure.restrict_restrict hs, preimage_inter_Ico]
+  have hsub : (⋃ n : {n : ℤ // n ∈ t ∧ n / ((2 ^ j : ℕ) : ℤ) = m}, dInt j n) ⊆
+      Set.Ico (m : ℝ) (m + 1) := by
+    rw [← preimage_inter_Ico]
+    exact Set.inter_subset_right
+  have hd : Pairwise (Function.onFun Disjoint
+      fun n : {n : ℤ // n ∈ t ∧ n / ((2 ^ j : ℕ) : ℤ) = m} => dInt j n) :=
+    fun n n' h => disjoint_dInt j (Subtype.coe_injective.ne h)
+  rw [integral_iUnion (s := fun n : {n : ℤ // n ∈ t ∧ n / ((2 ^ j : ℕ) : ℤ) = m} => dInt j n)
+      (fun n => measurableSet_dInt j n) hd ((integrableOn_dyadicAvg j f m).mono_set hsub),
+    integral_iUnion (s := fun n : {n : ℤ // n ∈ t ∧ n / ((2 ^ j : ℕ) : ℤ) = m} => dInt j n)
+      (fun n => measurableSet_dInt j n) hd (hf.mono_set hsub)]
+  exact tsum_congr fun n => setIntegral_dyadicAvg j f n
 
 /-- On each unit interval, the dyadic averages form a martingale. -/
 theorem martingale_dyadicAvg [CompleteSpace X] {f : ℝ → X} (hf : LocallyIntegrable f) (m : ℤ) :
     Martingale (fun j => dyadicAvg j f) dyadicFiltration
       (volume.restrict (Set.Ico (m : ℝ) (m + 1))) := by
-  sorry
+  have hf' : IntegrableOn f (Set.Ico (m : ℝ) (m + 1)) :=
+    (hf.integrableOn_isCompact isCompact_Icc).mono_set Set.Ico_subset_Icc_self
+  refine ⟨fun j => stronglyMeasurable_dyadicAvg j f, fun i j hij => ?_⟩
+  -- the tower property
+  exact (condExp_congr_ae (dyadicAvg_ae_eq_condExp m hf' j)).trans
+    ((condExp_condExp_of_le (dyadicFiltration.mono hij) (dyadicFiltration.le j)).trans
+      (dyadicAvg_ae_eq_condExp m hf' i).symm)
 
 /-- The Haar function `h = 1_{[0, 1/2)} − 1_{[1/2, 1)}`. -/
 noncomputable def haar (x : ℝ) : ℝ :=
@@ -66,8 +205,170 @@ noncomputable def haarSplit (x : ℝ) : ℝ := haar (2 * x) - haar (2 * x - 1)
 noncomputable def dyadicShift (k : ℝ → ℝ) (j : ℕ) (f : ℝ → X) (x : ℝ) : X :=
   (2 ^ j * k (Int.fract (2 ^ j * x))) • ∫ y, haar (2 ^ j * y - ⌊2 ^ j * x⌋) • f y
 
+/-- The Haar function takes the value `1` on the left half of `[0, 1)`. -/
+theorem haar_of_lt {x : ℝ} (h0 : 0 ≤ x) (h1 : x < 1 / 2) : haar x = 1 := by
+  rw [haar, Set.indicator_of_mem (Set.mem_Ico.2 ⟨h0, h1⟩),
+    Set.indicator_of_notMem (fun h => by linarith [h.1]), Pi.one_apply, sub_zero]
+
+/-- The Haar function takes the value `−1` on the right half of `[0, 1)`. -/
+theorem haar_of_le {x : ℝ} (h0 : 1 / 2 ≤ x) (h1 : x < 1) : haar x = -1 := by
+  rw [haar, Set.indicator_of_notMem (fun h => by linarith [h.2]),
+    Set.indicator_of_mem (Set.mem_Ico.2 ⟨h0, h1⟩), Pi.one_apply, zero_sub]
+
+/-- The Haar function vanishes off `[0, 1)`. -/
+theorem haar_of_notMem {x : ℝ} (h : x ∉ Set.Ico (0 : ℝ) 1) : haar x = 0 := by
+  have h0 : x ∉ Set.Ico (0 : ℝ) (1 / 2) := fun hx => h ⟨hx.1, by linarith [hx.2]⟩
+  have h1 : x ∉ Set.Ico (1 / 2 : ℝ) 1 := fun hx => h ⟨by linarith [hx.1], hx.2⟩
+  rw [haar, Set.indicator_of_notMem h0, Set.indicator_of_notMem h1, sub_zero]
+
+/-- The Haar function is bounded by `1`. -/
+theorem abs_haar_le_one (x : ℝ) : |haar x| ≤ 1 := by
+  by_cases h : x ∈ Set.Ico (0 : ℝ) 1
+  · rcases lt_or_ge x (1 / 2) with h' | h'
+    · rw [haar_of_lt h.1 h', abs_one]
+    · rw [haar_of_le h' h.2, abs_neg, abs_one]
+  · rw [haar_of_notMem h, abs_zero]
+    exact zero_le_one
+
+/-- The Haar function is measurable. -/
+theorem measurable_haar : Measurable haar :=
+  (measurable_one.indicator measurableSet_Ico).sub (measurable_one.indicator measurableSet_Ico)
+
+/-- The kernel `haarSplit` is measurable. -/
+theorem measurable_haarSplit : Measurable haarSplit :=
+  (measurable_haar.comp (measurable_const_mul 2)).sub
+    (measurable_haar.comp ((measurable_const_mul (2 : ℝ)).sub_const 1))
+
+/-- `⌊2^j x⌋` is the floor quotient of `⌊2^(j + 1) x⌋` by `2`. -/
+theorem floor_two_pow_mul (j : ℕ) (x : ℝ) : ⌊2 ^ j * x⌋ = ⌊2 ^ (j + 1) * x⌋ / 2 := by
+  have h : (2 : ℝ) ^ (j + 1) * x = ((2 : ℕ) : ℝ) * (2 ^ j * x) := by
+    rw [pow_succ', Nat.cast_ofNat, mul_assoc]
+  rw [h, ← Int.natCast_mul_floor_div_cancel (n := 2) two_ne_zero (2 ^ j * x), Nat.cast_ofNat,
+    Nat.cast_ofNat]
+
+/-- The Haar function on the intervals of generation `j` is a function of `⌊2^(j + 1) x⌋`: it is `1`
+on the left halves and `−1` on the right halves. -/
+theorem haar_fract (j : ℕ) (x : ℝ) :
+    haar (Int.fract (2 ^ j * x)) = if Even ⌊2 ^ (j + 1) * x⌋ then 1 else -1 := by
+  set n : ℤ := ⌊2 ^ j * x⌋ with hn
+  have hx : 2 ^ j * x = n + Int.fract (2 ^ j * x) := (Int.floor_add_fract _).symm
+  have h0 := Int.fract_nonneg (2 ^ j * x)
+  have h1 := Int.fract_lt_one (2 ^ j * x)
+  rcases lt_or_ge (Int.fract (2 ^ j * x)) (1 / 2) with h | h
+  · have hx' : ⌊2 ^ (j + 1) * x⌋ = 2 * n := by
+      rw [Int.floor_eq_iff, pow_succ', mul_assoc, hx]
+      push_cast
+      constructor <;> linarith
+    rw [hx', haar_of_lt h0 h, ite_eq_left (even_two_mul n)]
+  · have hx' : ⌊2 ^ (j + 1) * x⌋ = 2 * n + 1 := by
+      rw [Int.floor_eq_iff, pow_succ', mul_assoc, hx]
+      push_cast
+      constructor <;> linarith
+    rw [hx', haar_of_le h h1, ite_eq_right (Int.not_even_iff_odd.2 (odd_two_mul_add_one n))]
+
+/-- `haarSplit` at the generation `j` is the product of the Haar functions at the generations `j`
+and `j + 1`. -/
+theorem haarSplit_fract (j : ℕ) (x : ℝ) : haarSplit (Int.fract (2 ^ j * x)) =
+    haar (Int.fract (2 ^ (j + 1) * x)) * haar (Int.fract (2 ^ j * x)) := by
+  set w : ℝ := Int.fract (2 ^ j * x) with hw
+  have h0 : 0 ≤ w := Int.fract_nonneg _
+  have h1 : w < 1 := Int.fract_lt_one _
+  have hw' : Int.fract (2 ^ (j + 1) * x) = Int.fract (2 * w) := by
+    have h : (2 : ℝ) ^ (j + 1) * x = 2 * w + ((2 * ⌊2 ^ j * x⌋ : ℤ) : ℝ) := by
+      have := Int.fract_add_floor ((2 : ℝ) ^ j * x)
+      rw [pow_succ']
+      push_cast
+      linarith
+    rw [h, Int.fract_add_intCast]
+  rw [hw', haarSplit]
+  rcases lt_or_ge w (1 / 2) with h | h
+  · have h2 : Int.fract (2 * w) = 2 * w := Int.fract_eq_self.2 ⟨by linarith, by linarith⟩
+    rw [h2, haar_of_lt h0 h, haar_of_notMem (x := 2 * w - 1) (fun h => by linarith [h.1]), sub_zero,
+      mul_one]
+  · have h2 : Int.fract (2 * w) = 2 * w - 1 := by
+      rw [← Int.fract_sub_one]
+      exact Int.fract_eq_self.2 ⟨by linarith, by linarith⟩
+    rw [h2, haar_of_le h h1, haar_of_notMem (x := 2 * w) (fun h => by linarith [h.2]), zero_sub,
+      mul_neg_one]
+
+/-- The Haar function on an interval of generation `j`, as a difference of indicator functions of
+its halves. -/
+private theorem haar_smul_eq (j : ℕ) (n : ℤ) (f : ℝ → X) (y : ℝ) :
+    haar (2 ^ j * y - n) • f y =
+      (dInt (j + 1) (2 * n)).indicator f y - (dInt (j + 1) (2 * n + 1)).indicator f y := by
+  have hl : y ∈ dInt (j + 1) (2 * n) ↔ 0 ≤ 2 ^ j * y - n ∧ 2 ^ j * y - n < 1 / 2 := by
+    rw [mem_dInt, Int.floor_eq_iff, pow_succ]
+    push_cast
+    constructor <;> rintro ⟨h1, h2⟩ <;> constructor <;> linarith
+  have hr : y ∈ dInt (j + 1) (2 * n + 1) ↔ 1 / 2 ≤ 2 ^ j * y - n ∧ 2 ^ j * y - n < 1 := by
+    rw [mem_dInt, Int.floor_eq_iff, pow_succ]
+    push_cast
+    constructor <;> rintro ⟨h1, h2⟩ <;> constructor <;> linarith
+  by_cases h1 : y ∈ dInt (j + 1) (2 * n)
+  · have h2 : y ∉ dInt (j + 1) (2 * n + 1) := fun h => by linarith [(hl.1 h1).2, (hr.1 h).1]
+    rw [Set.indicator_of_mem h1, Set.indicator_of_notMem h2, haar_of_lt (hl.1 h1).1 (hl.1 h1).2,
+      one_smul, sub_zero]
+  by_cases h2 : y ∈ dInt (j + 1) (2 * n + 1)
+  · rw [Set.indicator_of_notMem h1, Set.indicator_of_mem h2, haar_of_le (hr.1 h2).1 (hr.1 h2).2,
+      neg_smul, one_smul, zero_sub]
+  · rw [Set.indicator_of_notMem h1, Set.indicator_of_notMem h2, haar_of_notMem, zero_smul, sub_zero]
+    rintro ⟨h3, h4⟩
+    rcases lt_or_ge (2 ^ j * y - n) (1 / 2) with h | h
+    · exact h1 (hl.2 ⟨h3, h⟩)
+    · exact h2 (hr.2 ⟨h, h4⟩)
+
+/-- `⟨h_I, f⟩`, up to the factor `|I|^{−1/2}`, is the difference of the integrals over the halves
+of `I`. -/
+private theorem integral_haar_smul {f : ℝ → X} (hf : LocallyIntegrable f) (j : ℕ) (n : ℤ) :
+    ∫ y, haar (2 ^ j * y - n) • f y =
+      (∫ y in dInt (j + 1) (2 * n), f y) - ∫ y in dInt (j + 1) (2 * n + 1), f y := by
+  simp only [haar_smul_eq]
+  rw [integral_sub ((integrableOn_dInt hf _ _).integrable_indicator (measurableSet_dInt _ _))
+      ((integrableOn_dInt hf _ _).integrable_indicator (measurableSet_dInt _ _)),
+    integral_indicator (measurableSet_dInt _ _), integral_indicator (measurableSet_dInt _ _)]
+
+/-- An interval of generation `j` is the disjoint union of its halves. -/
+private theorem setIntegral_dInt_eq {f : ℝ → X} (hf : LocallyIntegrable f) (j : ℕ) (n : ℤ) :
+    ∫ y in dInt j n, f y =
+      (∫ y in dInt (j + 1) (2 * n), f y) + ∫ y in dInt (j + 1) (2 * n + 1), f y := by
+  rw [← setIntegral_union (disjoint_dInt _ (by omega)) (measurableSet_dInt _ _)
+    (integrableOn_dInt hf _ _) (integrableOn_dInt hf _ _)]
+  congr 2
+  ext y
+  rw [Set.mem_union, mem_dInt, mem_dInt, mem_dInt, floor_two_pow_mul]
+  omega
+
+/-- The Haar functions of generation `j` have mean zero, also after multiplication by a function
+that is constant on the intervals of generation `j`. -/
+theorem dyadicAvg_haar_smul [CompleteSpace X] (j : ℕ) {g : ℝ → X}
+    (hg : ∀ x y, ⌊2 ^ j * x⌋ = ⌊2 ^ j * y⌋ → g x = g y) (x : ℝ) :
+    dyadicAvg j (fun y => haar (Int.fract (2 ^ j * y)) • g y) x = 0 := by
+  set n : ℤ := ⌊2 ^ j * x⌋ with hn
+  have h : ∀ y ∈ dInt j n, haar (Int.fract (2 ^ j * y)) • g y = haar (2 ^ j * y - n) • g x :=
+    fun y hy => by rw [hg y x ((mem_dInt.1 hy).trans hn), Int.fract, mem_dInt.1 hy]
+  have h' : ∀ y ∉ dInt j n, haar (2 ^ j * y - n) • g x = 0 := fun y hy => by
+    rw [haar_of_notMem, zero_smul]
+    rintro ⟨h1, h2⟩
+    exact hy (mem_dInt.2 (Int.floor_eq_iff.2 ⟨by linarith, by linarith⟩))
+  rw [dyadicAvg, ← dInt_floor, ← hn, setIntegral_congr_fun (measurableSet_dInt j n) h,
+    setIntegral_eq_integral_of_forall_compl_eq_zero h',
+    integral_haar_smul (locallyIntegrable_const (g x)), setIntegral_const, setIntegral_const,
+    measureReal_dInt, measureReal_dInt, sub_self, smul_zero]
+
+/-- For the Haar kernel the part of generation `j` of the dyadic shift is the Haar projection
+`D_j f = E_{j+1} f − E_j f` (HNVW I, proof of Proposition 5.1.4, p. 377). -/
 theorem dyadicShift_haar {f : ℝ → X} (hf : LocallyIntegrable f) (j : ℕ) :
     dyadicShift haar j f = fun x => dyadicAvg (j + 1) f x - dyadicAvg j f x := by
-  sorry
+  funext x
+  rw [dyadicShift, dyadicAvg, dyadicAvg, ← dInt_floor, ← dInt_floor, integral_haar_smul hf,
+    haar_fract, floor_two_pow_mul j x, setIntegral_dInt_eq hf j]
+  obtain ⟨k, h | h⟩ := Int.even_or_odd' ⌊2 ^ (j + 1) * x⌋
+  · -- `x` is in the left half
+    rw [h, show 2 * k / 2 = k by omega, ite_eq_left (even_two_mul k), pow_succ]
+    module
+  · -- `x` is in the right half
+    rw [h, show (2 * k + 1) / 2 = k by omega,
+      ite_eq_right (Int.not_even_iff_odd.2 (odd_two_mul_add_one k)), pow_succ]
+    module
 
 end VectorValuedHarmonicAnalysis

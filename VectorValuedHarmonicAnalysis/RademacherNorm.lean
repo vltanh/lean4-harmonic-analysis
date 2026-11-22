@@ -78,6 +78,12 @@ theorem eLpNormRad_indicator_le [SFinite μ] {p : ℝ} (hp : 1 ≤ p) (s : Set (
     eLpNormRad (s.indicator f) p μ ≤ eLpNormRad f p μ := by
   sorry
 
+/-- Reindexing: a Rademacher sum over part of the indices is dominated by the whole sum. -/
+theorem eLpNormRad_comp_le [SFinite μ] {L : ℕ} {p : ℝ} (hp : 1 ≤ p) {σ : Fin K → Fin L}
+    (hσ : Function.Injective σ) {f : Fin L → α → E} (hf : ∀ k, AEStronglyMeasurable (f k) μ) :
+    eLpNormRad (fun k => f (σ k)) p μ ≤ eLpNormRad f p μ := by
+  sorry
+
 /-- Minkowski's integral inequality for Rademacher sums:
 `‖Σ_k ε_k ∫ F_k (s, ·) dν‖ ≤ ∫ ‖Σ_k ε_k F_k (s, ·)‖ dν`. -/
 theorem eLpNormRad_integral_le [SFinite μ] {S : Type*} [MeasurableSpace S] {ν : Measure S}

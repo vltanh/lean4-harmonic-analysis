@@ -57,7 +57,7 @@ theorem matFourierCoeff_mul_two_pow {g h : UnitAddCircle → Matrix n n ℂ} (hg
         matFourierCoeff (fun t => paleyBlockOpen g k t * h t) (2 ^ k) := by
   sorry
 
-/-- Lust-Piquard–Pisier, (III.3) and (0.1), for the closed blocks: an absolute constant bounds
+/-- Lust-Piquard–Pisier, (III.2)–(III.3), for the closed blocks: an absolute constant bounds
 `E ∫ ‖Σ ε_k H_{2^k}‖_{S_{2p}}²` by `∫ ‖h‖_{S_{2p}}²`, for `1 ≤ p ≤ 2` and all sizes. -/
 theorem exists_avg_integral_paleyBlockClosed_le : ∃ C : ℝ, 0 < C ∧ ∀ (n : Type) [Fintype n]
     [DecidableEq n] (p : ℝ), 1 ≤ p → p ≤ 2 → ∀ (h : UnitAddCircle → Matrix n n ℂ), IsHardyTwo h →

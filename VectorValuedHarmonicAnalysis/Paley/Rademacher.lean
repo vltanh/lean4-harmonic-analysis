@@ -12,6 +12,9 @@ G. Pisier, Astérisque 247 (1998), (8.4.4), p. 105). There is an absolute consta
 
 `‖(Σ a_k a_kᴴ)^{1/2}‖_{S_p} + ‖(Σ b_kᴴ b_k)^{1/2}‖_{S_p} ≤ M E ‖Σ ε_k A_k‖_{S_p}`.
 
+Corollary III.4 has the `L²` norm on the right-hand side; the `L¹` norm is what Theorem III.1 (i)
+gives.
+
 Proof (p. 243): apply Paley's inequality to `Σ ε_k e^{i 2^k t} A_k`; the left-hand side does not
 depend on the signs, and the average over the signs of the right-hand side is at most
 `2 E ‖Σ ε_k A_k‖` by the contraction principle.
