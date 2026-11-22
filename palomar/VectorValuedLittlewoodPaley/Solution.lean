@@ -1,6 +1,7 @@
 module
 
 public import HarmonicAnalysis.VectorValued.LittlewoodPaley.Circle
+import HarmonicAnalysis.VectorValued.LittlewoodPaley.Signs
 import BanachProbability.UMD.Hilbert
 
 /-!
@@ -105,6 +106,57 @@ theorem hilbert_bounded_innerProductSpace {H : Type*} [NormedAddCommGroup H]
   refine (eLpNorm_fourierInv_neg_I_sign_le hp hβ hG hf).trans_eq ?_
   rw [ENNReal.ofReal_add (by positivity) (by norm_num), ENNReal.ofReal_mul (by norm_num),
     ENNReal.ofReal_pow h0, ENNReal.ofReal_ofNat, ENNReal.ofReal_ofNat, hilbertBound]
+
+theorem mihlin_multiplier : ∃ C : NNReal, ∀ (X : Type*) [NormedAddCommGroup X] [NormedSpace ℂ X]
+    [CompleteSpace X] (p : ℝ), 1 < p → ∀ β : ℝ≥0∞, HarmonicAnalysis.IsUMDBound X p β →
+    ∀ (m : ℝ → ℂ) (c : ℝ), ContDiffOn ℝ 2 m {0}ᶜ →
+    (∀ k ≤ 2, ∀ ξ ≠ 0, |ξ| ^ k * ‖iteratedDeriv k m ξ‖ ≤ c) → ∀ G : ℝ → X, Integrable G →
+      eLpNorm (𝓕⁻ fun ξ => m ξ • G ξ) (ENNReal.ofReal p) volume ≤
+        ENNReal.ofReal c * (C * β ^ 2) * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
+  obtain ⟨C, hC⟩ := exists_eLpNorm_fourierInv_mihlin_le
+  exact ⟨C, fun X _ _ _ p hp β hβ m c hm hc G hG =>
+    hC X p hp β (isUMDBound_iff.1 hβ) m c ⟨hm, hc⟩ G hG⟩
+
+/-- The multiplier is that of the library, except at `0`. -/
+private theorem ae_eq_dyadicSign {ε ε' : ℤ → ℝ} {m : ℝ → ℝ}
+    (hm : ∀ j : ℤ, ∀ ξ ∈ Set.Ico ((2 : ℝ) ^ j) (2 ^ (j + 1)), m ξ = ε j)
+    (hm' : ∀ j : ℤ, ∀ ξ ∈ Set.Ioc (-(2 : ℝ) ^ (j + 1)) (-2 ^ j), m ξ = ε' j) {ξ : ℝ} (hξ : ξ ≠ 0) :
+    m ξ = dyadicSign ε ξ + dyadicSign ε' (-ξ) := by
+  rcases lt_or_gt_of_ne hξ with h | h
+  · have h1 : 0 < -ξ := neg_pos.2 h
+    have h2 := Int.zpow_log_le_self one_lt_two h1
+    have h3 := Int.lt_zpow_succ_log_self one_lt_two (-ξ)
+    push_cast at h2 h3
+    rw [hm' (Int.log 2 (-ξ)) ξ ⟨by linarith, by linarith⟩, dyadicSign, dyadicSign,
+      ite_eq_right h.not_gt, ite_eq_left h1, zero_add]
+  · have h2 := Int.zpow_log_le_self one_lt_two h
+    have h3 := Int.lt_zpow_succ_log_self one_lt_two ξ
+    push_cast at h2 h3
+    rw [hm (Int.log 2 ξ) ξ ⟨h2, h3⟩, dyadicSign, dyadicSign, ite_eq_left h,
+      ite_eq_right (by linarith), add_zero]
+
+theorem littlewoodPaley_signs : ∃ C : NNReal, ∀ (X : Type*) [NormedAddCommGroup X]
+    [NormedSpace ℂ X] [CompleteSpace X] (p : ℝ), 1 < p → ∀ β : ℝ≥0∞,
+    HarmonicAnalysis.IsUMDBound X p β → ∀ ε ε' : ℤ → ℝ, (∀ j, ε j = 1 ∨ ε j = -1) →
+    (∀ j, ε' j = 1 ∨ ε' j = -1) → ∀ m : ℝ → ℝ,
+    (∀ j : ℤ, ∀ ξ ∈ Set.Ico ((2 : ℝ) ^ j) (2 ^ (j + 1)), m ξ = ε j) →
+    (∀ j : ℤ, ∀ ξ ∈ Set.Ioc (-(2 : ℝ) ^ (j + 1)) (-2 ^ j), m ξ = ε' j) →
+    ∀ G : ℝ → X, Integrable G → MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume →
+      eLpNorm (𝓕⁻ fun ξ => (m ξ : ℂ) • G ξ) (ENNReal.ofReal p) volume ≤
+        C * β ^ 8 * (4 * β ^ 2 + 11) ^ 2 * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume ∧
+      eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume ≤
+        C * β ^ 8 * (4 * β ^ 2 + 11) ^ 2 *
+          eLpNorm (𝓕⁻ fun ξ => (m ξ : ℂ) • G ξ) (ENNReal.ofReal p) volume := by
+  obtain ⟨C, hC⟩ := exists_eLpNorm_fourierInv_dyadicSign_le
+  refine ⟨C, fun X _ _ _ p hp β hβ ε ε' hε hε' m hm hm' G hG hf => ?_⟩
+  have h : 𝓕⁻ (fun ξ => (m ξ : ℂ) • G ξ) =
+      𝓕⁻ fun ξ => ((dyadicSign ε ξ + dyadicSign ε' (-ξ) : ℝ) : ℂ) • G ξ := by
+    funext x
+    refine Real.fourierInv_congr_ae ?_ x
+    filter_upwards [Measure.ae_ne volume (0 : ℝ)] with ξ hξ
+    rw [ae_eq_dyadicSign hm hm' hξ]
+  rw [h]
+  exact hC X p hp β (isUMDBound_iff.1 hβ) ε ε' hε hε' G hG hf
 
 theorem eLpNormRad_rpow {α : Type*} [MeasurableSpace α] {μ : Measure α} {E : Type*}
     [NormedAddCommGroup E] [NormedSpace ℝ E] {p : ℝ} (hp : 0 < p) {K : ℕ} {f : Fin K → α → E}

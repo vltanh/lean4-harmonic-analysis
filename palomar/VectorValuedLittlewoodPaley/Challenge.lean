@@ -11,14 +11,18 @@ public import Mathlib.Probability.UniformOn
 /-!
 # Challenge: Littlewood–Paley theory for functions with values in UMD spaces
 
-For functions with values in a UMD space, the Hilbert transform on the line and the right-hand
-Littlewood–Paley inequalities on the line and on the circle; for any complex Banach spaces, the
-transference of operator-valued Fourier multipliers from the line to the circle; after
+For functions with values in a UMD space, the Hilbert transform on the line, the right-hand
+Littlewood–Paley inequalities with random signs on the line and on the circle, Mihlin multipliers,
+and the Littlewood–Paley inequalities for every choice of the signs on the line; for any complex
+Banach spaces, the transference of operator-valued Fourier multipliers from the line to the circle;
+after
 
 * [HNVW] T. Hytönen, J. van Neerven, M. Veraar, L. Weis, *Analysis in Banach Spaces, Volume I:
   Martingales and Littlewood–Paley Theory*, Springer, 2016 (in the docstrings also HNVW I): Theorem
   5.1.13, Proposition 5.2.2, Theorem 5.3.24, Corollary 5.3.25, Proposition 5.7.1, Theorem 5.7.10;
-  for Hilbert spaces, Corollary 4.5.15.
+  for Hilbert spaces, Corollary 4.5.15;
+* [MC] T. R. McConnell, *On Fourier multiplier transformations of Banach-valued functions*, Trans.
+  Amer. Math. Soc. 285 (1984), 739–757: Theorems 1.1 and 1.3, in dimension 1.
 
 ## Conventions
 
@@ -30,7 +34,8 @@ transference of operator-valued Fourier multipliers from the line to the circle;
   `β^ℝ_{p,X}` of [HNVW, p. 285], whose definition has deterministic signs and σ-finite measure
   spaces: predictable and deterministic signs give the same constants by [HNVW, Theorem 4.2.25], and
   the dyadic martingales on `[0, 1)` suffice by [HNVW, Corollary 4.2.6]; not formalized here.)
-  Every bound below is explicit in `β`.
+  Every bound below is explicit in `β` (in `mihlin_multiplier` and `littlewoodPaley_signs` up to an
+  absolute constant).
 * On the line, `𝓕⁻ G (x) = ∫ G (ξ) e^{2πi x ξ} dξ` (Mathlib's inverse Fourier transform). The
   functions are `f = 𝓕⁻ G ∈ L^p (ℝ; X)` with `G ∈ L¹ (ℝ; X)`, that is, `f ∈ L^p ∩ Ľ¹`, the class on
   which [HNVW, p. 401] define the boundedness of Fourier multipliers, dense in `L^p` (the density is
@@ -64,6 +69,12 @@ transference of operator-valued Fourier multipliers from the line to the circle;
 * `littlewoodPaley_circle` ([HNVW, Theorem 5.7.10 (2)], right-hand inequality): for the dyadic
   blocks `Ĩ_k ⊂ ℤ` and trigonometric polynomials `f`,
   `‖Σ_k ε_k Δ̃_k f‖_{L^p (𝕋 × Ω; X)} ≤ C_β ‖f‖_p` with the same `C_β`.
+* `mihlin_multiplier` ([MC, Theorem 1.1], `n = 1`): if `m` is of class `C²` on `ℝ ∖ {0}` with
+  `|ξ|^k |m^{(k)} (ξ)| ≤ c`, `k ≤ 2`, then `‖𝓕⁻ (m G)‖_p ≤ C c β² ‖𝓕⁻ G‖_p`, `C` absolute.
+* `littlewoodPaley_signs` ([MC, Theorem 1.3], `n = 1`, the implication from UMD to (1.13)): for every
+  choice of the signs `ε_j`, `ε'_j`, the multiplier `m` equal to `ε_j` on `[2^j, 2^{j+1})` and to
+  `ε'_j` on `(−2^{j+1}, −2^j]` satisfies `c⁻¹ ‖f‖_p ≤ ‖T_m f‖_p ≤ c ‖f‖_p`,
+  `c = C β⁸ (4 β² + 11)²`, `C` absolute.
 * `eLpNormRad_rpow`: the `p`-th power of `eLpNormRad` is the average over the signs (a check).
 
 The definitions are copied word for word from `HarmonicAnalysis/VectorValued/Defs.lean` (kept in
@@ -236,6 +247,37 @@ theorem hilbert_bounded_innerProductSpace {H : Type*} [NormedAddCommGroup H]
     eLpNorm (𝓕⁻ fun ξ => (-Complex.I * (Real.sign ξ : ℂ)) • G ξ) (ENNReal.ofReal p) volume ≤
       ENNReal.ofReal (4 * (max p (p / (p - 1)) - 1) ^ 2 + 11) *
         eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
+  sorry
+
+/-- **Mihlin's multiplier theorem on UMD spaces** ([MC, Theorem 1.1], `n = 1`): let `m` be of class
+`C²` on `ℝ ∖ {0}` with `|ξ|^k |m^{(k)} (ξ)| ≤ c` for `k ≤ 2` and `ξ ≠ 0`. Then
+`‖𝓕⁻ (m G)‖_p ≤ C c β² ‖𝓕⁻ G‖_p` for `G ∈ L¹ (ℝ; X)`, with an absolute constant `C`. ([MC]: `m` real
+and `C²` on `ℝ`; the constant depends on `c`, `p` and `X`.) -/
+theorem mihlin_multiplier : ∃ C : NNReal, ∀ (X : Type*) [NormedAddCommGroup X] [NormedSpace ℂ X]
+    [CompleteSpace X] (p : ℝ), 1 < p → ∀ β : ℝ≥0∞, HarmonicAnalysis.IsUMDBound X p β →
+    ∀ (m : ℝ → ℂ) (c : ℝ), ContDiffOn ℝ 2 m {0}ᶜ →
+    (∀ k ≤ 2, ∀ ξ ≠ 0, |ξ| ^ k * ‖iteratedDeriv k m ξ‖ ≤ c) → ∀ G : ℝ → X, Integrable G →
+      eLpNorm (𝓕⁻ fun ξ => m ξ • G ξ) (ENNReal.ofReal p) volume ≤
+        ENNReal.ofReal c * (C * β ^ 2) * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
+  sorry
+
+/-- **Littlewood–Paley inequalities for every choice of the signs** ([MC, Theorem 1.3], `n = 1`, for
+UMD spaces both inequalities of (1.13)): if `m` is equal to a sign `ε_j` on `[2^j, 2^{j+1})` and to
+a sign
+`ε'_j` on `(−2^{j+1}, −2^j]`, for every `j ∈ ℤ`, then `c⁻¹ ‖f‖_p ≤ ‖T_m f‖_p ≤ c ‖f‖_p`,
+`c = C β⁸ (4 β² + 11)²`, for `f = 𝓕⁻ G ∈ L^p (ℝ; X)`, `G ∈ L¹`, with an absolute constant `C`. -/
+theorem littlewoodPaley_signs : ∃ C : NNReal, ∀ (X : Type*) [NormedAddCommGroup X]
+    [NormedSpace ℂ X] [CompleteSpace X] (p : ℝ), 1 < p → ∀ β : ℝ≥0∞,
+    HarmonicAnalysis.IsUMDBound X p β → ∀ ε ε' : ℤ → ℝ, (∀ j, ε j = 1 ∨ ε j = -1) →
+    (∀ j, ε' j = 1 ∨ ε' j = -1) → ∀ m : ℝ → ℝ,
+    (∀ j : ℤ, ∀ ξ ∈ Set.Ico ((2 : ℝ) ^ j) (2 ^ (j + 1)), m ξ = ε j) →
+    (∀ j : ℤ, ∀ ξ ∈ Set.Ioc (-(2 : ℝ) ^ (j + 1)) (-2 ^ j), m ξ = ε' j) →
+    ∀ G : ℝ → X, Integrable G → MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume →
+      eLpNorm (𝓕⁻ fun ξ => (m ξ : ℂ) • G ξ) (ENNReal.ofReal p) volume ≤
+        C * β ^ 8 * (4 * β ^ 2 + 11) ^ 2 * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume ∧
+      eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume ≤
+        C * β ^ 8 * (4 * β ^ 2 + 11) ^ 2 *
+          eLpNorm (𝓕⁻ fun ξ => (m ξ : ℂ) • G ξ) (ENNReal.ofReal p) volume := by
   sorry
 
 /-- The `p`-th power of `eLpNormRad` is the average over the signs (a check of the definition). -/

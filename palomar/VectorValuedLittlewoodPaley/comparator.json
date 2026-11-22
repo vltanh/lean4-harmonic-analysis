@@ -9,6 +9,8 @@
     "VectorValuedLittlewoodPaleyChallenge.littlewoodPaley_circle",
     "VectorValuedLittlewoodPaleyChallenge.transference",
     "VectorValuedLittlewoodPaleyChallenge.hilbert_bounded_innerProductSpace",
+    "VectorValuedLittlewoodPaleyChallenge.mihlin_multiplier",
+    "VectorValuedLittlewoodPaleyChallenge.littlewoodPaley_signs",
     "VectorValuedLittlewoodPaleyChallenge.eLpNormRad_rpow"
   ],
   "definition_names": [],

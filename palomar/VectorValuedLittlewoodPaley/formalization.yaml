@@ -5,8 +5,9 @@ project:
   name: "Littlewood-Paley theory for functions with values in UMD spaces, in Lean"
   description: >-
     Lean 4 proofs of results of vector-valued harmonic analysis from Hytönen, van Neerven, Veraar
-    and Weis, "Analysis in Banach Spaces I", for functions with values in a UMD Banach space X with
-    UMD_p constant beta (real signs), 1 < p < infinity, with explicit constants.
+    and Weis, "Analysis in Banach Spaces I", and from McConnell (1984), for functions with values in
+    a UMD Banach space X with UMD_p constant beta (real signs), 1 < p < infinity, with constants
+    explicit in beta.
 
 
     The Hilbert transform (Theorem 5.1.13, Proposition 5.2.2): the truncated Hilbert transforms
@@ -21,6 +22,12 @@ project:
     blocks and trigonometric polynomials. Transference (Proposition 5.7.1, d = 1): a bounded
     operator-valued Fourier multiplier on the line, continuous at the integers, restricts to a
     multiplier on the circle whose norm is not larger.
+
+
+    McConnell's theorems in dimension 1: a multiplier m of class C^2 on R minus 0 with
+    |xi|^k |m^(k)(xi)| <= c, k <= 2, is bounded by C c beta^2 (Theorem 1.1, Mihlin's theorem), and
+    the Littlewood-Paley inequalities with sharp cut-offs hold, in both directions, for every choice
+    of the signs of the dyadic intervals (Theorem 1.3, the implication from UMD).
   authors:
     - "The-Anh Vu-Le"
   license: "Apache-2.0"
@@ -59,11 +66,14 @@ sources:
     id: "Trans. Amer. Math. Soc. 285 (1984), 739-757"
     type: "paper"
     location: "https://doi.org/10.1090/s0002-9947-1984-0752501-x"
-    relationship: "background"
+    relationship: "formalizes"
     note: >-
-      With Bourgain, the origin of the multiplier theorem (scalar symbols) and of the
-      Littlewood-Paley inequality for UMD spaces, as reported by Hytönen, van Neerven, Veraar and
-      Weis (p. 479). Not consulted; the proofs follow their book.
+      Theorem 1.1 (pp. 741, 746-751) and Theorem 1.3 (pp. 742, 754-756, the implication from UMD
+      spaces to the inequalities (1.13)), for n = 1, by the paper's proofs, with (2.1), Lemmas 2.1
+      to 2.3, 3.1 and 3.2; the departures are in fidelity.divergences. With Bourgain, the origin of
+      the multiplier theorem (scalar symbols) and of the Littlewood-Paley inequality for UMD spaces
+      (Hytönen, van Neerven, Veraar and Weis, p. 479).
+    author_endorsement: "not-contacted"
   - title: "Vector-valued singular integrals and the H^1-BMO duality"
     authors:
       - "Jean Bourgain"
@@ -75,7 +85,7 @@ sources:
       With McConnell (1984) and by a different method, the origin of the Littlewood-Paley inequality
       for UMD spaces (with another article of his, of 1984), as reported by Hytönen, van Neerven,
       Veraar and Weis (p. 479), whose treatment derives from it. Not accessible and not consulted;
-      the proofs follow their book.
+      the proofs follow their book and McConnell's paper.
   - title: "On L_p multipliers"
     authors:
       - "Karel de Leeuw"
@@ -131,20 +141,22 @@ related_formalizations:
 
 status:
   scope: >-
-    Formalized (the 8 theorems that Comparator checks): the uniform bound of the truncated Hilbert
+    Formalized (the 10 theorems that Comparator checks): the uniform bound of the truncated Hilbert
     transforms H_{eps, 2^n eps} on L^p(R; X); the pointwise convergence of H_{eps,R} f to the
     Fourier multiplier -i sgn for f = F^{-1} G, G integrable; the bound of that multiplier on these
     f in L^p, for UMD spaces and, with the constant p* - 1, for Hilbert spaces; the right-hand
     Littlewood-Paley inequality on the line for finitely many dyadic intervals, their dilates and
     the interval around 0, and on the circle for the dyadic blocks; transference from the line to
-    the circle for operator-valued symbols continuous at the integers; a description of the norm of
-    Rademacher sums.
+    the circle for operator-valued symbols continuous at the integers; Mihlin multipliers in one
+    dimension and the Littlewood-Paley inequalities on the line, in both directions, for every choice
+    of the signs of the dyadic intervals; a description of the norm of Rademacher sums.
 
 
-    Not formalized: the left-hand Littlewood-Paley inequalities; the existence of the limits of the
-    truncated Hilbert transforms in L^p and almost everywhere for all f in L^p, and the extension of
-    the multipliers from the functions F^{-1} G in L^p to all of L^p (density); infinite sums;
-    Mihlin's theorem and Theorem 5.7.10 (1) (operator-valued coefficients); dimensions d > 1;
+    Not formalized: the left-hand Littlewood-Paley inequalities with random signs; the existence of
+    the limits of the truncated Hilbert transforms in L^p and almost everywhere for all f in L^p,
+    and the extension of the multipliers from the functions F^{-1} G in L^p to all of L^p (density);
+    infinite sums of random signs; Mihlin's theorem with first derivatives (Theorem 5.3.18) and
+    Theorem 5.7.10 (1) (operator-valued coefficients); McConnell's Theorem 1.2; dimensions d > 1;
     integers that are only Lebesgue points in the transference; complex Rademacher variables; the
     constants of the book; the converse (the bounds imply that X is a UMD space).
   sorry_count: 0
@@ -167,7 +179,7 @@ automation:
           about 5 hours between the first and the last commit of the vector-valued part of the
           library (22 November 2026, git log), with other work in parallel, and about 1 hour for
           the three entries of this part together, with the additions to the library that they
-          needed and the review; agent time not tracked
+          needed and the review, and about 2 hours for McConnell's theorems; agent time not tracked
         spend_usd: "not tracked"
         hardware: "local machine (20 cores, 62 GB RAM) and API"
       prompting_notes: >-
@@ -202,7 +214,15 @@ fidelity:
     only, and C may be infinite. Theorem 5.7.10: only part (2), right-hand inequality; since f is a
     trigonometric polynomial, the finite sums contain the sum over all k. The constants are 4 beta^2
     + 11 in place of 2 beta^+ beta^-, and (144 beta + 1)(4 beta^2 + 11) in place of 40 hbar beta
-    (hbar the norm of the Hilbert transform). The Hilbert space case is not stated in the book in
+    (hbar the norm of the Hilbert transform). McConnell: n = 1; UMD spaces, where the paper has
+    zeta-convex spaces (by Burkholder the same class); complex spaces, with complex m of class C^2
+    on R minus 0, where the paper has real m of class C^2 on R and applies the theorem on p. 755 to
+    functions that are not continuous at 0; f = F^{-1} G with G integrable, in place of test
+    functions with values in finite-dimensional subspaces, and no extension to L^p by density; the
+    constants are C c beta^2 and C beta^8 (4 beta^2 + 11)^2 with absolute C, where the paper only
+    says on what they depend; in Theorem 1.3 the dyadic intervals are those of p. 755, on both
+    half-lines (p. 741 speaks of all dyadic rectangles), both inequalities of (1.13), and not the
+    converse (that the inequalities imply UMD). The Hilbert space case is not stated in the book in
     this form: it is the bound with the UMD constant p* - 1 of a nonzero Hilbert space (Corollary
     4.5.15, Burkholder's theorem).
 
@@ -219,9 +239,25 @@ fidelity:
     bounded by pi^2 where the book has 2 pi. Corollary 5.3.25: the signs of the intervals are
     separated first, by reflection, and the dilates come from the dilation invariance of the L^p
     norm; the book deduces it from Theorem 5.3.24. Proposition 5.7.1: continuity at the integers.
-    Minkowski's integral inequality (Proposition 1.2.22) by a weighted Jensen inequality. The works
-    of Bourgain (1986) and McConnell (1984), from which the theory comes, were not accessible or not
-    consulted; the book's proofs, which are self-contained, replace them.
+    Minkowski's integral inequality (Proposition 1.2.22) by a weighted Jensen inequality. The work
+    of Bourgain (1986), from which the theory also comes, was not accessible; the book's proofs,
+    which are self-contained, replace it.
+
+
+    McConnell's theorems: the paper's proofs, with these departures, recorded in the docstrings. The
+    process X(y), the place where a Brownian motion first hits the height y, is represented by its
+    finite-dimensional distributions, chains with independent Cauchy increments, which are all that
+    the proof uses; the identities (2.3) to (2.6) become a reversal of these chains. Poisson
+    integrals are defined by their Fourier transforms, and (3.4) is proved on the Fourier side.
+    Lemma 3.1 for n = 1 without separating the cases |s| < y and |s| >= y. The reduction to smooth m
+    by mollification is not needed. The error estimate (3.6), sketched in the paper with a mean
+    value theorem that fails for vector-valued functions, is made after the integration in s.
+    Burkholder's inequality (2.1) is stated for deterministic coefficients, which is how it is used,
+    and for complex ones by real and imaginary parts (the coefficients of the paper are complex
+    unless m is even). In Theorem 1.3 the sums m_i and M are cut to finite parts and the limit is
+    taken at the end. Corrections to the paper: the limit of g_N (pp. 747, 748); the height from
+    which the chain starts on p. 751; (3.19), which is an inequality in both directions and not an
+    equality; the function phi must be 1 near 3/2, not only at 3/2.
 
 review:
   status: "agent-reviewed"
@@ -282,6 +318,19 @@ alignment:
       module: "VectorValuedLittlewoodPaley.Challenge"
       status: "adapted"
       note: "The case of a complex Hilbert space, where UMD constants do not occur in the statement."
+    - source: "McConnell 1984, Theorem 1.1 (n = 1)"
+      lean: "VectorValuedLittlewoodPaleyChallenge.mihlin_multiplier"
+      module: "VectorValuedLittlewoodPaley.Challenge"
+      status: "partial"
+      note: >-
+        n = 1; complex m, of class C^2 on R minus 0; on the functions F^{-1} G, G integrable, with
+        the constant C c beta^2, C absolute.
+    - source: "McConnell 1984, Theorem 1.3 (n = 1, UMD implies (1.13))"
+      lean: "VectorValuedLittlewoodPaleyChallenge.littlewoodPaley_signs"
+      module: "VectorValuedLittlewoodPaley.Challenge"
+      status: "partial"
+      note: >-
+        Both inequalities, for every choice of the signs on both half-lines; not the converse.
     - source: "a check of the definitions"
       lean: "VectorValuedLittlewoodPaleyChallenge.eLpNormRad_rpow"
       module: "VectorValuedLittlewoodPaley.Challenge"
