@@ -48,8 +48,8 @@ Departures from the source:
   boundedness of single frequencies (`eLpNormRad_singleFrequency_le`): the blocks `[2^{k−1}, 2^k]`
   and `(2^{k−1}, 2^k]` of the source differ from the dyadic blocks `[2^{k−1}, 2^k)` by one and two
   frequencies. The source treats general multipliers `H¹ → ℓ²`; here only the sequence `2^k` occurs.
-* The source recalls (p. 251) that `C_{2p}` is UMD, with Cotlar's trick, interpolation and duality as a
-  known argument. The fact is proved in BanachProbability by Randrianantoanina's theorem on
+* The source recalls (p. 251) that `C_{2p}` is UMD, with Cotlar's trick, interpolation and duality
+  as a known argument. The fact is proved in BanachProbability by Randrianantoanina's theorem on
   noncommutative martingale transforms (`BanachProbability.umdConst_two_complexSchattenSpace_le`;
   J. Funct. Anal. 194 (2002)).
 * In place of the equality (β), p. 252, `exists_riesz_factorization` gives

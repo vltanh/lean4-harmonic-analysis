@@ -102,7 +102,7 @@ private theorem integral_continuousMap_mul_eq_zero {g : UnitAddCircle → ℂ}
   exact hle (Submodule.mem_top (x := φ))
 
 /-- An integrable function with vanishing Fourier coefficients vanishes almost everywhere. -/
-private theorem ae_eq_zero_of_fourierCoeff_eq_zero {g : UnitAddCircle → ℂ}
+theorem ae_eq_zero_of_fourierCoeff_eq_zero {g : UnitAddCircle → ℂ}
     (hg : Integrable g haarAddCircle) (h : ∀ k : ℤ, fourierCoeff g k = 0) :
     g =ᵐ[haarAddCircle] 0 := by
   refine ae_eq_zero_of_forall_setIntegral_isClosed_eq_zero hg fun F hF => ?_
@@ -347,7 +347,7 @@ private theorem tendsto_eLpNorm_ofMatrix [Fact (1 ≤ q)] {f : ℕ → UnitAddCi
   rw [norm_smul, mul_comm]
 
 /-- Convergence in `L²` implies the convergence of the integrals of the squares of the norms. -/
-private theorem tendsto_integral_norm_sq {X : Type*} [NormedAddCommGroup X]
+theorem tendsto_integral_norm_sq {X : Type*} [NormedAddCommGroup X]
     {a : ℕ → UnitAddCircle → X} {b : UnitAddCircle → X} (ha : ∀ N, MemLp (a N) 2 haarAddCircle)
     (hb : MemLp b 2 haarAddCircle)
     (hlim : Filter.Tendsto (fun N => eLpNorm (a N - b) 2 haarAddCircle) Filter.atTop (nhds 0)) :
@@ -368,7 +368,7 @@ end Schatten
 /-! ### The partial sums of the Fourier series -/
 
 /-- The partial sums of the Fourier series of an `L²` function converge to it in `L²`. -/
-private theorem tendsto_eLpNorm_partialSum {u : UnitAddCircle → ℂ} (hu : MemLp u 2 haarAddCircle) :
+theorem tendsto_eLpNorm_partialSum {u : UnitAddCircle → ℂ} (hu : MemLp u 2 haarAddCircle) :
     Filter.Tendsto (fun N : ℕ => eLpNorm (fun t =>
       ∑ k ∈ Finset.Icc (-N : ℤ) N, fourier k t * fourierCoeff u k - u t) 2 haarAddCircle)
       Filter.atTop (nhds 0) := by
