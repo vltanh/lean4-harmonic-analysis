@@ -15,6 +15,8 @@ public import HarmonicAnalysis.Torus.TrigPoly
 public import HarmonicAnalysis.Torus.Cube
 public import HarmonicAnalysis.Torus.Lattice
 public import HarmonicAnalysis.Torus.Poisson
+public import HarmonicAnalysis.Torus.Lipschitz
+public import HarmonicAnalysis.Torus.Smooth
 public import HarmonicAnalysis.Transference.RiemannSum
 public import HarmonicAnalysis.Transference.Homogeneous
 public import HarmonicAnalysis.BeurlingAhlfors.Basic
@@ -24,3 +26,4 @@ public import HarmonicAnalysis.BeurlingAhlfors.TestFunctions.Approx
 public import HarmonicAnalysis.BeurlingAhlfors.TestFunctions
 public import HarmonicAnalysis.BeurlingAhlfors.LowerBound
 public import HarmonicAnalysis.BeurlingAhlfors.Transference
+public import HarmonicAnalysis.BeurlingAhlfors.Periodic

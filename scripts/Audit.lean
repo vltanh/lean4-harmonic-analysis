@@ -7,6 +7,7 @@ public meta import Lean.Elab.Command
 import all HarmonicAnalysis.BeurlingAhlfors.Basic
 import all HarmonicAnalysis.BeurlingAhlfors.Duality
 import all HarmonicAnalysis.BeurlingAhlfors.LowerBound
+import all HarmonicAnalysis.BeurlingAhlfors.Periodic
 import all HarmonicAnalysis.BeurlingAhlfors.TestFunctions
 import all HarmonicAnalysis.BeurlingAhlfors.TestFunctions.Approx
 import all HarmonicAnalysis.BeurlingAhlfors.TestFunctions.Profile
@@ -19,7 +20,9 @@ import all HarmonicAnalysis.FourierMultiplier.Duality
 import all HarmonicAnalysis.FourierMultiplier.Norming
 import all HarmonicAnalysis.Torus.Cube
 import all HarmonicAnalysis.Torus.Lattice
+import all HarmonicAnalysis.Torus.Lipschitz
 import all HarmonicAnalysis.Torus.Poisson
+import all HarmonicAnalysis.Torus.Smooth
 import all HarmonicAnalysis.Torus.TrigPoly
 import all HarmonicAnalysis.Transference.Homogeneous
 import all HarmonicAnalysis.Transference.RiemannSum
