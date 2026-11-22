@@ -27,14 +27,16 @@ With `ℂ ≅ ℝ²` by `x + iy ↦ (x, y)` and Mathlib's Fourier transform
   `𝓑 (∂̄h) = ∂h` of the Beurling–Ahlfors transform.
 * `HarmonicAnalysis.div_le_beurlingPowNorm_of_tendsto` (density): if Schwartz functions `φ_k`
   satisfy `∂̄^k φ_k → u` and `∂^k φ_k → v` in `L^p`, then `‖v‖_p / ‖u‖_p ≤ ‖𝓑^k‖_p`. For
-  `f ∈ W^{k,p}` with `u = ∂̄^k f`, `v = ∂^k f`, this is `𝓑^k (∂̄^k f) = ∂^k f` (lecture notes,
-  §4.1, after Exercise 4.1; Exercise 2.19 for `k = 1`, whose hint is "first consider smooth `h`
-  and then approximate"), used through the norm over Schwartz functions.
+  `f ∈ W^{k,p}` with `u = ∂̄^k f`, `v = ∂^k f`, this is `𝓑^k (∂̄^k f) = ∂^k f` (Dragičević 2011,
+  p. 465; lecture notes, §4.1, and Exercise 2.19 for `k = 1`, whose hint is "first consider smooth
+  `h` and then approximate"), used through the norm over Schwartz functions.
 * Elementary properties of the symbol: `|m| ≤ 1`, `m (−ξ) = m (ξ)`, `m (t ξ) = m (ξ)` for real
   `t ≠ 0`, continuity off `0`, measurability.
 
 ## References
 
+* O. Dragičević, *Some remarks on the `L^p` estimates for powers of the Ahlfors–Beurling
+  operator*, Arch. Math. 96 (2011), 463–471, p. 465.
 * O. Dragičević, *Analysis of the Ahlfors–Beurling transform*, lecture notes,
   [arXiv:2109.04555](https://arxiv.org/abs/2109.04555), §1.3 ((1.11)), Exercise 2.19 and §4.1.
 -/

@@ -27,35 +27,37 @@ constant is `κ_n (p) = (1/q)_n / (1/p)_n` (`HarmonicAnalysis.beurlingKappa`); f
 * `HarmonicAnalysis.beurlingKappa_two_le_beurlingPowNorm_two` (Dragičević's theorem, `n = 2`):
   `κ₂ (p) ≤ ‖𝓑²‖_p` for `1 < p < ∞`.
 * `HarmonicAnalysis.beurlingKappa_two_pStar_le_beurlingPowNorm_two`: `κ₂ (p*) ≤ ‖𝓑²‖_p` for
-  `1 < p < ∞`, by `‖𝓑²‖_p = ‖𝓑²‖_q` for `p < 2` (`HarmonicAnalysis.beurlingPowNorm_conjExponent`),
-  the reduction to `p ≥ 2` of Carbonaro–Dragičević–Kovač §1.3.1 (for `R^k`, `𝓑 = R²`). The
-  lecture notes' Corollary 4.8 states the weaker asymptotic form `‖T^n‖_p ≳ n^{1−2/p*}(p* − 1)`.
+  `1 < p < ∞`. Dragičević's article states nothing for `p < 2`; that case is
+  `‖𝓑²‖_p = ‖𝓑²‖_q` (`HarmonicAnalysis.beurlingPowNorm_conjExponent`), the reduction to `p ≥ 2` of
+  Carbonaro–Dragičević–Kovač §1.3.1 (for `R^k`, `𝓑 = R²`). The lecture notes' Corollary 4.8 states
+  the weaker asymptotic form `‖T^n‖_p ≳ n^{1−2/p*}(p* − 1)`.
 * Corollaries: `p* − 1 < ‖𝓑²‖_p` for `p ≠ 2`
   (`HarmonicAnalysis.pStar_sub_one_lt_beurlingPowNorm_two`), since
   `κ₂ (p*) − (p* − 1) = (p* − 1)(p* − 2) / (p* + 1) > 0`; and `21/5 = κ₂ (4) ≤ ‖𝓑²‖₄`
   (`HarmonicAnalysis.twentyOne_div_five_le_beurlingPowNorm_two_four`).
 
-Dragičević proves `‖T^n‖_p ≥ κ_n (p)` for every `n` and states it for `p > 2`, where it is the
-informative bound; the same argument gives `κ₂ (p) ≤ ‖𝓑²‖_p` for every `p > 1`. Only `n = 2` is
-proved here; general `n` is a planned extension.
+Dragičević's Theorem 1.1 is `‖T^n‖_p ≥ κ_n (p)` for every `n` and `p > 2` (the article's standing
+assumption, p. 464), where it is the informative bound; the same argument gives `κ₂ (p) ≤ ‖𝓑²‖_p`
+for every `p > 1`. Only `n = 2` is proved here; general `n` is a planned extension.
 
-The proof is the source's (lecture notes, Proposition 4.2), with its test functions
-(`HarmonicAnalysis.BeurlingAhlfors.testFun`): explicit integrals over the unit disc, of order
-`(1 − αp)⁻¹`, and integrals outside it that stay bounded. The norm `‖𝓑²‖_p` is a supremum over
-Schwartz functions, and `f_{2,α}` is not one; the source's `𝓑² (∂̄²f) = ∂²f` for `f ∈ W^{2,p}`
-(§4.1, after Exercise 4.1: "this ensures that `T^n (∂̄^n f) = ∂^n f`"; for `n = 1` this is
-Exercise 2.19, whose hint is to approximate by smooth functions) enters through
-the density step `HarmonicAnalysis.div_le_beurlingPowNorm_of_tendsto`, applied to Schwartz
-approximations of `f_{2,α}` in `W^{2,p}`
+The proof is the article's (pp. 466–467; repeated in the lecture notes, Proposition 4.2), with its
+test functions (`HarmonicAnalysis.BeurlingAhlfors.testFun`): explicit integrals over the unit disc,
+of order `(1 − αp)⁻¹`, and integrals outside it that stay bounded, in the identity (2.1) for the
+ratio of the norms. The norm `‖𝓑²‖_p` is a supremum over Schwartz functions, and `f_{2,α}` is not
+one. The article asserts without proof that `f_{n,α}` "belongs to `W^{n,p}`, which ensures that
+`T^n (∂̄^n f) = ∂^n f`" (p. 465; lecture notes, §4.1 and Exercise 4.1; for `n = 1`, Exercise 2.19,
+whose hint is to approximate by smooth functions). What is used of it, `‖∂²f‖_p ≤ ‖𝓑²‖_p ‖∂̄²f‖_p`,
+is proved here by the density step `HarmonicAnalysis.div_le_beurlingPowNorm_of_tendsto`, applied to
+Schwartz approximations of `f_{2,α}` in `W^{2,p}`
 (`HarmonicAnalysis.BeurlingAhlfors.exists_schwartz_tendsto_testFun`).
 
 ## References
 
 * O. Dragičević, *Some remarks on the `L^p` estimates for powers of the Ahlfors–Beurling
-  operator*, Arch. Math. 96 (2011), 463–471, Theorem 1.1.
+  operator*, Arch. Math. 96 (2011), 463–471: Theorem 1.1 (p. 465), proof pp. 466–467.
 * O. Dragičević, *Analysis of the Ahlfors–Beurling transform*, lecture notes,
-  [arXiv:2109.04555](https://arxiv.org/abs/2109.04555), Proposition 4.2 (Theorem 1.1 of the
-  previous reference, with its proof), Exercises 2.19 and 4.1.
+  [arXiv:2109.04555](https://arxiv.org/abs/2109.04555): Proposition 4.2 (Theorem 1.1 of the
+  previous reference, with the same proof), Exercises 2.19 and 4.1.
 * A. Carbonaro, O. Dragičević, V. Kovač, *Sharp `L^p` estimates of powers of the complex Riesz
   transform*, Math. Ann. 386 (2023), 1081–1125,
   [arXiv:2109.08369](https://arxiv.org/abs/2109.08369), §1.3.1 and §2.1.
@@ -107,7 +109,7 @@ theorem two_lt_pStar {p : ℝ} (hp : 1 < p) (hp2 : p ≠ 2) : 2 < pStar p := by
   · rw [pStar_of_two_le h.le]
     exact h
 
-/-- Dragičević's limit (lecture notes, Proposition 4.2), `n = 2`:
+/-- Dragičević's limit (Theorem 1.1, for `p > 2`), `n = 2`:
 `‖∂²f_{2,α}‖_p / ‖∂̄²f_{2,α}‖_p → κ₂ (p)` as `α → 1/p` from below, for `1 < p < ∞`. -/
 theorem tendsto_eLpNorm_div_testFun {p : ℝ} (hp : 1 < p) :
     Tendsto (fun α : ℝ =>
@@ -129,7 +131,7 @@ theorem tendsto_eLpNorm_div_testFun {p : ℝ} (hp : 1 < p) :
   obtain ⟨jOut, hjOut⟩ : ∃ g : ℝ → ℝ, ∀ α, g α =
       (∫⁻ z in (Metric.ball (0 : ℂ) 1)ᶜ, ‖dzbar (dzbar (testFun 2 α)) z‖ₑ ^ p).toReal :=
     ⟨_, fun _ => rfl⟩
-  -- the source's equation: the ratio of the `p`-th powers of the norms, with numerator and
+  -- the article's (2.1): the ratio of the `p`-th powers of the norms, with numerator and
   -- denominator multiplied by `1 − αp`
   have heq : ∀ α ∈ Set.Ioo 0 p⁻¹,
       eLpNorm (dz (dz (testFun 2 α))) (ENNReal.ofReal p) volume /
@@ -226,9 +228,8 @@ theorem eLpNorm_div_le_beurlingPowNorm_two {p α : ℝ} (hp : 1 < p) (hα0 : 0 <
   obtain ⟨φ, hu, hv⟩ := exists_schwartz_tendsto_testFun hp.le hα0 hα
   exact div_le_beurlingPowNorm_of_tendsto 2 hp.le hu hv
 
-/-- Dragičević's lower bound (Theorem 1.1 of the 2011 article; Proposition 4.2 of the lecture
-notes), the case `n = 2`: `κ₂ (p) ≤ ‖𝓑²‖_{L^p}` for `1 < p < ∞`. The source states it for
-`p > 2`. -/
+/-- Dragičević's lower bound (Theorem 1.1, for `p > 2`), the case `n = 2`:
+`κ₂ (p) ≤ ‖𝓑²‖_{L^p}` for `1 < p < ∞`. -/
 theorem beurlingKappa_two_le_beurlingPowNorm_two {p : ℝ} (hp : 1 < p) :
     ENNReal.ofReal (beurlingKappa 2 p) ≤ beurlingPowNorm 2 p := by
   refine le_of_tendsto (tendsto_eLpNorm_div_testFun hp) ?_
@@ -238,7 +239,8 @@ theorem beurlingKappa_two_le_beurlingPowNorm_two {p : ℝ} (hp : 1 < p) :
   calc α * p < p⁻¹ * p := mul_lt_mul_of_pos_right hα.2 hp0
     _ = 1 := inv_mul_cancel₀ hp0.ne'
 
-/-- `κ₂ (p*) ≤ ‖𝓑²‖_{L^p}` for `1 < p < ∞`: for `p < 2`, `‖𝓑²‖_p = ‖𝓑²‖_q` and `p* = q`. -/
+/-- `κ₂ (p*) ≤ ‖𝓑²‖_{L^p}` for `1 < p < ∞`: for `p < 2`, `‖𝓑²‖_p = ‖𝓑²‖_q`
+(Carbonaro–Dragičević–Kovač, §1.3.1) and `p* = q`. -/
 theorem beurlingKappa_two_pStar_le_beurlingPowNorm_two {p : ℝ} (hp : 1 < p) :
     ENNReal.ofReal (beurlingKappa 2 (pStar p)) ≤ beurlingPowNorm 2 p := by
   rcases le_or_gt 2 p with h2 | h2

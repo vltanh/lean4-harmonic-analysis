@@ -18,7 +18,7 @@ import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
 /-!
 # Dragičević's test functions
 
-For `n ∈ ℕ` and `α ∈ ℝ`, Dragičević's test functions (lecture notes, §4.1) are
+For `n ∈ ℕ` and `α ∈ ℝ`, Dragičević's test functions (2011 article, p. 465) are
 `f_{n,α} (z) = z^n |z|^{−2α} g_n (|z|)` (`HarmonicAnalysis.BeurlingAhlfors.testFun`), where
 `g_n (x) = 1` for `x ≤ 1` and `g_n (x) = exp (−(x − 1)^n)` for `x > 1`
 (`HarmonicAnalysis.BeurlingAhlfors.testCutoff`; the source's example of a sufficiently smooth,
@@ -27,23 +27,23 @@ the pointwise Wirtinger derivatives `HarmonicAnalysis.dz`, `HarmonicAnalysis.dzb
 used or proved here: for `α < 1` they agree almost everywhere with the weak ones, since `f_{2,α}`
 is `C¹` off `0` (`g₂` is `C¹` at `1`) and `C²` off `0` and the unit circle, and near `0`,
 `f = O (|z|^{2−2α})`, `∇f = O (|z|^{1−2α})` (for `α = 1`, `f = z / z̄` and the distribution `∂²f`
-has a Dirac mass at `0`). The source takes `p > 2`; the statements below hold for every `p` in the
-range given.
+has a Dirac mass at `0`). The article takes `p > 2` and `α < 1/p`; the statements below hold for
+every `p` and `α` in the range given.
 
 ## Main results, for `n = 2`
 
-* On the punctured unit disc (lecture notes, proof of Proposition 4.2):
+* On the punctured unit disc (proof of Theorem 1.1, p. 466):
   `∂²f = (2 − α)(1 − α) |z|^{−2α}` and `∂̄²f = (−α)(−α − 1) (z / z̄)² |z|^{−2α}`
   (`dz_dz_testFun_of_norm_lt_one`, `dzbar_dzbar_testFun_of_norm_lt_one`), so that, for
   `0 < α < 1/p`, `∫_Δ |∂²f|^p = π / (1 − αp) ((2 − α)(1 − α))^p` and
   `∫_Δ |∂̄²f|^p = π / (1 − αp) (α (α + 1))^p` (`lintegral_dz_dz_testFun_ball`,
   `lintegral_dzbar_dzbar_testFun_ball`).
 * Outside the disc, the integrals of `|∂²f|^p` and `|∂̄²f|^p` stay bounded for `α ∈ [0, 1]`
-  (`exists_bound_testFun_compl_ball`; the source: `|Dⁿ f (z)| ≤ P (n, α) |z|^M e^{−(|z| − 1)^n}`).
-* `f_{2,α} ∈ W^{2,p}` for `1 ≤ p`, `0 < α < 1/p` (lecture notes, Exercise 4.1, for `p > 2`), in
-  the form used: Schwartz
-  functions `φ_k` with `∂̄²φ_k → ∂̄²f` and `∂²φ_k → ∂²f` in `L^p`
-  (`exists_schwartz_tendsto_testFun`).
+  (`exists_bound_testFun_compl_ball`; the article, p. 467:
+  `|Dⁿ f (z)| ≤ P (n, α) |z|^M e^{−(|z| − 1)^n}`).
+* `f_{2,α} ∈ W^{2,p}` for `1 ≤ p`, `0 < α < 1/p` (asserted without proof in the article, p. 465,
+  for `p > 2`; Exercise 4.1 of the lecture notes), in the form used: Schwartz functions `φ_k` with
+  `∂̄²φ_k → ∂̄²f` and `∂²φ_k → ∂²f` in `L^p` (`exists_schwartz_tendsto_testFun`).
 
 ## Proofs
 
@@ -61,6 +61,8 @@ and a Gamma-type integral). The approximation of `f_{2,α}` is in
 
 ## References
 
+* O. Dragičević, *Some remarks on the `L^p` estimates for powers of the Ahlfors–Beurling
+  operator*, Arch. Math. 96 (2011), 463–471: p. 465 and the proof of Theorem 1.1, pp. 466–467.
 * O. Dragičević, *Analysis of the Ahlfors–Beurling transform*, lecture notes,
   [arXiv:2109.04555](https://arxiv.org/abs/2109.04555), §4.1 (Exercise 4.1, Proposition 4.2).
 -/
@@ -385,11 +387,12 @@ theorem tendsto_eLpNorm_sub_of_dominated {p : ℝ} (hp : 0 < p) {F : ℕ → ℂ
     ENNReal.toReal_ofReal hp.le]
   rfl
 
-/-- `f_{2,α} ∈ W^{2,p}` for `1 ≤ p < ∞`, `0 < α < 1/p` (lecture notes, Exercise 4.1, where
-`p > 2`), in the form used: there are Schwartz functions `φ_k` with `∂̄²φ_k → ∂̄²f_{2,α}` and
+/-- `f_{2,α} ∈ W^{2,p}` for `1 ≤ p < ∞`, `0 < α < 1/p` (Dragičević 2011, p. 465, where `p > 2`), in
+the form used: there are Schwartz functions `φ_k` with `∂̄²φ_k → ∂̄²f_{2,α}` and
 `∂²φ_k → ∂²f_{2,α}` in `L^p`.
 
-The lecture notes leave this as an exercise; the proof is the standard approximation argument:
+The article asserts this without proof, and the lecture notes leave it as an exercise (Exercise
+4.1); the proof is the standard approximation argument:
 `φ_k (z) = z² K_k (|z|²)` (`HarmonicAnalysis.BeurlingAhlfors.approxSchwartz`) regularises the
 singularity at `0` (`|z|^{−2α}` becomes `(|z|² + ε_k)^{−α}`), smooths the cutoff `g₂` at `|z| = 1`,
 where it is only `C¹`, and truncates at infinity. Off `0` and the unit circle, `∂²φ_k → ∂²f` and
