@@ -1,7 +1,6 @@
 module
 
 public import VectorValuedHarmonicAnalysis.Dyadic.Average
-import HarmonicAnalysis.FourierMultiplier.Density
 import Mathlib.Analysis.Complex.ExponentialBounds
 import Mathlib.Analysis.Real.Pi.Bounds
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
@@ -16,16 +15,26 @@ space the truncations `H_{ε, 2^n ε}` are bounded on `L^p (ℝ; X)`, `1 < p < �
 and `n` (`eLpNorm_truncatedHilbert_le`).
 
 Source: Hytönen–van Neerven–Veraar–Weis (HNVW), *Analysis in Banach spaces I* (2016), Section 5.1.b,
-pp. 384–386: with `φ = haarCorrelation haarSplit`, `Φ (x) = ∫_0^x φ` and
+pp. 384–387: with `φ = haarCorrelation haarSplit`, `Φ (x) = ∫_0^x φ` and
 `ψ (x) = x⁻¹ Φ (x) 1_{[−1, 1]} (x)`,
 
 `∫_ε^R φ_t * f dt/t = ψ_ε * f − ψ_R * f − (π/8) H_{ε,R} f` (`integral_dilateConv_eq`; the
 display before (5.23), p. 385),
 
-where the left-hand side is an average of the shifts of `Dyadic.Average` over the dilations `t`. The
-book shows that the error terms `ψ_ε * f`, `ψ_R * f` tend to `0`; here they are bounded by
-`‖ψ‖_1 ‖f‖_p ≤ 2 ‖f‖_p`, which gives the bound for the truncations, with the constant
-`(8/π) (2 log 2 · β² + 4) ≤ 4 β² + 11`.
+where the left-hand side is, for `R = 2^n ε`, an average of the shifts of `Dyadic.Average` over the
+dilations `t`.
+
+Departure from the source: the book lets `ε → 0` and `R → ∞` in this identity. The averaged shifts
+converge in `L^p` and almost everywhere (Lemma 5.1.8), the error terms, which are `ψ_ε * f`,
+`ψ_R * f` and the integrals of `φ_t * f dt/t` that remain when `ε` and `R` are not powers of two
+(5.23), tend to `0` (Lemma 5.1.12), and the limit is `H f` (Theorem 5.1.13). Here no limit is taken:
+only the truncations with `R = 2^n ε` are bounded, uniformly in `ε` and `n`. For them the integral
+over `[ε, R]` itself is an average of dyadic shifts, and the remaining integrals of (5.23) do not
+occur; the terms `ψ_ε * f`, `ψ_R * f` are bounded by Young's inequality, `‖ψ‖_1 ‖f‖_p ≤ 2 ‖f‖_p`.
+The limit is taken on the Fourier side, with Fatou's lemma, in `HilbertTransform.Fourier`. In the
+bound only the constant is affected: `(8/π) (2 log 2 · β² + 4) ≤ 4 β² + 11` instead of the book's
+`(8/π) log 2 · β⁺ β⁻` (the factor `2` of `2 log 2` comes from the finitely many generations, see
+`Dyadic.Shift`); the convergence of the truncations in `L^p` and almost everywhere is not proved.
 -/
 
 @[expose] public section
@@ -60,10 +69,6 @@ private theorem intervalIntegrable_of_bounded {g : ℝ → ℝ} (hg : Measurable
   rw [intervalIntegrable_iff]
   exact Measure.integrableOn_of_bounded (by simp) hg.aestronglyMeasurable
     (ae_of_all _ fun x => hC x)
-
-private theorem abs_haarSplit_le (x : ℝ) : |haarSplit x| ≤ 1 := by
-  simp only [haarSplit, haar, Set.indicator_apply, Set.mem_Ico, Pi.one_apply]
-  split_ifs <;> grind
 
 private theorem integral_indicator_Ici (c a b : ℝ) :
     ∫ s in a..b, (Set.Ici c).indicator (1 : ℝ → ℝ) s = max (b - c) 0 - max (a - c) 0 := by
@@ -175,6 +180,7 @@ theorem integral_hilbertProfile : ∫ s in (0 : ℝ)..1, hilbertProfile s = -1 /
     h1, h2, h3, h4]
   norm_num
 
+/-- HNVW I, Example 5.1.11: `φ` is odd. -/
 theorem hilbertProfile_neg (x : ℝ) : hilbertProfile (-x) = -hilbertProfile x := by
   have h : ∀ y, tent (1 - y) = tent y := fun y => by
     simp only [tent]
@@ -306,6 +312,25 @@ private theorem integral_dilate_hilbertProfile {ε R : ℝ} (hε : 0 < ε) (hεR
   rw [intervalIntegral.integral_const_mul, h]
   ring
 
+/-- HNVW I, p. 385: `∫_ε^R φ_t (y) dt/t = ψ_ε (y) − ψ_R (y) − (8 y)⁻¹ 1_{ε < |y| < R}`, for
+`|y| ≠ R`. -/
+private theorem integral_dilate_hilbertProfile_eq {ε R : ℝ} (hε : 0 < ε) (hεR : ε ≤ R) {y : ℝ}
+    (hy : |y| ≠ R) :
+    ∫ t in ε..R, t⁻¹ * (t⁻¹ * hilbertProfile (t⁻¹ * y)) =
+      ε⁻¹ * hilbertError (ε⁻¹ * y) - R⁻¹ * hilbertError (R⁻¹ * y) -
+        1 / 8 * {y | ε < |y| ∧ |y| < R}.indicator (fun y => y⁻¹) y := by
+  have hind : {y | ε < |y| ∧ |y| < R}.indicator (fun y : ℝ => y⁻¹) y =
+      {y | ε < |y|}.indicator (fun y => y⁻¹) y - {y | R < |y|}.indicator (fun y => y⁻¹) y := by
+    simp only [Set.indicator_apply, Set.mem_ofPred_eq]
+    rcases lt_or_ge ε |y| with h | h <;> rcases lt_or_ge R |y| with h' | h'
+    · simp [h, h', h'.le]
+    · simp [h, not_lt.2 h', h'.lt_of_ne hy]
+    · exact absurd (h'.trans_le h) (not_lt.2 hεR)
+    · simp [not_lt.2 h, not_lt.2 h']
+  rw [integral_dilate_hilbertProfile hε hεR, inv_mul_hilbertPrimitive hε,
+    inv_mul_hilbertPrimitive (hε.trans_le hεR), hind]
+  ring
+
 /-! ### The truncations as averages of the dilated convolutions -/
 
 private theorem integrable_kernel_smul {f : ℝ → X} (hf : LocallyIntegrable f) {g : ℝ → ℝ}
@@ -361,6 +386,51 @@ private theorem integrable_dilate_smul {f : ℝ → X} (hf : LocallyIntegrable f
       · rw [abs_mul, abs_inv, abs_of_pos ht0, ← div_eq_inv_mul, one_le_div ht0]
         exact ht.2.trans h4.le
 
+/-- HNVW I, p. 384: the change of the order of integration. -/
+private theorem integral_dilateConv_swap [CompleteSpace X] {f : ℝ → X} (hf : LocallyIntegrable f)
+    {ε R : ℝ} (hε : 0 < ε) (hεR : ε ≤ R) (x : ℝ) :
+    ∫ t in ε..R, t⁻¹ • dilateConv hilbertProfile t f x =
+      ∫ y, (∫ t in ε..R, t⁻¹ * (t⁻¹ * hilbertProfile (t⁻¹ * (x - y)))) • f y := by
+  rw [intervalIntegral.integral_of_le hεR]
+  simp_rw [dilateConv, ← integral_smul, smul_smul]
+  rw [integral_integral_swap (integrable_dilate_smul hf hε x)]
+  refine integral_congr_ae (ae_of_all _ fun y => ?_)
+  simp only
+  rw [integral_smul_const, intervalIntegral.integral_of_le hεR]
+
+private theorem integrable_hilbertError_smul {f : ℝ → X} (hf : LocallyIntegrable f) {r : ℝ}
+    (hr : 0 < r) (x : ℝ) : Integrable fun y => (r⁻¹ * hilbertError (r⁻¹ * (x - y))) • f y := by
+  refine integrable_kernel_smul hf (g := fun z => r⁻¹ * hilbertError (r⁻¹ * z)) (C := r⁻¹)
+    (r := r) (measurable_const.mul (measurable_hilbertError.comp (measurable_const_mul _)))
+    (fun z => ?_) (fun z hz => ?_) x
+  · rw [abs_mul, abs_of_pos (inv_pos.2 hr)]
+    exact mul_le_of_le_one_right (inv_pos.2 hr).le (abs_hilbertError_le _)
+  · rw [hilbertError_of_one_lt_abs, mul_zero]
+    rw [abs_mul, abs_of_pos (inv_pos.2 hr), ← div_eq_inv_mul, one_lt_div hr]
+    exact hz
+
+private theorem integrable_truncated_smul {f : ℝ → X} (hf : LocallyIntegrable f) {ε : ℝ}
+    (hε : 0 < ε) (R x : ℝ) : Integrable fun y =>
+      {z | ε < |z| ∧ |z| < R}.indicator (fun z => z⁻¹) (x - y) • f y := by
+  refine integrable_kernel_smul hf (C := ε⁻¹) (r := R) (measurable_inv.indicator
+    ((measurableSet_lt measurable_const measurable_norm).inter (measurableSet_lt measurable_norm
+      measurable_const))) (fun z => ?_) (fun z hz => by simp [hz.le]) x
+  by_cases hz : ε < |z| ∧ |z| < R
+  · simpa [hz, abs_inv] using inv_anti₀ hε hz.1.le
+  · simp [hz, hε.le]
+
+/-- `H_{ε,R} f` as an integral over the line. -/
+private theorem truncatedHilbert_eq_integral (ε R : ℝ) (f : ℝ → X) (x : ℝ) :
+    truncatedHilbert ε R f x = Real.pi⁻¹ •
+      ∫ y, {z | ε < |z| ∧ |z| < R}.indicator (fun z => z⁻¹) (x - y) • f y := by
+  have hS : MeasurableSet {y | ε < |x - y| ∧ |x - y| < R} :=
+    (measurableSet_lt measurable_const (measurable_const_sub x).norm).inter
+      (measurableSet_lt (measurable_const_sub x).norm measurable_const)
+  rw [truncatedHilbert, ← integral_indicator hS]
+  congr 2
+  funext y
+  by_cases hy : ε < |x - y| ∧ |x - y| < R <;> simp [hy]
+
 /-- HNVW I, the display before (5.23), p. 385. -/
 theorem integral_dilateConv_eq {f : ℝ → X} (hf : LocallyIntegrable f) {ε R : ℝ}
     (hε : 0 < ε) (hεR : ε ≤ R) (x : ℝ) :
@@ -371,166 +441,70 @@ theorem integral_dilateConv_eq {f : ℝ → X} (hf : LocallyIntegrable f) {ε R 
   swap
   · simp [dilateConv, truncatedHilbert, integral, hX]
   have hR : 0 < R := hε.trans_le hεR
-  -- the change of the order of integration
-  have h1 : ∫ t in ε..R, t⁻¹ • dilateConv hilbertProfile t f x =
-      ∫ y, (∫ t in ε..R, t⁻¹ * (t⁻¹ * hilbertProfile (t⁻¹ * (x - y)))) • f y := by
-    rw [intervalIntegral.integral_of_le hεR]
-    simp_rw [dilateConv, ← integral_smul, smul_smul]
-    rw [integral_integral_swap (integrable_dilate_smul hf hε x)]
-    refine integral_congr_ae (ae_of_all _ fun y => ?_)
-    simp only
-    rw [integral_smul_const, intervalIntegral.integral_of_le hεR]
   -- the integration in `t`
-  have hS : MeasurableSet {y | ε < |x - y| ∧ |x - y| < R} :=
-    (measurableSet_lt measurable_const (measurable_const_sub x).norm).inter
-      (measurableSet_lt (measurable_const_sub x).norm measurable_const)
-  have h2 : ∀ᵐ y : ℝ, (∫ t in ε..R, t⁻¹ * (t⁻¹ * hilbertProfile (t⁻¹ * (x - y)))) • f y =
+  have h : ∀ᵐ y : ℝ, (∫ t in ε..R, t⁻¹ * (t⁻¹ * hilbertProfile (t⁻¹ * (x - y)))) • f y =
       (ε⁻¹ * hilbertError (ε⁻¹ * (x - y))) • f y - (R⁻¹ * hilbertError (R⁻¹ * (x - y))) • f y -
-        (1 / 8 : ℝ) • {y | ε < |x - y| ∧ |x - y| < R}.indicator (fun y => (x - y)⁻¹ • f y) y := by
-    have hne : ∀ᵐ y : ℝ, y ≠ x - R ∧ y ≠ x + R :=
-      (Measure.ae_ne volume _).and (Measure.ae_ne volume _)
-    filter_upwards [hne] with y hy
-    have hy' : |x - y| ≠ R := fun h => by
+        (1 / 8 : ℝ) • {z | ε < |z| ∧ |z| < R}.indicator (fun z => z⁻¹) (x - y) • f y := by
+    filter_upwards [Measure.ae_ne volume (x - R), Measure.ae_ne volume (x + R)] with y hy hy'
+    have hne : |x - y| ≠ R := fun h => by
       rcases abs_eq hR.le |>.1 h with h | h
-      · exact hy.1 (by linarith)
-      · exact hy.2 (by linarith)
-    have hind : {z | ε < |z|}.indicator (fun z : ℝ => z⁻¹) (x - y) -
-        {z | R < |z|}.indicator (fun z : ℝ => z⁻¹) (x - y) =
-        {y | ε < |x - y| ∧ |x - y| < R}.indicator (fun y => (x - y)⁻¹) y := by
-      simp only [Set.indicator_apply, Set.mem_ofPred_eq]
-      rcases lt_or_ge ε |x - y| with h | h <;> rcases lt_or_ge R |x - y| with h' | h'
-      · simp [h, h', h'.le]
-      · simp [h, not_lt.2 h', h'.lt_of_ne hy']
-      · exact absurd (h'.trans_le h) (not_lt.2 hεR)
-      · simp [not_lt.2 h, not_lt.2 h']
-    have hind2 : {y | ε < |x - y| ∧ |x - y| < R}.indicator (fun y => (x - y)⁻¹ • f y) y =
-        {y | ε < |x - y| ∧ |x - y| < R}.indicator (fun y => (x - y)⁻¹) y • f y := by
-      by_cases h : y ∈ {y | ε < |x - y| ∧ |x - y| < R}
-      · rw [Set.indicator_of_mem h, Set.indicator_of_mem h]
-      · rw [Set.indicator_of_notMem h, Set.indicator_of_notMem h, zero_smul]
-    rw [integral_dilate_hilbertProfile hε hεR, inv_mul_hilbertPrimitive hε,
-      inv_mul_hilbertPrimitive hR, hind2, ← hind]
+      · exact hy (by linarith)
+      · exact hy' (by linarith)
+    rw [integral_dilate_hilbertProfile_eq hε hεR hne]
     module
-  have hi : ∀ {r : ℝ}, 0 < r →
-      Integrable fun y => (r⁻¹ * hilbertError (r⁻¹ * (x - y))) • f y := by
-    intro r hr
-    refine integrable_kernel_smul hf (g := fun z => r⁻¹ * hilbertError (r⁻¹ * z)) (C := r⁻¹)
-      (r := r) (measurable_const.mul (measurable_hilbertError.comp (measurable_const_mul _)))
-      (fun z => ?_) (fun z hz => ?_) x
-    · rw [abs_mul, abs_of_pos (inv_pos.2 hr)]
-      exact mul_le_of_le_one_right (inv_pos.2 hr).le (abs_hilbertError_le _)
-    · rw [hilbertError_of_one_lt_abs, mul_zero]
-      rw [abs_mul, abs_of_pos (inv_pos.2 hr), ← div_eq_inv_mul, one_lt_div hr]
-      exact hz
-  have hi3 : IntegrableOn (fun y => (x - y)⁻¹ • f y) {y | ε < |x - y| ∧ |x - y| < R} := by
-    rw [← integrable_indicator_iff hS]
-    have := integrable_kernel_smul hf (g := {z | ε < |z| ∧ |z| < R}.indicator fun z => z⁻¹)
-      (C := ε⁻¹) (r := R) (measurable_inv.indicator ((measurableSet_lt measurable_const
-        measurable_norm).inter (measurableSet_lt measurable_norm measurable_const)))
-      (fun z => ?_) (fun z hz => ?_) x
-    · refine this.congr (ae_of_all _ fun y => ?_)
-      by_cases hy : ε < |x - y| ∧ |x - y| < R <;> simp [hy]
-    · by_cases hz : ε < |z| ∧ |z| < R
-      · simpa [hz, abs_inv] using inv_anti₀ hε hz.1.le
-      · simp [hz, hε.le]
-    · simp [hz.le]
-  rw [h1, integral_congr_ae h2]
-  refine (integral_sub ((hi hε).sub (hi hR))
-    ((hi3.integrable_indicator hS).smul (1 / 8 : ℝ))).trans ?_
+  have hi := integrable_hilbertError_smul hf hε x
+  have hi' := integrable_hilbertError_smul hf hR x
+  rw [integral_dilateConv_swap hf hε hεR, integral_congr_ae h]
+  refine (integral_sub (hi.sub hi') ((integrable_truncated_smul hf hε R x).smul (1 / 8 : ℝ))).trans
+    ?_
   simp only [Pi.smul_apply]
-  rw [integral_sub' (hi hε) (hi hR), integral_smul, integral_indicator hS,
-    truncatedHilbert, smul_smul, dilateConv, dilateConv]
+  rw [integral_sub' hi hi', integral_smul, truncatedHilbert_eq_integral, smul_smul, dilateConv,
+    dilateConv]
   congr 2
   field_simp
 
 /-! ### The bound -/
 
-/-- Minkowski's integral inequality, in the form of Young's inequality:
-`‖∫ w (s) F (·, s) dν (s)‖_p ≤ ‖w‖_1 C` when `‖F (·, s)‖_p ≤ C` for almost every `s`. -/
-theorem eLpNorm_integral_smul_le {p : ℝ} (hp : 1 ≤ p) {ν : Measure ℝ} [SFinite ν]
-    {w : ℝ → ℝ} (hw : Measurable w) {F : ℝ → ℝ → X} (hF : StronglyMeasurable (Function.uncurry F))
-    {C : ℝ≥0∞} (hC : ∀ᵐ s ∂ν, eLpNorm (fun x => F x s) (ENNReal.ofReal p) volume ≤ C) :
-    eLpNorm (fun x => ∫ s, w s • F x s ∂ν) (ENNReal.ofReal p) volume ≤
-      (∫⁻ s, ‖w s‖ₑ ∂ν) * C := by
-  have hp0 : 0 < p := by linarith
-  have hnorm : ∀ {g : ℝ → X}, StronglyMeasurable g →
-      eLpNorm g (ENNReal.ofReal p) volume = (∫⁻ x, ‖g x‖ₑ ^ p) ^ (1 / p) := fun hg => by
-    rw [eLpNorm_eq_lintegral_rpow_enorm_toReal (by simpa using hp0) ENNReal.ofReal_ne_top
-      hg.aestronglyMeasurable, ENNReal.toReal_ofReal hp0.le]
-  have hwF : StronglyMeasurable (Function.uncurry fun x s : ℝ => w s • F x s) :=
-    (hw.comp measurable_snd).stronglyMeasurable.smul hF
-  rw [hnorm hwF.integral_prod_right]
-  set A := ∫⁻ s, ‖w s‖ₑ ∂ν
-  have h1 : ∫⁻ x, ‖∫ s, w s • F x s ∂ν‖ₑ ^ p ≤ (A * C) ^ p := by
-    calc ∫⁻ x, ‖∫ s, w s • F x s ∂ν‖ₑ ^ p
-        ≤ ∫⁻ x, (∫⁻ s, ‖w s‖ₑ * ‖F x s‖ₑ ∂ν) ^ p := by
-          refine lintegral_mono fun x => ENNReal.rpow_le_rpow ?_ hp0.le
-          refine (enorm_integral_le_lintegral_enorm _).trans_eq ?_
-          simp_rw [enorm_smul]
-      _ ≤ A ^ (p - 1) * ∫⁻ s, ‖w s‖ₑ * (∫⁻ x, ‖F x s‖ₑ ^ p) ∂ν :=
-          HarmonicAnalysis.lintegral_rpow_lintegral_mul_le hw.enorm hF.enorm hp
-      _ ≤ A ^ (p - 1) * ∫⁻ s, ‖w s‖ₑ * C ^ p ∂ν := by
-          refine mul_le_mul' le_rfl (lintegral_mono_ae ?_)
-          filter_upwards [hC] with s hs
-          gcongr
-          rw [hnorm (g := fun x => F x s) (hF.comp_measurable measurable_prodMk_right)] at hs
-          rwa [one_div, ENNReal.rpow_inv_le_iff hp0] at hs
-      _ = (A * C) ^ p := by
-          rw [lintegral_mul_const _ hw.enorm, ← mul_assoc, ENNReal.mul_rpow_of_nonneg _ _ hp0.le]
-          congr 1
-          conv_lhs => rw [show ∫⁻ s, ‖w s‖ₑ ∂ν = A ^ (1 : ℝ) from (ENNReal.rpow_one A).symm]
-          rw [← ENNReal.rpow_add_of_nonneg _ _ (by linarith) zero_le_one, sub_add_cancel]
-  rw [one_div, ENNReal.rpow_inv_le_iff hp0]
-  exact h1
-
-private theorem stronglyMeasurable_dilateConv {g : ℝ → ℝ} (hg : Measurable g) {f : ℝ → X}
-    (hf : StronglyMeasurable f) :
-    StronglyMeasurable (Function.uncurry fun x t : ℝ => dilateConv g t f x) := by
-  have h : StronglyMeasurable (Function.uncurry fun (z : ℝ × ℝ) (y : ℝ) =>
-      (z.2⁻¹ * g (z.2⁻¹ * (z.1 - y))) • f y) := by
-    refine StronglyMeasurable.smul (Measurable.stronglyMeasurable ?_)
-      (hf.comp_measurable measurable_snd)
-    have h1 : Measurable fun z : (ℝ × ℝ) × ℝ => z.1.2⁻¹ := measurable_fst.snd.inv
-    exact h1.mul (hg.comp (h1.mul (measurable_fst.fst.sub measurable_snd)))
-  exact h.integral_prod_right
-
-/-- `‖ψ_t * f‖_p ≤ ‖ψ‖_1 ‖f‖_p ≤ 2 ‖f‖_p` (Young's inequality). -/
-private theorem eLpNorm_dilateConv_hilbertError_le {p : ℝ} (hp : 1 ≤ p) {f : ℝ → X}
-    (hfm : StronglyMeasurable f) {t : ℝ} (ht : 0 < t) :
-    eLpNorm (dilateConv hilbertError t f) (ENNReal.ofReal p) volume ≤
-      2 * eLpNorm f (ENNReal.ofReal p) volume := by
-  have hw : Measurable fun z => t⁻¹ * hilbertError (t⁻¹ * z) :=
-    measurable_const.mul (measurable_hilbertError.comp (measurable_const_mul _))
-  have h1 : dilateConv hilbertError t f =
-      fun x => ∫ z, (t⁻¹ * hilbertError (t⁻¹ * z)) • f (x - z) := by
-    funext x
-    rw [dilateConv, ← integral_sub_left_eq_self
-      (fun z => (t⁻¹ * hilbertError (t⁻¹ * z)) • f (x - z)) volume x]
-    simp only [sub_sub_cancel]
-  rw [h1]
-  refine (eLpNorm_integral_smul_le hp hw (F := fun x z => f (x - z))
-    (hfm.comp_measurable (measurable_fst.sub measurable_snd))
-    (C := eLpNorm f (ENNReal.ofReal p) volume) (ae_of_all _ fun z => ?_)).trans ?_
-  · exact (eLpNorm_comp_measurePreserving hfm.aestronglyMeasurable
-      (measurePreserving_sub_right volume z)).le
-  · gcongr
-    calc ∫⁻ z, ‖t⁻¹ * hilbertError (t⁻¹ * z)‖ₑ
-        ≤ ∫⁻ z, (Set.Icc (-t) t).indicator (fun _ => ENNReal.ofReal t⁻¹) z := by
-          refine lintegral_mono fun z => ?_
-          by_cases hz : z ∈ Set.Icc (-t) t
-          · rw [Set.indicator_of_mem hz, ← ofReal_norm, Real.norm_eq_abs, abs_mul,
-              abs_of_pos (inv_pos.2 ht)]
-            exact ENNReal.ofReal_le_ofReal
-              (mul_le_of_le_one_right (inv_pos.2 ht).le (abs_hilbertError_le _))
-          · rw [Set.indicator_of_notMem hz, hilbertError_of_one_lt_abs]
-            · simp
-            · rw [abs_mul, abs_of_pos (inv_pos.2 ht), ← div_eq_inv_mul, one_lt_div ht]
-              rwa [Set.mem_Icc, ← abs_le, not_le] at hz
-      _ = 2 := by
-          rw [lintegral_indicator measurableSet_Icc, setLIntegral_const, Real.volume_Icc,
-            ← ENNReal.ofReal_mul (inv_pos.2 ht).le]
-          rw [show t⁻¹ * (t - -t) = 2 by field_simp; ring]
+/-- `‖ψ‖_1 ≤ 2`, as `|ψ| ≤ 1_{[−1, 1]}`. -/
+private theorem lintegral_hilbertError_le : ∫⁻ z, ‖hilbertError z‖ₑ ≤ 2 := by
+  calc ∫⁻ z, ‖hilbertError z‖ₑ ≤ ∫⁻ z, (Set.Icc (-1 : ℝ) 1).indicator (fun _ => 1) z := by
+        refine lintegral_mono fun z => ?_
+        by_cases hz : z ∈ Set.Icc (-1 : ℝ) 1
+        · rw [Set.indicator_of_mem hz, ← ofReal_norm, Real.norm_eq_abs]
+          exact ENNReal.ofReal_le_one.2 (abs_hilbertError_le z)
+        · rw [hilbertError, Set.indicator_of_notMem hz]
           simp
+    _ = 2 := by
+        rw [lintegral_indicator_const measurableSet_Icc, Real.volume_Icc, one_mul]
+        norm_num
+
+/-- `‖ψ_t * f‖_p ≤ 2 ‖f‖_p` (Young's inequality). -/
+private theorem eLpNorm_dilateConv_hilbertError_le {p : ℝ} (hp : 1 ≤ p) {f : ℝ → X}
+    (hf : AEStronglyMeasurable f volume) {t : ℝ} (ht : 0 < t) :
+    eLpNorm (dilateConv hilbertError t f) (ENNReal.ofReal p) volume ≤
+      2 * eLpNorm f (ENNReal.ofReal p) volume :=
+  (eLpNorm_dilateConv_le hp measurable_hilbertError ht hf).trans (by
+    gcongr
+    exact lintegral_hilbertError_le)
+
+private theorem intervalIntegrable_dilateConv {f : ℝ → X} (hf : LocallyIntegrable f) (x : ℝ)
+    {a b : ℝ} (ha : 0 < a) (hab : a ≤ b) :
+    IntervalIntegrable (fun t => t⁻¹ • dilateConv hilbertProfile t f x) volume a b := by
+  rw [intervalIntegrable_iff_integrableOn_Ioc_of_le hab]
+  refine ((integrable_dilate_smul hf (R := b) ha x).integral_prod_left).congr
+    (ae_of_all _ fun t => ?_)
+  simp only [Function.uncurry_apply_pair, dilateConv, ← integral_smul, smul_smul]
+
+/-- The substitution `t = 2^i s`. -/
+private theorem integral_dilateConv_two_pow (f : ℝ → X) (ε : ℝ) (i : ℕ) (x : ℝ) :
+    ∫ t in 2 ^ i * ε..2 ^ (i + 1) * ε, t⁻¹ • dilateConv hilbertProfile t f x =
+      ∫ s in ε..2 * ε, s⁻¹ • dilateConv hilbertProfile (2 ^ i * s) f x := by
+  have hpow : (0 : ℝ) < 2 ^ i := by positivity
+  rw [show (2 : ℝ) ^ (i + 1) * ε = 2 ^ i * (2 * ε) by ring,
+    ← intervalIntegral.smul_integral_comp_mul_left, ← intervalIntegral.integral_smul]
+  refine intervalIntegral.integral_congr fun s _ => ?_
+  simp only [smul_smul, mul_inv]
+  rw [mul_inv_cancel_left₀ hpow.ne']
 
 /-- `∫_ε^{2^n ε} φ_t * f dt/t = ∫_ε^{2ε} Σ_{j<n} φ_{2^{n−1} s 2^{−j}} * f ds/s`. -/
 private theorem integral_dilateConv_eq_sum {f : ℝ → X} (hf : LocallyIntegrable f) {ε : ℝ}
@@ -538,39 +512,24 @@ private theorem integral_dilateConv_eq_sum {f : ℝ → X} (hf : LocallyIntegrab
     ∫ t in ε..2 ^ n * ε, t⁻¹ • dilateConv hilbertProfile t f x =
       ∫ s in ε..2 * ε, s⁻¹ • ∑ j ∈ Finset.range n,
         dilateConv hilbertProfile (2 ^ (n - 1) * s * (2 ^ j)⁻¹) f x := by
-  have hint : ∀ a b : ℝ, 0 < a → a ≤ b →
-      IntervalIntegrable (fun t => t⁻¹ • dilateConv hilbertProfile t f x) volume a b := by
-    intro a b ha hab
-    rw [intervalIntegrable_iff_integrableOn_Ioc_of_le hab]
-    refine ((integrable_dilate_smul hf (R := b) ha x).integral_prod_left).congr
-      (ae_of_all _ fun t => ?_)
-    simp only [Function.uncurry_apply_pair, dilateConv, ← integral_smul, smul_smul]
   have hpow : ∀ i : ℕ, (0 : ℝ) < 2 ^ i := fun i => by positivity
   have hle : ∀ i : ℕ, (2 : ℝ) ^ i * ε ≤ 2 ^ (i + 1) * ε := fun i => by
     rw [pow_succ]; nlinarith [hpow i, mul_pos (hpow i) hε]
   have hsum := intervalIntegral.sum_integral_adjacent_intervals (μ := volume)
     (f := fun t => t⁻¹ • dilateConv hilbertProfile t f x) (a := fun i : ℕ => 2 ^ i * ε) (n := n)
-    fun i _ => hint _ _ (mul_pos (hpow i) hε) (hle i)
+    fun i _ => intervalIntegrable_dilateConv hf x (mul_pos (hpow i) hε) (hle i)
   simp only [pow_zero, one_mul] at hsum
-  -- the substitution `t = 2^i s`
-  have hsub : ∀ i : ℕ, ∫ t in 2 ^ i * ε..2 ^ (i + 1) * ε, t⁻¹ • dilateConv hilbertProfile t f x =
-      ∫ s in ε..2 * ε, s⁻¹ • dilateConv hilbertProfile (2 ^ i * s) f x := by
-    intro i
-    rw [show (2 : ℝ) ^ (i + 1) * ε = 2 ^ i * (2 * ε) by ring,
-      ← intervalIntegral.smul_integral_comp_mul_left, ← intervalIntegral.integral_smul]
-    refine intervalIntegral.integral_congr fun s _ => ?_
-    simp only [smul_smul, mul_inv]
-    rw [mul_inv_cancel_left₀ (hpow i).ne']
-  have hint2 : ∀ i ∈ Finset.range n, IntervalIntegrable
+  have hint : ∀ i ∈ Finset.range n, IntervalIntegrable
       (fun s => s⁻¹ • dilateConv hilbertProfile (2 ^ i * s) f x) volume ε (2 * ε) := by
     intro i _
-    have h := (hint (2 ^ i * ε) (2 ^ i * (2 * ε)) (mul_pos (hpow i) hε) (by
-      nlinarith [mul_pos (hpow i) hε])).comp_mul_left (c := 2 ^ i)
+    have h := (intervalIntegrable_dilateConv hf x (a := 2 ^ i * ε) (b := 2 ^ i * (2 * ε))
+      (mul_pos (hpow i) hε) (by nlinarith [mul_pos (hpow i) hε])).comp_mul_left (c := 2 ^ i)
     rw [mul_div_cancel_left₀ _ (hpow i).ne', mul_div_cancel_left₀ _ (hpow i).ne'] at h
     refine (h.smul ((2 : ℝ) ^ i)).congr_ae (ae_of_all _ fun s => ?_)
     simp only [Pi.smul_apply, smul_smul, mul_inv]
     rw [mul_inv_cancel_left₀ (hpow i).ne']
-  rw [← hsum, Finset.sum_congr rfl fun i _ => hsub i, ← intervalIntegral.integral_finsetSum hint2]
+  rw [← hsum, Finset.sum_congr rfl fun i _ => integral_dilateConv_two_pow f ε i x,
+    ← intervalIntegral.integral_finsetSum hint]
   refine intervalIntegral.integral_congr fun s _ => ?_
   rw [← Finset.smul_sum, ← Finset.sum_range_reflect]
   congr 1
@@ -582,61 +541,74 @@ private theorem integral_dilateConv_eq_sum {f : ℝ → X} (hf : LocallyIntegrab
   rw [this]
   field_simp
 
-/-- **The truncated Hilbert transform on UMD spaces** (HNVW I, Theorem 5.1.13, for the truncations).
--/
+/-- `∫_ε^{2ε} ds/s = log 2`. -/
+private theorem lintegral_enorm_inv {ε : ℝ} (hε : 0 < ε) :
+    ∫⁻ s in Set.Ioc ε (2 * ε), ‖s⁻¹‖ₑ = ENNReal.ofReal (Real.log 2) := by
+  have h2ε : ε ≤ 2 * ε := by linarith
+  have hi : IntegrableOn (fun s : ℝ => s⁻¹) (Set.Ioc ε (2 * ε)) := by
+    rw [← intervalIntegrable_iff_integrableOn_Ioc_of_le h2ε]
+    refine intervalIntegral.intervalIntegrable_inv (fun s hs => ?_) continuousOn_id
+    rw [Set.uIcc_of_le h2ε] at hs
+    exact (hε.trans_le hs.1).ne'
+  have hlog := integral_inv_of_pos hε (by linarith : 0 < 2 * ε)
+  rw [intervalIntegral.integral_of_le h2ε, mul_div_cancel_right₀ _ hε.ne'] at hlog
+  rw [← hlog, ofReal_integral_eq_lintegral_ofReal hi]
+  · refine setLIntegral_congr_fun measurableSet_Ioc fun s hs => ?_
+    exact Real.enorm_of_nonneg (inv_nonneg.2 (hε.trans hs.1).le)
+  · filter_upwards [ae_restrict_mem measurableSet_Ioc] with s hs
+    exact inv_nonneg.2 (hε.trans hs.1).le
+
+/-- The main term of (5.23), by the bounds for the averages of the dyadic shifts and Minkowski's
+inequality (HNVW I, Proposition 5.1.10, first inequality): the integration over the dilations. -/
+private theorem eLpNorm_integral_dilateConv_le [CompleteSpace X] {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞}
+    (hβ : IsUMDBound X p β) {f : ℝ → X} (hf : MemLp f (ENNReal.ofReal p) volume) {ε : ℝ}
+    (hε : 0 < ε) (n : ℕ) :
+    eLpNorm (fun x => ∫ s in ε..2 * ε, s⁻¹ • ∑ j ∈ Finset.range n,
+        dilateConv hilbertProfile (2 ^ (n - 1) * s * (2 ^ j)⁻¹) f x) (ENNReal.ofReal p) volume ≤
+      ENNReal.ofReal (Real.log 2) * (2 * β ^ 2 * eLpNorm f (ENNReal.ofReal p) volume) := by
+  -- replace `f` by a strongly measurable function
+  obtain ⟨g, hgm, hfg⟩ := hf.aestronglyMeasurable
+  simp only [dilateConv_congr_ae hilbertProfile _ hfg,
+    intervalIntegral.integral_of_le (show ε ≤ 2 * ε by linarith)]
+  have hF : StronglyMeasurable (Function.uncurry fun x s : ℝ => ∑ j ∈ Finset.range n,
+      dilateConv hilbertProfile (2 ^ (n - 1) * s * (2 ^ j)⁻¹) g x) := by
+    refine Finset.stronglyMeasurable_fun_sum _ fun j _ => ?_
+    exact (stronglyMeasurable_uncurry_dilateConv continuous_hilbertProfile.measurable
+      hgm).comp_measurable (measurable_fst.prodMk ((measurable_snd.const_mul _).mul_const _))
+  rw [eLpNorm_congr_ae hfg, ← lintegral_enorm_inv hε]
+  refine eLpNorm_integral_smul_le hp.le measurable_inv hF ?_
+  filter_upwards [ae_restrict_mem measurableSet_Ioc] with s hs
+  exact eLpNorm_sum_dilateConv_le hp hβ ((memLp_congr_ae hfg).1 hf) n
+    (mul_pos (by positivity) (hε.trans hs.1))
+
+/-- (5.23), for `R = 2^n ε`, where the integral over `[ε, R]` is an average of dyadic shifts and the
+additional integrals do not occur. -/
+private theorem truncatedHilbert_eq_sub {f : ℝ → X} (hf : LocallyIntegrable f) {ε : ℝ} (hε : 0 < ε)
+    (n : ℕ) : truncatedHilbert ε (2 ^ n * ε) f = (8 / Real.pi) •
+      (dilateConv hilbertError ε f - dilateConv hilbertError (2 ^ n * ε) f -
+        fun x => ∫ s in ε..2 * ε, s⁻¹ • ∑ j ∈ Finset.range n,
+          dilateConv hilbertProfile (2 ^ (n - 1) * s * (2 ^ j)⁻¹) f x) := by
+  funext x
+  have h := integral_dilateConv_eq hf hε
+    (le_mul_of_one_le_left hε.le (one_le_pow₀ (n := n) one_le_two)) x
+  rw [integral_dilateConv_eq_sum hf hε] at h
+  simp only [Pi.smul_apply, Pi.sub_apply]
+  rw [h, sub_sub_cancel, smul_smul, show 8 / Real.pi * (Real.pi / 8) = 1 by field_simp, one_smul]
+
+/-- **The truncated Hilbert transform on UMD spaces** (HNVW I, Theorem 5.1.13, for the truncations
+`H_{ε, 2^n ε}`, with a uniform bound instead of the limit). -/
 theorem eLpNorm_truncatedHilbert_le [CompleteSpace X] {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞}
-    (hβ : IsUMDBound X p β) {f : ℝ → X} (hf : MemLp f (ENNReal.ofReal p) volume)
-    (hfm : StronglyMeasurable f) {ε : ℝ} (hε : 0 < ε) (n : ℕ) :
+    (hβ : IsUMDBound X p β) {f : ℝ → X} (hf : MemLp f (ENNReal.ofReal p) volume) {ε : ℝ}
+    (hε : 0 < ε) (n : ℕ) :
     eLpNorm (truncatedHilbert ε (2 ^ n * ε) f) (ENNReal.ofReal p) volume ≤
       (4 * β ^ 2 + 11) * eLpNorm f (ENNReal.ofReal p) volume := by
   have hp1 : 1 ≤ ENNReal.ofReal p := by simpa using hp.le
-  have hloc : LocallyIntegrable f := hf.locallyIntegrable hp1
-  have hR : 0 < 2 ^ n * ε := by positivity
-  have hεR : ε ≤ 2 ^ n * ε := le_mul_of_one_le_left hε.le (one_le_pow₀ one_le_two)
   set N := eLpNorm f (ENNReal.ofReal p) volume
-  set A : ℝ → X := fun x => ∫ s in ε..2 * ε, s⁻¹ • ∑ j ∈ Finset.range n,
-        dilateConv hilbertProfile (2 ^ (n - 1) * s * (2 ^ j)⁻¹) f x
-  -- the main term: the dyadic shifts and Minkowski's inequality
-  have hA : eLpNorm A (ENNReal.ofReal p) volume ≤
-      ENNReal.ofReal (Real.log 2) * (2 * β ^ 2 * N) := by
-    have h2ε : ε ≤ 2 * ε := by linarith
-    have h1 : A = fun x => ∫ s in Set.Ioc ε (2 * ε), s⁻¹ • ∑ j ∈ Finset.range n,
-        dilateConv hilbertProfile (2 ^ (n - 1) * s * (2 ^ j)⁻¹) f x := by
-      funext x
-      exact intervalIntegral.integral_of_le h2ε
-    have hF : StronglyMeasurable (Function.uncurry fun x s : ℝ => ∑ j ∈ Finset.range n,
-        dilateConv hilbertProfile (2 ^ (n - 1) * s * (2 ^ j)⁻¹) f x) := by
-      refine Finset.stronglyMeasurable_fun_sum _ fun j _ => ?_
-      exact (stronglyMeasurable_dilateConv continuous_hilbertProfile.measurable hfm).comp_measurable
-        (measurable_fst.prodMk ((measurable_snd.const_mul _).mul_const _))
-    have h3 : ∫⁻ s in Set.Ioc ε (2 * ε), ‖s⁻¹‖ₑ = ENNReal.ofReal (Real.log 2) := by
-      have hi : IntegrableOn (fun s : ℝ => s⁻¹) (Set.Ioc ε (2 * ε)) := by
-        rw [← intervalIntegrable_iff_integrableOn_Ioc_of_le h2ε]
-        refine intervalIntegral.intervalIntegrable_inv (fun s hs => ?_) continuousOn_id
-        rw [Set.uIcc_of_le h2ε] at hs
-        exact (hε.trans_le hs.1).ne'
-      have hlog := integral_inv_of_pos hε (by linarith : 0 < 2 * ε)
-      rw [intervalIntegral.integral_of_le h2ε, mul_div_cancel_right₀ _ hε.ne'] at hlog
-      rw [← hlog, ofReal_integral_eq_lintegral_ofReal hi]
-      · refine setLIntegral_congr_fun measurableSet_Ioc fun s hs => ?_
-        exact Real.enorm_of_nonneg (inv_nonneg.2 (hε.trans hs.1).le)
-      · filter_upwards [ae_restrict_mem measurableSet_Ioc] with s hs
-        exact inv_nonneg.2 (hε.trans hs.1).le
-    rw [h1, ← h3]
-    refine eLpNorm_integral_smul_le hp.le measurable_inv hF ?_
-    filter_upwards [ae_restrict_mem measurableSet_Ioc] with s hs
-    exact eLpNorm_sum_dilateConv_le hp hβ hf hfm n (mul_pos (by positivity) (hε.trans hs.1))
-  -- (5.23)
-  have hH : truncatedHilbert ε (2 ^ n * ε) f = (8 / Real.pi) •
-      (dilateConv hilbertError ε f - dilateConv hilbertError (2 ^ n * ε) f - A) := by
-    funext x
-    have h := integral_dilateConv_eq hloc hε hεR x
-    rw [integral_dilateConv_eq_sum hloc hε] at h
-    simp only [Pi.smul_apply, Pi.sub_apply, A]
-    rw [h, sub_sub_cancel, smul_smul]
-    rw [show 8 / Real.pi * (Real.pi / 8) = 1 by field_simp, one_smul]
-  have hB := eLpNorm_dilateConv_hilbertError_le hp.le hfm hε
-  have hB' := eLpNorm_dilateConv_hilbertError_le hp.le hfm hR
+  have hA := eLpNorm_integral_dilateConv_le hp hβ hf hε n
+  have hB := eLpNorm_dilateConv_hilbertError_le hp.le hf.aestronglyMeasurable hε
+  have hB' := eLpNorm_dilateConv_hilbertError_le hp.le hf.aestronglyMeasurable
+    (by positivity : 0 < 2 ^ n * ε)
+  -- the constants
   have hpi := Real.pi_gt_three
   have hlog := Real.log_two_lt_d9
   have hlog0 : 0 ≤ Real.log 2 := Real.log_nonneg one_le_two
@@ -654,7 +626,8 @@ theorem eLpNorm_truncatedHilbert_le [CompleteSpace X] {p : ℝ} (hp : 1 < p) {β
   calc eLpNorm (truncatedHilbert ε (2 ^ n * ε) f) (ENNReal.ofReal p) volume
       ≤ ENNReal.ofReal (8 / Real.pi) *
           (2 * N + 2 * N + ENNReal.ofReal (Real.log 2) * (2 * β ^ 2 * N)) := by
-        rw [hH, eLpNorm_const_smul, Real.enorm_of_nonneg (by positivity)]
+        rw [truncatedHilbert_eq_sub (hf.locallyIntegrable hp1) hε, eLpNorm_const_smul,
+          Real.enorm_of_nonneg (by positivity)]
         gcongr
         exact (eLpNorm_sub_le hp1).trans (add_le_add ((eLpNorm_sub_le hp1).trans
           (add_le_add hB hB')) hA)

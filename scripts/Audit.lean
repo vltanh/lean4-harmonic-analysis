@@ -17,6 +17,7 @@ import all VectorValuedHarmonicAnalysis.NoncommutativeKhintchine
 import all VectorValuedHarmonicAnalysis.Paley.Rademacher
 import all VectorValuedHarmonicAnalysis.Paley.Schatten
 import all VectorValuedHarmonicAnalysis.RademacherNorm
+import all VectorValuedHarmonicAnalysis.Transference
 
 /-!
 # Axiom audit

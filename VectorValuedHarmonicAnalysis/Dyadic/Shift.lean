@@ -7,17 +7,27 @@ import Mathlib.Algebra.Order.Interval.Set.Group
 /-!
 # Dyadic shifts on UMD spaces
 
-Let `X` be a UMD space, `β` a `UMD_p` constant of `X`, `1 < p < ∞`. For `f ∈ L^p (ℝ; X)`,
+Let `X` be a UMD space, `β` a `UMD_p` constant of `X`, `1 < p < ∞`. For `f ∈ L^p (ℝ; X)`, with `Σ_I`
+the sum over the dyadic intervals of generation `j`,
 
-* `‖Σ_{j < n} ε_j k_I ⟨h_I, f⟩‖_{L^p (ℝ × Ω)} ≤ 2 β ‖f‖_p` for the Haar projections (`k = h`) and
-  for the shift with the kernel `k = haarSplit` (`eLpNormRad_dyadicShift_le`);
+* `‖Σ_{j < n} ε_j Σ_I k_I ⟨h_I, f⟩‖_{L^p (ℝ × Ω)} ≤ 2 β ‖f‖_p` for the Haar projections (`k = h`)
+  and for the shift with the kernel `k = haarSplit` (`eLpNormRad_dyadicShift_le`);
 * `‖Σ_{j < n} Σ_I k_I ⟨h_I, f⟩‖_{L^p} ≤ 2 β² ‖f‖_p` for `k = haarSplit`
   (`eLpNorm_sum_dyadicShift_le`).
 
 Source: Hytönen–van Neerven–Veraar–Weis (HNVW), *Analysis in Banach spaces I* (2016), Propositions
-5.1.4 and 5.1.5, pp. 376–378, for the finitely many generations `0 ≤ j < n` (the factor `2`, which
-the book does not have, comes from stopping at generation `0`; the book's shifts are over all
-generations).
+5.1.4 and 5.1.5, pp. 376–378, for the finitely many generations `0 ≤ j < n` and these two kernels
+(the factor `2`, which the book does not have, comes from stopping at generation `0`; the book's
+shifts are over all generations).
+
+Departure from the source: in the book, Proposition 5.1.4 rests on Theorem 4.2.13 (p. 289), the
+unconditionality of the Haar system, with signs `ε_I` indexed by the intervals, and on the equality
+of the laws of `(ε_{I_j (x)})_j` and `(ε_j)_j`; the left half of Proposition 5.1.5 is deduced from
+that of Proposition 5.1.4, for the Haar expansion of the shift. Here the randomised UMD property is
+applied directly, on each unit interval `[m, m + 1)`, a probability space, to the dyadic martingale
+`E_j f − E_0 f`, and, for the left half of Proposition 5.1.5, to the martingale `Σ_{j < i} S_j f` of
+the partial sums of the shift. The restriction to finitely many generations makes this
+simplification possible.
 -/
 
 @[expose] public section
@@ -55,14 +65,6 @@ private theorem dyadicShift_haar_congr (j : ℕ) (f : ℝ → X) (x y : ℝ)
   rw [dyadicShift, dyadicShift, haar_fract, haar_fract, floor_two_pow_mul j x,
     floor_two_pow_mul j y, h]
 
-omit [NormedSpace ℝ X] [CompleteSpace X] in
-/-- `‖f‖_p^p = ∫ ‖f‖^p`. -/
-private theorem eLpNorm_rpow_eq {α : Type*} [MeasurableSpace α] {μ : Measure α} {p : ℝ} (hp : 0 < p)
-    {f : α → X} (hf : AEStronglyMeasurable f μ) :
-    eLpNorm f (ENNReal.ofReal p) μ ^ p = ∫⁻ x, ‖f x‖ₑ ^ p ∂μ := by
-  rw [eLpNorm_eq_lintegral_rpow_enorm_toReal (by simpa using hp) ENNReal.ofReal_ne_top hf,
-    ENNReal.toReal_ofReal hp.le, ← ENNReal.rpow_mul, one_div_mul_cancel hp.ne', ENNReal.rpow_one]
-
 /-- The unit interval `[m, m + 1)` with Lebesgue measure, a probability space. -/
 private noncomputable abbrev unitMeasure (m : ℤ) : Measure ℝ :=
   volume.restrict (Set.Ico (m : ℝ) (m + 1))
@@ -81,8 +83,8 @@ private theorem eLpNorm_rpow_eq_tsum {p : ℝ} (hp : 0 < p) {f : ℝ → X}
     (hf : AEStronglyMeasurable f volume) :
     eLpNorm f (ENNReal.ofReal p) volume ^ p =
       ∑' m : ℤ, eLpNorm f (ENNReal.ofReal p) (unitMeasure m) ^ p := by
-  rw [eLpNorm_rpow_eq hp hf, lintegral_eq_tsum_unit]
-  exact tsum_congr fun m => (eLpNorm_rpow_eq hp hf.restrict).symm
+  rw [eLpNorm_ofReal_rpow_eq_lintegral hp hf, lintegral_eq_tsum_unit]
+  exact tsum_congr fun m => (eLpNorm_ofReal_rpow_eq_lintegral hp hf.restrict).symm
 
 omit [CompleteSpace X] in
 private theorem eLpNormRad_rpow_eq_tsum {p : ℝ} (hp : 0 < p) {n : ℕ} {f : Fin n → ℝ → X}
@@ -90,30 +92,6 @@ private theorem eLpNormRad_rpow_eq_tsum {p : ℝ} (hp : 0 < p) {n : ℕ} {f : Fi
     eLpNormRad f p volume ^ p = ∑' m : ℤ, eLpNormRad f p (unitMeasure m) ^ p := by
   rw [eLpNormRad_rpow_eq_lintegral hp hf, lintegral_eq_tsum_unit]
   exact tsum_congr fun m => (eLpNormRad_rpow_eq_lintegral hp fun j => (hf j).restrict).symm
-
-omit [CompleteSpace X] in
-/-- Multiplying the terms by signs does not change the norm of a Rademacher sum: for each `x` the
-families `(ε_j s_j (x))` and `(ε_j)` have the same law. -/
-private theorem eLpNormRad_sign_smul {α : Type*} [MeasurableSpace α] {μ : Measure α} [SFinite μ]
-    {p : ℝ} (hp : 0 < p) {n : ℕ} {f : Fin n → α → X} (hf : ∀ j, AEStronglyMeasurable (f j) μ)
-    {s : Fin n → α → ℝ} (hs : ∀ j x, s j x = 1 ∨ s j x = -1) (hsm : ∀ j, Measurable (s j)) :
-    eLpNormRad (fun j x => s j x • f j x) p μ = eLpNormRad f p μ := by
-  refine ENNReal.rpow_left_injective hp.ne' ?_
-  have hsf : ∀ j, AEStronglyMeasurable (fun x => s j x • f j x) μ := fun j =>
-    (hsm j).aestronglyMeasurable.smul (hf j)
-  simp only
-  rw [eLpNormRad_rpow_eq_lintegral hp hf, eLpNormRad_rpow_eq_lintegral hp hsf]
-  refine lintegral_congr fun x => ?_
-  -- the signs `s_j (x)`, as a sign vector
-  set σ : Fin n → Bool := fun j => decide (s j x = 1) with hσ
-  have hcoin : ∀ j, SignCube.coin (σ j) = s j x := fun j => by
-    rcases hs j x with h | h
-    · simp [hσ, h]
-    · simp [hσ, h]
-      norm_num
-  rw [SignCube.lpNorm, SignCube.lpNorm, ← SignCube.avg_mul_left σ fun ε =>
-    ‖∑ j, SignCube.coin (ε j) • f j x‖ ^ p]
-  simp only [SignCube.coin_mul_apply, hcoin, smul_smul, mul_comm]
 
 /-- Jensen's inequality: averaging over the dyadic intervals does not increase the norm in `L^p` of
 a unit interval. -/

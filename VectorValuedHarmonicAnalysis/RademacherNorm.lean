@@ -2,6 +2,7 @@ module
 
 public import BanachProbability.SignCube.Bridge
 public import BanachProbability.RandomSums.Contraction
+import HarmonicAnalysis.FourierMultiplier.Density
 import Mathlib.MeasureTheory.Integral.Prod
 
 /-!
@@ -9,10 +10,27 @@ import Mathlib.MeasureTheory.Integral.Prod
 
 For functions `f_1, …, f_K : α → E` and independent fair signs `ε_k`,
 `eLpNormRad f p μ = ‖Σ_k ε_k f_k‖_{L^p (α × {±1}^K; E)}`, the norm of the Rademacher sum in `L^p` of
-the product of `μ` with the uniform probability on the signs. Facts: the `p`-th power is the average
-over the signs (`eLpNormRad_rpow`); bounds that hold for every fixed choice of signs
-(`eLpNormRad_le_of_forall`); the triangle inequality; Kahane's contraction principle for pointwise
-multipliers (`eLpNormRad_smul_le`); Minkowski's integral inequality (`eLpNormRad_integral_le`).
+the product of `μ` with the uniform probability on the signs. Facts:
+
+* the `p`-th power is the average over the signs (`eLpNormRad_rpow`,
+  `eLpNormRad_rpow_eq_lintegral`), and bounds that hold for every fixed choice of signs hold for the
+  Rademacher sums (`eLpNormRad_le_of_forall`);
+* the triangle inequality (`eLpNormRad_add_le`), scalar factors (`eLpNormRad_fun_const_smul`), sums
+  with one term (`eLpNormRad_one`), measure-preserving maps (`eLpNormRad_comp_measurePreserving`);
+* Kahane's contraction principle for pointwise multipliers (`eLpNormRad_smul_le`), the invariance
+  under pointwise signs (`eLpNormRad_sign_smul`), partial sums (`eLpNormRad_indicator_le`,
+  `eLpNormRad_comp_le`);
+* Minkowski's integral inequality (`eLpNormRad_integral_le`).
+
+Sources: Hytönen–van Neerven–Veraar–Weis (HNVW), *Analysis in Banach spaces I* (2016) and *II*
+(2017): the contraction principle is Proposition 3.2.10 of volume I, pp. 181–182, and Theorem 6.1.13
+of volume II, p. 9; Minkowski's integral inequality is Proposition 1.2.22 of volume I, p. 24, with
+the exponents `1` and `p`.
+
+The signs are real throughout the package, also in complex spaces, where the book uses complex
+Rademacher variables. This costs a factor in the contraction principle for complex scalars: the best
+constant is `1` for complex Rademacher variables and `π / 2` for real signs; here it is `2`, from
+the real and the imaginary parts.
 -/
 
 @[expose] public section
@@ -51,8 +69,9 @@ private theorem rad_lintegral_uniformOn (G : (Fin K → Bool) → ℝ≥0∞) :
   rw [hμ, mul_comm]
 
 /-- The `p`-th power of the `L^p` norm is the integral of the `p`-th power of the norm. -/
-private theorem rad_eLpNorm_rpow {S F : Type*} [NormedAddCommGroup F] {mS : MeasurableSpace S}
-    {ν : Measure S} {p : ℝ} (hp : 0 < p) {f : S → F} (hf : AEStronglyMeasurable f ν) :
+theorem eLpNorm_ofReal_rpow_eq_lintegral {S F : Type*} [NormedAddCommGroup F]
+    {mS : MeasurableSpace S} {ν : Measure S} {p : ℝ} (hp : 0 < p) {f : S → F}
+    (hf : AEStronglyMeasurable f ν) :
     eLpNorm f (ENNReal.ofReal p) ν ^ p = ∫⁻ z, ‖f z‖ₑ ^ p ∂ν := by
   rw [eLpNorm_eq_lintegral_rpow_enorm_toReal (by simpa using hp) ENNReal.ofReal_ne_top hf,
     ENNReal.toReal_ofReal hp.le, ← ENNReal.rpow_mul, one_div_mul_cancel hp.ne', ENNReal.rpow_one]
@@ -74,24 +93,26 @@ private theorem rad_aestronglyMeasurable_sum {f : Fin K → α → E}
 
 /-- `‖Σ ε_k f_k‖_p^p` is the average over the signs of the `p`-th powers of the norms of
 `Σ ε_k f_k`. -/
-theorem eLpNormRad_rpow [SFinite μ] {p : ℝ} (hp : 0 < p) {f : Fin K → α → E}
+theorem eLpNormRad_rpow {p : ℝ} (hp : 0 < p) {f : Fin K → α → E}
     (hf : ∀ k, AEStronglyMeasurable (f k) μ) :
     eLpNormRad f p μ ^ p = ((2 : ℝ≥0∞) ^ K)⁻¹ * ∑ ε : Fin K → Bool,
       eLpNorm (fun x => ∑ k, coin (ε k) • f k x) (ENNReal.ofReal p) μ ^ p := by
   have hm := rad_aestronglyMeasurable hf (ProbabilityTheory.uniformOn Set.univ)
-  rw [eLpNormRad, rad_eLpNorm_rpow hp hm, lintegral_prod_symm _ (hm.enorm.pow_const p),
-    rad_lintegral_uniformOn]
+  rw [eLpNormRad, eLpNorm_ofReal_rpow_eq_lintegral hp hm, lintegral_prod _ (hm.enorm.pow_const p)]
+  simp only [rad_lintegral_uniformOn]
+  rw [lintegral_const_mul' _ _ (by simp), lintegral_finsetSum' _ fun ε _ =>
+    (rad_aestronglyMeasurable_sum hf ε).enorm.pow_const p]
   congr 1
-  exact Finset.sum_congr rfl fun η _ =>
-    (rad_eLpNorm_rpow hp (rad_aestronglyMeasurable_sum hf η)).symm
+  exact Finset.sum_congr rfl fun ε _ =>
+    (eLpNorm_ofReal_rpow_eq_lintegral hp (rad_aestronglyMeasurable_sum hf ε)).symm
 
 /-- The `p`-th power as an integral of averages over the sign cube. -/
-theorem eLpNormRad_rpow_eq_lintegral [SFinite μ] {p : ℝ} (hp : 0 < p) {f : Fin K → α → E}
+theorem eLpNormRad_rpow_eq_lintegral {p : ℝ} (hp : 0 < p) {f : Fin K → α → E}
     (hf : ∀ k, AEStronglyMeasurable (f k) μ) :
     eLpNormRad f p μ ^ p = ∫⁻ x, ENNReal.ofReal (SignCube.lpNorm (fun y => ‖y‖) p
       (fun ε : Fin K → Bool => ∑ k, coin (ε k) • f k x) ^ p) ∂μ := by
   have hm := rad_aestronglyMeasurable hf (ProbabilityTheory.uniformOn Set.univ)
-  rw [eLpNormRad, rad_eLpNorm_rpow hp hm, lintegral_prod _ (hm.enorm.pow_const p)]
+  rw [eLpNormRad, eLpNorm_ofReal_rpow_eq_lintegral hp hm, lintegral_prod _ (hm.enorm.pow_const p)]
   refine lintegral_congr fun x => ?_
   rw [rad_lintegral_uniformOn, lpNorm_rpow (fun _ => norm_nonneg _) hp,
     rad_ofReal_avg fun _ => Real.rpow_nonneg (norm_nonneg _) _]
@@ -100,8 +121,8 @@ theorem eLpNormRad_rpow_eq_lintegral [SFinite μ] {p : ℝ} (hp : 0 < p) {f : Fi
   rw [← ENNReal.ofReal_rpow_of_nonneg (norm_nonneg _) hp.le, ofReal_norm]
 
 /-- A bound that holds for every fixed choice of signs holds for the Rademacher sums. -/
-theorem eLpNormRad_le_of_forall [SFinite μ] {β : Type*} [MeasurableSpace β] {ν : Measure β}
-    [SFinite ν] {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F] {p : ℝ} (hp : 0 < p)
+theorem eLpNormRad_le_of_forall {β : Type*} [MeasurableSpace β] {ν : Measure β}
+    {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F] {p : ℝ} (hp : 0 < p)
     {f : Fin K → α → E} (hf : ∀ k, AEStronglyMeasurable (f k) μ) {g : Fin K → β → F}
     (hg : ∀ k, AEStronglyMeasurable (g k) ν) {C : ℝ≥0∞}
     (h : ∀ ε : Fin K → Bool, eLpNorm (fun x => ∑ k, coin (ε k) • f k x) (ENNReal.ofReal p) μ ≤
@@ -114,25 +135,66 @@ theorem eLpNormRad_le_of_forall [SFinite μ] {β : Type*} [MeasurableSpace β] {
   exact ENNReal.rpow_le_rpow (h ε) hp.le
 
 /-- The norm of a Rademacher sum depends only on the classes of the functions. -/
-theorem eLpNormRad_congr_ae [SFinite μ] {p : ℝ} {f g : Fin K → α → E} (h : ∀ k, f k =ᵐ[μ] g k) :
+theorem eLpNormRad_congr_ae {p : ℝ} {f g : Fin K → α → E} (h : ∀ k, f k =ᵐ[μ] g k) :
     eLpNormRad f p μ = eLpNormRad g p μ := by
   refine eLpNorm_congr_ae ?_
   filter_upwards [Measure.quasiMeasurePreserving_fst.ae (ae_all_iff.2 h)] with z hz
   exact Finset.sum_congr rfl fun k _ => by rw [hz k]
 
-/-- The triangle inequality. -/
-theorem eLpNormRad_add_le [SFinite μ] {p : ℝ} (hp : 1 ≤ p) {f g : Fin K → α → E}
-    (hf : ∀ k, AEStronglyMeasurable (f k) μ) (hg : ∀ k, AEStronglyMeasurable (g k) μ) :
+/-- The triangle inequality. (The measurability hypotheses are not used in the proof.) -/
+theorem eLpNormRad_add_le {p : ℝ} (hp : 1 ≤ p) {f g : Fin K → α → E}
+    (_hf : ∀ k, AEStronglyMeasurable (f k) μ) (_hg : ∀ k, AEStronglyMeasurable (g k) μ) :
     eLpNormRad (fun k x => f k x + g k x) p μ ≤ eLpNormRad f p μ + eLpNormRad g p μ := by
-  -- the measurability hypotheses are not needed: the norm of a non-measurable function is `∞`
-  have _ := And.intro hf hg
   unfold eLpNormRad
   simp only [smul_add, Finset.sum_add_distrib]
   exact eLpNorm_add_le (ENNReal.one_le_ofReal.2 hp)
 
-/-- **Kahane's contraction principle** for pointwise multipliers `c_k (x) ∈ ℂ`, `|c_k (x)| ≤ 1`,
-with the factor `2` (real signs). -/
-theorem eLpNormRad_smul_le {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [SFinite μ] {p : ℝ}
+/-- Scalar factors. -/
+theorem eLpNormRad_fun_const_smul {𝕜 : Type*} [NormedDivisionRing 𝕜] [Module 𝕜 E]
+    [NormSMulClass 𝕜 E] [SMulCommClass ℝ 𝕜 E] (c : 𝕜) (f : Fin K → α → E) (p : ℝ) :
+    eLpNormRad (fun k x => c • f k x) p μ = ‖c‖ₑ * eLpNormRad f p μ := by
+  rw [eLpNormRad, eLpNormRad, ← eLpNorm_const_smul]
+  congr 1
+  funext z
+  simp only [Pi.smul_apply, Finset.smul_sum]
+  exact Finset.sum_congr rfl fun k _ => smul_comm _ _ _
+
+/-- The Rademacher sum with one term. -/
+theorem eLpNormRad_one {p : ℝ} (hp : 0 < p) {f : α → E} (hf : AEStronglyMeasurable f μ) :
+    eLpNormRad (fun _ : Fin 1 => f) p μ = eLpNorm f (ENNReal.ofReal p) μ := by
+  refine ENNReal.rpow_left_injective hp.ne' ?_
+  have h : ∀ ε : Fin 1 → Bool, eLpNorm (fun x => ∑ k, coin (ε k) • f x) (ENNReal.ofReal p) μ =
+      eLpNorm f (ENNReal.ofReal p) μ := fun ε => by
+    simp only [Finset.univ_unique, Finset.sum_singleton]
+    rcases coin_eq_one_or_eq_neg_one (ε default) with h | h
+    · simp only [h, one_smul]
+    · simp only [h, neg_smul, one_smul]
+      exact eLpNorm_neg f _ _
+  simp only
+  rw [eLpNormRad_rpow hp fun _ => hf]
+  simp only [h, Finset.sum_const, Finset.card_univ, Fintype.card_pi, Fintype.card_bool,
+    Finset.prod_const, nsmul_eq_mul, ← mul_assoc, Fintype.card_fin, pow_one, Nat.cast_ofNat]
+  rw [ENNReal.inv_mul_cancel two_ne_zero ENNReal.ofNat_ne_top, one_mul]
+
+/-- Measure-preserving maps, such as the translations and the reflection of the line, preserve the
+norms of Rademacher sums. -/
+theorem eLpNormRad_comp_measurePreserving {β : Type*} [MeasurableSpace β] {ν : Measure β} {p : ℝ}
+    (hp : 0 < p) {f : Fin K → α → E} (hf : ∀ k, AEStronglyMeasurable (f k) μ) {φ : β → α}
+    (hφ : MeasurePreserving φ ν μ) :
+    eLpNormRad (fun k x => f k (φ x)) p ν = eLpNormRad f p μ := by
+  refine ENNReal.rpow_left_injective hp.ne' ?_
+  simp only
+  rw [eLpNormRad_rpow hp hf, eLpNormRad_rpow hp (f := fun k x => f k (φ x)) fun k =>
+    (hf k).comp_measurePreserving hφ]
+  congr 1
+  refine Finset.sum_congr rfl fun ε _ => ?_
+  congr 1
+  exact eLpNorm_comp_measurePreserving (rad_aestronglyMeasurable_sum hf ε) hφ
+
+/-- **Kahane's contraction principle** for pointwise multipliers `c_k (x) ∈ ℂ`, `|c_k (x)| ≤ 1`, and
+real signs, with the factor `2` (HNVW I, Proposition 3.2.10, (3.15), with the best factor `π / 2`;
+HNVW II, Theorem 6.1.13 (ii)). -/
+theorem eLpNormRad_smul_le {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] {p : ℝ}
     (hp : 1 ≤ p) {c : Fin K → α → ℂ} (hc : ∀ k x, ‖c k x‖ ≤ 1)
     (hcm : ∀ k, AEStronglyMeasurable (c k) μ) {f : Fin K → α → E}
     (hf : ∀ k, AEStronglyMeasurable (f k) μ) :
@@ -150,8 +212,29 @@ theorem eLpNormRad_smul_le {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E
   exact ENNReal.ofReal_le_ofReal (Real.rpow_le_rpow (lpNorm_nonneg (fun _ => norm_nonneg _) _ _)
     (lpNorm_sum_coin_smul_le_two_mul hp (fun k => hc k x) fun k => f k x) hp0.le)
 
+/-- Multiplying the terms by signs that depend on the point does not change the norm of a Rademacher
+sum: for each `x` the families `(ε_k s_k (x))` and `(ε_k)` have the same law. -/
+theorem eLpNormRad_sign_smul {p : ℝ} (hp : 0 < p) {f : Fin K → α → E}
+    (hf : ∀ k, AEStronglyMeasurable (f k) μ) {s : Fin K → α → ℝ}
+    (hs : ∀ k x, s k x = 1 ∨ s k x = -1) (hsm : ∀ k, Measurable (s k)) :
+    eLpNormRad (fun k x => s k x • f k x) p μ = eLpNormRad f p μ := by
+  refine ENNReal.rpow_left_injective hp.ne' ?_
+  simp only
+  rw [eLpNormRad_rpow_eq_lintegral hp hf, eLpNormRad_rpow_eq_lintegral hp
+    (f := fun k x => s k x • f k x) fun k => (hsm k).aestronglyMeasurable.smul (hf k)]
+  refine lintegral_congr fun x => ?_
+  -- the signs `s_k (x)`, as a sign vector
+  set σ : Fin K → Bool := fun k => decide (s k x = 1) with hσ
+  have hcoin : ∀ k, coin (σ k) = s k x := fun k => by
+    rcases hs k x with h | h
+    · simp [hσ, h]
+    · simp [hσ, h]
+      norm_num
+  rw [SignCube.lpNorm, SignCube.lpNorm, ← avg_mul_left σ fun ε => ‖∑ k, coin (ε k) • f k x‖ ^ p]
+  simp only [coin_mul_apply, hcoin, smul_smul, mul_comm]
+
 /-- A comparison of the Rademacher averages at each point. -/
-private theorem rad_le_of_lpNorm_le [SFinite μ] {L : ℕ} {F : Type*} [NormedAddCommGroup F]
+private theorem rad_le_of_lpNorm_le {L : ℕ} {F : Type*} [NormedAddCommGroup F]
     [NormedSpace ℝ F] {p : ℝ} (hp : 0 < p) {f : Fin K → α → E}
     (hf : ∀ k, AEStronglyMeasurable (f k) μ) {g : Fin L → α → F}
     (hg : ∀ k, AEStronglyMeasurable (g k) μ)
@@ -164,7 +247,7 @@ private theorem rad_le_of_lpNorm_le [SFinite μ] {L : ℕ} {F : Type*} [NormedAd
     (Real.rpow_le_rpow (lpNorm_nonneg (fun _ => norm_nonneg _) _ _) (h x) hp.le)
 
 /-- Subsets of the Rademacher sum: a Rademacher sum dominates each partial one. -/
-theorem eLpNormRad_indicator_le [SFinite μ] {p : ℝ} (hp : 1 ≤ p) (s : Set (Fin K))
+theorem eLpNormRad_indicator_le {p : ℝ} (hp : 1 ≤ p) (s : Set (Fin K))
     {f : Fin K → α → E} (hf : ∀ k, AEStronglyMeasurable (f k) μ) :
     eLpNormRad (s.indicator f) p μ ≤ eLpNormRad f p μ := by
   classical
@@ -203,7 +286,7 @@ private theorem rad_avg_comp {L : ℕ} {σ : Fin K → Fin L} (hσ : Function.In
   simpa only [h2, avg_mul_left, avg_const] using hswap
 
 /-- Reindexing: a Rademacher sum over part of the indices is dominated by the whole sum. -/
-theorem eLpNormRad_comp_le [SFinite μ] {L : ℕ} {p : ℝ} (hp : 1 ≤ p) {σ : Fin K → Fin L}
+theorem eLpNormRad_comp_le {L : ℕ} {p : ℝ} (hp : 1 ≤ p) {σ : Fin K → Fin L}
     (hσ : Function.Injective σ) {f : Fin L → α → E} (hf : ∀ k, AEStronglyMeasurable (f k) μ) :
     eLpNormRad (fun k => f (σ k)) p μ ≤ eLpNormRad f p μ := by
   classical
@@ -228,102 +311,56 @@ theorem eLpNormRad_comp_le [SFinite μ] {L : ℕ} {p : ℝ} (hp : 1 ≤ p) {σ :
 
 /-! ### Minkowski's integral inequality -/
 
-/-- Minkowski's integral inequality for a finite measure `κ`. With `F (x) = ∫ h (x, y) dy` and
-`G = min (F, n)`, by Tonelli's theorem and Hölder's inequality,
-`∫ G^p ≤ ∫ F G^{p − 1} = ∫ ∫ h (x, y) G (x)^{p − 1} dx dy` is at most the right side times
-`(∫ G^p)^{1 − 1/p}`, and `∫ G^p` is finite; let `n → ∞`. -/
-private theorem rad_lintegral_rpow_lintegral_le_of_finite {β γ : Type*} [MeasurableSpace β]
-    [MeasurableSpace γ] {κ : Measure β} {ν : Measure γ} [IsFiniteMeasure κ] [SFinite ν]
-    {h : β → γ → ℝ≥0∞} (hh : Measurable (Function.uncurry h)) {p : ℝ} (hp : 1 < p) :
-    ∫⁻ x, (∫⁻ y, h x y ∂ν) ^ p ∂κ ≤ (∫⁻ y, (∫⁻ x, h x y ^ p ∂κ) ^ (1 / p) ∂ν) ^ p := by
-  have hp0 : 0 < p := by linarith
-  have hpq : p.HolderConjugate (p / (p - 1)) :=
-    (Real.holderConjugate_iff_eq_conjExponent hp).2 rfl
-  set q := p / (p - 1)
-  set F : β → ℝ≥0∞ := fun x => ∫⁻ y, h x y ∂ν
-  have hF : Measurable F := hh.lintegral_prod_right'
-  set T := ∫⁻ y, (∫⁻ x, h x y ^ p ∂κ) ^ (1 / p) ∂ν
-  have hy : ∀ y, Measurable fun x => h x y := fun y => hh.comp measurable_prodMk_right
-  -- the estimate for the truncations
-  have key : ∀ n : ℕ, ∫⁻ x, (min (F x) n) ^ p ∂κ ≤ T ^ p := by
-    intro n
-    set G : β → ℝ≥0∞ := fun x => min (F x) n
-    have hG : Measurable G := hF.min measurable_const
-    set I := ∫⁻ x, G x ^ p ∂κ
-    have hI : I ≠ ⊤ := by
-      refine ne_top_of_le_ne_top ?_ (lintegral_mono fun x =>
-        ENNReal.rpow_le_rpow (min_le_right (F x) (n : ℝ≥0∞)) hp0.le)
-      rw [lintegral_const]
-      exact ENNReal.mul_ne_top (by simp [hp0.le]) (measure_ne_top κ _)
-    have hle : I ≤ T * I ^ (1 / q) := by
-      calc I ≤ ∫⁻ x, ∫⁻ y, h x y * G x ^ (p - 1) ∂ν ∂κ := by
-            refine lintegral_mono fun x => ?_
-            have hhx : Measurable (h x) := hh.comp measurable_prodMk_left
-            rw [lintegral_mul_const _ hhx]
-            conv_lhs => rw [show p = 1 + (p - 1) by ring,
-              ENNReal.rpow_add_of_nonneg _ _ zero_le_one (by linarith), ENNReal.rpow_one]
-            exact mul_le_mul_left (min_le_left _ _) _
-        _ = ∫⁻ y, ∫⁻ x, h x y * G x ^ (p - 1) ∂κ ∂ν :=
-            lintegral_lintegral_swap
-              (hh.mul ((hG.comp measurable_fst).pow_const (p - 1))).aemeasurable
-        _ ≤ ∫⁻ y, (∫⁻ x, h x y ^ p ∂κ) ^ (1 / p) * I ^ (1 / q) ∂ν := by
-            refine lintegral_mono fun y => ?_
-            have hH := ENNReal.lintegral_mul_le_Lp_mul_Lq κ hpq (f := fun x => h x y)
-              (g := fun x => G x ^ (p - 1)) (hy y).aemeasurable (hG.pow_const _).aemeasurable
-            have hGq : ∀ x, (G x ^ (p - 1)) ^ q = G x ^ p := fun x => by
-              rw [← ENNReal.rpow_mul, hpq.sub_one_mul_conj]
-            simpa only [Pi.mul_apply, hGq] using hH
-        _ = T * I ^ (1 / q) :=
-            lintegral_mul_const _ ((hh.pow_const p).lintegral_prod_left'.pow_const _)
-    rcases eq_or_ne I 0 with h0 | h0
-    · rw [h0]
-      exact zero_le
-    have hq0 : I ^ (1 / q) ≠ 0 := (ENNReal.rpow_pos (pos_iff_ne_zero.2 h0) hI).ne'
-    have hqt : I ^ (1 / q) ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg hpq.symm.one_div_nonneg hI
-    have hroot : I ^ (1 / p) ≤ T := by
-      rw [← ENNReal.mul_le_mul_iff_left hq0 hqt, ← ENNReal.rpow_add _ _ h0 hI,
-        hpq.one_div_add_one_div, div_one, ENNReal.rpow_one]
-      exact hle
-    calc I = (I ^ (1 / p)) ^ p := by
-          rw [← ENNReal.rpow_mul, one_div_mul_cancel hp0.ne', ENNReal.rpow_one]
-      _ ≤ T ^ p := ENNReal.rpow_le_rpow hroot hp0.le
-  -- monotone convergence
-  have hsup : ∀ x, F x ^ p = ⨆ n : ℕ, (min (F x) n) ^ p := fun x => by
-    have hF' : F x = ⨆ n : ℕ, min (F x) n := by
-      rw [← inf_iSup_eq (F x) fun n : ℕ => (n : ℝ≥0∞), ENNReal.iSup_natCast, inf_top_eq]
-    have e := (ENNReal.orderIsoRpow p hp0).map_iSup fun n : ℕ => min (F x) (n : ℝ≥0∞)
-    simp only [ENNReal.orderIsoRpow_apply] at e
-    rw [← e, ← hF']
-  calc ∫⁻ x, F x ^ p ∂κ = ∫⁻ x, ⨆ n : ℕ, (min (F x) n) ^ p ∂κ := lintegral_congr hsup
-    _ = ⨆ n : ℕ, ∫⁻ x, (min (F x) n) ^ p ∂κ :=
-        lintegral_iSup (fun n => (hF.min measurable_const).pow_const p) fun m n hmn x =>
-          ENNReal.rpow_le_rpow (min_le_min_left _ (Nat.cast_le.2 hmn)) hp0.le
-    _ ≤ T ^ p := iSup_le key
+/-- Minkowski's integral inequality `‖∫ h (·, y) dy‖_p ≤ ∫ ‖h (·, y)‖_p dy` (HNVW I, Proposition
+1.2.22, for the exponents `1` and `p`), for measurable `h ≥ 0` and s-finite measures.
 
-/-- Minkowski's integral inequality: `∫ (∫ h (x, y) dy)^p dx ≤ (∫ (∫ h (x, y)^p dx)^{1/p} dy)^p`
-for `1 ≤ p`, with s-finite measures (`κ` is a sum of finite measures). -/
+Departure from the source: the book takes the norm inside a Bochner integral in `L^p`, for step
+functions, and uses their density. Here the weighted Jensen inequality
+`(∫ a (y) g (x, y) dy)^p ≤ (∫ a)^{p − 1} ∫ a (y) g (x, y)^p dy`, integrated in `x`, is applied to
+`a (y) = ‖h (·, y)‖_p` and `g = h / a`, for which `∫ g (x, y)^p dx ≤ 1`. -/
 private theorem rad_lintegral_rpow_lintegral_le {β γ : Type*} [MeasurableSpace β]
     [MeasurableSpace γ] {κ : Measure β} {ν : Measure γ} [SFinite κ] [SFinite ν]
     {h : β → γ → ℝ≥0∞} (hh : Measurable (Function.uncurry h)) {p : ℝ} (hp : 1 ≤ p) :
     ∫⁻ x, (∫⁻ y, h x y ∂ν) ^ p ∂κ ≤ (∫⁻ y, (∫⁻ x, h x y ^ p ∂κ) ^ (1 / p) ∂ν) ^ p := by
-  rcases hp.eq_or_lt with rfl | hp1
-  · simp only [ENNReal.rpow_one, div_one]
-    rw [lintegral_lintegral_swap hh.aemeasurable]
   have hp0 : 0 < p := by linarith
-  conv_lhs => rw [← sum_sfiniteSeq κ]
-  rw [lintegral_sum_measure, tsum_eq_iSup_sum]
-  refine iSup_le fun s => ?_
-  rw [← lintegral_finsetSum_measure]
-  have hle : ∑ i ∈ s, sfiniteSeq κ i ≤ κ := by
-    conv_rhs => rw [← sum_sfiniteSeq κ]
-    exact Measure.le_iff.2 fun t ht => by
-      rw [Measure.finsetSum_apply, Measure.sum_apply _ ht]
-      exact _root_.sum_le_tsum s
-  refine (rad_lintegral_rpow_lintegral_le_of_finite hh hp1).trans ?_
-  gcongr
+  set a : γ → ℝ≥0∞ := fun y => (∫⁻ x, h x y ^ p ∂κ) ^ (1 / p)
+  have ha : Measurable a := (hh.pow_const p).lintegral_prod_left'.pow_const _
+  have hap : ∀ y, a y ^ p = ∫⁻ x, h x y ^ p ∂κ := fun y => by
+    rw [← ENNReal.rpow_mul, one_div_mul_cancel hp0.ne', ENNReal.rpow_one]
+  have hhy : ∀ y, Measurable fun x => h x y := fun y => hh.comp measurable_prodMk_right
+  rcases eq_or_ne (∫⁻ y, a y ∂ν) ⊤ with hT | hT
+  · rw [hT, ENNReal.top_rpow_of_pos hp0]
+    exact le_top
+  have hk : Measurable (Function.uncurry fun x y => h x y / a y) := hh.div (ha.comp measurable_snd)
+  -- `h = a (h / a)`: `a < ∞` almost everywhere, and `h (·, y) = 0` almost everywhere if `a (y) = 0`
+  have hyx : ∀ᵐ y ∂ν, ∀ᵐ x ∂κ, h x y = a y * (h x y / a y) := by
+    filter_upwards [ae_lt_top ha hT] with y hy
+    rcases eq_or_ne (a y) 0 with h0 | h0
+    · have h1 : ∫⁻ x, h x y ^ p ∂κ = 0 := by rw [← hap, h0, ENNReal.zero_rpow_of_pos hp0]
+      filter_upwards [(lintegral_eq_zero_iff ((hhy y).pow_const p)).1 h1] with x hx
+      rw [(ENNReal.rpow_eq_zero_iff_of_pos hp0).1 hx, ENNReal.zero_div, mul_zero]
+    · exact ae_of_all _ fun x => (ENNReal.mul_div_cancel h0 hy.ne).symm
+  have hxy := (Measure.ae_ae_comm (p := fun y x => h x y = a y * (h x y / a y))
+    (measurableSet_eq_fun (hh.comp measurable_swap)
+      ((ha.comp measurable_fst).mul (hk.comp measurable_swap)))).1 hyx
+  calc ∫⁻ x, (∫⁻ y, h x y ∂ν) ^ p ∂κ
+      = ∫⁻ x, (∫⁻ y, a y * (h x y / a y) ∂ν) ^ p ∂κ :=
+        lintegral_congr_ae (hxy.mono fun x hx => by simp only; rw [lintegral_congr_ae hx])
+    _ ≤ (∫⁻ y, a y ∂ν) ^ (p - 1) * ∫⁻ y, a y * ∫⁻ x, (h x y / a y) ^ p ∂κ ∂ν :=
+        HarmonicAnalysis.lintegral_rpow_lintegral_mul_le ha hk hp
+    _ ≤ (∫⁻ y, a y ∂ν) ^ (p - 1) * ∫⁻ y, a y ∂ν := by
+        gcongr with y
+        refine mul_le_of_le_one_right zero_le ?_
+        simp_rw [ENNReal.div_rpow_of_nonneg _ _ hp0.le, div_eq_mul_inv]
+        rw [lintegral_mul_const _ ((hhy y).pow_const p), ← hap]
+        exact ENNReal.mul_inv_le_one _
+    _ = (∫⁻ y, a y ∂ν) ^ p := by
+        conv_lhs => rw [← ENNReal.rpow_one (∫⁻ y, a y ∂ν), ← ENNReal.rpow_mul, one_mul]
+        rw [← ENNReal.rpow_add_of_nonneg _ _ (by linarith) zero_le_one, sub_add_cancel]
 
 /-- Minkowski's integral inequality for Rademacher sums:
-`‖Σ_k ε_k ∫ F_k (s, ·) dν‖ ≤ ∫ ‖Σ_k ε_k F_k (s, ·)‖ dν`. -/
+`‖Σ_k ε_k ∫ F_k (s, ·) dν‖ ≤ ∫ ‖Σ_k ε_k F_k (s, ·)‖ dν` (HNVW I, Proposition 1.2.22, for the
+exponents `1` and `p`). -/
 theorem eLpNormRad_integral_le [SFinite μ] {S : Type*} [MeasurableSpace S] {ν : Measure S}
     [SFinite ν] {p : ℝ} (hp : 1 ≤ p) {F : Fin K → S → α → E}
     (hF : ∀ k, StronglyMeasurable (Function.uncurry (F k)))
@@ -350,11 +387,11 @@ theorem eLpNormRad_integral_le [SFinite μ] {S : Type*} [MeasurableSpace S] {ν 
     rw [this]
     exact enorm_integral_le_lintegral_enorm _
   have hr : ∀ s, eLpNormRad (fun k => F k s) p μ = (∫⁻ z, h z s ^ p ∂P) ^ (1 / p) := fun s => by
-    have e := rad_eLpNorm_rpow hp0 (rad_aestronglyMeasurable (μ := μ)
+    have e := eLpNorm_ofReal_rpow_eq_lintegral hp0 (rad_aestronglyMeasurable (μ := μ)
       (fun k => (hFs k s).aestronglyMeasurable) (ProbabilityTheory.uniformOn Set.univ))
     rw [hh, hP, ← e, ← ENNReal.rpow_mul, mul_one_div_cancel hp0.ne', ENNReal.rpow_one, eLpNormRad]
   simp only [hr]
-  rw [← ENNReal.rpow_le_rpow_iff hp0, eLpNormRad, rad_eLpNorm_rpow hp0
+  rw [← ENNReal.rpow_le_rpow_iff hp0, eLpNormRad, eLpNorm_ofReal_rpow_eq_lintegral hp0
     (rad_aestronglyMeasurable (fun k => (hLm k).aestronglyMeasurable) _)]
   exact (lintegral_mono_ae (hpt.mono fun z hz => ENNReal.rpow_le_rpow hz hp0.le)).trans
     (rad_lintegral_rpow_lintegral_le hhm hp)

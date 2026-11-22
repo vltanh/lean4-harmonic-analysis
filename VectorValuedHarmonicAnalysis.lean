@@ -13,3 +13,4 @@ public import VectorValuedHarmonicAnalysis.NoncommutativeKhintchine
 public import VectorValuedHarmonicAnalysis.Paley.Rademacher
 public import VectorValuedHarmonicAnalysis.Paley.Schatten
 public import VectorValuedHarmonicAnalysis.RademacherNorm
+public import VectorValuedHarmonicAnalysis.Transference

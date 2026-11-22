@@ -3,30 +3,36 @@ module
 public import VectorValuedHarmonicAnalysis.Paley.Rademacher
 public import BanachProbability.KConvexity.Schatten
 public import BanachProbability.NoncommutativeKhintchine.Lower
+import BanachProbability.Schatten.CubeDuality
+import BanachProbability.Schatten.Dilation
 
 /-!
 # The noncommutative Khintchine inequality
 
 **Theorem** (`ncKhintchine`; F. Lust-Piquard, C. R. Acad. Sci. Paris 303 (1986); F. Lust-Piquard and
-G. Pisier, *Non commutative Khintchine and Paley inequalities*, Ark. Mat. 29 (1991); the order `√q`
-of the constant: G. Pisier,
-*Non-commutative vector valued `L_p`-spaces and completely `p`-summing maps*, Astérisque 247 (1998),
-Theorem 8.4.1 and (8.4.5), pp. 105–106). There is an absolute constant `C` such that for all
-`2 ≤ q < ∞`, all sizes and all real matrices `x_1, …, x_K ∈ M_n (ℝ)`,
+G. Pisier, *Non commutative Khintchine and Paley inequalities*, Ark. Mat. 29 (1991); for the growth
+of the constant, G. Pisier, *Non-commutative vector valued `L_p`-spaces and completely `p`-summing
+maps*, Astérisque 247 (1998), Theorem 8.4.1, (8.4.3) and (8.4.5), pp. 105–106). There is an absolute
+constant `C` such that for all `2 ≤ q < ∞`, all sizes and all real matrices `x_1, …, x_K ∈ M_n (ℝ)`,
 
 `max (‖(Σ x_kᵀ x_k)^{1/2}‖_{S_q}, ‖(Σ x_k x_kᵀ)^{1/2}‖_{S_q}) ≤ ‖Σ ε_k x_k‖_{L_q (Ω; S_q)}
   ≤ C √q max (‖(Σ x_kᵀ x_k)^{1/2}‖_{S_q}, ‖(Σ x_k x_kᵀ)^{1/2}‖_{S_q})`.
 
-For normal `x_k` the two square functions agree (`ncKhintchine_of_normal`).
+In the statements the square functions are written without square roots of matrices:
+`‖(Σ x_kᵀ x_k)^{1/2}‖_{S_q} = ‖Σ x_kᵀ x_k‖_{S_{q/2}}^{1/2}`, and similarly for `Σ x_k x_kᵀ`. For
+normal `x_k` the two square functions agree (`ncKhintchine_of_normal`).
 
-The lower bound is the convexity inequality (I.7) (`BanachProbability.ncKhintchine_lower_col`). The
-upper bound follows Lust-Piquard–Pisier, pp. 254–255, and Pisier, p. 106: by duality,
-`‖Σ ε_k x_k‖_{L_q (S_q)} = E tr (φ Σ ε_k x_k) = Σ tr (x_k φ_k)`,
-`φ_k = E (ε_k φ)`, for some `φ` in the unit ball of `L_{q'} (S_{q'})`; Corollary III.4 for
-`1 < q' ≤ 2` splits `φ_k = a_k + b_k` with control by `‖Σ ε_k φ_k‖_{L_1 (S_{q'})}`, the norm of the
-Rademacher projection of `φ`, which is of order `√q`.
-The duality is used for symmetric `x_k`, with a symmetric-valued `φ`; general real matrices are
-reduced to these by the dilations `[[0, x_k], [x_kᵀ, 0]]`.
+The lower bound is the convexity inequality (I.7), p. 247 (and its row form), followed by
+`L² ≤ L^q` (`BanachProbability.ncKhintchine_lower_col`, `BanachProbability.ncKhintchine_lower_row`).
+The upper bound follows Lust-Piquard–Pisier, pp. 254–255, and Pisier, p. 106: by duality,
+`‖Σ ε_k x_k‖_{L_q (S_q)} = E tr (φ Σ ε_k x_k) = Σ tr (x_k φ_k)`, `φ_k = E (ε_k φ)`, for some `φ` in
+the unit ball of `L_{q'} (S_{q'})`; Corollary III.4 for `1 < q' ≤ 2` splits `φ_k = a_k + b_k` with
+control by `‖Σ ε_k φ_k‖_{L_1 (S_{q'})}`, the norm of the Rademacher projection of `φ`, which is at
+most a constant times `√q`.
+
+Departure from the sources, which treat all matrices at once: the duality is used for symmetric
+`x_k`, with a symmetric-valued `φ`, and general real matrices are reduced to symmetric ones by the
+Hermitian dilations `[[0, x_k], [x_kᵀ, 0]]`.
 
 A shorter proof of the upper bound, by exchangeable pairs, with the constant `√(2 (q − 1))`, is
 `BanachProbability.ncKhintchine_upper`.
@@ -148,7 +154,8 @@ private theorem avg_rademacherProj_le {q q' : ℝ} (hq : 2 ≤ q) (hqq' : q.Hold
 
 end Symmetric
 
-/-- The upper bound for symmetric matrices (Lust-Piquard–Pisier, pp. 254–255; Pisier, p. 106). -/
+/-- The upper bound for symmetric matrices, by the duality argument of Lust-Piquard–Pisier,
+pp. 254–255, and Pisier, p. 106 (there for all matrices). -/
 private theorem exists_symmetric_upper : ∃ M : ℝ, 0 < M ∧ ∀ (n : Type) [Fintype n] [DecidableEq n]
     (q : ℝ), 2 ≤ q → ∀ (K : ℕ) (x : Fin K → Matrix n n ℝ), (∀ k, (x k).IsHermitian) →
     SignCube.lpNorm (schattenNorm (ENNReal.ofReal q)) q

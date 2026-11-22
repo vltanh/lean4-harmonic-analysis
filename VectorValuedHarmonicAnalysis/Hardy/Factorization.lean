@@ -8,22 +8,42 @@ import Mathlib.MeasureTheory.SpecificCodomains.WithLp
 /-!
 # Szegő and Riesz factorization of matrix-valued functions
 
-* `exists_szego_factorization`: if `a : 𝕋 → M_n (ℂ)` is continuous with positive definite values,
-  then `a = Ψ h` almost everywhere, with `Ψ` unitary-valued, `h ∈ H²` and `h⁻¹ ∈ H²` (Szegő
-  factorization; here `h` is bounded).
-* `exists_riesz_factorization`: an analytic matrix polynomial `f` is a product `f = g h` almost
-  everywhere of `g, h ∈ H²`, with `‖g (t)‖_{S_{2p}}² ≤ ‖f (t)‖_{S_p}` and
+* `exists_szego_factorization`: if `a : 𝕋 → M_n (ℂ)` is continuous with invertible values, then
+  `a = Ψ h` almost everywhere, with `Ψ` unitary-valued, `h ∈ H²` and `h⁻¹ ∈ H²` (Szegő
+  factorization).
+* `exists_riesz_factorization`: for `δ > 0`, an analytic matrix polynomial `f` is a product
+  `f = g h` almost everywhere of `g, h ∈ H²`, with `‖g (t)‖_{S_{2p}}² ≤ ‖f (t)‖_{S_p}` and
   `‖h (t)‖_{S_{2p}}² ≤ ‖f (t)‖_{S_p} + δ` for almost every `t` and every `p ≥ 1`.
 
-For `p = 1` the second statement is, up to `δ`, D. Sarason's theorem (1967) that `f ∈ H¹ (C_1)` is a
-product `g h` with `‖f‖_{H¹ (C_1)} = ‖g‖_{H² (C_2)} ‖h‖_{H² (C_2)}`; the matrix case goes back to
-Helson and Lowdenslager (F. Lust-Piquard and G. Pisier, *Non commutative Khintchine and Paley
-inequalities*, Ark. Mat. 29 (1991), pp. 243, 249, 252). The proof is that of T. N. Bekjan and Q. Xu,
-*Riesz and Szegő type factorizations for noncommutative Hardy spaces*, J. Operator Theory 62 (2009),
-215–231 (arXiv:0705.1947), Theorems 3.1 and 3.4, for the algebra `M = L^∞ (𝕋; M_n)`,
-`A = H^∞ (𝕋; M_n)`, `D = M_n`, which is Arveson's argument: project `a` onto the closure of `a A_0`
-in `L²`; the difference `y` satisfies `yᴴ y ∈ D`; `Ψ` is the unitary part of `y` and `h = Ψᴴ a`. For
-`f` one takes `a = (fᴴ f + δ²)^{1/4}` and `g = f a⁻² · a Ψ`.
+D. Sarason (1967) proved that every `f ∈ H¹ (C_1)` is a product `g h` with
+`‖f‖_{H¹ (C_1)} = ‖g‖_{H² (C_2)} ‖h‖_{H² (C_2)}`; the matrix case goes back to Helson and
+Lowdenslager. F. Lust-Piquard and G. Pisier, *Non commutative Khintchine and Paley inequalities*,
+Ark. Mat. 29 (1991), use this theorem (pp. 243, 249) and the equality (β), p. 252, its analogue in
+the mixed norms of `L¹ (𝕋; C_p)` and `L² (𝕋; C_{2p})`. Here the factorization is proved for analytic
+polynomials whose coefficients are finite matrices, and the norms are controlled up to `δ`.
+
+## The proof
+
+The proof is that of T. N. Bekjan and Q. Xu, *Riesz and Szegő type factorizations for noncommutative
+Hardy spaces*, J. Operator Theory 62 (2009), 215–231 (arXiv:0705.1947), Theorem 3.1, the case
+`p = q = 2` (Arveson's argument), and Theorem 3.4, for the algebras `M = L^∞ (𝕋; M_n)` and
+`A = H^∞ (𝕋; M_n)`, whose diagonal is `M_n`. Let `x` be the projection of `a` on the closure
+`[a A_0]` of `a A_0` in `L²` and `y = a − x`. Then `yᴴ y` is a constant positive definite matrix
+`D`; `Ψ = y D^{-1/2}` is the unitary part of `y`, and `h = Ψᴴ a`. For the Riesz factorization of `f`
+one takes `a = (fᴴ f + η²)^{1/4}`, with `η = δ / (n + 1)`, and `g = f a⁻² · a Ψ = f h⁻¹`.
+
+Departures from the source, possible because the diagonal is `M_n` and `f` is a polynomial:
+
+* `D` is a constant positive definite matrix, so `A_0 D^{1/2} = A_0`: the orthogonal decomposition
+  (3.2) and the equalities (3.3) of the source are not needed.
+* The source proves `Φ (h) Φ (h⁻¹) = 1`, where `Φ` is the mean, and then `Ψ = y Φ (h⁻¹)`. Here
+  `Φ (h⁻¹)` is the explicit matrix `D^{-1/2}`: `h⁻¹ = a⁻¹ Ψ = a⁻¹ y D^{-1/2} =
+  (1 − a⁻¹ x) D^{-1/2}`, and `a⁻¹ x` has no Fourier coefficients of order `≤ 0`.
+* `g = f h⁻¹` is in `H²` because it is the product of a polynomial and a function in `H²`;
+  Proposition 3.3 of the source is not needed.
+* Theorem 3.4 of the source bounds the norms of `g` and `h` in `L^{2p} (M)`. The bounds here are
+  pointwise, for almost every `t` and all `p ≥ 1` at once; the source's construction yields them.
+  Integrated, they give the norms of `L^{2p} (M)` as well as the mixed norms of (β).
 -/
 
 @[expose] public section
@@ -94,7 +114,7 @@ private theorem fourierCoeff_inner_eq_zero {a : UnitAddCircle → Matrix n n ℂ
   have hw : MemLp (fun t => fourier k t • y t) 2 haarAddCircle := by
     refine (Lp.memLp y).of_le ((fourier k).continuous.aestronglyMeasurable.smul
       (Lp.aestronglyMeasurable y)) (ae_of_all _ fun t => ?_)
-    rw [norm_smul, fourier_apply, Circle.norm_coe, one_mul]
+    rw [norm_smul, norm_fourier_apply_eq_one, one_mul]
   have h0 : inner ℂ hw.toLp f = 0 := by
     refine inner_eq_zero_of_mem_columnSpace ha (r := 0) (fun m hm v => ?_) hf
     have h1 : inner ℂ y (memLp_column ha (m - k) v).toLp = 0 :=
@@ -181,97 +201,120 @@ private theorem matFourierCoeff_const_mul {l m : Type*} {f : UnitAddCircle → M
     (hf o j).const_mul _, Finset.sum_apply, Matrix.mul_apply]
   exact Finset.sum_congr rfl fun o _ => by rw [fourierCoeff.const_mul]; rfl
 
-omit [Fintype n] [DecidableEq n] in
-private theorem fourierCoeff_const (z : ℂ) (k : ℤ) :
-    fourierCoeff (fun _ : UnitAddCircle => z) k = if k = 0 then z else 0 := by
-  have h1 := congrFun (fourierCoeff_fourier (T := 1) 0) k
-  have h2 := fourierCoeff.const_mul (T := 1) (fourier 0) z k
-  simpa [h1, Pi.single_apply] using h2
+/-! ### The orthogonal part of `a`
 
-/-! ### The orthogonal part of `a` -/
+Bekjan–Xu, proof of Theorem 3.1: `y = a − x`, where `x` is the projection of `a` on `[a A_0]`. -/
 
-/-- Bekjan–Xu, proof of Theorem 3.1: `y = a − x`, `x` the projection of `a` on `[a A_0]`. Then
-`yᴴ y` and `yᴴ a` have no Fourier coefficients of negative order, and `a⁻¹ y − 1 = −a⁻¹ x` has none
-of order `≤ 0`. -/
-private theorem exists_orthogonal_part {a : UnitAddCircle → Matrix n n ℂ} (ha : Continuous a)
-    (hinv : Continuous fun t => (a t)⁻¹) (hunit : ∀ t, IsUnit (a t)) :
-    ∃ Y : UnitAddCircle → Matrix n n ℂ, (∀ i j, StronglyMeasurable fun t => Y t i j) ∧
-      (∀ i j, MemLp (fun t => Y t i j) 2 haarAddCircle) ∧
-      (∀ k : ℤ, k < 0 → matFourierCoeff (fun t => (Y t)ᴴ * Y t) k = 0) ∧
-      (∀ k : ℤ, k < 0 → matFourierCoeff (fun t => (Y t)ᴴ * a t) k = 0) ∧
-      ∀ k : ℤ, k ≤ 0 → matFourierCoeff (fun t => (a t)⁻¹ * Y t) k = if k = 0 then 1 else 0 := by
-  have : CompleteSpace (columnSpace ha 1) :=
-    (Submodule.isClosed_topologicalClosure _).completeSpace_coe
-  let z (j : n) : Lp (EuclideanSpace ℂ n) 2 (haarAddCircle (T := 1)) :=
-    (memLp_column ha 0 (Pi.single j 1)).toLp
-  let x (j : n) : Lp (EuclideanSpace ℂ n) 2 (haarAddCircle (T := 1)) :=
-    (columnSpace ha 1).starProjection (z j)
-  let y (j : n) : Lp (EuclideanSpace ℂ n) 2 (haarAddCircle (T := 1)) := z j - x j
-  have hx (j : n) : x j ∈ columnSpace ha 1 := Submodule.starProjection_apply_mem _ _
-  have hz (j : n) : z j ∈ columnSpace ha 0 := column_mem_columnSpace ha le_rfl _
-  have hxz (j : n) : x j ∈ columnSpace ha 0 := by
-    refine Submodule.topologicalClosure_mono (Submodule.span_mono ?_) (hx j)
-    rintro _ ⟨k, hk, v, rfl⟩
-    exact ⟨k, by omega, v, rfl⟩
-  have hy (j : n) : y j ∈ (columnSpace ha 1)ᗮ := Submodule.sub_starProjection_mem_orthogonal _
-  have hy0 (j : n) : y j ∈ columnSpace ha 0 := Submodule.sub_mem _ (hz j) (hxz j)
-  have hcol (j : n) (t : UnitAddCircle) (i : n) :
-      (column a 0 (Pi.single j 1) t).ofLp i = a t i j := by
+section OrthogonalPart
+
+variable {a : UnitAddCircle → Matrix n n ℂ}
+
+omit [DecidableEq n] in
+private theorem completeSpace_columnSpace (ha : Continuous a) (r : ℤ) :
+    CompleteSpace (columnSpace ha r) :=
+  (Submodule.isClosed_topologicalClosure _).completeSpace_coe
+
+attribute [local instance] completeSpace_columnSpace
+
+/-- The columns of `x`. -/
+private noncomputable def projCol (ha : Continuous a) (j : n) :
+    Lp (EuclideanSpace ℂ n) 2 (haarAddCircle (T := 1)) :=
+  (columnSpace ha 1).starProjection (memLp_column ha 0 (Pi.single j 1)).toLp
+
+/-- The columns of `y`. -/
+private noncomputable def orthCol (ha : Continuous a) (j : n) :
+    Lp (EuclideanSpace ℂ n) 2 (haarAddCircle (T := 1)) :=
+  (memLp_column ha 0 (Pi.single j 1)).toLp - projCol ha j
+
+/-- The function `y`. -/
+private noncomputable def orthPart (ha : Continuous a) (t : UnitAddCircle) : Matrix n n ℂ :=
+  Matrix.of fun i j => (orthCol ha j t).ofLp i
+
+private theorem projCol_mem (ha : Continuous a) (j : n) : projCol ha j ∈ columnSpace ha 1 :=
+  Submodule.starProjection_apply_mem _ _
+
+/-- `y ⟂ [a A_0]`. -/
+private theorem orthCol_mem_orthogonal (ha : Continuous a) (j : n) :
+    orthCol ha j ∈ (columnSpace ha 1)ᗮ :=
+  Submodule.sub_starProjection_mem_orthogonal _
+
+/-- `y ∈ [a A]`. -/
+private theorem orthCol_mem_columnSpace (ha : Continuous a) (j : n) :
+    orthCol ha j ∈ columnSpace ha 0 := by
+  refine Submodule.sub_mem _ (column_mem_columnSpace ha le_rfl _) ?_
+  refine Submodule.topologicalClosure_mono (Submodule.span_mono ?_) (projCol_mem ha j)
+  rintro _ ⟨k, hk, v, rfl⟩
+  exact ⟨k, by omega, v, rfl⟩
+
+private theorem stronglyMeasurable_orthPart (ha : Continuous a) (i j : n) :
+    StronglyMeasurable fun t => orthPart ha t i j :=
+  (EuclideanSpace.proj (𝕜 := ℂ) i).continuous.comp_stronglyMeasurable
+    (Lp.stronglyMeasurable (orthCol ha j))
+
+private theorem memLp_orthPart (ha : Continuous a) (i j : n) :
+    MemLp (fun t => orthPart ha t i j) 2 haarAddCircle :=
+  (Lp.memLp (orthCol ha j)).eval_piLp i
+
+/-- `yᴴ y` has no Fourier coefficients of negative order, because `y ⟂ [y A_0]`. -/
+private theorem matFourierCoeff_orthPart_self (ha : Continuous a) {k : ℤ} (hk : k < 0) :
+    matFourierCoeff (fun t => (orthPart ha t)ᴴ * orthPart ha t) k = 0 := by
+  ext i j
+  rw [matFourierCoeff, Matrix.of_apply, Matrix.zero_apply,
+    ← fourierCoeff_inner_eq_zero ha (orthCol_mem_orthogonal ha i) (orthCol_mem_columnSpace ha j) hk]
+  congr 1
+  ext t
+  rw [EuclideanSpace.inner_eq_star_dotProduct, dotProduct_comm]
+  rfl
+
+/-- `yᴴ a` has no Fourier coefficients of negative order, because `y ⟂ [a A_0]`. -/
+private theorem matFourierCoeff_orthPart_mul (ha : Continuous a) {k : ℤ} (hk : k < 0) :
+    matFourierCoeff (fun t => (orthPart ha t)ᴴ * a t) k = 0 := by
+  ext i j
+  have hcol (t : UnitAddCircle) (i : n) : (column a 0 (Pi.single j 1) t).ofLp i = a t i j := by
     simp [column]
-  refine ⟨fun t => Matrix.of fun i j => (y j t).ofLp i, fun i j => ?_, fun i j => ?_,
-    fun k hk => ?_, fun k hk => ?_, fun k hk => ?_⟩
-  · exact (EuclideanSpace.proj (𝕜 := ℂ) i).continuous.comp_stronglyMeasurable
-      (Lp.stronglyMeasurable (y j))
-  · exact (Lp.memLp (y j)).eval_piLp i
-  · ext i j
-    rw [matFourierCoeff, Matrix.of_apply, Matrix.zero_apply,
-      ← fourierCoeff_inner_eq_zero ha (hy i) (hy0 j) hk]
-    congr 1
-    ext t
-    rw [EuclideanSpace.inner_eq_star_dotProduct, dotProduct_comm]
-    rfl
-  · ext i j
-    rw [matFourierCoeff, Matrix.of_apply, Matrix.zero_apply,
-      ← fourierCoeff_inner_eq_zero ha (hy i) (hz j) hk]
-    refine congrFun (fourierCoeff_congr_ae ?_) k
-    filter_upwards [(memLp_column ha 0 (Pi.single j 1)).coeFn_toLp] with t ht
-    rw [ht, EuclideanSpace.inner_eq_star_dotProduct, dotProduct_comm]
-    simp only [dotProduct, hcol]
-    rfl
-  · ext i j
-    have hint : Integrable (fun t => ((a t)⁻¹).mulVec (x j t).ofLp i) haarAddCircle := by
-      refine MemLp.integrable (q := 2) one_le_two ?_
-      simp only [Matrix.mulVec, dotProduct]
-      exact memLp_finsetSum _ fun o _ =>
-        memLp_continuous_mul (hinv.matrix_elem i o) ((Lp.memLp (x j)).eval_piLp o)
-    have e : (fun t => ((a t)⁻¹ * Matrix.of fun i j => (y j t).ofLp i) i j) =ᵐ[haarAddCircle]
-        (fun _ => (1 : Matrix n n ℂ) i j) +
-          fun t => (-1 : ℂ) * ((a t)⁻¹).mulVec (x j t).ofLp i := by
-      filter_upwards [(memLp_column ha 0 (Pi.single j 1)).coeFn_toLp,
-        Lp.coeFn_sub (z j) (x j)] with t h1 h2
-      have h3 : (y j t).ofLp = (a t).mulVec (Pi.single j 1) - (x j t).ofLp := by
-        rw [h2, Pi.sub_apply, h1]
-        simp [column]
-      have h4 : ((a t)⁻¹ * Matrix.of fun i j => (y j t).ofLp i) i j =
-          ((a t)⁻¹).mulVec (y j t).ofLp i := rfl
-      rw [h4, h3, Matrix.mulVec_sub, Matrix.mulVec_mulVec,
-        Matrix.nonsing_inv_mul _ ((Matrix.isUnit_iff_isUnit_det _).1 (hunit t))]
-      simp [sub_eq_add_neg]
-    rw [matFourierCoeff, Matrix.of_apply, fourierCoeff_congr_ae e,
-      fourierCoeff.add (integrable_const _) (hint.const_mul _), Pi.add_apply,
-      fourierCoeff.const_mul, fourierCoeff_inv_mulVec_eq_zero ha hinv hunit (hx j) hk,
-      fourierCoeff_const, mul_zero, add_zero]
-    split_ifs <;> simp
+  rw [matFourierCoeff, Matrix.of_apply, Matrix.zero_apply,
+    ← fourierCoeff_inner_eq_zero ha (orthCol_mem_orthogonal ha i)
+      (column_mem_columnSpace ha le_rfl (Pi.single j 1)) hk]
+  refine congrFun (fourierCoeff_congr_ae ?_) k
+  filter_upwards [(memLp_column ha 0 (Pi.single j 1)).coeFn_toLp] with t ht
+  rw [ht, EuclideanSpace.inner_eq_star_dotProduct, dotProduct_comm]
+  simp only [dotProduct, hcol]
+  rfl
+
+/-- `a⁻¹ y = 1 − a⁻¹ x`. -/
+private theorem inv_mul_orthPart_ae (ha : Continuous a) (ha' : ∀ t, IsUnit (a t)) (i j : n) :
+    (fun t => ((a t)⁻¹ * orthPart ha t) i j) =ᵐ[haarAddCircle]
+      (fun _ => (1 : Matrix n n ℂ) i j) +
+        fun t => (-1 : ℂ) * ((a t)⁻¹).mulVec (projCol ha j t).ofLp i := by
+  filter_upwards [(memLp_column ha 0 (Pi.single j 1)).coeFn_toLp,
+    Lp.coeFn_sub (memLp_column ha 0 (Pi.single j 1)).toLp (projCol ha j)] with t h1 h2
+  have h3 : (orthCol ha j t).ofLp = (a t).mulVec (Pi.single j 1) - (projCol ha j t).ofLp := by
+    rw [orthCol, h2, Pi.sub_apply, h1]
+    simp [column]
+  have h4 : ((a t)⁻¹ * orthPart ha t) i j = ((a t)⁻¹).mulVec (orthCol ha j t).ofLp i := rfl
+  rw [h4, h3, Matrix.mulVec_sub, Matrix.mulVec_mulVec,
+    Matrix.nonsing_inv_mul _ ((Matrix.isUnit_iff_isUnit_det _).1 (ha' t))]
+  simp [sub_eq_add_neg]
+
+/-- `a⁻¹ y − 1 = −a⁻¹ x` has no Fourier coefficients of order `≤ 0`, because `a⁻¹ x ∈ [A_0]`. -/
+private theorem matFourierCoeff_inv_mul_orthPart (ha : Continuous a) (ha' : ∀ t, IsUnit (a t))
+    (hinv : Continuous fun t => (a t)⁻¹) {k : ℤ} (hk : k ≤ 0) :
+    matFourierCoeff (fun t => (a t)⁻¹ * orthPart ha t) k = if k = 0 then 1 else 0 := by
+  ext i j
+  have hint : Integrable (fun t => ((a t)⁻¹).mulVec (projCol ha j t).ofLp i) haarAddCircle := by
+    refine MemLp.integrable (q := 2) one_le_two ?_
+    simp only [Matrix.mulVec, dotProduct]
+    exact memLp_finsetSum _ fun o _ =>
+      memLp_continuous_mul (hinv.matrix_elem i o) ((Lp.memLp (projCol ha j)).eval_piLp o)
+  rw [matFourierCoeff, Matrix.of_apply, fourierCoeff_congr_ae (inv_mul_orthPart_ae ha ha' i j),
+    fourierCoeff.add (integrable_const _) (hint.const_mul _), Pi.add_apply,
+    fourierCoeff.const_mul, fourierCoeff_inv_mulVec_eq_zero ha hinv ha' (projCol_mem ha j) hk,
+    fourierCoeff_const, mul_zero, add_zero]
+  split_ifs <;> simp
+
+end OrthogonalPart
 
 /-! ### `yᴴ y` is constant and positive definite -/
-
-omit [Fintype n] [DecidableEq n] in
-private theorem matFourierCoeff_congr_ae {l m : Type*} {f g : UnitAddCircle → Matrix l m ℂ}
-    (h : ∀ᵐ t ∂haarAddCircle, f t = g t) (k : ℤ) : matFourierCoeff f k = matFourierCoeff g k := by
-  ext i j
-  refine congrFun (fourierCoeff_congr_ae ?_) k
-  filter_upwards [h] with t ht
-  rw [ht]
 
 omit [DecidableEq n] in
 private theorem integrable_conjTranspose_mul {X Y : UnitAddCircle → Matrix n n ℂ}
@@ -392,57 +435,76 @@ private theorem exists_unitary {Y : UnitAddCircle → Matrix n n ℂ}
 
 /-! ### The Szegő factorization -/
 
-/-- **Szegő factorization** (Bekjan–Xu (2009), Theorem 3.1, matrix case): a continuous positive
-definite `a : 𝕋 → M_n (ℂ)` is `Ψ h` with `Ψ` unitary-valued and `h, h⁻¹ ∈ H²`. -/
+omit [DecidableEq n] in
+/-- `h = Ψᴴ a = D^{-1/2} yᴴ a` is in `H²`. -/
+private theorem isHardyTwo_conjTranspose_mul {a Y Ψ : UnitAddCircle → Matrix n n ℂ}
+    (ha : Continuous a) (hY : ∀ i j, MemLp (fun t => Y t i j) 2 haarAddCircle)
+    (hΨ2 : ∀ i j, MemLp (fun t => Ψ t i j) 2 haarAddCircle) {R : Matrix n n ℂ}
+    (hΨ : ∀ᵐ t ∂haarAddCircle, Ψ t = Y t * R)
+    (hYa : ∀ k : ℤ, k < 0 → matFourierCoeff (fun t => (Y t)ᴴ * a t) k = 0) :
+    IsHardyTwo fun t => (Ψ t)ᴴ * a t := by
+  refine ⟨fun i j => ?_, fun k hk => ?_⟩
+  · have := (memLp_continuous_matrix_mul ha.matrix_conjTranspose hΨ2 j i).star
+    refine (memLp_congr_ae (ae_of_all _ fun t => ?_)).1 this
+    rw [Pi.star_apply, ← Matrix.conjTranspose_apply, Matrix.conjTranspose_mul,
+      Matrix.conjTranspose_conjTranspose]
+  · have e : ∀ᵐ t ∂haarAddCircle, (Ψ t)ᴴ * a t = Rᴴ * ((Y t)ᴴ * a t) := by
+      filter_upwards [hΨ] with t ht
+      rw [ht, Matrix.conjTranspose_mul, Matrix.mul_assoc]
+    rw [matFourierCoeff_congr_ae e, matFourierCoeff_const_mul
+      (integrable_conjTranspose_mul hY (memLp_entry_of_continuous ha)), hYa k hk, Matrix.mul_zero]
+
+omit [DecidableEq n] in
+/-- `h⁻¹ = a⁻¹ Ψ = a⁻¹ y D^{-1/2} = (1 − a⁻¹ x) D^{-1/2}` is in `H²`. (Here `b = a⁻¹`.) -/
+private theorem isHardyTwo_inv_mul {b Y Ψ : UnitAddCircle → Matrix n n ℂ} (hb : Continuous b)
+    (hY : ∀ i j, MemLp (fun t => Y t i j) 2 haarAddCircle)
+    (hΨ2 : ∀ i j, MemLp (fun t => Ψ t i j) 2 haarAddCircle) {R : Matrix n n ℂ}
+    (hΨ : ∀ᵐ t ∂haarAddCircle, Ψ t = Y t * R)
+    (hbY : ∀ k : ℤ, k < 0 → matFourierCoeff (fun t => b t * Y t) k = 0) :
+    IsHardyTwo fun t => b t * Ψ t := by
+  refine ⟨memLp_continuous_matrix_mul hb hΨ2, fun k hk => ?_⟩
+  have e : ∀ᵐ t ∂haarAddCircle, b t * Ψ t = b t * Y t * R := by
+    filter_upwards [hΨ] with t ht
+    rw [ht, Matrix.mul_assoc]
+  rw [matFourierCoeff_congr_ae e, matFourierCoeff_mul_const (memLp_continuous_matrix_mul hb hY),
+    hbY k hk, Matrix.zero_mul]
+
+/-- **Szegő factorization** (Bekjan–Xu (2009), Theorem 3.1, for the algebra `H^∞ (𝕋; M_n)` and a
+continuous function): if `a : 𝕋 → M_n (ℂ)` is continuous with invertible values, then `a = Ψ h`
+almost everywhere, with `Ψ` unitary-valued, `h ∈ H²` and `h⁻¹ ∈ H²`. -/
 theorem exists_szego_factorization {a : UnitAddCircle → Matrix n n ℂ} (ha : Continuous a)
-    (hpos : ∀ t, (a t).PosDef) :
+    (ha' : ∀ t, IsUnit (a t)) :
     ∃ Ψ h : UnitAddCircle → Matrix n n ℂ, (∀ i j, StronglyMeasurable fun t => Ψ t i j) ∧
       (∀ t, Ψ t ∈ Matrix.unitaryGroup n ℂ) ∧ IsHardyTwo h ∧ IsHardyTwo (fun t => (h t)⁻¹) ∧
       ∀ᵐ t ∂haarAddCircle, a t = Ψ t * h t := by
-  have hunit (t : UnitAddCircle) : IsUnit (a t) := (hpos t).isUnit
   have hdet (t : UnitAddCircle) : IsUnit (a t).det :=
-    (Matrix.isUnit_iff_isUnit_det _).1 (hunit t)
+    (Matrix.isUnit_iff_isUnit_det _).1 (ha' t)
   have hinv : Continuous fun t => (a t)⁻¹ := by
     simp only [Matrix.inv_def, Ring.inverse_eq_inv]
     exact (ha.matrix_det.inv₀ fun t => (hdet t).ne_zero).smul ha.matrix_adjugate
-  obtain ⟨Y, hYm, hY, hYY, hYa, haY⟩ := exists_orthogonal_part ha hinv hunit
-  obtain ⟨D, hD⟩ := exists_ae_conjTranspose_mul_self_eq hY hYY
-  obtain ⟨R, hR⟩ := exists_inv_sqrt
-    (posDef_of_ae_conjTranspose_mul_self_eq hinv hY (by rw [haY 0 le_rfl, ite_eq_left rfl]) hD)
-  obtain ⟨Ψ, hΨm, hΨu, hΨ⟩ := exists_unitary hYm hD hR
+  have hY := memLp_orthPart ha
+  -- `yᴴ y = D` is a constant positive definite matrix and `Ψ = y D^{-1/2}`
+  obtain ⟨D, hD⟩ := exists_ae_conjTranspose_mul_self_eq hY fun _ =>
+    matFourierCoeff_orthPart_self ha
+  obtain ⟨R, hR⟩ := exists_inv_sqrt (posDef_of_ae_conjTranspose_mul_self_eq hinv hY
+    (by rw [matFourierCoeff_inv_mul_orthPart ha ha' hinv le_rfl, ite_eq_left rfl]) hD)
+  obtain ⟨Ψ, hΨm, hΨu, hΨ⟩ := exists_unitary (stronglyMeasurable_orthPart ha) hD hR
   have hΨ2 (i j : n) : MemLp (fun t => Ψ t i j) 2 haarAddCircle :=
     MemLp.of_bound (hΨm i j).aestronglyMeasurable 1
       (ae_of_all _ fun t => entry_norm_bound_of_unitary (hΨu t) i j)
   have h1 (t : UnitAddCircle) : Ψ t * (Ψ t)ᴴ = 1 := Matrix.mem_unitaryGroup_iff.1 (hΨu t)
   have h2 (t : UnitAddCircle) : (Ψ t)ᴴ * Ψ t = 1 := Matrix.mem_unitaryGroup_iff'.1 (hΨu t)
-  have ha2 (i j : n) : MemLp (fun t => a t i j) 2 haarAddCircle :=
-    (ha.matrix_elem i j).memLp_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
-  refine ⟨Ψ, fun t => (Ψ t)ᴴ * a t, hΨm, hΨu, ⟨fun i j => ?_, fun k hk => ?_⟩, ?_,
+  -- `h = Ψᴴ a`, `h⁻¹ = a⁻¹ Ψ`
+  have hi (t : UnitAddCircle) : ((Ψ t)ᴴ * a t)⁻¹ = (a t)⁻¹ * Ψ t := by
+    refine Matrix.inv_eq_right_inv ?_
+    rw [Matrix.mul_assoc, ← Matrix.mul_assoc (a t), Matrix.mul_nonsing_inv _ (hdet t),
+      Matrix.one_mul, h2]
+  refine ⟨Ψ, fun t => (Ψ t)ᴴ * a t, hΨm, hΨu, isHardyTwo_conjTranspose_mul ha hY hΨ2 hΨ fun _ =>
+    matFourierCoeff_orthPart_mul ha, ?_,
     ae_of_all _ fun t => by rw [← Matrix.mul_assoc, h1, Matrix.one_mul]⟩
-  · -- `h = Ψᴴ a` is bounded
-    have := (memLp_continuous_matrix_mul ha.matrix_conjTranspose hΨ2 j i).star
-    refine (memLp_congr_ae (ae_of_all _ fun t => ?_)).1 this
-    rw [Pi.star_apply, ← Matrix.conjTranspose_apply, Matrix.conjTranspose_mul,
-      Matrix.conjTranspose_conjTranspose]
-  · -- `h = D^{-1/2} yᴴ a` is analytic: `|y| = D^{1/2}` is an invertible constant matrix, so that
-    -- `[A_0 |y|]_2 = [A_0]_2`, (3.3) of the source, is immediate
-    have e : ∀ᵐ t ∂haarAddCircle, (Ψ t)ᴴ * a t = Rᴴ * ((Y t)ᴴ * a t) := by
-      filter_upwards [hΨ] with t ht
-      rw [ht, Matrix.conjTranspose_mul, Matrix.mul_assoc]
-    rw [matFourierCoeff_congr_ae e, matFourierCoeff_const_mul (integrable_conjTranspose_mul hY ha2),
-      hYa k hk, Matrix.mul_zero]
-  · -- `h⁻¹ = a⁻¹ Ψ = a⁻¹ y D^{-1/2} = (1 − a⁻¹ x) D^{-1/2}`, where `D^{-1/2} = Φ (h⁻¹)`
-    have hi (t : UnitAddCircle) : ((Ψ t)ᴴ * a t)⁻¹ = (a t)⁻¹ * Ψ t := by
-      refine Matrix.inv_eq_right_inv ?_
-      rw [Matrix.mul_assoc, ← Matrix.mul_assoc (a t), Matrix.mul_nonsing_inv _ (hdet t),
-        Matrix.one_mul, h2]
-    simp only [hi]
-    refine ⟨memLp_continuous_matrix_mul hinv hΨ2, fun k hk => ?_⟩
-    have e : ∀ᵐ t ∂haarAddCircle, (a t)⁻¹ * Ψ t = (a t)⁻¹ * Y t * R := by
-      filter_upwards [hΨ] with t ht
-      rw [ht, Matrix.mul_assoc]
-    rw [matFourierCoeff_congr_ae e, matFourierCoeff_mul_const (memLp_continuous_matrix_mul hinv hY),
-      haY k hk.le, ite_eq_right hk.ne, Matrix.zero_mul]
+  simp only [hi]
+  refine isHardyTwo_inv_mul hinv hY hΨ2 hΨ fun k hk => ?_
+  rw [matFourierCoeff_inv_mul_orthPart ha ha' hinv hk.le, ite_eq_right hk.ne]
 
 /-! ### Functions of `fᴴ f` -/
 
@@ -475,13 +537,9 @@ private theorem conjDiag_mul_eq_one {U : Matrix n n ℂ} (hU : U ∈ Matrix.unit
   rw [conjDiag_mul hU, e, conjDiag]
   simpa using h
 
-private theorem posDef_conjDiag {U : Matrix n n ℂ} (hU : U ∈ Matrix.unitaryGroup n ℂ) {d : n → ℝ}
-    (hd : ∀ i, 0 < d i) : (conjDiag U d).PosDef := by
-  have hpsd : (conjDiag U d).PosSemidef := by
-    refine Matrix.PosSemidef.mul_mul_conjTranspose_same (Matrix.PosSemidef.diagonal fun i => ?_) U
-    exact Complex.zero_le_real.2 (hd i).le
-  exact hpsd.posDef_iff_isUnit.2
-    (IsUnit.of_mul_eq_one _ (conjDiag_mul_eq_one hU fun i => (hd i).ne'))
+private theorem isUnit_conjDiag {U : Matrix n n ℂ} (hU : U ∈ Matrix.unitaryGroup n ℂ) {d : n → ℝ}
+    (hd : ∀ i, d i ≠ 0) : IsUnit (conjDiag U d) :=
+  IsUnit.of_mul_eq_one _ (conjDiag_mul_eq_one hU hd)
 
 /-- The Schatten norms of a matrix that is unitarily conjugate to `diag (d)`. -/
 private theorem complexSchattenNorm_conjDiag {q : ℝ} (hq : 0 < q) {U V : Matrix n n ℂ}
@@ -563,35 +621,10 @@ omit [DecidableEq n] in
 /-- `H²` is stable under the multiplication by analytic polynomials. (With `h⁻¹ ∈ H²` this gives
 `g = f h⁻¹ ∈ H²`; for a polynomial `f`, Proposition 3.3 of Bekjan–Xu is not needed.) -/
 private theorem isHardyTwo_trigPoly_mul {c : ℤ →₀ Matrix n n ℂ} (hc : ∀ k ∈ c.support, 0 ≤ k)
-    (hcont : Continuous (trigPoly c)) {h : UnitAddCircle → Matrix n n ℂ} (hh : IsHardyTwo h) :
-    IsHardyTwo fun t => trigPoly c t * h t := by
-  refine ⟨memLp_continuous_matrix_mul hcont hh.1, fun k hk => ?_⟩
-  ext i j
-  have e : (fun t => (trigPoly c t * h t) i j) =
-      ∑ p ∈ c.support ×ˢ Finset.univ, fun t : UnitAddCircle =>
-        c p.1 i p.2 * (fourier p.1 t * h t p.2 j) := by
-    ext t
-    simp only [Matrix.mul_apply, trigPoly, Finsupp.sum, Matrix.sum_apply, Matrix.smul_apply,
-      smul_eq_mul, Finset.sum_mul, Finset.sum_apply, Finset.sum_product]
-    rw [Finset.sum_comm]
-    refine Finset.sum_congr rfl fun q _ => Finset.sum_congr rfl fun o _ => by ring
-  have hint (p : ℤ × n) : Integrable (fun t : UnitAddCircle =>
-      c p.1 i p.2 * (fourier p.1 t * h t p.2 j)) haarAddCircle :=
-    ((memLp_continuous_mul (fourier p.1).continuous (hh.1 p.2 j)).const_mul _).integrable
-      one_le_two
-  rw [matFourierCoeff, Matrix.of_apply, e, fourierCoeff.sum _ _ fun p _ => hint p,
-    Finset.sum_apply, Matrix.zero_apply]
-  refine Finset.sum_eq_zero fun p hp => ?_
-  have hp0 : 0 ≤ p.1 := hc p.1 (Finset.mem_product.1 hp).1
-  have hshift : fourierCoeff (fun t : UnitAddCircle => fourier p.1 t * h t p.2 j) k =
-      fourierCoeff (fun t => h t p.2 j) (k - p.1) := by
-    rw [fourierCoeff, fourierCoeff]
-    refine integral_congr_ae (ae_of_all _ fun t => ?_)
-    simp only [smul_eq_mul]
-    rw [← mul_assoc, ← fourier_add, neg_sub, neg_add_eq_sub]
-  have hzero : fourierCoeff (fun t => h t p.2 j) (k - p.1) = 0 :=
-    congrFun (congrFun (hh.2 (k - p.1) (by omega)) p.2) j
-  rw [fourierCoeff.const_mul, hshift, hzero, mul_zero]
+    {h : UnitAddCircle → Matrix n n ℂ} (hh : IsHardyTwo h) :
+    IsHardyTwo fun t => trigPoly c t * h t :=
+  ⟨memLp_continuous_matrix_mul (continuous_trigPoly_matrix c) hh.1,
+    fun _ => matFourierCoeff_mul_of_neg (isHardyTwo_trigPoly hc) hh⟩
 
 /-- `hᴴ h = a²`, so `‖h‖_{2p}² = ‖(s² + η²)^{1/2}‖_p ≤ ‖s‖_p + η n`. -/
 private theorem norm_unitary_mul_conjDiag_sq_le {U Ψ : Matrix n n ℂ}
@@ -692,7 +725,10 @@ private theorem riesz_pointwise {F H Ψ : Matrix n n ℂ} {η : ℝ} (hη : 0 < 
   · rw [hH', hd, complexSchattenNorm_eq_sum (one_pos.trans_le hp)]
     exact norm_unitary_mul_conjDiag_sq_le hU hΨ hη.le hp hs0
 
-/-- **Riesz factorization of matrix polynomials** (Sarason; Bekjan–Xu (2009), Theorem 3.4). -/
+/-- **Riesz factorization of analytic matrix polynomials** (Sarason (1967); Bekjan–Xu (2009),
+Theorem 3.4, with pointwise bounds): `f = g h` almost everywhere, with `g, h ∈ H²`, and, for almost
+every `t` and all `p ≥ 1`, `‖g (t)‖_{S_{2p}}² ≤ ‖f (t)‖_{S_p}` and
+`‖h (t)‖_{S_{2p}}² ≤ ‖f (t)‖_{S_p} + δ`. -/
 theorem exists_riesz_factorization {c : ℤ →₀ Matrix n n ℂ} (hc : ∀ k ∈ c.support, 0 ≤ k) {δ : ℝ}
     (hδ : 0 < δ) :
     ∃ g h : UnitAddCircle → Matrix n n ℂ, IsHardyTwo g ∧ IsHardyTwo h ∧
@@ -703,9 +739,6 @@ theorem exists_riesz_factorization {c : ℤ →₀ Matrix n n ℂ} (hc : ∀ k �
       (∀ᵐ t ∂haarAddCircle, ∀ p : ℝ, 1 ≤ p →
         complexSchattenNorm (ENNReal.ofReal (2 * p)) (h t) ^ 2 ≤
           complexSchattenNorm (ENNReal.ofReal p) (trigPoly c t) + δ) := by
-  have hcont : Continuous (trigPoly c) := by
-    unfold trigPoly Finsupp.sum
-    exact continuous_finsetSum _ fun k _ => (fourier k).continuous.smul continuous_const
   let η : ℝ := δ / (Fintype.card n + 1)
   have hη : 0 < η := by positivity
   have hηδ : η * Fintype.card n ≤ δ := by
@@ -714,14 +747,15 @@ theorem exists_riesz_factorization {c : ℤ →₀ Matrix n n ℂ} (hc : ∀ k �
   -- `a = (fᴴ f + η²)^{1/4}`
   let a (t : UnitAddCircle) : Matrix n n ℂ :=
     cfc (fun s : ℝ => √√(s + η ^ 2)) ((trigPoly c t)ᴴ * trigPoly c t)
-  have ha : Continuous a := continuous_cfc_conjTranspose_mul_self hcont (by fun_prop)
-  have hpos (t : UnitAddCircle) : (a t).PosDef := by
+  have ha : Continuous a :=
+    continuous_cfc_conjTranspose_mul_self (continuous_trigPoly_matrix c) (by fun_prop)
+  have ha' (t : UnitAddCircle) : IsUnit (a t) := by
     obtain ⟨U, hU, hcfc⟩ := exists_cfc_eq_conjDiag (trigPoly c t)
     rw [show a t = _ from hcfc _]
-    exact posDef_conjDiag hU fun i => Real.sqrt_pos.2 (Real.sqrt_pos.2 (by positivity))
-  obtain ⟨Ψ, h, -, hΨ, hh, hhinv, hfac⟩ := exists_szego_factorization ha hpos
+    exact isUnit_conjDiag hU fun i => (Real.sqrt_pos.2 (Real.sqrt_pos.2 (by positivity))).ne'
+  obtain ⟨Ψ, h, -, hΨ, hh, hhinv, hfac⟩ := exists_szego_factorization ha ha'
   have key : ∀ᵐ t ∂haarAddCircle, _ := hfac.mono fun t ht => riesz_pointwise hη (hΨ t) ht
-  refine ⟨fun t => trigPoly c t * (h t)⁻¹, h, isHardyTwo_trigPoly_mul hc hcont hhinv, hh,
+  refine ⟨fun t => trigPoly c t * (h t)⁻¹, h, isHardyTwo_trigPoly_mul hc hhinv, hh,
     key.mono fun t ht => ht.1, key.mono fun t ht => ht.2.1, key.mono fun t ht p hp => ?_⟩
   exact (ht.2.2 p hp).trans (by gcongr)
 

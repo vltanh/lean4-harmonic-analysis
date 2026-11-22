@@ -230,6 +230,16 @@ theorem abs_haar_le_one (x : ℝ) : |haar x| ≤ 1 := by
   · rw [haar_of_notMem h, abs_zero]
     exact zero_le_one
 
+/-- The kernel `haarSplit` vanishes off `[0, 1)`. -/
+theorem haarSplit_of_notMem {x : ℝ} (h : x ∉ Set.Ico (0 : ℝ) 1) : haarSplit x = 0 := by
+  rw [haarSplit, haar_of_notMem fun hx => h ⟨by linarith [hx.1], by linarith [hx.2]⟩,
+    haar_of_notMem fun hx => h ⟨by linarith [hx.1], by linarith [hx.2]⟩, sub_zero]
+
+/-- The kernel `haarSplit` is bounded by `1`. -/
+theorem abs_haarSplit_le (x : ℝ) : |haarSplit x| ≤ 1 := by
+  simp only [haarSplit, haar, Set.indicator_apply, Set.mem_Ico, Pi.one_apply]
+  split_ifs <;> grind
+
 /-- The Haar function is measurable. -/
 theorem measurable_haar : Measurable haar :=
   (measurable_one.indicator measurableSet_Ico).sub (measurable_one.indicator measurableSet_Ico)
