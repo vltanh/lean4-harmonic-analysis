@@ -1,6 +1,11 @@
+/-
+Copyright (c) 2026 The-Anh Vu-Le. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: The-Anh Vu-Le
+-/
 module
 
-public import VectorValuedHarmonicAnalysis.Hardy.FunctionalCalculus
+public import HarmonicAnalysis.Hardy.FunctionalCalculus
 import Mathlib.Analysis.Convex.Integral
 
 /-!
@@ -23,7 +28,7 @@ semidefinite and the left side is zero if `∫ log det W = −∞`, by a limitin
 
 * `exp_integral_log_det_le`: the inequality of the arithmetic and geometric means, (58).
 * `exp_integral_log_det_le_integral_exp`: (59).
-* `exists_integral_exp_trigPoly_le`: Lemma 5.
+* `exists_integral_exp_circPoly_le`: Lemma 5.
 
 The proof of Lemma 5 is that of Lemma 2, the scalar case, carried through for functions of the
 matrices `W (t)`: the positive and negative parts of `log W` are truncated and multiplied by
@@ -36,7 +41,7 @@ constants, which gives bounded functions `Ψ` with `∫ tr Ψ = 0` and `∫ (1/n
 open MeasureTheory AddCircle Filter
 open scoped ENNReal Matrix ComplexOrder Topology
 
-namespace VectorValuedHarmonicAnalysis
+namespace HarmonicAnalysis
 
 variable {n : Type*} [Fintype n] [DecidableEq n]
 
@@ -135,23 +140,23 @@ theorem exp_integral_log_det_le_integral_exp [Nonempty n] {W : UnitAddCircle →
     (hint : ∀ i j, Integrable (fun t => W t i j) haarAddCircle)
     (hW : ∀ᵐ t ∂haarAddCircle, (W t).PosDef)
     (hlog : Integrable (fun t => Real.log (W t).det.re) haarAddCircle) {c : ℤ →₀ Matrix n n ℂ}
-    (hc : ∀ t, (trigPoly c t).IsHermitian) (h0 : (c 0).trace = 0) :
+    (hc : ∀ t, (circPoly c t).IsHermitian) (h0 : (c 0).trace = 0) :
     Real.exp ((∫ t, Real.log (W t).det.re ∂haarAddCircle) / Fintype.card n) ≤
-      (∫ t, (NormedSpace.exp (trigPoly c t) * W t).trace.re ∂haarAddCircle) / Fintype.card n := by
-  let E (t : UnitAddCircle) : Matrix n n ℂ := NormedSpace.exp ((2⁻¹ : ℝ) • trigPoly c t)
-  have hcont := continuous_trigPoly_matrix c
+      (∫ t, (NormedSpace.exp (circPoly c t) * W t).trace.re ∂haarAddCircle) / Fintype.card n := by
+  let E (t : UnitAddCircle) : Matrix n n ℂ := NormedSpace.exp ((2⁻¹ : ℝ) • circPoly c t)
+  have hcont := continuous_circPoly_matrix c
   have hE : Continuous E := continuous_matrix_exp.comp (hcont.const_smul (2⁻¹ : ℝ))
-  have hΨ (i j : n) : Integrable (fun t => trigPoly c t i j) haarAddCircle :=
+  have hΨ (i j : n) : Integrable (fun t => circPoly c t i j) haarAddCircle :=
     (memLp_entry_of_continuous hcont i j).integrable one_le_two
   have hdet : (fun t => Real.log (E t * W t * E t).det.re) =ᵐ[haarAddCircle]
-      fun t => (trigPoly c t).trace.re + Real.log (W t).det.re :=
+      fun t => (circPoly c t).trace.re + Real.log (W t).det.re :=
     hW.mono fun t ht => log_det_exp_half_conj (hc t) ht
   have h := exp_integral_log_det_le (W := fun t => E t * W t * E t)
     (integrable_mul_continuous (integrable_continuous_mul hE hint) hE)
     (hW.mono fun t ht => posDef_exp_half_conj (hc t) ht)
     (((integrable_trace_re hΨ).add hlog).congr hdet.symm)
   rw [integral_congr_ae hdet, integral_add (integrable_trace_re hΨ) hlog,
-    integral_trace_trigPoly_re, h0, Complex.zero_re, zero_add] at h
+    integral_trace_circPoly_re, h0, Complex.zero_re, zero_add] at h
   simpa only [E, trace_exp_half_conj] using h
 
 /-! ### The truncations of the positive and negative parts of the logarithm -/
@@ -557,25 +562,25 @@ each approximating function is a trigonometric polynomial" (Helson–Lowdenslage
 which is Hermitian if `Ψ` is, and satisfies `∫ tr Ψ = 0` if `Ψ` does; so `Ψ` may be replaced by a
 trigonometric polynomial in an inequality `∫ tr (e^Ψ W) < r`. (A subsequence that converges almost
 everywhere suffices.) -/
-private theorem exists_trigPoly_integral_exp_lt {W : UnitAddCircle → Matrix n n ℂ}
+private theorem exists_circPoly_integral_exp_lt {W : UnitAddCircle → Matrix n n ℂ}
     (hint : ∀ i j, Integrable (fun t => W t i j) haarAddCircle) {Ψ : UnitAddCircle → Matrix n n ℂ}
     {C r : ℝ} (hm : ∀ i j, AEStronglyMeasurable (fun t => Ψ t i j) haarAddCircle)
     (hH : ∀ t, (Ψ t).IsHermitian) (hC : ∀ t i j, ‖Ψ t i j‖ ≤ C)
     (h0 : ∫ t, (Ψ t).trace.re ∂haarAddCircle = 0)
     (hr : ∫ t, (NormedSpace.exp (Ψ t) * W t).trace.re ∂haarAddCircle < r) :
-    ∃ c : ℤ →₀ Matrix n n ℂ, (∀ t, (trigPoly c t).IsHermitian) ∧ (c 0).trace = 0 ∧
-      ∫ t, (NormedSpace.exp (trigPoly c t) * W t).trace.re ∂haarAddCircle < r := by
+    ∃ c : ℤ →₀ Matrix n n ℂ, (∀ t, (circPoly c t).IsHermitian) ∧ (c 0).trace = 0 ∧
+      ∫ t, (NormedSpace.exp (circPoly c t) * W t).trace.re ∂haarAddCircle < r := by
   have hΨ (i j : n) : Integrable (fun t => Ψ t i j) haarAddCircle :=
     (integrable_const C).mono' (hm i j) (ae_of_all _ fun t => hC t i j)
   obtain ⟨ns, -, hns, hlim⟩ := exists_seq_tendsto_fejerCoeff hΨ
   obtain ⟨M, hM⟩ := exists_norm_exp_apply_le (n := n) C
   have htend := tendsto_integral_trace_mul
-    (fun N => continuous_matrix_exp.comp (continuous_trigPoly_matrix (fejerCoeff Ψ (ns N))))
+    (fun N => continuous_matrix_exp.comp (continuous_circPoly_matrix (fejerCoeff Ψ (ns N))))
     (fun N t => hM _ fun i j =>
-      norm_trigPoly_fejerCoeff_le hΨ (ae_of_all _ fun t => hC t i j) (hns N) t)
+      norm_circPoly_fejerCoeff_le hΨ (ae_of_all _ fun t => hC t i j) (hns N) t)
     (hlim.mono fun t ht => (continuous_matrix_exp.tendsto _).comp ht) hint
   obtain ⟨N, hN⟩ := (htend.eventually_lt_const hr).exists
-  refine ⟨fejerCoeff Ψ (ns N), isHermitian_trigPoly_fejerCoeff hΨ (ae_of_all _ hH) _, ?_, hN⟩
+  refine ⟨fejerCoeff Ψ (ns N), isHermitian_circPoly_fejerCoeff hΨ (ae_of_all _ hH) _, ?_, hN⟩
   rw [fejerCoeff_zero Ψ (hns N), trace_matFourierCoeff_zero hΨ hH h0]
 
 /-! ### The normalization `∫ log det W = 0` -/
@@ -590,12 +595,12 @@ private theorem log_det_smul {A : Matrix n n ℂ} (hA : A.PosDef) {κ : ℝ} (h�
 /-- Helson–Lowdenslager (1958), Lemma 5, if `log det W` is integrable: with (59),
 `exp ((1/n) ∫ log det W)` is the infimum of `∫ (1/n) tr (e^Ψ W)` over the Hermitian trigonometric
 polynomials `Ψ` with `∫ tr Ψ = 0`. -/
-theorem exists_integral_exp_trigPoly_le {W : UnitAddCircle → Matrix n n ℂ}
+theorem exists_integral_exp_circPoly_le {W : UnitAddCircle → Matrix n n ℂ}
     (hint : ∀ i j, Integrable (fun t => W t i j) haarAddCircle)
     (hW : ∀ᵐ t ∂haarAddCircle, (W t).PosDef)
     (hlog : Integrable (fun t => Real.log (W t).det.re) haarAddCircle) {ε : ℝ} (hε : 0 < ε) :
-    ∃ c : ℤ →₀ Matrix n n ℂ, (∀ t, (trigPoly c t).IsHermitian) ∧ (c 0).trace = 0 ∧
-      (∫ t, (NormedSpace.exp (trigPoly c t) * W t).trace.re ∂haarAddCircle) / Fintype.card n ≤
+    ∃ c : ℤ →₀ Matrix n n ℂ, (∀ t, (circPoly c t).IsHermitian) ∧ (c 0).trace = 0 ∧
+      (∫ t, (NormedSpace.exp (circPoly c t) * W t).trace.re ∂haarAddCircle) / Fintype.card n ≤
         Real.exp ((∫ t, Real.log (W t).det.re ∂haarAddCircle) / Fintype.card n) + ε := by
   cases isEmpty_or_nonempty n
   · exact ⟨0, fun _ => Subsingleton.elim _ _, by simp, by simpa using by positivity⟩
@@ -618,7 +623,7 @@ theorem exists_integral_exp_trigPoly_le {W : UnitAddCircle → Matrix n n ℂ}
     (hW.mono fun t ht => ht.smul (Complex.zero_lt_real.2 hκ0))
     (((integrable_const _).add hlog).congr hdet.symm) hdet0
     (δ := Fintype.card n * (κ * ε)) (by positivity)
-  obtain ⟨c, hc, hc0, hlt⟩ := exists_trigPoly_integral_exp_lt hint' hΨ hH hC h0 hlt
+  obtain ⟨c, hc, hc0, hlt⟩ := exists_circPoly_integral_exp_lt hint' hΨ hH hC h0 hlt
   refine ⟨c, hc, hc0, ?_⟩
   simp only [Matrix.mul_smul, Matrix.trace_smul, smul_eq_mul, Complex.re_ofReal_mul] at hlt
   rw [integral_const_mul] at hlt
@@ -626,4 +631,4 @@ theorem exists_integral_exp_trigPoly_le {W : UnitAddCircle → Matrix n n ℂ}
   refine hlt.le.trans_eq ?_
   field_simp
 
-end VectorValuedHarmonicAnalysis
+end HarmonicAnalysis

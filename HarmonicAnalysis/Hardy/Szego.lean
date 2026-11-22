@@ -1,8 +1,13 @@
+/-
+Copyright (c) 2026 The-Anh Vu-Le. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: The-Anh Vu-Le
+-/
 module
 
-public import VectorValuedHarmonicAnalysis.Hardy.Outer
-public import VectorValuedHarmonicAnalysis.Hardy.Jensen
-public import VectorValuedHarmonicAnalysis.Hardy.GeometricMean
+public import HarmonicAnalysis.Hardy.Outer
+public import HarmonicAnalysis.Hardy.Jensen
+public import HarmonicAnalysis.Hardy.GeometricMean
 import Mathlib.Analysis.Complex.Polynomial.Basic
 
 /-!
@@ -35,7 +40,7 @@ matrix-valued measure, which does not change the infimum (the source, (53)), is 
 open MeasureTheory AddCircle Filter
 open scoped ENNReal Matrix ComplexOrder Topology
 
-namespace VectorValuedHarmonicAnalysis
+namespace HarmonicAnalysis
 
 /-! ### Preliminaries -/
 
@@ -120,7 +125,7 @@ private theorem integrable_add_smul_one {W : UnitAddCircle → Matrix n n ℂ}
 constant coefficient has determinant `1`. -/
 noncomputable def szegoInf (W : UnitAddCircle → Matrix n n ℂ) : ℝ :=
   ⨅ c : {c : ℤ →₀ Matrix n n ℂ // (∀ k ∈ c.support, 0 ≤ k) ∧ (c 0).det = 1},
-    (∫ t, ((trigPoly c.1 t)ᴴ * W t * trigPoly c.1 t).trace.re ∂haarAddCircle) / Fintype.card n
+    (∫ t, ((circPoly c.1 t)ᴴ * W t * circPoly c.1 t).trace.re ∂haarAddCircle) / Fintype.card n
 
 /-- The constant polynomial `1` belongs to the set over which the infimum is taken. -/
 private theorem nonempty_szego :
@@ -132,7 +137,7 @@ private theorem nonempty_szego :
 private theorem szegoInf_le {W : UnitAddCircle → Matrix n n ℂ}
     (hW : ∀ᵐ t ∂haarAddCircle, (W t).PosSemidef) {c : ℤ →₀ Matrix n n ℂ}
     (hc : ∀ k ∈ c.support, 0 ≤ k) (h1 : (c 0).det = 1) :
-    szegoInf W ≤ (∫ t, ((trigPoly c t)ᴴ * W t * trigPoly c t).trace.re ∂haarAddCircle) /
+    szegoInf W ≤ (∫ t, ((circPoly c t)ᴴ * W t * circPoly c t).trace.re ∂haarAddCircle) /
       Fintype.card n := by
   refine ciInf_le ⟨0, ?_⟩ (⟨c, hc, h1⟩ :
     {c : ℤ →₀ Matrix n n ℂ // (∀ k ∈ c.support, 0 ≤ k) ∧ (c 0).det = 1})
@@ -151,7 +156,7 @@ private theorem szegoInf_le_mul {W V : UnitAddCircle → Matrix n n ℂ} {K : �
   have := nonempty_szego (n := n)
   rw [szegoInf, szegoInf, Real.mul_iInf_of_nonneg hK]
   refine le_ciInf fun ⟨c, hc, h1⟩ => (szegoInf_le hW hc h1).trans ?_
-  have hcont := continuous_trigPoly_matrix c
+  have hcont := continuous_circPoly_matrix c
   rw [← mul_div_assoc, ← integral_const_mul]
   exact div_le_div_of_nonneg_right (integral_mono
     (integrable_trace_re (integrable_conjTranspose_mul_mul hint hcont))
@@ -166,13 +171,13 @@ theorem norm_det_rpow_le_szegoInf [Nonempty n] {W B : UnitAddCircle → Matrix n
     ‖(matFourierCoeff B 0).det‖ ^ (2 / Fintype.card n : ℝ) ≤ szegoInf W := by
   have := nonempty_szego (n := n)
   refine le_ciInf fun ⟨c, hc, h1⟩ => ?_
-  have e : ∫ t, ((trigPoly c t)ᴴ * W t * trigPoly c t).trace.re ∂haarAddCircle =
-      ∫ t, ((B t * trigPoly c t)ᴴ * (B t * trigPoly c t)).trace.re ∂haarAddCircle := by
+  have e : ∫ t, ((circPoly c t)ᴴ * W t * circPoly c t).trace.re ∂haarAddCircle =
+      ∫ t, ((B t * circPoly c t)ᴴ * (B t * circPoly c t)).trace.re ∂haarAddCircle := by
     refine integral_congr_ae ?_
     filter_upwards [hBW] with t ht
     rw [conjTranspose_mul_mul_eq ht]
-  have h0 : matFourierCoeff (fun t => B t * trigPoly c t) 0 = matFourierCoeff B 0 * c 0 := by
-    rw [hB.matFourierCoeff_mul_zero (isHardyTwo_trigPoly hc), matFourierCoeff_trigPoly]
+  have h0 : matFourierCoeff (fun t => B t * circPoly c t) 0 = matFourierCoeff B 0 * c 0 := by
+    rw [hB.matFourierCoeff_mul_zero (isHardyTwo_circPoly hc), matFourierCoeff_circPoly]
   calc ‖(matFourierCoeff B 0).det‖ ^ (2 / Fintype.card n : ℝ)
       = ‖(matFourierCoeff B 0 * c 0).det‖ ^ (2 / Fintype.card n : ℝ) := by
         rw [Matrix.det_mul, h1, mul_one]
@@ -182,7 +187,7 @@ theorem norm_det_rpow_le_szegoInf [Nonempty n] {W B : UnitAddCircle → Matrix n
         rw [e, ← h0]
         gcongr
         exact trace_matFourierCoeff_zero_le
-          (memLp_mul_continuous hB.1 (continuous_trigPoly_matrix c))
+          (memLp_mul_continuous hB.1 (continuous_circPoly_matrix c))
 
 /-! ### Lemma 6 -/
 
@@ -196,18 +201,18 @@ private theorem szegoInf_le_trace_of_tendsto {m q : Type*} [Fintype m] [Fintype 
     (hAW : ∀ᵐ t ∂haarAddCircle, (A t)ᴴ * A t = W t)
     (hFC : ∀ᵐ t ∂haarAddCircle, (F t)ᴴ * F t = Cᴴ * C) {c : ℕ → ℤ →₀ Matrix n n ℂ}
     (hc : ∀ N, ∀ k ∈ (c N).support, 0 < k)
-    (hlim : TendstoLTwo (fun N t => A t * (1 + trigPoly (c N) t)) F) {D : Matrix n n ℂ}
+    (hlim : TendstoLTwo (fun N t => A t * (1 + circPoly (c N) t)) F) {D : Matrix n n ℂ}
     (hD : D.det = 1) : szegoInf W ≤ ((C * D)ᴴ * (C * D)).trace.re / Fintype.card n := by
-  choose d hd hd0 hdt using fun N => exists_trigPoly_eq_one_add_mul (hc N) D
+  choose d hd hd0 hdt using fun N => exists_circPoly_eq_one_add_mul (hc N) D
   have hW : ∀ᵐ t ∂haarAddCircle, (W t).PosSemidef := by
     filter_upwards [hAW] with t ht
     exact ht ▸ Matrix.posSemidef_conjTranspose_mul_self _
   have h2 := (hlim.mul_continuous (continuous_const (y := D)) fun N =>
     memLp_mul_one_add hA (c N)).tendsto_integral_trace fun N =>
       memLp_mul_continuous (memLp_mul_one_add hA (c N)) continuous_const
-  have e1 (N : ℕ) : ∫ t, ((A t * (1 + trigPoly (c N) t) * D)ᴴ *
-      (A t * (1 + trigPoly (c N) t) * D)).trace.re ∂haarAddCircle =
-      ∫ t, ((trigPoly (d N) t)ᴴ * W t * trigPoly (d N) t).trace.re ∂haarAddCircle := by
+  have e1 (N : ℕ) : ∫ t, ((A t * (1 + circPoly (c N) t) * D)ᴴ *
+      (A t * (1 + circPoly (c N) t) * D)).trace.re ∂haarAddCircle =
+      ∫ t, ((circPoly (d N) t)ᴴ * W t * circPoly (d N) t).trace.re ∂haarAddCircle := by
     refine integral_congr_ae ?_
     filter_upwards [hAW] with t ht
     rw [conjTranspose_mul_mul_eq ht, hdt, Matrix.mul_assoc]
@@ -367,15 +372,15 @@ private theorem trace_le_trace_exp_mul {Ψ : Matrix n n ℂ} (hΨ : Ψ.IsHermiti
 coefficient `A₀` has determinant one. Therefore the infimum of (55) is positive" for the weight
 `e^{−Ψ}` (Helson–Lowdenslager (1958), p. 191). -/
 private theorem szegoInf_exp_neg_pos [Nonempty n] {c : ℤ →₀ Matrix n n ℂ}
-    (hc : ∀ t, (trigPoly c t).IsHermitian) :
-    0 < szegoInf fun t => NormedSpace.exp (-trigPoly c t) := by
-  have hcont := continuous_trigPoly_matrix c
+    (hc : ∀ t, (circPoly c t).IsHermitian) :
+    0 < szegoInf fun t => NormedSpace.exp (-circPoly c t) := by
+  have hcont := continuous_circPoly_matrix c
   obtain ⟨K, hK0, hK⟩ := exists_trace_exp_le hcont
   have h1 : 1 ≤ szegoInf fun _ : UnitAddCircle => (1 : Matrix n n ℂ) := by
     have h := norm_det_rpow_le_szegoInf (isHardyTwo_const (1 : Matrix n n ℂ))
       (W := fun _ => 1) (ae_of_all _ fun t => by simp)
     rwa [matFourierCoeff_const, ite_eq_left rfl, Matrix.det_one, norm_one, Real.one_rpow] at h
-  have h2 := h1.trans (szegoInf_le_mul (V := fun t => NormedSpace.exp (-trigPoly c t)) hK0.le
+  have h2 := h1.trans (szegoInf_le_mul (V := fun t => NormedSpace.exp (-circPoly c t)) hK0.le
     (fun i j => integrable_const _) (fun i j => integrable_haar_of_continuous
       ((continuous_matrix_exp.comp hcont.neg).matrix_elem i j))
     (ae_of_all _ fun _ => Matrix.PosSemidef.one) fun t Q => by
@@ -395,13 +400,13 @@ private theorem isHardyTwo_of_mul_eq_one {B Q : UnitAddCircle → Matrix n n ℂ
     (hQC : ∀ᵐ t ∂haarAddCircle, ∀ i j, ‖Q t i j‖ ≤ C)
     (hQB : ∀ᵐ t ∂haarAddCircle, Q t * B t = 1) : IsHardyTwo Q := by
   obtain ⟨hB2, c, hc, hlim⟩ := hB
-  choose d hd _ hdt using fun N => exists_trigPoly_eq_one_add_mul (hc N) (matFourierCoeff B 0)⁻¹
+  choose d hd _ hdt using fun N => exists_circPoly_eq_one_add_mul (hc N) (matFourierCoeff B 0)⁻¹
   have hL2 (N : ℕ) := memLp_mul_one_add hB2.1 (c N)
   have hcont := continuous_const (X := UnitAddCircle) (y := (matFourierCoeff B 0)⁻¹)
   have h1 := ((hlim.mul_continuous hcont hL2).bounded_mul hQm hQC fun N =>
-    memLp_mul_continuous (hL2 N) hcont).congr_ae (G := fun N => trigPoly (d N)) (g := Q)
+    memLp_mul_continuous (hL2 N) hcont).congr_ae (G := fun N => circPoly (d N)) (g := Q)
     (fun N => ?_) (ae_of_all _ fun t => ?_)
-  · exact h1.isHardyTwo fun N => isHardyTwo_trigPoly (hd N)
+  · exact h1.isHardyTwo fun N => isHardyTwo_circPoly (hd N)
   · filter_upwards [hQB] with t ht
     rw [← Matrix.mul_assoc, ← Matrix.mul_assoc, ht, Matrix.one_mul, hdt]
   · rw [Matrix.mul_nonsing_inv _ (isUnit_iff_ne_zero.2 hB0), Matrix.mul_one]
@@ -440,31 +445,31 @@ private theorem integral_log_norm_det_eq {B Q : UnitAddCircle → Matrix n n ℂ
 (Helson–Lowdenslager (1958), p. 192): if `Q Qᴴ = e^Ψ` and `∫ tr Ψ = 0`, then
 `∫ log |det Q| = 0`. -/
 private theorem integral_log_norm_det_eq_zero {c : ℤ →₀ Matrix n n ℂ}
-    (hc : ∀ t, (trigPoly c t).IsHermitian) (h0 : (c 0).trace = 0)
+    (hc : ∀ t, (circPoly c t).IsHermitian) (h0 : (c 0).trace = 0)
     {Q : UnitAddCircle → Matrix n n ℂ}
-    (hQ : ∀ᵐ t ∂haarAddCircle, Q t * (Q t)ᴴ = NormedSpace.exp (trigPoly c t)) :
+    (hQ : ∀ᵐ t ∂haarAddCircle, Q t * (Q t)ᴴ = NormedSpace.exp (circPoly c t)) :
     ∫ t, Real.log ‖(Q t).det‖ ∂haarAddCircle = 0 := by
-  have h1 : ∀ᵐ t ∂haarAddCircle, Real.log ‖(Q t).det‖ = (2⁻¹ : ℝ) * (trigPoly c t).trace.re := by
+  have h1 : ∀ᵐ t ∂haarAddCircle, Real.log ‖(Q t).det‖ = (2⁻¹ : ℝ) * (circPoly c t).trace.re := by
     filter_upwards [hQ] with t ht
-    have h2 := log_det_re_eq (B := (Q t)ᴴ) (W := NormedSpace.exp (trigPoly c t))
+    have h2 := log_det_re_eq (B := (Q t)ᴴ) (W := NormedSpace.exp (circPoly c t))
       (by rwa [Matrix.conjTranspose_conjTranspose])
     rw [det_matrix_exp (hc t), Complex.ofReal_re, Real.log_exp, Matrix.det_conjTranspose,
       norm_star] at h2
     linarith
-  rw [integral_congr_ae h1, integral_const_mul, integral_trace_trigPoly_re, h0, Complex.zero_re,
+  rw [integral_congr_ae h1, integral_const_mul, integral_trace_circPoly_re, h0, Complex.zero_re,
     mul_zero]
 
 /-- Helson–Lowdenslager (1958), (69)–(72): if `∫ tr Ψ = 0`, then `e^Ψ = Q Qᴴ` for a bounded analytic
 function `Q` with `|det Q̂ (0)| = 1`. -/
 private theorem exists_bounded_analytic_norm_det_eq_one [Nonempty n] {c : ℤ →₀ Matrix n n ℂ}
-    (hc : ∀ t, (trigPoly c t).IsHermitian) (h0 : (c 0).trace = 0) :
+    (hc : ∀ t, (circPoly c t).IsHermitian) (h0 : (c 0).trace = 0) :
     ∃ (Q : UnitAddCircle → Matrix n n ℂ) (C : ℝ), IsHardyTwo Q ∧
       (∀ᵐ t ∂haarAddCircle, ∀ i j, ‖Q t i j‖ ≤ C) ∧ ‖(matFourierCoeff Q 0).det‖ = 1 ∧
-      ∀ᵐ t ∂haarAddCircle, Q t * (Q t)ᴴ = NormedSpace.exp (trigPoly c t) := by
-  have hcont := continuous_trigPoly_matrix c
+      ∀ᵐ t ∂haarAddCircle, Q t * (Q t)ᴴ = NormedSpace.exp (circPoly c t) := by
+  have hcont := continuous_circPoly_matrix c
   have hexp := continuous_matrix_exp.comp hcont
   obtain ⟨B, hB, hB0, hBW⟩ := exists_isOuter_of_szegoInf_pos
-    (W := fun t => NormedSpace.exp (-trigPoly c t))
+    (W := fun t => NormedSpace.exp (-circPoly c t))
     (fun i j => integrable_haar_of_continuous
       ((continuous_matrix_exp.comp hcont.neg).matrix_elem i j))
     (ae_of_all _ fun t => (posDef_matrix_exp (hc t).neg).posSemidef) (szegoInf_exp_neg_pos hc)
@@ -473,23 +478,23 @@ private theorem exists_bounded_analytic_norm_det_eq_one [Nonempty n] {c : ℤ �
   have hBC : ∀ᵐ t ∂haarAddCircle, ∀ i j, ‖B t i j‖ ≤ √K' := by
     filter_upwards [hBW] with t ht
     exact norm_apply_le_sqrt_of_trace_le (ht ▸ hK' t)
-  have hQB : ∀ᵐ t ∂haarAddCircle, NormedSpace.exp (trigPoly c t) * (B t)ᴴ * B t = 1 := by
+  have hQB : ∀ᵐ t ∂haarAddCircle, NormedSpace.exp (circPoly c t) * (B t)ᴴ * B t = 1 := by
     filter_upwards [hBW] with t ht
     rw [Matrix.mul_assoc, ht, exp_mul_exp_neg]
-  have hQQ : ∀ᵐ t ∂haarAddCircle, (NormedSpace.exp (trigPoly c t) * (B t)ᴴ) *
-      (NormedSpace.exp (trigPoly c t) * (B t)ᴴ)ᴴ = NormedSpace.exp (trigPoly c t) := by
+  have hQQ : ∀ᵐ t ∂haarAddCircle, (NormedSpace.exp (circPoly c t) * (B t)ᴴ) *
+      (NormedSpace.exp (circPoly c t) * (B t)ᴴ)ᴴ = NormedSpace.exp (circPoly c t) := by
     filter_upwards [hQB] with t ht
     rw [Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose, ← Matrix.mul_assoc, ht,
       Matrix.one_mul, (hc t).exp.eq]
   have hQC : ∀ᵐ t ∂haarAddCircle, ∀ i j,
-      ‖(NormedSpace.exp (trigPoly c t) * (B t)ᴴ) i j‖ ≤ √K := by
+      ‖(NormedSpace.exp (circPoly c t) * (B t)ᴴ) i j‖ ≤ √K := by
     filter_upwards [hQQ] with t ht i j
     rw [← norm_star, ← Matrix.conjTranspose_apply]
     refine norm_apply_le_sqrt_of_trace_le ?_ j i
     rw [Matrix.conjTranspose_conjTranspose, ht]
     exact hK t
   have hQm (i j : n) : AEStronglyMeasurable
-      (fun t => (NormedSpace.exp (trigPoly c t) * (B t)ᴴ) i j) haarAddCircle :=
+      (fun t => (NormedSpace.exp (circPoly c t) * (B t)ᴴ) i j) haarAddCircle :=
     (integrable_continuous_mul hexp (f := fun t => (B t)ᴴ)
       (fun i j => (hB.1.1 j i).star.integrable one_le_two) i j).aestronglyMeasurable
   have hQ := isHardyTwo_of_mul_eq_one hB hB0 hQm hQC hQB
@@ -501,10 +506,10 @@ private theorem exists_bounded_analytic_norm_det_eq_one [Nonempty n] {c : ℤ �
 with `∫ tr Ψ = 0` is `Q Qᴴ` for a bounded analytic function `Q` with `det Q̂ (0) = 1` (the
 boundedness is in the proof, after (71)). -/
 theorem exists_bounded_analytic_mul_conjTranspose_eq_exp {c : ℤ →₀ Matrix n n ℂ}
-    (hc : ∀ t, (trigPoly c t).IsHermitian) (h0 : (c 0).trace = 0) :
+    (hc : ∀ t, (circPoly c t).IsHermitian) (h0 : (c 0).trace = 0) :
     ∃ (Q : UnitAddCircle → Matrix n n ℂ) (C : ℝ), IsHardyTwo Q ∧
       (∀ᵐ t ∂haarAddCircle, ∀ i j, ‖Q t i j‖ ≤ C) ∧ (matFourierCoeff Q 0).det = 1 ∧
-      ∀ᵐ t ∂haarAddCircle, Q t * (Q t)ᴴ = NormedSpace.exp (trigPoly c t) := by
+      ∀ᵐ t ∂haarAddCircle, Q t * (Q t)ᴴ = NormedSpace.exp (circPoly c t) := by
   cases isEmpty_or_nonempty n
   · exact ⟨fun _ => 1, 0, isHardyTwo_const 1, ae_of_all _ fun _ i => isEmptyElim i,
       Matrix.det_isEmpty, ae_of_all _ fun _ => Subsingleton.elim _ _⟩
@@ -544,9 +549,9 @@ private theorem szegoInf_le_of_bounded {W Q : UnitAddCircle → Matrix n n ℂ} 
     (hC : ∀ᵐ t ∂haarAddCircle, ∀ i j, ‖Q t i j‖ ≤ C) (h1 : (matFourierCoeff Q 0).det = 1) :
     szegoInf W ≤ (∫ t, (Q t * (Q t)ᴴ * W t).trace.re ∂haarAddCircle) / Fintype.card n := by
   obtain ⟨ns, -, hns, hlim⟩ := exists_seq_tendsto_fejerCoeff hQ.1
-  have hcont (N : ℕ) := continuous_trigPoly_matrix (fejerCoeff Q (ns N))
-  have hbd (N : ℕ) (t : UnitAddCircle) (i j : n) : ‖trigPoly (fejerCoeff Q (ns N)) t i j‖ ≤ C :=
-    norm_trigPoly_fejerCoeff_le hQ.1 (hC.mono fun t ht => ht i j) (hns N) t
+  have hcont (N : ℕ) := continuous_circPoly_matrix (fejerCoeff Q (ns N))
+  have hbd (N : ℕ) (t : UnitAddCircle) (i j : n) : ‖circPoly (fejerCoeff Q (ns N)) t i j‖ ≤ C :=
+    norm_circPoly_fejerCoeff_le hQ.1 (hC.mono fun t ht => ht i j) (hns N) t
   have h2 := tendsto_integral_trace_mul (M := ∑ _k : n, C * C)
     (fun N => (hcont N).matrix_mul (hcont N).matrix_conjTranspose) (fun N t i j => ?_)
     (hlim.mono fun t ht =>
@@ -575,19 +580,19 @@ private theorem exp_integral_log_det_le_trace [Nonempty n] {W : UnitAddCircle �
     (hlog : Integrable (fun t => Real.log (W t).det.re) haarAddCircle) {c : ℤ →₀ Matrix n n ℂ}
     (hc : ∀ k ∈ c.support, 0 ≤ k) (h1 : (c 0).det = 1) :
     Real.exp ((∫ t, Real.log (W t).det.re ∂haarAddCircle) / Fintype.card n) ≤
-      (∫ t, ((trigPoly c t)ᴴ * W t * trigPoly c t).trace.re ∂haarAddCircle) / Fintype.card n := by
-  have hcont := continuous_trigPoly_matrix c
+      (∫ t, ((circPoly c t)ᴴ * W t * circPoly c t).trace.re ∂haarAddCircle) / Fintype.card n := by
+  have hcont := continuous_circPoly_matrix c
   obtain ⟨C, hC⟩ := exists_bound_of_continuous hcont
-  have h0 : (matFourierCoeff (trigPoly c) 0).det = 1 := by rw [matFourierCoeff_trigPoly, h1]
+  have h0 : (matFourierCoeff (circPoly c) 0).det = 1 := by rw [matFourierCoeff_circPoly, h1]
   obtain ⟨hne, hQlog, hQ⟩ := log_norm_det_le_integral_log_norm_det
-    (isHardyTwo_trigPoly hc).isHardyOne (ae_of_all _ hC) (h0.symm ▸ one_ne_zero)
+    (isHardyTwo_circPoly hc).isHardyOne (ae_of_all _ hC) (h0.symm ▸ one_ne_zero)
   rw [h0, norm_one, Real.log_one] at hQ
-  have hV : ∀ᵐ t ∂haarAddCircle, ((trigPoly c t)ᴴ * W t * trigPoly c t).PosDef := by
+  have hV : ∀ᵐ t ∂haarAddCircle, ((circPoly c t)ᴴ * W t * circPoly c t).PosDef := by
     filter_upwards [hW, hne] with t ht hdet
     exact ht.conjTranspose_mul_mul_same (Matrix.mulVec_injective_of_isUnit
       ((Matrix.isUnit_iff_isUnit_det _).2 (isUnit_iff_ne_zero.2 hdet)))
-  have hlogV : ∀ᵐ t ∂haarAddCircle, 2 * Real.log ‖(trigPoly c t).det‖ + Real.log (W t).det.re =
-      Real.log ((trigPoly c t)ᴴ * W t * trigPoly c t).det.re := by
+  have hlogV : ∀ᵐ t ∂haarAddCircle, 2 * Real.log ‖(circPoly c t).det‖ + Real.log (W t).det.re =
+      Real.log ((circPoly c t)ᴴ * W t * circPoly c t).det.re := by
     filter_upwards [hW, hne] with t ht hdet
     rw [det_conjTranspose_mul_mul_re, Real.log_mul (pow_ne_zero _ (norm_ne_zero_iff.2 hdet))
       (Complex.pos_iff.1 ht.det_pos).1.ne', Real.log_pow]
@@ -609,7 +614,7 @@ theorem szegoInf_eq [Nonempty n] {W : UnitAddCircle → Matrix n n ℂ}
   have := nonempty_szego (n := n)
   refine le_antisymm (le_of_forall_pos_le_add fun ε hε => ?_)
     (le_ciInf fun c => exp_integral_log_det_le_trace hint hW hlog c.2.1 c.2.2)
-  obtain ⟨c, hc, hc0, hle⟩ := exists_integral_exp_trigPoly_le hint hW hlog hε
+  obtain ⟨c, hc, hc0, hle⟩ := exists_integral_exp_circPoly_le hint hW hlog hε
   obtain ⟨Q, C, hQ, hC, hdet, hQQ⟩ := exists_bounded_analytic_mul_conjTranspose_eq_exp hc hc0
   refine (szegoInf_le_of_bounded hint (hW.mono fun t ht => ht.posSemidef) hQ.isHardyOne hC
     hdet).trans (le_of_eq_of_le ?_ hle)
@@ -781,4 +786,4 @@ theorem integrable_log_det_of_isHardyTwo {B : UnitAddCircle → Matrix n n ℂ} 
   · field_simp at h1
     linarith
 
-end VectorValuedHarmonicAnalysis
+end HarmonicAnalysis

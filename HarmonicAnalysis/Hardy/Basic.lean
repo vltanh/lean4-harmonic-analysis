@@ -1,6 +1,11 @@
+/-
+Copyright (c) 2026 The-Anh Vu-Le. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: The-Anh Vu-Le
+-/
 module
 
-public import VectorValuedHarmonicAnalysis.LittlewoodPaley.Circle
+public import HarmonicAnalysis.VectorValued.LittlewoodPaley.Circle
 public import BanachProbability.Schatten.Block
 import Mathlib.MeasureTheory.Measure.HasOuterApproxClosed
 import Mathlib.Order.Filter.AtTopBot.Interval
@@ -31,7 +36,7 @@ Schatten norm.
 open MeasureTheory AddCircle BanachProbability
 open scoped ENNReal Matrix ComplexConjugate
 
-namespace VectorValuedHarmonicAnalysis
+namespace HarmonicAnalysis
 
 variable {l m n : Type*}
 
@@ -150,24 +155,24 @@ theorem ae_eq_const_of_fourierCoeff_eq_zero {g : UnitAddCircle → ℂ}
 
 /-! ### Trigonometric polynomials -/
 
-/-- A trigonometric polynomial with matrix coefficients is continuous. (`continuous_trigPoly` is the
+/-- A trigonometric polynomial with matrix coefficients is continuous. (`continuous_circPoly` is the
 same for coefficients in a normed space.) -/
-theorem continuous_trigPoly_matrix (c : ℤ →₀ Matrix m n ℂ) : Continuous (trigPoly c) :=
+theorem continuous_circPoly_matrix (c : ℤ →₀ Matrix m n ℂ) : Continuous (circPoly c) :=
   continuous_finsetSum _ fun k _ => (fourier k).continuous.smul continuous_const
 
 /-- The entries of a trigonometric polynomial are trigonometric polynomials. -/
-private theorem trigPoly_apply (c : ℤ →₀ Matrix m n ℂ) (t : UnitAddCircle) (i : m) (j : n) :
-    trigPoly c t i j = ∑ k ∈ c.support, c k i j * fourier k t := by
-  simp [trigPoly, Finsupp.sum, Matrix.sum_apply, mul_comm]
+private theorem circPoly_apply (c : ℤ →₀ Matrix m n ℂ) (t : UnitAddCircle) (i : m) (j : n) :
+    circPoly c t i j = ∑ k ∈ c.support, c k i j * fourier k t := by
+  simp [circPoly, Finsupp.sum, Matrix.sum_apply, mul_comm]
 
 /-- The Fourier coefficients of a trigonometric polynomial are its coefficients. -/
-theorem matFourierCoeff_trigPoly (c : ℤ →₀ Matrix m n ℂ) (k : ℤ) :
-    matFourierCoeff (trigPoly c) k = c k := by
+theorem matFourierCoeff_circPoly (c : ℤ →₀ Matrix m n ℂ) (k : ℤ) :
+    matFourierCoeff (circPoly c) k = c k := by
   ext i j
-  have h : (fun t => trigPoly c t i j) =
+  have h : (fun t => circPoly c t i j) =
       ∑ q ∈ c.support, fun t : UnitAddCircle => c q i j * fourier q t := by
     ext t
-    simp [trigPoly_apply]
+    simp [circPoly_apply]
   have hint (q : ℤ) : Integrable (fun t : UnitAddCircle => c q i j * fourier q t)
       haarAddCircle :=
     (continuous_const.mul (fourier q).continuous).integrable_of_hasCompactSupport
@@ -182,10 +187,10 @@ theorem matFourierCoeff_trigPoly (c : ℤ →₀ Matrix m n ℂ) (k : ℤ) :
   · rw [Finsupp.notMem_support_iff.1 hk, Matrix.zero_apply]
 
 /-- The analytic polynomials are in `H²`. -/
-theorem isHardyTwo_trigPoly {c : ℤ →₀ Matrix m n ℂ} (hc : ∀ k ∈ c.support, 0 ≤ k) :
-    IsHardyTwo (trigPoly c) := by
-  refine ⟨memLp_entry_of_continuous (continuous_trigPoly_matrix c), fun k hk => ?_⟩
-  rw [matFourierCoeff_trigPoly]
+theorem isHardyTwo_circPoly {c : ℤ →₀ Matrix m n ℂ} (hc : ∀ k ∈ c.support, 0 ≤ k) :
+    IsHardyTwo (circPoly c) := by
+  refine ⟨memLp_entry_of_continuous (continuous_circPoly_matrix c), fun k hk => ?_⟩
+  rw [matFourierCoeff_circPoly]
   by_contra hne
   exact absurd (hc k (Finsupp.mem_support_iff.2 hne)) (not_le.2 hk)
 
@@ -410,4 +415,4 @@ theorem tendsto_integral_norm_sq_partialSum [Fintype m] [Fintype n] [DecidableEq
   exact tendsto_integral_norm_sq (fun N => memLp_ofMatrix (q := q) (hs N)) (memLp_ofMatrix hh)
     (tendsto_eLpNorm_ofMatrix (q := q) (fun N i j => (hs N i j).sub (hh i j)) hlim)
 
-end VectorValuedHarmonicAnalysis
+end HarmonicAnalysis

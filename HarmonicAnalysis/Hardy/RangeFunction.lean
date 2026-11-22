@@ -1,6 +1,11 @@
+/-
+Copyright (c) 2026 The-Anh Vu-Le. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: The-Anh Vu-Le
+-/
 module
 
-public import VectorValuedHarmonicAnalysis.Hardy.Szego
+public import HarmonicAnalysis.Hardy.Szego
 
 /-!
 # Analytic range functions and the factorization of positive functions of any rank
@@ -33,7 +38,7 @@ several variables*, Acta Math. 99 (1958), 165–202.
 open MeasureTheory AddCircle Filter
 open scoped ENNReal Matrix ComplexOrder Topology
 
-namespace VectorValuedHarmonicAnalysis
+namespace HarmonicAnalysis
 
 /-! ### Matrices -/
 
@@ -257,14 +262,14 @@ private theorem two_mul_integral_log_norm_det {q : ℕ} (e : Fin q ≃ n)
 (Helson–Lowdenslager (1961), p. 204: "`(I + H) A = A₀ + …`"; (1958), p. 194). -/
 private theorem matFourierCoeff_zero_of_tendsto {m : Type*} {A F : UnitAddCircle → Matrix m n ℂ}
     (hA : IsHardyTwo A) {c : ℕ → ℤ →₀ Matrix n n ℂ} (hc : ∀ N, ∀ k ∈ (c N).support, 0 < k)
-    (hlim : TendstoLTwo (fun N t => A t * (1 + trigPoly (c N) t)) F) :
+    (hlim : TendstoLTwo (fun N t => A t * (1 + circPoly (c N) t)) F) :
     matFourierCoeff F 0 = matFourierCoeff A 0 := by
   refine tendsto_nhds_unique (hlim.tendsto_matFourierCoeff
     (fun N => memLp_mul_one_add hA.1 (c N)) 0) (tendsto_const_nhds.congr fun N => ?_)
-  obtain ⟨d, hd, hd0, hdt⟩ := exists_trigPoly_eq_one_add_mul (hc N) (1 : Matrix n n ℂ)
+  obtain ⟨d, hd, hd0, hdt⟩ := exists_circPoly_eq_one_add_mul (hc N) (1 : Matrix n n ℂ)
   simp only [Matrix.mul_one] at hdt
   simp only [← hdt]
-  rw [hA.matFourierCoeff_mul_zero (isHardyTwo_trigPoly hd), matFourierCoeff_trigPoly, hd0,
+  rw [hA.matFourierCoeff_mul_zero (isHardyTwo_circPoly hd), matFourierCoeff_circPoly, hd0,
     Matrix.mul_one]
 
 /-- The extremal problem for `W = Aᴴ A` (Helson–Lowdenslager (1961), p. 204): the limit
@@ -276,7 +281,7 @@ private theorem exists_extremal {A : UnitAddCircle → Matrix n n ℂ} (hA : IsH
     (h0 : (matFourierCoeff A 0).det ≠ 0) :
     ∃ (c : ℕ → ℤ →₀ Matrix n n ℂ) (F : UnitAddCircle → Matrix n n ℂ) (C : Matrix n n ℂ),
       (∀ N, ∀ k ∈ (c N).support, 0 < k) ∧
-      TendstoLTwo (fun N t => A t * (1 + trigPoly (c N) t)) F ∧
+      TendstoLTwo (fun N t => A t * (1 + circPoly (c N) t)) F ∧
       (∀ i j, MemLp (fun t => F t i j) 2 haarAddCircle) ∧
       matFourierCoeff F 0 = matFourierCoeff A 0 ∧ (∀ᵐ t ∂haarAddCircle, (F t)ᴴ * F t = C) ∧
       2 * ∫ t, Real.log ‖(A t).det‖ ∂haarAddCircle = Real.log C.det.re := by
@@ -729,4 +734,4 @@ theorem isFactorable_iff {R : UnitAddCircle → Matrix n n ℂ}
       exact (range_conjTranspose_eq_iff h1.isHermitian (A t)ᵀ).1 h2
   rw [h1, h2, key]
 
-end VectorValuedHarmonicAnalysis
+end HarmonicAnalysis

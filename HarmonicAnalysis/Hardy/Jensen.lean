@@ -1,6 +1,11 @@
+/-
+Copyright (c) 2026 The-Anh Vu-Le. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: The-Anh Vu-Le
+-/
 module
 
-public import VectorValuedHarmonicAnalysis.Hardy.GeometricMean
+public import HarmonicAnalysis.Hardy.GeometricMean
 
 /-!
 # Jensen's inequality for analytic functions on the circle
@@ -15,7 +20,7 @@ The proof is that of the source (pp. 174–176). If `f` is square-summable
 (`log_norm_fourierCoeff_zero_le_of_memLp_two`), the inequality follows from one half of Szegő's
 theorem, `inf ∫ |1 + Q|² w ≤ exp (∫ log w)`, (23), for `w = |f|²`, since `(1 + Q) f` has the
 constant coefficient `f̂ (0)`; and (23) follows from Lemma 2, which is
-`exists_integral_exp_trigPoly_le` for `1 × 1` matrices: a real trigonometric polynomial with
+`exists_integral_exp_circPoly_le` for `1 × 1` matrices: a real trigonometric polynomial with
 vanishing integral is `2 Re P` with `P = Σ_{k > 0} c_k e_k`, and `e^P = 1 + Q`,
 `|e^P|² = e^{2 Re P}`. In general (`log_norm_fourierCoeff_zero_le_integral_log_norm`), `f` is the
 limit in `L¹` of its Fejér means.
@@ -30,7 +35,7 @@ loc. cit.).
 open MeasureTheory AddCircle Filter
 open scoped ENNReal Matrix ComplexOrder Topology
 
-namespace VectorValuedHarmonicAnalysis
+namespace HarmonicAnalysis
 
 /-! ### Bounded analytic functions -/
 
@@ -240,15 +245,15 @@ private theorem pos_and_integrable_log_of_add {g : UnitAddCircle → ℝ} {L : �
 /-! ### Square-summable functions -/
 
 /-- Helson–Lowdenslager (1958), Lemma 2 (the inequality `inf ∫ e^ψ w ≤ exp (∫ log w)`), if `log w`
-is summable: `exists_integral_exp_trigPoly_le` for `1 × 1` matrices. -/
+is summable: `exists_integral_exp_circPoly_le` for `1 × 1` matrices. -/
 private theorem exists_integral_exp_mul_le {w : UnitAddCircle → ℝ} (hw : Integrable w haarAddCircle)
     (hpos : ∀ t, 0 < w t) (hlog : Integrable (fun t => Real.log (w t)) haarAddCircle) {δ : ℝ}
-    (hδ : 0 < δ) : ∃ c : ℤ →₀ Matrix Unit Unit ℂ, (∀ t, (trigPoly c t).IsHermitian) ∧
-      (c 0).trace = 0 ∧ ∫ t, Real.exp (trigPoly c t).trace.re * w t ∂haarAddCircle ≤
+    (hδ : 0 < δ) : ∃ c : ℤ →₀ Matrix Unit Unit ℂ, (∀ t, (circPoly c t).IsHermitian) ∧
+      (c 0).trace = 0 ∧ ∫ t, Real.exp (circPoly c t).trace.re * w t ∂haarAddCircle ≤
         Real.exp (∫ t, Real.log (w t) ∂haarAddCircle) + δ := by
   have hdet (t : UnitAddCircle) : (Matrix.diagonal fun _ : Unit => (w t : ℂ)).det.re = w t := by
     rw [Matrix.det_diagonal, Finset.univ_unique, Finset.prod_singleton, Complex.ofReal_re]
-  obtain ⟨c, hc, h0, hle⟩ := exists_integral_exp_trigPoly_le
+  obtain ⟨c, hc, h0, hle⟩ := exists_integral_exp_circPoly_le
     (W := fun t => Matrix.diagonal fun _ : Unit => (w t : ℂ))
     (fun _ _ => hw.ofReal) (ae_of_all _ fun t =>
       Matrix.PosDef.diagonal fun _ => Complex.zero_lt_real.2 (hpos t))
@@ -256,21 +261,21 @@ private theorem exists_integral_exp_mul_le {w : UnitAddCircle → ℝ} (hw : Int
   refine ⟨c, hc, h0, ?_⟩
   simp only [hdet, Fintype.card_unique, Nat.cast_one, div_one] at hle
   refine (integral_congr_ae (ae_of_all _ fun t => ?_)).trans_le hle
-  have h1 : NormedSpace.exp (trigPoly c t) default default =
-      ((Real.exp (trigPoly c t).trace.re : ℝ) : ℂ) :=
+  have h1 : NormedSpace.exp (circPoly c t) default default =
+      ((Real.exp (circPoly c t).trace.re : ℝ) : ℂ) :=
     (Matrix.det_unique _).symm.trans (det_matrix_exp (hc t))
-  have h2 : (NormedSpace.exp (trigPoly c t) * Matrix.diagonal fun _ : Unit => (w t : ℂ)).trace =
-      ((Real.exp (trigPoly c t).trace.re : ℝ) : ℂ) * (w t : ℂ) := by
+  have h2 : (NormedSpace.exp (circPoly c t) * Matrix.diagonal fun _ : Unit => (w t : ℂ)).trace =
+      ((Real.exp (circPoly c t).trace.re : ℝ) : ℂ) * (w t : ℂ) := by
     rw [Matrix.trace, Finset.univ_unique, Finset.sum_singleton, Matrix.diag_apply,
       Matrix.mul_diagonal, h1]
   simp only [h2, ← Complex.ofReal_mul, Complex.ofReal_re]
 
 /-- `P̄ = Σ_k c̄_k e_{−k}` if `P = Σ_k c_k e_k`. -/
-private theorem trigPoly_neg (p : ℤ →₀ Matrix Unit Unit ℂ) (t : UnitAddCircle) :
-    trigPoly (Finsupp.equivMapDomain (Equiv.neg ℤ)
-      (p.mapRange Matrix.conjTranspose Matrix.conjTranspose_zero)) t = (trigPoly p t)ᴴ := by
-  rw [trigPoly, Finsupp.sum_equivMapDomain, Finsupp.sum_mapRange_index fun _ => smul_zero _,
-    trigPoly, Finsupp.sum, Finsupp.sum, Matrix.conjTranspose_sum]
+private theorem circPoly_neg (p : ℤ →₀ Matrix Unit Unit ℂ) (t : UnitAddCircle) :
+    circPoly (Finsupp.equivMapDomain (Equiv.neg ℤ)
+      (p.mapRange Matrix.conjTranspose Matrix.conjTranspose_zero)) t = (circPoly p t)ᴴ := by
+  rw [circPoly, Finsupp.sum_equivMapDomain, Finsupp.sum_mapRange_index fun _ => smul_zero _,
+    circPoly, Finsupp.sum, Finsupp.sum, Matrix.conjTranspose_sum]
   refine Finset.sum_congr rfl fun k _ => ?_
   rw [Matrix.conjTranspose_smul, Equiv.neg_apply, fourier_neg]
   rfl
@@ -279,13 +284,13 @@ private theorem trigPoly_neg (p : ℤ →₀ Matrix Unit Unit ℂ) (t : UnitAddC
 second property of half-planes, in the form (21)": `ψ = P + P̄`, where `P = Σ_{k > 0} c_k e_k`
 (Helson–Lowdenslager (1958), p. 174); (14) is `∫ ψ = 0`. -/
 private theorem exists_eq_add_conjTranspose {c : ℤ →₀ Matrix Unit Unit ℂ}
-    (hc : ∀ t, (trigPoly c t).IsHermitian) (h0 : (c 0).trace = 0) :
+    (hc : ∀ t, (circPoly c t).IsHermitian) (h0 : (c 0).trace = 0) :
     ∃ p : ℤ →₀ Matrix Unit Unit ℂ, (∀ k ∈ p.support, 0 < k) ∧
-      ∀ t, trigPoly c t = trigPoly p t + (trigPoly p t)ᴴ := by
+      ∀ t, circPoly c t = circPoly p t + (circPoly p t)ᴴ := by
   classical
   have hneg (k : ℤ) : c (-k) = (c k)ᴴ := by
     ext i j
-    rw [← matFourierCoeff_trigPoly c, ← matFourierCoeff_trigPoly c, Matrix.conjTranspose_apply,
+    rw [← matFourierCoeff_circPoly c, ← matFourierCoeff_circPoly c, Matrix.conjTranspose_apply,
       matFourierCoeff, matFourierCoeff, Matrix.of_apply, Matrix.of_apply, fourierCoeff,
       fourierCoeff, Complex.star_def, ← integral_conj]
     refine integral_congr_ae (ae_of_all _ fun t => ?_)
@@ -293,7 +298,7 @@ private theorem exists_eq_add_conjTranspose {c : ℤ →₀ Matrix Unit Unit ℂ
     rw [smul_eq_mul, smul_eq_mul, map_mul, ← fourier_neg]
     exact congrArg _ ((hc t).apply i j).symm
   refine ⟨c.filter (0 < ·), fun k hk => (Finset.mem_filter.1 hk).2, fun t => ?_⟩
-  rw [← trigPoly_neg, ← trigPoly_add]
+  rw [← circPoly_neg, ← circPoly_add]
   congr 1
   ext1 k
   rw [Finsupp.add_apply, Finsupp.equivMapDomain_apply, Finsupp.mapRange_apply, Finsupp.filter_apply,
@@ -315,17 +320,17 @@ private theorem exists_integral_norm_sq_mul_le {w : UnitAddCircle → ℝ}
       ∫ t, ‖q t‖ ^ 2 * w t ∂haarAddCircle ≤ Real.exp (∫ t, Real.log (w t) ∂haarAddCircle) + δ := by
   obtain ⟨c, hc, h0, hle⟩ := exists_integral_exp_mul_le hw hpos hlog hδ
   obtain ⟨p, hp, hcp⟩ := exists_eq_add_conjTranspose hc h0
-  have hp2 := isHardyTwo_trigPoly fun k hk => (hp k hk).le
-  obtain ⟨C, hC⟩ := exists_bound_of_continuous (continuous_trigPoly_matrix p)
-  have hP : IsBoundedAnalytic fun t => trigPoly p t () () :=
+  have hp2 := isHardyTwo_circPoly fun k hk => (hp k hk).le
+  obtain ⟨C, hC⟩ := exists_bound_of_continuous (continuous_circPoly_matrix p)
+  have hP : IsBoundedAnalytic fun t => circPoly p t () () :=
     ⟨hp2.isHardyOne.1 () (), fun k hk => congrFun (congrFun (hp2.2 k hk) ()) (), C,
       ae_of_all _ fun t => hC t () ()⟩
-  have hP0 : fourierCoeff (fun t => trigPoly p t () ()) 0 = 0 := by
-    have h1 := congrFun (congrFun (matFourierCoeff_trigPoly p 0) ()) ()
+  have hP0 : fourierCoeff (fun t => circPoly p t () ()) 0 = 0 := by
+    have h1 := congrFun (congrFun (matFourierCoeff_circPoly p 0) ()) ()
     rwa [Finsupp.notMem_support_iff.1 fun h => lt_irrefl _ (hp 0 h)] at h1
   refine ⟨_, hP.exp.1, by rw [hP.exp.2, hP0, Complex.exp_zero], le_of_eq_of_le ?_ hle⟩
   refine integral_congr_ae (ae_of_all _ fun t => ?_)
-  have h2 : (trigPoly c t).trace.re = 2 * (trigPoly p t () ()).re := by
+  have h2 : (circPoly c t).trace.re = 2 * (circPoly p t () ()).re := by
     simp [hcp, Matrix.trace, two_mul]
   simp only [h2, Complex.norm_exp, ← Real.exp_nat_mul, Nat.cast_ofNat]
 
@@ -433,12 +438,12 @@ private theorem exists_tendsto_fejer {f : UnitAddCircle → ℂ} (hf : Integrabl
   let F : UnitAddCircle → Matrix Unit Unit ℂ := fun t => Matrix.of fun _ _ => f t
   have hFneg (k : ℤ) (hk : k < 0) : matFourierCoeff F k = 0 := Matrix.ext fun _ _ => hneg k hk
   have hF (i j : Unit) : Integrable (fun t => F t i j) haarAddCircle := hf
-  refine ⟨fun K t => trigPoly (fejerCoeff F (K + 1)) t () (), fun K =>
-    (continuous_trigPoly_matrix _).matrix_elem () (), fun K k hk => ?_, fun K => ?_,
+  refine ⟨fun K t => circPoly (fejerCoeff F (K + 1)) t () (), fun K =>
+    (continuous_circPoly_matrix _).matrix_elem () (), fun K k hk => ?_, fun K => ?_,
     (tendsto_integral_norm_fejerCoeff_sub hF () ()).comp (tendsto_add_atTop_nat 1)⟩
-  · exact congrFun (congrFun ((isHardyTwo_trigPoly
+  · exact congrFun (congrFun ((isHardyTwo_circPoly
       (nonneg_of_mem_support_fejerCoeff hFneg (K + 1))).2 k hk) ()) ()
-  · have h := matFourierCoeff_trigPoly (fejerCoeff F (K + 1)) 0
+  · have h := matFourierCoeff_circPoly (fejerCoeff F (K + 1)) 0
     rw [fejerCoeff_zero F K.succ_pos] at h
     exact congrFun (congrFun h ()) ()
 
@@ -518,4 +523,4 @@ theorem log_norm_det_le_integral_log_norm_det {Q : UnitAddCircle → Matrix n n 
   rw [← h3] at h0 ⊢
   exact log_norm_fourierCoeff_zero_le_integral_log_norm h1 h2 h0
 
-end VectorValuedHarmonicAnalysis
+end HarmonicAnalysis

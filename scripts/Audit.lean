@@ -25,6 +25,18 @@ import all HarmonicAnalysis.FourierMultiplier.Density
 import all HarmonicAnalysis.FourierMultiplier.Duality
 import all HarmonicAnalysis.FourierMultiplier.Extension
 import all HarmonicAnalysis.FourierMultiplier.Norming
+import all HarmonicAnalysis.Hardy.Approximation
+import all HarmonicAnalysis.Hardy.Basic
+import all HarmonicAnalysis.Hardy.FunctionalCalculus
+import all HarmonicAnalysis.Hardy.GeometricMean
+import all HarmonicAnalysis.Hardy.Jensen
+import all HarmonicAnalysis.Hardy.Outer
+import all HarmonicAnalysis.Hardy.RangeFunction
+import all HarmonicAnalysis.Hardy.RieszFactorization
+import all HarmonicAnalysis.Hardy.Szego
+import all HarmonicAnalysis.NoncommutativeKhintchine
+import all HarmonicAnalysis.Paley.Rademacher
+import all HarmonicAnalysis.Paley.Schatten
 import all HarmonicAnalysis.Torus.Cube
 import all HarmonicAnalysis.Torus.Lattice
 import all HarmonicAnalysis.Torus.Lipschitz
@@ -34,6 +46,15 @@ import all HarmonicAnalysis.Torus.TrigPoly
 import all HarmonicAnalysis.Transference.ContinuousSymbol
 import all HarmonicAnalysis.Transference.Homogeneous
 import all HarmonicAnalysis.Transference.RiemannSum
+import all HarmonicAnalysis.VectorValued.Dyadic.Average
+import all HarmonicAnalysis.VectorValued.Dyadic.Martingale
+import all HarmonicAnalysis.VectorValued.Dyadic.Shift
+import all HarmonicAnalysis.VectorValued.HilbertTransform.Fourier
+import all HarmonicAnalysis.VectorValued.HilbertTransform.Truncated
+import all HarmonicAnalysis.VectorValued.LittlewoodPaley.Circle
+import all HarmonicAnalysis.VectorValued.LittlewoodPaley.Line
+import all HarmonicAnalysis.VectorValued.RademacherNorm
+import all HarmonicAnalysis.VectorValued.Transference
 
 /-!
 # Axiom audit

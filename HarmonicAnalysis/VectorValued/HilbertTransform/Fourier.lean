@@ -1,6 +1,11 @@
+/-
+Copyright (c) 2026 The-Anh Vu-Le. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: The-Anh Vu-Le
+-/
 module
 
-public import VectorValuedHarmonicAnalysis.HilbertTransform.Truncated
+public import HarmonicAnalysis.VectorValued.HilbertTransform.Truncated
 public import Mathlib.Analysis.Fourier.Inversion
 public import Mathlib.Basic.Real.Sign
 import Mathlib.Analysis.Complex.CauchyIntegral
@@ -37,7 +42,7 @@ passes to it by Fatou's lemma.
 open MeasureTheory BanachProbability Filter Topology
 open scoped ENNReal FourierTransform
 
-namespace VectorValuedHarmonicAnalysis
+namespace HarmonicAnalysis
 
 /-- HNVW I, Lemma 5.2.1: the function `m_{ε,R}`,
 `−i sgn (ξ) m_{ε,R} (ξ) = π⁻¹ ∫_{ε < |x| < R} e^{−2πi x ξ} dx / x`, that is,
@@ -583,4 +588,4 @@ theorem eLpNorm_fourierInv_sign_le [CompleteSpace X] {p : ℝ} (hp : 1 < p) {β 
     ENNReal.ofReal_one, one_mul] at hfatou
   exact hfatou
 
-end VectorValuedHarmonicAnalysis
+end HarmonicAnalysis

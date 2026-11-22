@@ -1,7 +1,12 @@
+/-
+Copyright (c) 2026 The-Anh Vu-Le. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: The-Anh Vu-Le
+-/
 module
 
-public import VectorValuedHarmonicAnalysis.Dyadic.Martingale
-public import VectorValuedHarmonicAnalysis.RademacherNorm
+public import HarmonicAnalysis.VectorValued.Dyadic.Martingale
+public import HarmonicAnalysis.VectorValued.RademacherNorm
 import Mathlib.Algebra.Order.Interval.Set.Group
 
 /-!
@@ -35,7 +40,7 @@ simplification possible.
 open MeasureTheory BanachProbability
 open scoped ENNReal
 
-namespace VectorValuedHarmonicAnalysis
+namespace HarmonicAnalysis
 
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X] [CompleteSpace X]
 
@@ -279,4 +284,4 @@ theorem eLpNorm_sum_dyadicShift_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (hβ
         exact eLpNormRad_dyadicShift_le hp hβ (Or.inr rfl) hf n
     _ = 2 * β ^ 2 * eLpNorm f (ENNReal.ofReal p) volume := by ring
 
-end VectorValuedHarmonicAnalysis
+end HarmonicAnalysis

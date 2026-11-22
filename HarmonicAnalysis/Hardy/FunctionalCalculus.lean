@@ -1,6 +1,11 @@
+/-
+Copyright (c) 2026 The-Anh Vu-Le. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: The-Anh Vu-Le
+-/
 module
 
-public import VectorValuedHarmonicAnalysis.Hardy.Approximation
+public import HarmonicAnalysis.Hardy.Approximation
 public import Mathlib.Analysis.Matrix.Order
 public import Mathlib.Analysis.Normed.Algebra.MatrixExponential
 import Mathlib.Analysis.CStarAlgebra.ContinuousFunctionalCalculus.Continuity
@@ -30,7 +35,7 @@ are represented by their real parts.
 open MeasureTheory AddCircle Filter
 open scoped ENNReal Matrix ComplexOrder Topology
 
-namespace VectorValuedHarmonicAnalysis
+namespace HarmonicAnalysis
 
 /-! ### The matrices `Mᴴ M` -/
 
@@ -140,10 +145,10 @@ theorem integral_trace_re {f : UnitAddCircle → Matrix n n ℂ}
   exact integral_re h
 
 /-- The mean of the real part of the trace of a trigonometric polynomial. -/
-theorem integral_trace_trigPoly_re (c : ℤ →₀ Matrix n n ℂ) :
-    ∫ t, (trigPoly c t).trace.re ∂haarAddCircle = (c 0).trace.re := by
+theorem integral_trace_circPoly_re (c : ℤ →₀ Matrix n n ℂ) :
+    ∫ t, (circPoly c t).trace.re ∂haarAddCircle = (c 0).trace.re := by
   rw [integral_trace_re fun i j => integrable_haar_of_continuous
-    ((continuous_trigPoly_matrix c).matrix_elem i j), matFourierCoeff_trigPoly]
+    ((continuous_circPoly_matrix c).matrix_elem i j), matFourierCoeff_circPoly]
 
 /-- `|Re tr (E A)| ≤ M Σ |A_ki|` if the entries of `E` are bounded by `M`. -/
 private theorem norm_trace_mul_re_le {E A : Matrix n n ℂ} {M : ℝ} (hE : ∀ i j, ‖E i j‖ ≤ M) :
@@ -399,4 +404,4 @@ theorem posDef_matrix_exp {A : Matrix n n ℂ} (hA : A.IsHermitian) :
   rw [conjTranspose_exp_half_mul_self hA] at h
   exact h.posDef_iff_isUnit.2 (Matrix.isUnit_exp A)
 
-end VectorValuedHarmonicAnalysis
+end HarmonicAnalysis

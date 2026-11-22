@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 The-Anh Vu-Le. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: The-Anh Vu-Le
+-/
 module
 
 public import BanachProbability.UMD.Decoupling
@@ -28,7 +33,7 @@ pp. 375–377. Only the generations `j ≥ 0` are needed here; the others are re
 open MeasureTheory
 open scoped ENNReal
 
-namespace VectorValuedHarmonicAnalysis
+namespace HarmonicAnalysis
 
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
 
@@ -381,4 +386,4 @@ theorem dyadicShift_haar {f : ℝ → X} (hf : LocallyIntegrable f) (j : ℕ) :
       ite_eq_right (Int.not_even_iff_odd.2 (odd_two_mul_add_one k)), pow_succ]
     module
 
-end VectorValuedHarmonicAnalysis
+end HarmonicAnalysis

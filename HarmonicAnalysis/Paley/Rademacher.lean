@@ -1,6 +1,11 @@
+/-
+Copyright (c) 2026 The-Anh Vu-Le. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: The-Anh Vu-Le
+-/
 module
 
-public import VectorValuedHarmonicAnalysis.Paley.Schatten
+public import HarmonicAnalysis.Paley.Schatten
 import BanachProbability.RandomSums.Contraction
 
 /-!
@@ -37,7 +42,7 @@ averaged over the signs; by the contraction principle its average is at most `2 
 open MeasureTheory AddCircle BanachProbability BanachProbability.SignCube
 open scoped ENNReal Matrix
 
-namespace VectorValuedHarmonicAnalysis
+namespace HarmonicAnalysis
 
 variable {n : Type*} [Fintype n] [DecidableEq n]
 
@@ -65,10 +70,10 @@ private theorem nonneg_of_mem_support_lacunaryCoeff {K : ℕ} (A : Fin K → Mat
   omega
 
 omit [Fintype n] [DecidableEq n] in
-private theorem trigPoly_lacunaryCoeff {K : ℕ} (A : Fin K → Matrix n n ℂ) (ε : Fin K → Bool)
-    (t : UnitAddCircle) : trigPoly (lacunaryCoeff A ε) t =
+private theorem circPoly_lacunaryCoeff {K : ℕ} (A : Fin K → Matrix n n ℂ) (ε : Fin K → Bool)
+    (t : UnitAddCircle) : circPoly (lacunaryCoeff A ε) t =
       ∑ k, coin (ε k) • fourier ((2 : ℤ) ^ (k : ℕ)) t • A k := by
-  rw [trigPoly, lacunaryCoeff, ← Finsupp.sum_finsetSum_index (fun _ => smul_zero _)
+  rw [circPoly, lacunaryCoeff, ← Finsupp.sum_finsetSum_index (fun _ => smul_zero _)
     fun _ _ _ => smul_add _ _ _]
   refine Finset.sum_congr rfl fun k _ => ?_
   refine (Finsupp.sum_single_index ?_).trans (smul_comm _ _ _)
@@ -77,7 +82,7 @@ private theorem trigPoly_lacunaryCoeff {K : ℕ} (A : Fin K → Matrix n n ℂ) 
 /-- The contraction principle: multiplying the `A_k` by the unimodular numbers `e_{2^k} (t)`. -/
 private theorem avg_lacunary_le {q : ℝ≥0∞} (hq : 1 ≤ q) {K : ℕ} (A : Fin K → Matrix n n ℂ)
     (t : UnitAddCircle) :
-    (avg fun ε : Fin K → Bool => complexSchattenNorm q (trigPoly (lacunaryCoeff A ε) t)) ≤
+    (avg fun ε : Fin K → Bool => complexSchattenNorm q (circPoly (lacunaryCoeff A ε) t)) ≤
       2 * avg fun ε : Fin K → Bool => complexSchattenNorm q (∑ k, coin (ε k) • A k) := by
   have : Fact (1 ≤ q) := ⟨hq⟩
   have h := lpNorm_sum_coin_smul_le_two_mul (E := ComplexSchattenSpace q n n) le_rfl
@@ -88,7 +93,7 @@ private theorem avg_lacunary_le {q : ℝ≥0∞} (hq : 1 ≤ q) {K : ℕ} (A : F
         complexSchattenNorm q (∑ k, coin (ε k) • B k) := by
     rw [← ComplexSchattenSpace.norm_ofMatrix, ofMatrix_sum_smul]
   simp only [SignCube.lpNorm, Real.rpow_one, div_one, ← map_smul, e] at h
-  simpa only [trigPoly_lacunaryCoeff] using h
+  simpa only [circPoly_lacunaryCoeff] using h
 
 /-- **The lower Khintchine inequality in the Schatten classes**, `1 ≤ p ≤ 2` (Lust-Piquard–Pisier
 (1991), Corollary III.4, left-hand inequality, with signs; Pisier (1998), (8.4.4), left-hand
@@ -106,20 +111,20 @@ theorem rademacher_schatten_le : ∃ M : ℝ, 0 < M ∧ ∀ (n : Type) [Fintype 
   have h1p : 1 ≤ ENNReal.ofReal p := ENNReal.one_le_ofReal.2 hp1
   have hp0 : ENNReal.ofReal p ≠ 0 := (zero_lt_one.trans_le h1p).ne'
   have hint (ε : Fin K → Bool) : Integrable (fun t =>
-      complexSchattenNorm (ENNReal.ofReal p) (trigPoly (lacunaryCoeff A ε) t)) haarAddCircle :=
+      complexSchattenNorm (ENNReal.ofReal p) (circPoly (lacunaryCoeff A ε) t)) haarAddCircle :=
     ((continuous_complexSchattenNorm h1p).comp
-      (continuous_trigPoly_matrix _)).integrable_of_hasCompactSupport
+      (continuous_circPoly_matrix _)).integrable_of_hasCompactSupport
         (HasCompactSupport.of_compactSpace _)
   -- a choice of signs for which the integral is at most its average
   obtain ⟨ε, -, hε⟩ := Finset.exists_le_of_sum_le (s := (Finset.univ : Finset (Fin K → Bool)))
     Finset.univ_nonempty
-    (f := fun ε => ∫ t, complexSchattenNorm (ENNReal.ofReal p) (trigPoly (lacunaryCoeff A ε) t)
+    (f := fun ε => ∫ t, complexSchattenNorm (ENNReal.ofReal p) (circPoly (lacunaryCoeff A ε) t)
       ∂haarAddCircle)
     (g := fun _ => avg fun η : Fin K → Bool => ∫ t, complexSchattenNorm (ENNReal.ofReal p)
-      (trigPoly (lacunaryCoeff A η) t) ∂haarAddCircle) (by simp [avg, mul_div_cancel₀])
+      (circPoly (lacunaryCoeff A η) t) ∂haarAddCircle) (by simp [avg, mul_div_cancel₀])
   -- the average over the signs, by the contraction principle
   have havg : (avg fun η : Fin K → Bool => ∫ t, complexSchattenNorm (ENNReal.ofReal p)
-      (trigPoly (lacunaryCoeff A η) t) ∂haarAddCircle) ≤
+      (circPoly (lacunaryCoeff A η) t) ∂haarAddCircle) ≤
       2 * avg fun η : Fin K → Bool =>
         complexSchattenNorm (ENNReal.ofReal p) (∑ k, coin (η k) • A k) := by
     rw [avg, ← integral_finsetSum _ fun ε _ => hint ε, ← integral_div]
@@ -138,4 +143,4 @@ theorem rademacher_schatten_le : ∃ M : ℝ, 0 < M ∧ ∀ (n : Type) [Fintype 
       complexSchattenNorm_blockCol_smul hp0 b hunit, mul_assoc]
     exact hle.trans (mul_le_mul_of_nonneg_left (hε.trans havg) hM.le)
 
-end VectorValuedHarmonicAnalysis
+end HarmonicAnalysis

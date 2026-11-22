@@ -1,6 +1,11 @@
+/-
+Copyright (c) 2026 The-Anh Vu-Le. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: The-Anh Vu-Le
+-/
 module
 
-public import VectorValuedHarmonicAnalysis.Dyadic.Average
+public import HarmonicAnalysis.VectorValued.Dyadic.Average
 import Mathlib.Analysis.Complex.ExponentialBounds
 import Mathlib.Analysis.Real.Pi.Bounds
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
@@ -42,7 +47,7 @@ bound only the constant is affected: `(8/π) (2 log 2 · β² + 4) ≤ 4 β² + 
 open MeasureTheory BanachProbability
 open scoped ENNReal
 
-namespace VectorValuedHarmonicAnalysis
+namespace HarmonicAnalysis
 
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
 
@@ -635,4 +640,4 @@ theorem eLpNorm_truncatedHilbert_le [CompleteSpace X] {p : ℝ} (hp : 1 < p) {β
           ENNReal.ofReal (8 / Real.pi) * 4) * N := by ring
     _ ≤ (4 * β ^ 2 + 11) * N := by gcongr
 
-end VectorValuedHarmonicAnalysis
+end HarmonicAnalysis

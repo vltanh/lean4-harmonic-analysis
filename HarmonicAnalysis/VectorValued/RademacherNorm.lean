@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 The-Anh Vu-Le. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: The-Anh Vu-Le
+-/
 module
 
 public import BanachProbability.SignCube.Bridge
@@ -38,7 +43,7 @@ constant `2 ≥ π / 2` is used.
 open MeasureTheory BanachProbability BanachProbability.SignCube
 open scoped ENNReal
 
-namespace VectorValuedHarmonicAnalysis
+namespace HarmonicAnalysis
 
 variable {α : Type*} [MeasurableSpace α] {μ : Measure α} {K : ℕ}
   {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -396,4 +401,4 @@ theorem eLpNormRad_integral_le [SFinite μ] {S : Type*} [MeasurableSpace S] {ν 
   exact (lintegral_mono_ae (hpt.mono fun z hz => ENNReal.rpow_le_rpow hz hp0.le)).trans
     (rad_lintegral_rpow_lintegral_le hhm hp)
 
-end VectorValuedHarmonicAnalysis
+end HarmonicAnalysis

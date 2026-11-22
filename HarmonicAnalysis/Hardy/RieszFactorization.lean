@@ -1,6 +1,11 @@
+/-
+Copyright (c) 2026 The-Anh Vu-Le. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: The-Anh Vu-Le
+-/
 module
 
-public import VectorValuedHarmonicAnalysis.Hardy.RangeFunction
+public import HarmonicAnalysis.Hardy.RangeFunction
 
 /-!
 # The Riesz factorization of matrix-valued functions of `H¹`
@@ -26,7 +31,7 @@ needed.)
 open MeasureTheory AddCircle Filter BanachProbability
 open scoped ENNReal Matrix ComplexOrder Topology
 
-namespace VectorValuedHarmonicAnalysis
+namespace HarmonicAnalysis
 
 /-! ### Preliminaries -/
 
@@ -67,12 +72,12 @@ private theorem IsOuter.isHardyTwo_of_isHardyOne_mul [Fintype m] [Fintype n] [De
   obtain ⟨c, hc, hlim⟩ := hB.exists_tendsto_one h0
   refine ⟨hQ, fun k hk => ?_⟩
   have h1 := hlim.tendsto_matFourierCoeff_mul_left hQ (fun N =>
-    memLp_mul_continuous hB.1.1 (continuous_trigPoly_matrix (c N))) k
+    memLp_mul_continuous hB.1.1 (continuous_circPoly_matrix (c N))) k
   simp only [Matrix.mul_one] at h1
   refine tendsto_nhds_unique h1 (tendsto_const_nhds.congr fun N => Eq.symm ?_)
-  obtain ⟨D, hD⟩ := exists_bound_of_continuous (continuous_trigPoly_matrix (c N))
+  obtain ⟨D, hD⟩ := exists_bound_of_continuous (continuous_circPoly_matrix (c N))
   simpa only [Matrix.mul_assoc] using
-    (hQB.mul_bounded (isHardyTwo_trigPoly (hc N)).isHardyOne (ae_of_all _ hD)).1.2 k hk
+    (hQB.mul_bounded (isHardyTwo_circPoly (hc N)).isHardyOne (ae_of_all _ hD)).1.2 k hk
 
 end Preliminaries
 
@@ -86,7 +91,7 @@ theorem IsFactorable.exists_isOuter {R : UnitAddCircle → Matrix n n ℂ} (hR :
     ∃ (q : ℕ) (B : UnitAddCircle → Matrix (Fin q) n ℂ), q ≤ Fintype.card n ∧ IsOuter B ∧
       (matFourierCoeff B 0).rank = q ∧ ∀ᵐ t ∂haarAddCircle, (B t)ᴴ * B t = R t := by
   obtain ⟨k, A, hA, hAR⟩ := hR
-  obtain ⟨q, B, hq, hB, hrank, hBA⟩ := VectorValuedHarmonicAnalysis.exists_isOuter hA
+  obtain ⟨q, B, hq, hB, hrank, hBA⟩ := HarmonicAnalysis.exists_isOuter hA
   refine ⟨q, B, hq, hB, hrank, ?_⟩
   filter_upwards [hBA, hAR] with t h1 h2
   rw [h1, h2]
@@ -469,4 +474,4 @@ theorem complexSchattenNorm_sq_of_factorization {p : ℝ} (hp : 0 < p) {A A₁ :
   rw [← h3, ← complexSchattenNorm_conjTranspose _ A₂]
   simp only [complexSchattenNorm_two_mul_sq hp, h₁, Matrix.conjTranspose_conjTranspose]
 
-end VectorValuedHarmonicAnalysis
+end HarmonicAnalysis

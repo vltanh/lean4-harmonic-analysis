@@ -1,7 +1,12 @@
+/-
+Copyright (c) 2026 The-Anh Vu-Le. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: The-Anh Vu-Le
+-/
 module
 
-public import VectorValuedHarmonicAnalysis.LittlewoodPaley.Line
-public import VectorValuedHarmonicAnalysis.Transference
+public import HarmonicAnalysis.VectorValued.LittlewoodPaley.Line
+public import HarmonicAnalysis.VectorValued.Transference
 import Mathlib.Analysis.Normed.Lp.PiLp
 import Mathlib.NumberTheory.Real.Irrational
 
@@ -9,7 +14,7 @@ import Mathlib.NumberTheory.Real.Irrational
 # The Littlewood–Paley inequality on the circle for UMD spaces
 
 `𝕋 = ℝ / ℤ` with its normalised Haar measure, `e_n (t) = e^{2πi n t}`. For a trigonometric
-polynomial `f = Σ_n c_n e_n` (`trigPoly c`) with coefficients in a complex UMD space `X`, and the
+polynomial `f = Σ_n c_n e_n` (`circPoly c`) with coefficients in a complex UMD space `X`, and the
 dyadic blocks `Ĩ_0 = {0}`, `Ĩ_k = [2^{k−1}, 2^k) ∩ ℤ`, `Ĩ_{−k} = −Ĩ_k` for `k > 0` (`dyadicBlock`),
 let `Δ̃_k f = Σ_{n ∈ Ĩ_k} c_n e_n`. **Theorem** (`eLpNormRad_dyadicBlock_le`): for `1 < p < ∞`,
 
@@ -22,7 +27,7 @@ Source: Hytönen–van Neerven–Veraar–Weis (HNVW), *Analysis in Banach space
 says that the multiplier `m (ξ) x = Σ_k ε_k 1_{I_k} (ξ) x`, with values in `Y = L^p (Ω; X)`, is
 bounded on the line; its dilates `m (ρ ·)`, for irrational `ρ > 1`, have the same norm and are
 continuous at the integers, hence are transferred to `𝕋` by Proposition 5.7.1
-(`VectorValuedHarmonicAnalysis.Transference`); and, if `ρ` is near `1`, `ρ j ∈ I_k` exactly when
+(`HarmonicAnalysis.VectorValued.Transference`); and, if `ρ` is near `1`, `ρ j ∈ I_k` exactly when
 `j ∈ Ĩ_k`, at the frequencies `j` of `f` ((5.61), (5.62); in (5.60) the intervals are half-open,
 here they are open, as in Corollary 5.3.25). The signs are real. In the book all `k ∈ ℤ` are taken
 at once; here the sums are finite. The left-hand inequality and the operator-valued statement (1) of
@@ -30,7 +35,7 @@ that theorem are not treated.
 
 A shorter transference: `m (ρ ·)` is constant near each integer, so that a cut-off with compactly
 supported Fourier transform and Lemma 5.7.3 suffice, without duality and Proposition 5.7.1; see the
-module docstring of `VectorValuedHarmonicAnalysis.Transference`.
+module docstring of `HarmonicAnalysis.VectorValued.Transference`.
 
 Also: the projections onto single frequencies are randomised bounded
 (`eLpNormRad_singleFrequency_le`), by Jensen's inequality and the contraction principle.
@@ -41,7 +46,7 @@ Also: the projections onto single frequencies are randomised bounded
 open MeasureTheory BanachProbability AddCircle
 open scoped ENNReal FourierTransform SchwartzMap
 
-namespace VectorValuedHarmonicAnalysis
+namespace HarmonicAnalysis
 
 /-- The dyadic blocks of `ℤ` (HNVW I, p. 464): `Ĩ_0 = {0}`, `Ĩ_k = [2^{k−1}, 2^k)`,
 `Ĩ_{−k} = (−2^k, −2^{k−1}]`, `k > 0`. -/
@@ -53,14 +58,14 @@ open scoped Classical in
 /-- `Δ̃_s f = Σ_{n ∈ s} c_n e_n`, for a set `s` of frequencies. -/
 noncomputable def trigBlock {V : Type*} [AddCommMonoid V] [Module ℂ V] (s : Set ℤ) (c : ℤ →₀ V) :
     UnitAddCircle → V :=
-  trigPoly (c.filter (· ∈ s))
+  circPoly (c.filter (· ∈ s))
 
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace ℂ X]
 
 open scoped Classical in
 private theorem trigBlock_eq_sum (s : Set ℤ) (c : ℤ →₀ X) (t : UnitAddCircle) :
     trigBlock s c t = ∑ j ∈ c.support, if j ∈ s then fourier j t • c j else 0 := by
-  rw [trigBlock, trigPoly, Finsupp.sum_filter_index, Finsupp.support_filter, Finset.sum_filter]
+  rw [trigBlock, circPoly, Finsupp.sum_filter_index, Finsupp.support_filter, Finset.sum_filter]
 
 /-! ### The dilation trick
 
@@ -340,19 +345,19 @@ private theorem eLpNormRad_dyadicBlock_le_of_line [CompleteSpace X] {p : ℝ} (h
       eLpNormRad (fun k => 𝓕⁻ ((lineBlock (κ k)).indicator G)) p volume ≤
         C * eLpNorm (𝓕⁻ (G : ℝ → X)) (ENNReal.ofReal p) volume) (c : ℤ →₀ X) :
     eLpNormRad (fun k => trigBlock (dyadicBlock (κ k)) c) p haarAddCircle ≤
-      C * eLpNorm (trigPoly c) (ENNReal.ofReal p) haarAddCircle := by
+      C * eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle := by
   have hp0 : 0 < p := by linarith
   have : Fact (1 ≤ ENNReal.ofReal p) := ⟨ENNReal.one_le_ofReal.2 hp.le⟩
   -- Proposition 5.7.1 for the dilate `m (ρ ·)`, with (5.61)
   obtain ⟨ρ, hρi, hρ1, hρ⟩ := exists_dilation c.support
-  have h := eLpNorm_trigPoly_multiplier_le hp (m := fun ξ => signMultiplier X p κ (ρ * ξ))
+  have h := eLpNorm_circPoly_multiplier_le hp (m := fun ξ => signMultiplier X p κ (ρ * ξ))
     (fun ξ => norm_signMultiplier_le κ _) (aestronglyMeasurable_signMultiplier κ ρ)
     (continuousAt_signMultiplier κ hρi)
     (eLpNorm_fourierInv_multiplier_dilate_le hp0 (fun G =>
       eLpNorm_fourierInv_signMultiplier_le hp0 κ G.integrable (hline G)) (by linarith)) c
   rw [funext (sum_signMultiplier κ hρ),
     eLpNorm_sum_signOp hp0 (f := fun k => trigBlock (dyadicBlock (κ k)) c)
-    fun k => (continuous_trigPoly _).aestronglyMeasurable, mul_assoc,
+    fun k => (continuous_circPoly _).aestronglyMeasurable, mul_assoc,
     ENNReal.mul_le_mul_iff_right] at h
   · exact h
   · exact (ENNReal.rpow_pos (by positivity) (by simp)).ne'
@@ -371,7 +376,7 @@ positive half-line. -/
 theorem eLpNormRad_dyadicBlock_succ_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (hβ : IsUMDBound X p β)
     (c : ℤ →₀ X) (K : ℕ) :
     eLpNormRad (fun k : Fin K => trigBlock (dyadicBlock ((k : ℕ) + 1)) c) p haarAddCircle ≤
-      littlewoodPaleyBound β * eLpNorm (trigPoly c) (ENNReal.ofReal p) haarAddCircle := by
+      littlewoodPaleyBound β * eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle := by
   refine eLpNormRad_dyadicBlock_le_of_line hp (fun k : Fin K => ((k : ℕ) : ℤ) + 1) (fun G => ?_) c
   simp only [lineBlock_natCast_add_one]
   exact eLpNormRad_fourierInv_indicator_le hp hβ G.integrable (memLp_fourierInv G _) K
@@ -385,7 +390,7 @@ theorem eLpNormRad_dyadicBlock_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (hβ 
     eLpNormRad (fun k : Fin (2 * K + 1) => trigBlock (dyadicBlock ((k : ℕ) - K)) c) p
         haarAddCircle ≤
       (2 * littlewoodPaleyBound β + hilbertBound β) *
-        eLpNorm (trigPoly c) (ENNReal.ofReal p) haarAddCircle :=
+        eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle :=
   eLpNormRad_dyadicBlock_le_of_line hp (fun k : Fin (2 * K + 1) => ((k : ℕ) : ℤ) - K)
     (fun G => eLpNormRad_lineBlock_le hp hβ G.integrable (memLp_fourierInv G _) K) c
 
@@ -410,10 +415,10 @@ contraction principle with the factor `2` (real signs). -/
 theorem eLpNormRad_singleFrequency_le {p : ℝ} (hp : 1 ≤ p) {K : ℕ} (c : Fin K → ℤ →₀ X)
     (n : Fin K → ℤ) :
     eLpNormRad (fun k (t : UnitAddCircle) => fourier (n k) t • c k (n k)) p haarAddCircle ≤
-      4 * eLpNormRad (fun k => trigPoly (c k)) p haarAddCircle := by
+      4 * eLpNormRad (fun k => circPoly (c k)) p haarAddCircle := by
   have hp0 : 0 < p := by linarith
-  have hcont : ∀ k, Continuous fun t : UnitAddCircle => fourier (-n k) t • trigPoly (c k) t :=
-    fun k => (map_continuous (fourier (-n k))).smul (continuous_trigPoly (c k))
+  have hcont : ∀ k, Continuous fun t : UnitAddCircle => fourier (-n k) t • circPoly (c k) t :=
+    fun k => (map_continuous (fourier (-n k))).smul (continuous_circPoly (c k))
   -- the contraction principle
   have h1 : eLpNormRad (fun k (t : UnitAddCircle) => fourier (n k) t • c k (n k)) p haarAddCircle ≤
       2 * eLpNormRad (fun k (_ : UnitAddCircle) => c k (n k)) p haarAddCircle :=
@@ -423,33 +428,33 @@ theorem eLpNormRad_singleFrequency_le {p : ℝ} (hp : 1 ≤ p) {K : ℕ} (c : Fi
       fun k => aestronglyMeasurable_const
   -- Jensen's inequality, for each choice of signs
   have h2 : eLpNormRad (fun k (_ : UnitAddCircle) => c k (n k)) p haarAddCircle ≤
-      1 * eLpNormRad (fun k (t : UnitAddCircle) => fourier (-n k) t • trigPoly (c k) t) p
+      1 * eLpNormRad (fun k (t : UnitAddCircle) => fourier (-n k) t • circPoly (c k) t) p
         haarAddCircle := by
     refine eLpNormRad_le_of_forall hp0 (fun k => aestronglyMeasurable_const)
       (fun k => (hcont k).aestronglyMeasurable) fun ε => ?_
     have hsum : Continuous fun t : UnitAddCircle =>
-        ∑ k, SignCube.coin (ε k) • fourier (-n k) t • trigPoly (c k) t :=
+        ∑ k, SignCube.coin (ε k) • fourier (-n k) t • circPoly (c k) t :=
       continuous_finsetSum _ fun k _ => (hcont k).const_smul _
     have h3 : ∑ k, SignCube.coin (ε k) • c k (n k) =
-        ∫ t, ∑ k, SignCube.coin (ε k) • fourier (-n k) t • trigPoly (c k) t ∂haarAddCircle := by
+        ∫ t, ∑ k, SignCube.coin (ε k) • fourier (-n k) t • circPoly (c k) t ∂haarAddCircle := by
       rw [integral_finsetSum]
       · refine Finset.sum_congr rfl fun k _ => ?_
-        rw [integral_smul, integral_fourier_smul_trigPoly]
+        rw [integral_smul, integral_fourier_smul_circPoly]
       · exact fun k _ => ((hcont k).const_smul _).integrable_of_hasCompactSupport
           (HasCompactSupport.of_compactSpace _)
     rw [one_mul, h3]
     exact eLpNorm_const_integral_le hp hsum
   -- the contraction principle
-  have h4 : eLpNormRad (fun k (t : UnitAddCircle) => fourier (-n k) t • trigPoly (c k) t) p
-      haarAddCircle ≤ 2 * eLpNormRad (fun k => trigPoly (c k)) p haarAddCircle :=
-    eLpNormRad_smul_le hp (c := fun k t => fourier (-n k) t) (f := fun k => trigPoly (c k))
+  have h4 : eLpNormRad (fun k (t : UnitAddCircle) => fourier (-n k) t • circPoly (c k) t) p
+      haarAddCircle ≤ 2 * eLpNormRad (fun k => circPoly (c k)) p haarAddCircle :=
+    eLpNormRad_smul_le hp (c := fun k t => fourier (-n k) t) (f := fun k => circPoly (c k))
       (fun k t => (norm_fourier_apply_eq_one _ _).le)
       (fun k => (map_continuous (fourier (-n k))).aestronglyMeasurable)
-      fun k => (continuous_trigPoly _).aestronglyMeasurable
-  calc _ ≤ 2 * (1 * (2 * eLpNormRad (fun k => trigPoly (c k)) p haarAddCircle)) := by
+      fun k => (continuous_circPoly _).aestronglyMeasurable
+  calc _ ≤ 2 * (1 * (2 * eLpNormRad (fun k => circPoly (c k)) p haarAddCircle)) := by
         refine h1.trans ?_
         gcongr
         exact h2.trans (by gcongr)
-    _ = 4 * eLpNormRad (fun k => trigPoly (c k)) p haarAddCircle := by ring
+    _ = 4 * eLpNormRad (fun k => circPoly (c k)) p haarAddCircle := by ring
 
-end VectorValuedHarmonicAnalysis
+end HarmonicAnalysis

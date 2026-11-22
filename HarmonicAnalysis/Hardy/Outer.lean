@@ -1,6 +1,11 @@
+/-
+Copyright (c) 2026 The-Anh Vu-Le. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: The-Anh Vu-Le
+-/
 module
 
-public import VectorValuedHarmonicAnalysis.Hardy.FunctionalCalculus
+public import HarmonicAnalysis.Hardy.FunctionalCalculus
 import Mathlib.MeasureTheory.SpecificCodomains.WithLp
 
 /-!
@@ -46,14 +51,14 @@ the columns of the functions `A e_k` in `L²`, and the manifolds `M_k` decrease.
 open MeasureTheory AddCircle Filter
 open scoped Matrix Topology
 
-namespace VectorValuedHarmonicAnalysis
+namespace HarmonicAnalysis
 
 variable {l m n : Type*}
 
 /-- A matrix polynomial with given columns. -/
-private theorem exists_trigPoly_columns [Finite l] (d : l → ℤ →₀ (n → ℂ)) :
+private theorem exists_circPoly_columns [Finite l] (d : l → ℤ →₀ (n → ℂ)) :
     ∃ c : ℤ →₀ Matrix n l ℂ, (∀ k ∈ c.support, ∃ j, k ∈ (d j).support) ∧
-      ∀ t i j, trigPoly c t i j = trigPoly (d j) t i := by
+      ∀ t i j, circPoly c t i j = circPoly (d j) t i := by
   classical
   cases nonempty_fintype l
   let U : Finset ℤ := Finset.univ.biUnion fun j => (d j).support
@@ -68,9 +73,9 @@ private theorem exists_trigPoly_columns [Finite l] (d : l → ℤ →₀ (n → 
   refine ⟨c, fun k hk => ?_, fun t i j => ?_⟩
   · obtain ⟨j, -, hj⟩ := Finset.mem_biUnion.1 (Finsupp.support_onFinset_subset hk)
     exact ⟨j, hj⟩
-  · have h1 : trigPoly c t = ∑ k ∈ U, fourier k t • c k :=
+  · have h1 : circPoly c t = ∑ k ∈ U, fourier k t • c k :=
       Finsupp.sum_of_support_subset _ Finsupp.support_onFinset_subset _ fun _ _ => smul_zero _
-    have h2 : trigPoly (d j) t = ∑ k ∈ U, fourier k t • d j k :=
+    have h2 : circPoly (d j) t = ∑ k ∈ U, fourier k t • d j k :=
       Finsupp.sum_of_support_subset _ (Finset.subset_biUnion_of_mem (fun j => (d j).support)
         (Finset.mem_univ j)) _ fun _ _ => smul_zero _
     rw [h1, h2, Matrix.sum_apply, Finset.sum_apply]
@@ -348,10 +353,10 @@ private theorem tendstoLTwo_toMat {F : ℕ → l → ColLp m} {f : l → ColLp m
 
 /-- The linear combinations of the `e_k a_j`, `k ≥ r`, are products of `a` and polynomials with
 coefficients of order `≥ r`. -/
-private theorem exists_trigPoly_of_mem_span [Fintype n] {a : n → ColLp m} {r : ℤ} {y : ColLp m}
+private theorem exists_circPoly_of_mem_span [Fintype n] {a : n → ColLp m} {r : ℤ} {y : ColLp m}
     (hy : y ∈ Submodule.span ℂ {f | ∃ k : ℤ, r ≤ k ∧ ∃ j, f = shift k (a j)}) :
     ∃ d : ℤ →₀ (n → ℂ), (∀ k < r, d k = 0) ∧
-      ∀ᵐ t ∂haarAddCircle, (y t).ofLp = (toMat a t).mulVec (trigPoly d t) := by
+      ∀ᵐ t ∂haarAddCircle, (y t).ofLp = (toMat a t).mulVec (circPoly d t) := by
   classical
   induction hy using Submodule.span_induction with
   | mem f hf =>
@@ -359,12 +364,12 @@ private theorem exists_trigPoly_of_mem_span [Fintype n] {a : n → ColLp m} {r :
     refine ⟨Finsupp.single k (Pi.single j 1), fun s hs => ?_, ?_⟩
     · exact Finsupp.single_eq_of_ne (by omega)
     · filter_upwards [coeFn_shift k (a j)] with t ht
-      rw [ht, trigPoly_single, Matrix.mulVec_smul, Matrix.mulVec_single_one]
+      rw [ht, circPoly_single, Matrix.mulVec_smul, Matrix.mulVec_single_one]
       rfl
   | zero =>
     refine ⟨0, fun s _ => rfl, ?_⟩
     filter_upwards [Lp.coeFn_zero (EuclideanSpace ℂ m) 2 (haarAddCircle (T := 1))] with t ht
-    rw [ht, trigPoly_zero, Matrix.mulVec_zero]
+    rw [ht, circPoly_zero, Matrix.mulVec_zero]
     rfl
   | add f g _ _ hf hg =>
     obtain ⟨d, hd, hfd⟩ := hf
@@ -372,14 +377,14 @@ private theorem exists_trigPoly_of_mem_span [Fintype n] {a : n → ColLp m} {r :
     refine ⟨d + e, fun s hs => ?_, ?_⟩
     · rw [Finsupp.add_apply, hd s hs, he s hs, add_zero]
     · filter_upwards [Lp.coeFn_add f g, hfd, hge] with t h1 h2 h3
-      rw [h1, trigPoly_add, Matrix.mulVec_add, ← h2, ← h3]
+      rw [h1, circPoly_add, Matrix.mulVec_add, ← h2, ← h3]
       rfl
   | smul z f _ hf =>
     obtain ⟨d, hd, hfd⟩ := hf
     refine ⟨z • d, fun s hs => ?_, ?_⟩
     · rw [Finsupp.smul_apply, hd s hs, smul_zero]
     · filter_upwards [Lp.coeFn_smul z f, hfd] with t h1 h2
-      rw [h1, trigPoly_smul, Matrix.mulVec_smul, ← h2]
+      rw [h1, circPoly_smul, Matrix.mulVec_smul, ← h2]
       rfl
 
 /-- If the columns of `f` are in `M_r`, there are polynomials `c_N` with coefficients of order `≥ r`
@@ -387,12 +392,12 @@ such that `a c_N → f` in `L²`. -/
 private theorem exists_tendsto_of_mem_past [Fintype n] [Finite l] {a : n → ColLp m} {r : ℤ}
     {f : l → ColLp m} (hf : ∀ j, f j ∈ past a r) :
     ∃ c : ℕ → ℤ →₀ Matrix n l ℂ, (∀ N, ∀ k ∈ (c N).support, r ≤ k) ∧
-      TendstoLTwo (fun N t => toMat a t * trigPoly (c N) t) (toMat f) := by
+      TendstoLTwo (fun N t => toMat a t * circPoly (c N) t) (toMat f) := by
   have h1 (j : l) := mem_closure_iff_seq_limit.1 (hf j)
   choose y hy hlim using h1
-  have h2 (N : ℕ) (j : l) := exists_trigPoly_of_mem_span (hy j N)
+  have h2 (N : ℕ) (j : l) := exists_circPoly_of_mem_span (hy j N)
   choose d hd hyd using h2
-  have h3 (N : ℕ) := exists_trigPoly_columns (d N)
+  have h3 (N : ℕ) := exists_circPoly_columns (d N)
   choose c hc hcd using h3
   refine ⟨c, fun N k hk => ?_, fun i j => ?_⟩
   · obtain ⟨j, hj⟩ := hc N k hk
@@ -402,7 +407,7 @@ private theorem exists_tendsto_of_mem_past [Fintype n] [Finite l] {a : n → Col
     refine eLpNorm_congr_ae ?_
     filter_upwards [hyd N j] with t ht
     have h4 : toMat (fun j => y j N) t i j = (y j N t).ofLp i := rfl
-    have h5 : (fun o => trigPoly (c N) t o j) = trigPoly (d N j) t := funext fun o => hcd N t o j
+    have h5 : (fun o => circPoly (c N) t o j) = circPoly (d N j) t := funext fun o => hcd N t o j
     rw [h4, ht, ← h5]
     rfl
 
@@ -499,7 +504,7 @@ private theorem exists_tendsto_innovation [Fintype n] [DecidableEq n] [Fintype l
     {x : l → ColLp m} (hxa : ∀ i, x i ∈ innovation a)
     (hx : ∀ v ∈ innovation a, ∑ i, inner ℂ (x i) v • x i = v) :
     ∃ c : ℕ → ℤ →₀ Matrix n n ℂ, (∀ N, ∀ k ∈ (c N).support, 0 < k) ∧
-      TendstoLTwo (fun N t => toMat a t * (1 + trigPoly (c N) t))
+      TendstoLTwo (fun N t => toMat a t * (1 + circPoly (c N) t))
         fun t => toMat x t * matFourierCoeff (fun s => (toMat x s)ᴴ * toMat a s) 0 := by
   obtain ⟨c, hc, hlim⟩ := exists_tendsto_of_mem_past
     (f := fun j => (past a 1).starProjection (a j)) (r := 1)
@@ -510,8 +515,8 @@ private theorem exists_tendsto_innovation [Fintype n] [DecidableEq n] [Fintype l
   · rw [← eLpNorm_neg]
     refine eLpNorm_congr_ae ?_
     filter_upwards [toMat_sub_starProjection hxa hx] with t ht
-    have h1 : trigPoly (-c N) t = -trigPoly (c N) t := by
-      rw [← neg_one_smul ℂ (c N), trigPoly_smul, neg_one_smul]
+    have h1 : circPoly (-c N) t = -circPoly (c N) t := by
+      rw [← neg_one_smul ℂ (c N), circPoly_smul, neg_one_smul]
     rw [h1, Matrix.mul_add, Matrix.mul_one, Matrix.mul_neg, ← ht]
     simp only [Pi.neg_apply, Matrix.add_apply, Matrix.neg_apply, Matrix.sub_apply]
     ring
@@ -609,9 +614,9 @@ private theorem toMat_mul_conjTranspose_mul [Finite n] [Fintype l] [DecidableEq 
     ∀ᵐ t ∂haarAddCircle, toMat x t * ((toMat x t)ᴴ * toMat a t) = toMat a t := by
   obtain ⟨c, -, hlim⟩ := exists_tendsto_of_mem_past (mem_past_innovation ha hxa hx)
   obtain ⟨ns, -, hns⟩ := hlim.exists_seq_tendsto_ae
-    fun N => memLp_mul_continuous (memLp_toMat x) (continuous_trigPoly_matrix (c N))
+    fun N => memLp_mul_continuous (memLp_toMat x) (continuous_circPoly_matrix (c N))
   filter_upwards [hX, hns] with t h1 h2
-  have h3 : Tendsto (fun N => toMat x t * ((toMat x t)ᴴ * (toMat x t * trigPoly (c (ns N)) t)))
+  have h3 : Tendsto (fun N => toMat x t * ((toMat x t)ᴴ * (toMat x t * circPoly (c (ns N)) t)))
       atTop (𝓝 (toMat x t * ((toMat x t)ᴴ * toMat a t))) := by
     have h4 : Continuous fun M : Matrix m n ℂ => toMat x t * ((toMat x t)ᴴ * M) :=
       continuous_const.matrix_mul (continuous_const.matrix_mul continuous_id)
@@ -637,21 +642,21 @@ private theorem exists_tendsto_mul [Finite l] [Finite m] {r : Type*} [Fintype r]
     (hM : ∀ i j, AEStronglyMeasurable (fun t => M t i j) haarAddCircle)
     (hC : ∀ᵐ t ∂haarAddCircle, ∀ i j, ‖M t i j‖ ≤ C) {d : ℕ → ℤ →₀ Matrix n r ℂ}
     (hd : ∀ N, ∀ k ∈ (d N).support, 0 ≤ k)
-    (hlim : TendstoLTwo (fun N t => A t * trigPoly (d N) t) M) {G : UnitAddCircle → Matrix r l ℂ}
+    (hlim : TendstoLTwo (fun N t => A t * circPoly (d N) t) M) {G : UnitAddCircle → Matrix r l ℂ}
     (hG : IsHardyTwo G) :
     ∃ c : ℕ → ℤ →₀ Matrix n l ℂ, (∀ N, ∀ k ∈ (c N).support, 0 ≤ k) ∧
-      TendstoLTwo (fun N t => A t * trigPoly (c N) t) fun t => M t * G t := by
-  obtain ⟨Q, hQ, hQG⟩ := hG.exists_tendsto_trigPoly
-  choose e he het using fun K N => exists_trigPoly_mul (hd N) (hQ K)
+      TendstoLTwo (fun N t => A t * circPoly (c N) t) fun t => M t * G t := by
+  obtain ⟨Q, hQ, hQG⟩ := hG.exists_tendsto_circPoly
+  choose e he het using fun K N => exists_circPoly_mul (hd N) (hQ K)
   -- `A d_N Q_K → M Q_K` for `N → ∞`
-  have h1 (K : ℕ) : TendstoLTwo (fun N t => A t * trigPoly (e K N) t)
-      fun t => M t * trigPoly (Q K) t := by
+  have h1 (K : ℕ) : TendstoLTwo (fun N t => A t * circPoly (e K N) t)
+      fun t => M t * circPoly (Q K) t := by
     simpa only [het, Matrix.mul_assoc] using
-      hlim.mul_continuous (continuous_trigPoly_matrix (Q K)) fun N =>
-        memLp_mul_continuous hA (continuous_trigPoly_matrix (d N))
+      hlim.mul_continuous (continuous_circPoly_matrix (Q K)) fun N =>
+        memLp_mul_continuous hA (continuous_circPoly_matrix (d N))
   -- `M Q_K → M G` for `K → ∞`
   have h2 := hQG.bounded_mul hM hC
-    fun K => memLp_entry_of_continuous (continuous_trigPoly_matrix (Q K))
+    fun K => memLp_entry_of_continuous (continuous_circPoly_matrix (Q K))
   obtain ⟨ν, hν⟩ := exists_tendstoLTwo_diagonal h1 h2
   exact ⟨fun K => e K (ν K), fun K => he K (ν K), hν⟩
 
@@ -663,11 +668,11 @@ private theorem tendsto_conjTranspose_mul [Fintype m] [DecidableEq l] {r : Type*
     (hX : ∀ᵐ t ∂haarAddCircle, (X t)ᴴ * X t = 1) {d : ℕ → ℤ →₀ Matrix n r ℂ}
     {F : UnitAddCircle → Matrix m r ℂ} {G : UnitAddCircle → Matrix l r ℂ}
     (hG : ∀ᵐ t ∂haarAddCircle, (X t)ᴴ * F t = G t)
-    (hlim : TendstoLTwo (fun N t => A t * trigPoly (d N) t) F) :
-    TendstoLTwo (fun N t => (X t)ᴴ * A t * trigPoly (d N) t) G :=
+    (hlim : TendstoLTwo (fun N t => A t * circPoly (d N) t) F) :
+    TendstoLTwo (fun N t => (X t)ᴴ * A t * circPoly (d N) t) G :=
   (hlim.bounded_mul (G := fun t => (X t)ᴴ) (fun i j => (hX2 j i).star.aestronglyMeasurable)
     (norm_conjTranspose_apply_le_one hX) fun N =>
-      memLp_mul_continuous hA (continuous_trigPoly_matrix (d N))).congr_ae
+      memLp_mul_continuous hA (continuous_circPoly_matrix (d N))).congr_ae
     (fun _ => ae_of_all _ fun _ => (Matrix.mul_assoc _ _ _).symm) hG
 
 /-- If functions `B Q`, `Q` an analytic polynomial, approximate `1`, the constant coefficient `B₀`
@@ -678,12 +683,12 @@ smaller than `q`". -/
 private theorem rank_matFourierCoeff_zero [Fintype m] [DecidableEq m]
     {B : UnitAddCircle → Matrix m n ℂ} (hB : IsHardyTwo B) {d : ℕ → ℤ →₀ Matrix n m ℂ}
     (hd : ∀ N, ∀ k ∈ (d N).support, 0 ≤ k)
-    (hlim : TendstoLTwo (fun N t => B t * trigPoly (d N) t) fun _ => 1) :
+    (hlim : TendstoLTwo (fun N t => B t * circPoly (d N) t) fun _ => 1) :
     (matFourierCoeff B 0).rank = Fintype.card m := by
   have h1 := hlim.tendsto_matFourierCoeff
-    (fun N => memLp_mul_continuous hB.1 (continuous_trigPoly_matrix (d N))) 0
-  simp only [fun N => hB.matFourierCoeff_mul_zero (isHardyTwo_trigPoly (hd N)),
-    matFourierCoeff_trigPoly, matFourierCoeff_const, ite_true] at h1
+    (fun N => memLp_mul_continuous hB.1 (continuous_circPoly_matrix (d N))) 0
+  simp only [fun N => hB.matFourierCoeff_mul_zero (isHardyTwo_circPoly (hd N)),
+    matFourierCoeff_circPoly, matFourierCoeff_const, ite_true] at h1
   have h2 := range_le_of_tendsto h1
   rw [Matrix.mulVecLin_one, LinearMap.range_id, top_le_iff, LinearMap.range_eq_top] at h2
   exact Matrix.mulVec_surjective_iff_rank_eq_card.1 h2
@@ -698,8 +703,8 @@ variable [Fintype n] [DecidableEq n]
 polynomial `P`. -/
 theorem memLp_mul_one_add {A : UnitAddCircle → Matrix m n ℂ}
     (hA : ∀ i j, MemLp (fun t => A t i j) 2 haarAddCircle) (c : ℤ →₀ Matrix n n ℂ) (i : m) (j : n) :
-    MemLp (fun t => (A t * (1 + trigPoly c t) : Matrix m n ℂ) i j) 2 haarAddCircle :=
-  memLp_mul_continuous hA (continuous_const.add (continuous_trigPoly_matrix c)) i j
+    MemLp (fun t => (A t * (1 + circPoly c t) : Matrix m n ℂ) i j) 2 haarAddCircle :=
+  memLp_mul_continuous hA (continuous_const.add (continuous_circPoly_matrix c)) i j
 
 /-- Helson–Lowdenslager (1961), p. 203, (125)–(127): `A ∈ H²` is (right-)outer if the closure in
 `L²` of the functions `A (1 + P)`, where `P` is an analytic trigonometric polynomial without
@@ -707,7 +712,7 @@ constant term, contains a constant function. "Evidently the constant matrix can 
 term of `A`", so that the definition takes `Â (0)` for it. -/
 def IsOuter (A : UnitAddCircle → Matrix m n ℂ) : Prop :=
   IsHardyTwo A ∧ ∃ c : ℕ → ℤ →₀ Matrix n n ℂ, (∀ N, ∀ k ∈ (c N).support, 0 < k) ∧
-    TendstoLTwo (fun N t => A t * (1 + trigPoly (c N) t)) fun _ => matFourierCoeff A 0
+    TendstoLTwo (fun N t => A t * (1 + circPoly (c N) t)) fun _ => matFourierCoeff A 0
 
 /-- Helson–Lowdenslager (1961), §9, p. 202, and (1958), (49), (51), (52), (54), (63)–(67): the
 innovation `X` of the columns of `A`. The entries of `A` are in `L²`; `X` has at most as many
@@ -724,11 +729,11 @@ theorem exists_innovation [Fintype m] {A : UnitAddCircle → Matrix m n ℂ}
       (∀ᵐ t ∂haarAddCircle, (X t)ᴴ * X t = 1) ∧ IsHardyTwo (fun t => (X t)ᴴ * A t) ∧
       (matFourierCoeff (fun t => (X t)ᴴ * A t) 0).rank = q ∧
       (∃ c : ℕ → ℤ →₀ Matrix n n ℂ, (∀ N, ∀ k ∈ (c N).support, 0 < k) ∧
-        TendstoLTwo (fun N t => A t * (1 + trigPoly (c N) t))
+        TendstoLTwo (fun N t => A t * (1 + circPoly (c N) t))
           fun t => X t * matFourierCoeff (fun s => (X s)ᴴ * A s) 0) ∧
       (IsHardyTwo A → ∀ᵐ t ∂haarAddCircle, X t * ((X t)ᴴ * A t) = A t) ∧
       ∃ d : ℕ → ℤ →₀ Matrix n (Fin q) ℂ, (∀ N, ∀ k ∈ (d N).support, 0 ≤ k) ∧
-        TendstoLTwo (fun N t => A t * trigPoly (d N) t) X := by
+        TendstoLTwo (fun N t => A t * circPoly (d N) t) X := by
   obtain ⟨a, ha⟩ := exists_toMat hA
   obtain ⟨q, hq, x, hx, hxa, hxs⟩ := exists_orthonormal_innovation a
   have hX := conjTranspose_mul_self_eq_one hx hxa
@@ -738,7 +743,7 @@ theorem exists_innovation [Fintype m] {A : UnitAddCircle → Matrix m n ℂ}
   have hB0 := matFourierCoeff_congr_ae hB 0
   have hB2 := (isHardyTwo_conjTranspose_toMat_mul hx hxa).congr_ae hB
   obtain ⟨d, hd, hdlim⟩ := exists_tendsto_of_mem_past fun i => (hxa i).1
-  have hdA := hdlim.congr_ae (G := fun N t => A t * trigPoly (d N) t)
+  have hdA := hdlim.congr_ae (G := fun N t => A t * circPoly (d N) t)
     (fun N => ha.mono fun t ht => by rw [ht]) (ae_of_all _ fun _ => rfl)
   refine ⟨q, toMat x, hq, memLp_toMat x, hX, hB2, ?_, ?_, fun hA2 => ?_, d, hd, hdA⟩
   · rw [rank_matFourierCoeff_zero hB2 hd
@@ -761,7 +766,7 @@ theorem isOuter_conjTranspose_mul [Fintype m] [Fintype l] [DecidableEq l]
     {X : UnitAddCircle → Matrix m l ℂ} (hX2 : ∀ i j, MemLp (fun t => X t i j) 2 haarAddCircle)
     (hX : ∀ᵐ t ∂haarAddCircle, (X t)ᴴ * X t = 1) (hB : IsHardyTwo fun t => (X t)ᴴ * A t)
     {c : ℕ → ℤ →₀ Matrix n n ℂ} (hc : ∀ N, ∀ k ∈ (c N).support, 0 < k)
-    (hlim : TendstoLTwo (fun N t => A t * (1 + trigPoly (c N) t))
+    (hlim : TendstoLTwo (fun N t => A t * (1 + circPoly (c N) t))
       fun t => X t * matFourierCoeff (fun s => (X s)ᴴ * A s) 0) :
     IsOuter fun t => (X t)ᴴ * A t := by
   have h1 := hlim.bounded_mul (G := fun t => (X t)ᴴ)
@@ -785,17 +790,17 @@ approximates `e_{-1} (F - A)`, then `A (1 + e_1 Q)` approximates `F`. -/
 private theorem exists_tendsto_mul_one_add_of_dense {A : UnitAddCircle → Matrix m n ℂ}
     (hA : IsHardyTwo A) (h : ∀ G : UnitAddCircle → Matrix m n ℂ, IsHardyTwo G →
       ∃ c : ℕ → ℤ →₀ Matrix n n ℂ, (∀ N, ∀ k ∈ (c N).support, 0 ≤ k) ∧
-        TendstoLTwo (fun N t => A t * trigPoly (c N) t) G)
+        TendstoLTwo (fun N t => A t * circPoly (c N) t) G)
     {F : UnitAddCircle → Matrix m n ℂ} (hF : IsHardyTwo F)
     (h0 : matFourierCoeff F 0 = matFourierCoeff A 0) :
     ∃ c : ℕ → ℤ →₀ Matrix n n ℂ, (∀ N, ∀ k ∈ (c N).support, 0 < k) ∧
-      TendstoLTwo (fun N t => A t * (1 + trigPoly (c N) t)) F := by
+      TendstoLTwo (fun N t => A t * (1 + circPoly (c N) t)) F := by
   obtain ⟨c, hc, hlim⟩ := h _ ((hF.sub hA).fourier_neg_one_smul (by
     rw [matFourierCoeff_sub hF.isHardyOne.1 hA.isHardyOne.1, h0, sub_self]))
-  choose d hd hdt using fun N => exists_trigPoly_fourier_smul (hc N)
+  choose d hd hdt using fun N => exists_circPoly_fourier_smul (hc N)
   have h1 := hlim.mul_continuous (G := fun t => fourier 1 t • (1 : Matrix n n ℂ))
     ((fourier 1).continuous.smul continuous_const) fun N =>
-      memLp_mul_continuous hA.1 (continuous_trigPoly_matrix (c N))
+      memLp_mul_continuous hA.1 (continuous_circPoly_matrix (c N))
   refine ⟨d, hd, fun i j => (h1 i j).congr fun N => ?_⟩
   congr 1
   ext t
@@ -811,7 +816,7 @@ same constant term as `A`, and so `A` is outer". -/
 theorem isOuter_of_dense {A : UnitAddCircle → Matrix m n ℂ} (hA : IsHardyTwo A)
     (h : ∀ G : UnitAddCircle → Matrix m n ℂ, IsHardyTwo G →
       ∃ c : ℕ → ℤ →₀ Matrix n n ℂ, (∀ N, ∀ k ∈ (c N).support, 0 ≤ k) ∧
-        TendstoLTwo (fun N t => A t * trigPoly (c N) t) G) : IsOuter A :=
+        TendstoLTwo (fun N t => A t * circPoly (c N) t) G) : IsOuter A :=
   ⟨hA, exists_tendsto_mul_one_add_of_dense hA h (isHardyTwo_const _)
     (by rw [matFourierCoeff_const, ite_eq_left rfl])⟩
 
@@ -862,12 +867,12 @@ private theorem IsOuter.matFourierCoeff_mul_eq_zero [Fintype m] [Finite l]
       have h4 := h2 p
       rw [matFourierCoeff_const, ite_self] at h4
       refine tendsto_nhds_unique (tendsto_const_nhds.congr fun N => ?_) h4
-      obtain ⟨d, hd, hd0, hdt⟩ := exists_trigPoly_eq_one_add_mul (hc N) (1 : Matrix n n ℂ)
+      obtain ⟨d, hd, hd0, hdt⟩ := exists_circPoly_eq_one_add_mul (hc N) (1 : Matrix n n ℂ)
       simp only [Matrix.mul_one] at hdt
       simp only [← hdt]
-      rw [matFourierCoeff_mul hZ (isHardyTwo_trigPoly hd), Finset.sum_range_succ,
+      rw [matFourierCoeff_mul hZ (isHardyTwo_circPoly hd), Finset.sum_range_succ,
         Finset.sum_eq_zero fun q hq => by rw [ih q (Finset.mem_range.1 hq), Matrix.zero_mul],
-        zero_add, sub_self, matFourierCoeff_trigPoly, hd0, Matrix.mul_one]
+        zero_add, sub_self, matFourierCoeff_circPoly, hd0, Matrix.mul_one]
   rcases lt_or_ge k 0 with hk | hk
   · exact hZ.2 k hk
   · have h5 := h3 k.toNat
@@ -906,9 +911,9 @@ private theorem IsOuter.exists_tendsto_matFourierCoeff_mul [Finite l] [Finite m]
     {A : UnitAddCircle → Matrix m n ℂ} (hA : IsOuter A) {G : UnitAddCircle → Matrix n l ℂ}
     (hG : IsHardyTwo G) :
     ∃ c : ℕ → ℤ →₀ Matrix n l ℂ, (∀ N, ∀ k ∈ (c N).support, 0 ≤ k) ∧
-      TendstoLTwo (fun N t => A t * trigPoly (c N) t) fun t => matFourierCoeff A 0 * G t := by
+      TendstoLTwo (fun N t => A t * circPoly (c N) t) fun t => matFourierCoeff A 0 * G t := by
   obtain ⟨hA2, p, hp, hlim⟩ := hA
-  choose d hd _ hdt using fun N => exists_trigPoly_eq_one_add_mul (hp N) (1 : Matrix n n ℂ)
+  choose d hd _ hdt using fun N => exists_circPoly_eq_one_add_mul (hp N) (1 : Matrix n n ℂ)
   simp only [Matrix.mul_one] at hdt
   simp only [← hdt] at hlim
   obtain ⟨C, hC⟩ := exists_bound_of_continuous
@@ -925,12 +930,12 @@ takes the place of the right inverse of `Â (0)`, and `F = Â (0) (D F)`. -/
 theorem IsOuter.exists_tendsto_iff [Fintype l] [Finite m] {A : UnitAddCircle → Matrix m n ℂ}
     (hA : IsOuter A) {F : UnitAddCircle → Matrix m l ℂ} (hF : IsHardyTwo F) :
     (∃ c : ℕ → ℤ →₀ Matrix n l ℂ, (∀ N, ∀ k ∈ (c N).support, 0 ≤ k) ∧
-        TendstoLTwo (fun N t => A t * trigPoly (c N) t) F) ↔
+        TendstoLTwo (fun N t => A t * circPoly (c N) t) F) ↔
       ∀ᵐ t ∂haarAddCircle, LinearMap.range (F t).mulVecLin ≤
         LinearMap.range (matFourierCoeff A 0).mulVecLin := by
   refine ⟨fun ⟨c, _, hlim⟩ => ?_, fun h => ?_⟩
   · obtain ⟨ns, -, hns⟩ := hlim.exists_seq_tendsto_ae
-      fun N => memLp_mul_continuous hA.1.1 (continuous_trigPoly_matrix (c N))
+      fun N => memLp_mul_continuous hA.1.1 (continuous_circPoly_matrix (c N))
     filter_upwards [hns, hA.range_eq] with t h1 h2
     exact h2 ▸ range_le_of_tendsto h1
   · cases nonempty_fintype m
@@ -946,7 +951,7 @@ theorem IsOuter.exists_tendsto_one [Fintype m] [DecidableEq m]
     {A : UnitAddCircle → Matrix m n ℂ} (hA : IsOuter A)
     (h0 : (matFourierCoeff A 0).rank = Fintype.card m) :
     ∃ c : ℕ → ℤ →₀ Matrix n m ℂ, (∀ N, ∀ k ∈ (c N).support, 0 ≤ k) ∧
-      TendstoLTwo (fun N t => A t * trigPoly (c N) t) fun _ => 1 := by
+      TendstoLTwo (fun N t => A t * circPoly (c N) t) fun _ => 1 := by
   refine (hA.exists_tendsto_iff (isHardyTwo_const 1)).2
     (ae_of_all _ fun t => le_top.trans_eq (Eq.symm ?_))
   exact LinearMap.range_eq_top.2 (Matrix.mulVec_surjective_iff_rank_eq_card.2 h0)
@@ -964,10 +969,10 @@ theorem IsOuter.isHardyTwo_of_bounded_mul [Fintype m]
   classical
   obtain ⟨c, hc, hlim⟩ := hB.exists_tendsto_one h0
   have h1 := hlim.bounded_mul hQ hC fun N =>
-    memLp_mul_continuous hB.1.1 (continuous_trigPoly_matrix (c N))
+    memLp_mul_continuous hB.1.1 (continuous_circPoly_matrix (c N))
   simp only [Matrix.mul_one] at h1
   refine h1.isHardyTwo fun N => ?_
-  obtain ⟨D, hD⟩ := exists_bound_of_continuous (continuous_trigPoly_matrix (c N))
-  simpa only [Matrix.mul_assoc] using hQB.mul_bounded (isHardyTwo_trigPoly (hc N)) (ae_of_all _ hD)
+  obtain ⟨D, hD⟩ := exists_bound_of_continuous (continuous_circPoly_matrix (c N))
+  simpa only [Matrix.mul_assoc] using hQB.mul_bounded (isHardyTwo_circPoly (hc N)) (ae_of_all _ hD)
 
-end VectorValuedHarmonicAnalysis
+end HarmonicAnalysis

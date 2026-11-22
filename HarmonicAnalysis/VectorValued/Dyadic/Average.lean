@@ -1,6 +1,11 @@
+/-
+Copyright (c) 2026 The-Anh Vu-Le. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: The-Anh Vu-Le
+-/
 module
 
-public import VectorValuedHarmonicAnalysis.Dyadic.Shift
+public import HarmonicAnalysis.VectorValued.Dyadic.Shift
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.Periodic
 import HarmonicAnalysis.FourierMultiplier.Density
 import Mathlib.MeasureTheory.Group.Integral
@@ -39,7 +44,7 @@ needed, the other dilations are reached by the dilation of `f`.
 open MeasureTheory BanachProbability
 open scoped ENNReal
 
-namespace VectorValuedHarmonicAnalysis
+namespace HarmonicAnalysis
 
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
 
@@ -508,4 +513,4 @@ theorem eLpNorm_sum_dilateConv_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (hβ 
           (2 * β ^ 2 * eLpNorm f (ENNReal.ofReal p) volume) := by ring
     _ = 2 * β ^ 2 * eLpNorm f (ENNReal.ofReal p) volume := by rw [hmul, one_mul]
 
-end VectorValuedHarmonicAnalysis
+end HarmonicAnalysis

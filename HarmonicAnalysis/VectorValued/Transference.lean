@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 The-Anh Vu-Le. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: The-Anh Vu-Le
+-/
 module
 
 public import Mathlib.Analysis.Fourier.AddCircle
@@ -13,13 +18,13 @@ import Mathlib.MeasureTheory.Function.Floor
 # Transference of Fourier multipliers from the line to the circle
 
 `𝕋 = ℝ / ℤ` with its normalised Haar measure, `e_n (t) = e^{2πi n t}`. The trigonometric polynomial
-with coefficients `a_n` in a complex Banach space is `Σ_n a_n e_n` (`trigPoly a`).
+with coefficients `a_n` in a complex Banach space is `Σ_n a_n e_n` (`circPoly a`).
 
 Let `X`, `Y` be complex Banach spaces, `1 < p < ∞`, and let `m : ℝ → 𝓛 (X, Y)` be bounded and
 strongly measurable, with `m (·) x` continuous at the integers for all `x`. If `T_m h = (m ĥ)ˇ` is
 bounded from `L^p (ℝ; X)` to `L^p (ℝ; Y)` with norm `C` (on Schwartz functions), then
 `‖Σ_k m (k) a_k e_k‖_{L^p (𝕋; Y)} ≤ C ‖Σ_k a_k e_k‖_{L^p (𝕋; X)}` for all trigonometric polynomials
-(`eLpNorm_trigPoly_multiplier_le`).
+(`eLpNorm_circPoly_multiplier_le`).
 
 Source: Hytönen–van Neerven–Veraar–Weis (HNVW), *Analysis in Banach spaces I* (2016), Section 5.7.a,
 pp. 458–460, for the dimension `d = 1`: Proposition 5.7.1, Lemma 5.7.2
@@ -28,7 +33,7 @@ book's proofs: the pairing of `T_m (φ (ε ·) f)` with `ψ (ε ·) g` for Schwa
 (5.58), periodisation and Riemann sums, and then Gaussians `φ`, `ψ`. In the book the integers are
 Lebesgue points of `m (·) x`; here they are points of continuity. The duality at the end is
 Proposition 1.3.1, pp. 37–38 (simple functions with values in `Y*` norm `L^p (𝕋; Y)`), and the
-density of the trigonometric polynomials (`eLpNorm_le_of_forall_trigPoly`). The multiplier norm on
+density of the trigonometric polynomials (`eLpNorm_le_of_forall_circPoly`). The multiplier norm on
 the line is invariant under dilations (`eLpNorm_fourierInv_multiplier_dilate_le`), which is used in
 (5.61), p. 465.
 
@@ -44,32 +49,32 @@ inequality without duality. This is the argument of HNVW I, Proposition 5.2.5 an
 open MeasureTheory AddCircle Filter
 open scoped ENNReal FourierTransform Topology SchwartzMap
 
-namespace VectorValuedHarmonicAnalysis
+namespace HarmonicAnalysis
 
 /-! ### Trigonometric polynomials -/
 
 /-- The trigonometric polynomial `Σ_n c_n e_n` on `𝕋 = ℝ / ℤ`. -/
-noncomputable def trigPoly {V : Type*} [AddCommMonoid V] [Module ℂ V] (c : ℤ →₀ V)
+noncomputable def circPoly {V : Type*} [AddCommMonoid V] [Module ℂ V] (c : ℤ →₀ V)
     (t : UnitAddCircle) : V :=
   c.sum fun n x => fourier n t • x
 
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace ℂ X]
 
 /-- Trigonometric polynomials are continuous. -/
-theorem continuous_trigPoly (c : ℤ →₀ X) : Continuous (trigPoly c) := by
-  unfold trigPoly Finsupp.sum
+theorem continuous_circPoly (c : ℤ →₀ X) : Continuous (circPoly c) := by
+  unfold circPoly Finsupp.sum
   exact continuous_finsetSum _ fun n _ => (map_continuous (fourier n)).smul continuous_const
 
-private theorem memLp_trigPoly (c : ℤ →₀ X) (r : ℝ≥0∞) : MemLp (trigPoly c) r haarAddCircle :=
-  (continuous_trigPoly c).memLp_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
+private theorem memLp_circPoly (c : ℤ →₀ X) (r : ℝ≥0∞) : MemLp (circPoly c) r haarAddCircle :=
+  (continuous_circPoly c).memLp_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
 
 /-- The characters `e_k` have modulus `1`. -/
 theorem norm_fourier_apply_eq_one (k : ℤ) (t : UnitAddCircle) : ‖fourier k t‖ = 1 := by
   rw [fourier_apply, Circle.norm_coe]
 
 /-- The Fourier coefficients of a trigonometric polynomial. -/
-theorem integral_fourier_smul_trigPoly [CompleteSpace X] (c : ℤ →₀ X) (n : ℤ) :
-    ∫ t, fourier (-n) t • trigPoly c t ∂haarAddCircle = c n := by
+theorem integral_fourier_smul_circPoly [CompleteSpace X] (c : ℤ →₀ X) (n : ℤ) :
+    ∫ t, fourier (-n) t • circPoly c t ∂haarAddCircle = c n := by
   have hi : ∀ m : ℤ, Integrable (fun t : UnitAddCircle => fourier (-n) t • fourier m t • c m)
       haarAddCircle := fun m => ((map_continuous (fourier (-n))).smul
     ((map_continuous (fourier m)).smul continuous_const)).integrable_of_hasCompactSupport
@@ -82,7 +87,7 @@ theorem integral_fourier_smul_trigPoly [CompleteSpace X] (c : ℤ →₀ X) (n :
     simp only [smul_eq_mul] at h
     rw [integral_smul_const, h]
     split_ifs <;> simp
-  simp only [trigPoly, Finsupp.sum, Finset.smul_sum]
+  simp only [circPoly, Finsupp.sum, Finset.smul_sum]
   rw [integral_finsetSum _ fun m _ => hi m, Finset.sum_congr rfl fun m _ => hterm m,
     Finset.sum_ite_eq]
   split_ifs with h
@@ -367,10 +372,10 @@ private theorem integral_fourierInv_dual [CompleteSpace Y] {u : ℝ → Y} {v : 
   exact h
 
 private theorem integrable_dilate_smul (φ : 𝓢(ℝ, ℂ)) {ε : ℝ} (hε : 0 < ε) (a : ℤ →₀ X) :
-    Integrable fun x : ℝ => φ (ε * x) • trigPoly a (x : UnitAddCircle) := by
-  obtain ⟨C, hC⟩ := (isCompact_range (continuous_trigPoly a)).isBounded.exists_norm_le
-  have hc : Continuous fun x : ℝ => trigPoly a (x : UnitAddCircle) :=
-    (continuous_trigPoly a).comp (AddCircle.continuous_mk' 1)
+    Integrable fun x : ℝ => φ (ε * x) • circPoly a (x : UnitAddCircle) := by
+  obtain ⟨C, hC⟩ := (isCompact_range (continuous_circPoly a)).isBounded.exists_norm_le
+  have hc : Continuous fun x : ℝ => circPoly a (x : UnitAddCircle) :=
+    (continuous_circPoly a).comp (AddCircle.continuous_mk' 1)
   exact (φ.integrable.comp_mul_left' hε.ne').smul_bdd C hc.aestronglyMeasurable
     (ae_of_all _ fun x => hC _ ⟨_, rfl⟩)
 
@@ -396,7 +401,7 @@ private theorem integral_exp_dilate (φ : 𝓢(ℝ, ℂ)) {ε : ℝ} (hε : 0 < 
 /-- `(φ (ε ·) f)^ = Σ_k a_k ε⁻¹ φ̂ ((· − k) / ε)`, for `f = Σ_k a_k e_k`. -/
 private theorem fourier_dilate_smul [CompleteSpace X] (φ : 𝓢(ℝ, ℂ)) {ε : ℝ} (hε : 0 < ε)
     (a : ℤ →₀ X) (ξ : ℝ) :
-    𝓕 (fun x : ℝ => φ (ε * x) • trigPoly a (x : UnitAddCircle)) ξ =
+    𝓕 (fun x : ℝ => φ (ε * x) • circPoly a (x : UnitAddCircle)) ξ =
       a.sum fun k y => (((ε⁻¹ : ℝ) : ℂ) * 𝓕 φ (ε⁻¹ * (ξ - k))) • y := by
   have hi : ∀ k : ℤ, Integrable fun x : ℝ =>
       Complex.exp (((-2 * Real.pi * x * ξ : ℝ) : ℂ) * Complex.I) *
@@ -409,7 +414,7 @@ private theorem fourier_dilate_smul [CompleteSpace X] (φ : 𝓢(ℝ, ℂ)) {ε 
         Complex.exp (((-2 * Real.pi * x * ξ : ℝ) : ℂ) * Complex.I)).aestronglyMeasurable
       (ae_of_all _ fun x => (Complex.norm_exp_ofReal_mul_I _).le)
   rw [Real.fourier_real_eq_integral_exp_smul]
-  simp only [trigPoly, Finsupp.sum, Finset.smul_sum, smul_smul]
+  simp only [circPoly, Finsupp.sum, Finset.smul_sum, smul_smul]
   rw [integral_finsetSum _ fun k _ => (hi k).smul_const (a k)]
   refine Finset.sum_congr rfl fun k _ => ?_
   rw [integral_smul_const, integral_exp_dilate φ hε]
@@ -417,7 +422,7 @@ private theorem fourier_dilate_smul [CompleteSpace X] (φ : 𝓢(ℝ, ℂ)) {ε 
 /-- `(ψ (ε ·) g)ˇ = Σ_ℓ b_ℓ ε⁻¹ ψ̌ ((· + ℓ) / ε)`, for `g = Σ_ℓ b_ℓ e_ℓ`. -/
 private theorem fourierInv_dilate_smul [CompleteSpace X] (ψ : 𝓢(ℝ, ℂ)) {ε : ℝ} (hε : 0 < ε)
     (b : ℤ →₀ X) (ξ : ℝ) :
-    𝓕⁻ (fun x : ℝ => ψ (ε * x) • trigPoly b (x : UnitAddCircle)) ξ =
+    𝓕⁻ (fun x : ℝ => ψ (ε * x) • circPoly b (x : UnitAddCircle)) ξ =
       b.sum fun l y => (((ε⁻¹ : ℝ) : ℂ) * 𝓕⁻ ψ (ε⁻¹ * (ξ + l))) • y := by
   rw [Real.fourierInv_eq_fourier_neg, fourier_dilate_smul ψ hε]
   refine Finsupp.sum_congr fun l _ => ?_
@@ -509,17 +514,17 @@ private theorem integral_fourier_mul_fourier (k l : ℤ) :
   simp only [mul_comm (fourier k _), h, eq_comm]
 
 /-- The coefficients of the multiplier transform `Σ_k m (k) a_k e_k` of `Σ_k a_k e_k`. -/
-private theorem integral_trigPoly_multiplier (m : ℝ → X →L[ℂ] Y) (a : ℤ →₀ X)
+private theorem integral_circPoly_multiplier (m : ℝ → X →L[ℂ] Y) (a : ℤ →₀ X)
     (b : ℤ →₀ (Y →L[ℂ] ℂ)) :
-    ∫ t, trigPoly b t (a.sum fun k y => fourier k t • m k y) ∂haarAddCircle =
+    ∫ t, circPoly b t (a.sum fun k y => fourier k t • m k y) ∂haarAddCircle =
       ∑ l ∈ b.support, ∑ k ∈ a.support, if k = -l then b l (m k (a k)) else 0 := by
   have hi : ∀ k l : ℤ, Integrable (fun t : UnitAddCircle =>
       (fourier k t * fourier l t) * b l (m k (a k))) haarAddCircle := fun k l =>
     (((map_continuous (fourier k)).mul (map_continuous (fourier l))).mul
       continuous_const).integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
-  have h1 : ∀ t, trigPoly b t (a.sum fun k y => fourier k t • m k y) =
+  have h1 : ∀ t, circPoly b t (a.sum fun k y => fourier k t • m k y) =
       ∑ l ∈ b.support, ∑ k ∈ a.support, (fourier k t * fourier l t) * b l (m k (a k)) := fun t => by
-    rw [trigPoly, Finsupp.sum, sum_apply]
+    rw [circPoly, Finsupp.sum, sum_apply]
     refine Finset.sum_congr rfl fun l _ => ?_
     rw [Finsupp.sum, map_sum]
     refine Finset.sum_congr rfl fun k _ => ?_
@@ -536,7 +541,7 @@ private theorem integral_trigPoly_multiplier (m : ℝ → X →L[ℂ] Y) (a : �
 /-- `m (φ (ε ·) f)^ = Σ_k ε⁻¹ φ̂ ((· − k) / ε) m a_k`. -/
 private theorem multiplier_fourier_dilate [CompleteSpace X] (m : ℝ → X →L[ℂ] Y) (φ : 𝓢(ℝ, ℂ))
     {ε : ℝ} (hε : 0 < ε) (a : ℤ →₀ X) (ξ : ℝ) :
-    m ξ (𝓕 (fun y : ℝ => φ (ε * y) • trigPoly a (y : UnitAddCircle)) ξ) =
+    m ξ (𝓕 (fun y : ℝ => φ (ε * y) • circPoly a (y : UnitAddCircle)) ξ) =
       ∑ k ∈ a.support, (((ε⁻¹ : ℝ) : ℂ) * 𝓕 φ (ε⁻¹ * (ξ - k))) • m ξ (a k) := by
   rw [fourier_dilate_smul φ hε, Finsupp.sum, map_sum]
   exact Finset.sum_congr rfl fun k _ => map_smul _ _ _
@@ -545,7 +550,7 @@ private theorem multiplier_fourier_dilate [CompleteSpace X] (m : ℝ → X →L[
 private theorem integrable_multiplier [CompleteSpace X] {m : ℝ → X →L[ℂ] Y} {M : ℝ}
     (hM : ∀ ξ, ‖m ξ‖ ≤ M) (hm : ∀ x, AEStronglyMeasurable (fun ξ => m ξ x) volume) (φ : 𝓢(ℝ, ℂ))
     {ε : ℝ} (hε : 0 < ε) (a : ℤ →₀ X) : Integrable fun ξ =>
-      m ξ (𝓕 (fun y : ℝ => φ (ε * y) • trigPoly a (y : UnitAddCircle)) ξ) := by
+      m ξ (𝓕 (fun y : ℝ => φ (ε * y) • circPoly a (y : UnitAddCircle)) ξ) := by
   simp only [multiplier_fourier_dilate m φ hε a]
   exact integrable_finsetSum _ fun k _ => ((integrable_shift (𝓕 φ) hε k).const_mul _).smul_bdd
     (M * ‖a k‖) (hm (a k)) (ae_of_all _ fun ξ => (m ξ).le_of_opNorm_le (hM ξ) _)
@@ -560,10 +565,10 @@ theorem tendsto_integral_dilate_multiplier [CompleteSpace X] [CompleteSpace Y] {
     (hm : ∀ x, AEStronglyMeasurable (fun ξ => m ξ x) volume)
     (hc : ∀ (k : ℤ) (x : X), ContinuousAt (fun ξ => m ξ x) k) (a : ℤ →₀ X)
     (b : ℤ →₀ (Y →L[ℂ] ℂ)) :
-    Tendsto (fun ε : ℝ => (ε : ℂ) * ∫ x : ℝ, (ψ (ε * x) • trigPoly b (x : UnitAddCircle))
-        (𝓕⁻ (fun ξ => m ξ (𝓕 (fun y : ℝ => φ (ε * y) • trigPoly a (y : UnitAddCircle)) ξ)) x))
+    Tendsto (fun ε : ℝ => (ε : ℂ) * ∫ x : ℝ, (ψ (ε * x) • circPoly b (x : UnitAddCircle))
+        (𝓕⁻ (fun ξ => m ξ (𝓕 (fun y : ℝ => φ (ε * y) • circPoly a (y : UnitAddCircle)) ξ)) x))
       (𝓝[>] 0)
-      (𝓝 (∫ t, trigPoly b t (a.sum fun k y => fourier k t • m k y) ∂haarAddCircle)) := by
+      (𝓝 (∫ t, circPoly b t (a.sum fun k y => fourier k t • m k y) ∂haarAddCircle)) := by
   have hbm : ∀ k l, AEStronglyMeasurable (fun ξ => b l (m ξ (a k))) volume := fun k l =>
     (b l).continuous.comp_aestronglyMeasurable (hm (a k))
   have hbM : ∀ k l ξ, ‖b l (m ξ (a k))‖ ≤ ‖b l‖ * (M * ‖a k‖) := fun k l ξ =>
@@ -574,15 +579,15 @@ theorem tendsto_integral_dilate_multiplier [CompleteSpace X] [CompleteSpace Y] {
       (𝓝 (if k = -l then b l (m k (a k)) else 0)) := fun k l =>
     tendsto_integral_mul_smul h (hbm k l) (hbM k l) k (-l)
       ((b l).continuous.continuousAt.comp (hc k (a k)))
-  rw [integral_trigPoly_multiplier]
+  rw [integral_circPoly_multiplier]
   refine (tendsto_finsetSum _ fun l _ => tendsto_finsetSum _ fun k _ => hterm k l).congr' ?_
   filter_upwards [self_mem_nhdsWithin] with ε hε
   have hε' : (0 : ℝ) < ε := hε
   -- the Fourier transforms
   rw [integral_fourierInv_dual (integrable_multiplier hM hm φ hε' a)
     (integrable_dilate_smul ψ hε' b), ← integral_const_mul]
-  have hprod : ∀ ξ, (ε : ℂ) * 𝓕⁻ (fun x : ℝ => ψ (ε * x) • trigPoly b (x : UnitAddCircle)) ξ
-      (m ξ (𝓕 (fun y : ℝ => φ (ε * y) • trigPoly a (y : UnitAddCircle)) ξ)) =
+  have hprod : ∀ ξ, (ε : ℂ) * 𝓕⁻ (fun x : ℝ => ψ (ε * x) • circPoly b (x : UnitAddCircle)) ξ
+      (m ξ (𝓕 (fun y : ℝ => φ (ε * y) • circPoly a (y : UnitAddCircle)) ξ)) =
       ∑ l ∈ b.support, ∑ k ∈ a.support, ((ε⁻¹ : ℝ) : ℂ) *
         ((𝓕 φ (ε⁻¹ * (ξ - k)) * 𝓕⁻ ψ (ε⁻¹ * (ξ - (-l : ℤ)))) • b l (m ξ (a k))) := fun ξ => by
     have hε0 : (ε : ℂ) ≠ 0 := by simpa using hε'.ne'
@@ -639,9 +644,9 @@ private theorem integrable_dual {α : Type*} [MeasurableSpace α] {μ : Measure 
       (ENNReal.mul_lt_top hu.eLpNorm_lt_top hg.eLpNorm_lt_top)⟩
 
 /-- Trigonometric polynomials are dense in `L^q (𝕋)`, `1 ≤ q < ∞`. -/
-private theorem exists_trigPoly_eLpNorm_sub_le_scalar {q : ℝ≥0∞} (hq1 : 1 ≤ q) (hq : q ≠ ∞)
+private theorem exists_circPoly_eLpNorm_sub_le_scalar {q : ℝ≥0∞} (hq1 : 1 ≤ q) (hq : q ≠ ∞)
     {f : UnitAddCircle → ℂ} (hf : MemLp f q haarAddCircle) {δ : ℝ≥0∞} (hδ : δ ≠ 0) :
-    ∃ c : ℤ →₀ ℂ, eLpNorm (f - trigPoly c) q haarAddCircle ≤ δ := by
+    ∃ c : ℤ →₀ ℂ, eLpNorm (f - circPoly c) q haarAddCircle ≤ δ := by
   have : Fact (1 ≤ q) := ⟨hq1⟩
   have hmem : hf.toLp f ∈ closure
       (Submodule.span ℂ (Set.range (@fourierLp 1 _ q _)) : Set (Lp ℂ q haarAddCircle)) := by
@@ -655,10 +660,10 @@ private theorem exists_trigPoly_eLpNorm_sub_le_scalar {q : ℝ≥0∞} (hq1 : 1 
     rw [Finsupp.sum, Finsupp.sum, map_sum]
     exact Finset.sum_congr rfl fun n _ => (map_smul _ _ _).symm
   have h2 : ((c.sum fun n x => x • @fourierLp 1 _ q _ n : Lp ℂ q haarAddCircle) :
-      UnitAddCircle → ℂ) =ᵐ[haarAddCircle] trigPoly c := by
+      UnitAddCircle → ℂ) =ᵐ[haarAddCircle] circPoly c := by
     rw [h1]
     refine (ContinuousMap.coeFn_toLp haarAddCircle _).trans (ae_of_all _ fun t => ?_)
-    simp only [trigPoly, Finsupp.sum, ContinuousMap.sum_apply, ContinuousMap.smul_apply,
+    simp only [circPoly, Finsupp.sum, ContinuousMap.sum_apply, ContinuousMap.smul_apply,
       smul_eq_mul, mul_comm]
   rw [Lp.edist_def] at hdist
   refine le_trans (le_of_eq ?_) hdist.le
@@ -667,40 +672,40 @@ private theorem exists_trigPoly_eLpNorm_sub_le_scalar {q : ℝ≥0∞} (hq1 : 1 
   simp only [Pi.sub_apply, ht1, ht2]
 
 /-- Vector-valued trigonometric polynomials are dense in `L^q (𝕋; V)`, `1 ≤ q < ∞`. -/
-private theorem exists_trigPoly_eLpNorm_sub_le {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
+private theorem exists_circPoly_eLpNorm_sub_le {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
     {q : ℝ≥0∞} (hq1 : 1 ≤ q) (hq : q ≠ ∞) {g : UnitAddCircle → V} (hg : MemLp g q haarAddCircle)
     {δ : ℝ≥0∞} (hδ : δ ≠ 0) :
-    ∃ c : ℤ →₀ V, eLpNorm (g - trigPoly c) q haarAddCircle ≤ δ := by
+    ∃ c : ℤ →₀ V, eLpNorm (g - circPoly c) q haarAddCircle ≤ δ := by
   suffices H : ∃ h : UnitAddCircle → V, eLpNorm (g - h) q haarAddCircle ≤ δ ∧
-      ∃ c : ℤ →₀ V, h = trigPoly c by
+      ∃ c : ℤ →₀ V, h = circPoly c by
     obtain ⟨_, hle, c, rfl⟩ := H
     exact ⟨c, hle⟩
-  refine hg.induction_dense hq (fun g => ∃ c : ℤ →₀ V, g = trigPoly c)
+  refine hg.induction_dense hq (fun g => ∃ c : ℤ →₀ V, g = circPoly c)
     (fun v s hs _ ε hε => ?_) (fun f g hf hg => ?_) hδ
   · have hη : ε / (‖v‖ₑ + 1) ≠ 0 := ENNReal.div_ne_zero.2 ⟨hε, by simp⟩
-    obtain ⟨c, hc⟩ := exists_trigPoly_eLpNorm_sub_le_scalar hq1 hq
+    obtain ⟨c, hc⟩ := exists_circPoly_eLpNorm_sub_le_scalar hq1 hq
       (memLp_indicator_const q hs.nullMeasurableSet (1 : ℂ) (Or.inr (measure_ne_top _ _))) hη
-    refine ⟨trigPoly (c.mapRange (fun a => a • v) (zero_smul ℂ v)), ?_, _, rfl⟩
-    have h1 : ∀ t, trigPoly (c.mapRange (fun a => a • v) (zero_smul ℂ v)) t = trigPoly c t • v :=
+    refine ⟨circPoly (c.mapRange (fun a => a • v) (zero_smul ℂ v)), ?_, _, rfl⟩
+    have h1 : ∀ t, circPoly (c.mapRange (fun a => a • v) (zero_smul ℂ v)) t = circPoly c t • v :=
       fun t => by
-      rw [trigPoly, Finsupp.sum_mapRange_index fun n => smul_zero _, trigPoly, Finsupp.sum,
+      rw [circPoly, Finsupp.sum_mapRange_index fun n => smul_zero _, circPoly, Finsupp.sum,
         Finsupp.sum, Finset.sum_smul]
       exact Finset.sum_congr rfl fun n _ => by rw [smul_smul, smul_eq_mul]
-    have h2 : ∀ t, ‖(trigPoly (c.mapRange (fun a => a • v) (zero_smul ℂ v)) -
+    have h2 : ∀ t, ‖(circPoly (c.mapRange (fun a => a • v) (zero_smul ℂ v)) -
         s.indicator fun _ => v) t‖ₑ ≤
-          ‖v‖ₑ * ‖(s.indicator (fun _ => (1 : ℂ)) - trigPoly c) t‖ₑ := by
+          ‖v‖ₑ * ‖(s.indicator (fun _ => (1 : ℂ)) - circPoly c) t‖ₑ := by
       intro t
-      have h3 : (trigPoly (c.mapRange (fun a => a • v) (zero_smul ℂ v)) -
+      have h3 : (circPoly (c.mapRange (fun a => a • v) (zero_smul ℂ v)) -
           s.indicator fun _ => v) t =
-          -((s.indicator (fun _ => (1 : ℂ)) - trigPoly c) t • v) := by
+          -((s.indicator (fun _ => (1 : ℂ)) - circPoly c) t • v) := by
         classical
         rw [Pi.sub_apply, Pi.sub_apply, h1, sub_smul, neg_sub]
         congr 1
         simp only [Set.indicator_apply]
         split_ifs <;> simp
       rw [h3, enorm_neg, enorm_smul, mul_comm]
-    calc _ ≤ ‖v‖ₑ * eLpNorm (s.indicator (fun _ => (1 : ℂ)) - trigPoly c) q haarAddCircle :=
-          eLpNorm_le_mul_eLpNorm_of_ae_le_mul'' q ((continuous_trigPoly _).aestronglyMeasurable.sub
+    calc _ ≤ ‖v‖ₑ * eLpNorm (s.indicator (fun _ => (1 : ℂ)) - circPoly c) q haarAddCircle :=
+          eLpNorm_le_mul_eLpNorm_of_ae_le_mul'' q ((continuous_circPoly _).aestronglyMeasurable.sub
             (aestronglyMeasurable_const.indicator hs)) (ae_of_all _ h2)
       _ ≤ (‖v‖ₑ + 1) * (ε / (‖v‖ₑ + 1)) := by
           gcongr
@@ -709,7 +714,7 @@ private theorem exists_trigPoly_eLpNorm_sub_le {V : Type*} [NormedAddCommGroup V
   · obtain ⟨c, rfl⟩ := hf
     obtain ⟨d, rfl⟩ := hg
     refine ⟨c + d, funext fun t => ?_⟩
-    simp only [Pi.add_apply, trigPoly]
+    simp only [Pi.add_apply, circPoly]
     rw [Finsupp.sum_add_index' (fun n => smul_zero _) fun n x y => smul_add _ _ _]
 
 /-- HNVW I, proof of Proposition 1.3.1: simple functions with values in `Y*` norm the simple
@@ -766,10 +771,10 @@ private theorem eLpNorm_simpleFunc_le {α : Type*} [MeasurableSpace α] {μ : Me
 
 /-- An inequality for the pairings with all trigonometric polynomials with values in `Y*` holds for
 the pairings with all `g ∈ L^q (𝕋; Y*)`, by density. -/
-private theorem enorm_integral_le_of_forall_trigPoly {p q : ℝ} (hpq : p.HolderConjugate q)
+private theorem enorm_integral_le_of_forall_circPoly {p q : ℝ} (hpq : p.HolderConjugate q)
     {u : UnitAddCircle → Y} (hu : MemLp u (ENNReal.ofReal p) haarAddCircle) {A : ℝ≥0∞} (hA : A ≠ ∞)
-    (h : ∀ b : ℤ →₀ (Y →L[ℂ] ℂ), ‖∫ t, trigPoly b t (u t) ∂haarAddCircle‖ₑ ≤
-      A * eLpNorm (trigPoly b) (ENNReal.ofReal q) haarAddCircle) {g : UnitAddCircle → Y →L[ℂ] ℂ}
+    (h : ∀ b : ℤ →₀ (Y →L[ℂ] ℂ), ‖∫ t, circPoly b t (u t) ∂haarAddCircle‖ₑ ≤
+      A * eLpNorm (circPoly b) (ENNReal.ofReal q) haarAddCircle) {g : UnitAddCircle → Y →L[ℂ] ℂ}
     (hg : MemLp g (ENNReal.ofReal q) haarAddCircle) :
     ‖∫ t, g t (u t) ∂haarAddCircle‖ₑ ≤ A * eLpNorm g (ENNReal.ofReal q) haarAddCircle := by
   have hQ : 1 ≤ ENNReal.ofReal q := ENNReal.one_le_ofReal.2 hpq.symm.lt.le
@@ -777,11 +782,11 @@ private theorem enorm_integral_le_of_forall_trigPoly {p q : ℝ} (hpq : p.Holder
   set G := eLpNorm g (ENNReal.ofReal q) haarAddCircle
   have hδ : ∀ δ : ℝ≥0∞, δ ≠ 0 → ‖∫ t, g t (u t) ∂haarAddCircle‖ₑ ≤ A * (G + δ) + U * δ := by
     intro δ hδ
-    obtain ⟨b, hb⟩ := exists_trigPoly_eLpNorm_sub_le hQ ENNReal.ofReal_ne_top hg hδ
-    have hgb := hg.sub (memLp_trigPoly b (ENNReal.ofReal q))
-    have h2 : ∫ t, g t (u t) ∂haarAddCircle = ∫ t, trigPoly b t (u t) ∂haarAddCircle +
-        ∫ t, (g - trigPoly b) t (u t) ∂haarAddCircle := by
-      rw [← integral_add (integrable_dual hpq hu (memLp_trigPoly b _))
+    obtain ⟨b, hb⟩ := exists_circPoly_eLpNorm_sub_le hQ ENNReal.ofReal_ne_top hg hδ
+    have hgb := hg.sub (memLp_circPoly b (ENNReal.ofReal q))
+    have h2 : ∫ t, g t (u t) ∂haarAddCircle = ∫ t, circPoly b t (u t) ∂haarAddCircle +
+        ∫ t, (g - circPoly b) t (u t) ∂haarAddCircle := by
+      rw [← integral_add (integrable_dual hpq hu (memLp_circPoly b _))
         (integrable_dual hpq hu hgb)]
       refine integral_congr_ae (ae_of_all _ fun t => ?_)
       simp
@@ -789,7 +794,7 @@ private theorem enorm_integral_le_of_forall_trigPoly {p q : ℝ} (hpq : p.Holder
     refine (enorm_add_le _ _).trans (add_le_add ((h b).trans ?_) ((enorm_integral_dual_le hpq
       hu.aestronglyMeasurable hgb.aestronglyMeasurable).trans ?_))
     · gcongr
-      have h3 : trigPoly b = g - (g - trigPoly b) := by simp
+      have h3 : circPoly b = g - (g - circPoly b) := by simp
       rw [h3]
       exact (eLpNorm_sub_le hQ).trans (add_le_add le_rfl hb)
     · gcongr
@@ -807,10 +812,10 @@ private theorem enorm_integral_le_of_forall_trigPoly {p q : ℝ} (hpq : p.Holder
 (with the roles of the two spaces exchanged), the simple function `Σ 1_{A_n} y_n` is normed by
 `Σ 1_{A_n} ‖y_n‖^{p−1} y_n^*`, with `y_n^*` norming for `y_n`, and simple functions are dense in
 `L^p (𝕋; Y)`; moreover, the trigonometric polynomials are dense in `L^q (𝕋; Y*)`. -/
-theorem eLpNorm_le_of_forall_trigPoly {p q : ℝ} (hpq : p.HolderConjugate q) {u : UnitAddCircle → Y}
+theorem eLpNorm_le_of_forall_circPoly {p q : ℝ} (hpq : p.HolderConjugate q) {u : UnitAddCircle → Y}
     (hu : MemLp u (ENNReal.ofReal p) haarAddCircle) {A : ℝ≥0∞}
-    (h : ∀ b : ℤ →₀ (Y →L[ℂ] ℂ), ‖∫ t, trigPoly b t (u t) ∂haarAddCircle‖ₑ ≤
-      A * eLpNorm (trigPoly b) (ENNReal.ofReal q) haarAddCircle) :
+    (h : ∀ b : ℤ →₀ (Y →L[ℂ] ℂ), ‖∫ t, circPoly b t (u t) ∂haarAddCircle‖ₑ ≤
+      A * eLpNorm (circPoly b) (ENNReal.ofReal q) haarAddCircle) :
     eLpNorm u (ENNReal.ofReal p) haarAddCircle ≤ A := by
   rcases eq_or_ne A ∞ with rfl | hA
   · exact le_top
@@ -829,7 +834,7 @@ theorem eLpNorm_le_of_forall_trigPoly {p q : ℝ} (hpq : p.HolderConjugate q) {u
       simp only [Pi.sub_apply, map_sub, sub_sub_cancel]
     rw [h3, add_mul]
     refine enorm_sub_le.trans (add_le_add
-      (enorm_integral_le_of_forall_trigPoly hpq hu hA h hg)
+      (enorm_integral_le_of_forall_circPoly hpq hu hA h hg)
       ((enorm_integral_dual_le hpq hus.aestronglyMeasurable hg.aestronglyMeasurable).trans ?_))
     gcongr
   have h3 : u = ⇑s + (u - ⇑s) := by simp
@@ -982,14 +987,14 @@ function. -/
 private theorem eLpNorm_multiplier_dilate_le [CompleteSpace X] {P : ℝ≥0∞} {m : ℝ → X →L[ℂ] Y}
     {C : ℝ≥0∞} (hC : ∀ G : 𝓢(ℝ, X), eLpNorm (𝓕⁻ fun ξ => m ξ (G ξ)) P volume ≤
       C * eLpNorm (𝓕⁻ (G : ℝ → X)) P volume) (φ : 𝓢(ℝ, ℂ)) {ε : ℝ} (hε : 0 < ε) (a : ℤ →₀ X) :
-    eLpNorm (𝓕⁻ fun ξ => m ξ (𝓕 (fun y : ℝ => φ (ε * y) • trigPoly a (y : UnitAddCircle)) ξ)) P
+    eLpNorm (𝓕⁻ fun ξ => m ξ (𝓕 (fun y : ℝ => φ (ε * y) • circPoly a (y : UnitAddCircle)) ξ)) P
         volume ≤
-      C * eLpNorm (fun y : ℝ => φ (ε * y) • trigPoly a (y : UnitAddCircle)) P volume := by
-  set h : ℝ → X := fun y => φ (ε * y) • trigPoly a (y : UnitAddCircle)
+      C * eLpNorm (fun y : ℝ => φ (ε * y) • circPoly a (y : UnitAddCircle)) P volume := by
+  set h : ℝ → X := fun y => φ (ε * y) • circPoly a (y : UnitAddCircle)
   obtain ⟨G, hG⟩ := exists_schwartz_shift (𝓕 φ) hε a
   have hGh : 𝓕 h = G := funext fun ξ => by rw [hG, fourier_dilate_smul φ hε]
   have hcont : Continuous h := (φ.continuous.comp (continuous_const_mul ε)).smul
-    ((continuous_trigPoly a).comp (AddCircle.continuous_mk' 1))
+    ((continuous_circPoly a).comp (AddCircle.continuous_mk' 1))
   have hinv : 𝓕⁻ (G : ℝ → X) = h := by
     rw [← hGh]
     exact hcont.fourierInv_fourier_eq (integrable_dilate_smul φ hε a) (hGh ▸ G.integrable)
@@ -997,16 +1002,16 @@ private theorem eLpNorm_multiplier_dilate_le [CompleteSpace X] {P : ℝ≥0∞} 
   rwa [hinv, ← hGh] at h1
 
 /-- `⟨T̃_m f, g⟩` is bounded by the multiplier norm of `m` on the line (HNVW I, p. 460). -/
-private theorem enorm_integral_trigPoly_multiplier_le [CompleteSpace X] [CompleteSpace Y] {p q : ℝ}
+private theorem enorm_integral_circPoly_multiplier_le [CompleteSpace X] [CompleteSpace Y] {p q : ℝ}
     (hpq : p.HolderConjugate q) {m : ℝ → X →L[ℂ] Y} {M : ℝ} (hM : ∀ ξ, ‖m ξ‖ ≤ M)
     (hm : ∀ x, AEStronglyMeasurable (fun ξ => m ξ x) volume)
     (hc : ∀ (k : ℤ) (x : X), ContinuousAt (fun ξ => m ξ x) k) {C : ℝ≥0∞} (hCt : C ≠ ∞)
     (hC : ∀ G : 𝓢(ℝ, X), eLpNorm (𝓕⁻ fun ξ => m ξ (G ξ)) (ENNReal.ofReal p) volume ≤
       C * eLpNorm (𝓕⁻ (G : ℝ → X)) (ENNReal.ofReal p) volume) (a : ℤ →₀ X)
     (b : ℤ →₀ (Y →L[ℂ] ℂ)) :
-    ‖∫ t, trigPoly b t (a.sum fun k y => fourier k t • m k y) ∂haarAddCircle‖ₑ ≤
-      C * eLpNorm (trigPoly a) (ENNReal.ofReal p) haarAddCircle *
-        eLpNorm (trigPoly b) (ENNReal.ofReal q) haarAddCircle := by
+    ‖∫ t, circPoly b t (a.sum fun k y => fourier k t • m k y) ∂haarAddCircle‖ₑ ≤
+      C * eLpNorm (circPoly a) (ENNReal.ofReal p) haarAddCircle *
+        eLpNorm (circPoly b) (ENNReal.ofReal q) haarAddCircle := by
   have hp0 := hpq.pos
   have hq0 := hpq.symm.pos
   -- the Gaussians
@@ -1016,19 +1021,19 @@ private theorem enorm_integral_trigPoly_multiplier_le [CompleteSpace X] [Complet
   -- the limits
   have hlim1 := (continuous_enorm.tendsto _).comp
     (tendsto_integral_dilate_multiplier hφψ hM hm hc a b)
-  have hlim2 := tendsto_eLpNorm_dilate_smul hpq.lt.le φ (memLp_trigPoly a (ENNReal.ofReal p))
-  have hlim3 := tendsto_eLpNorm_dilate_smul hpq.symm.lt.le ψ (memLp_trigPoly b (ENNReal.ofReal q))
+  have hlim2 := tendsto_eLpNorm_dilate_smul hpq.lt.le φ (memLp_circPoly a (ENNReal.ofReal p))
+  have hlim3 := tendsto_eLpNorm_dilate_smul hpq.symm.lt.le ψ (memLp_circPoly b (ENNReal.ofReal q))
   rw [eLpNorm_gaussian hp0 hφ, one_mul] at hlim2
   rw [eLpNorm_gaussian hq0 hψ, one_mul] at hlim3
   have hlim4 := ENNReal.Tendsto.mul (ENNReal.Tendsto.const_mul (a := C) hlim2 (Or.inr hCt))
-    (Or.inr (memLp_trigPoly b _).eLpNorm_ne_top) hlim3
-    (Or.inr (ENNReal.mul_ne_top hCt (memLp_trigPoly a _).eLpNorm_ne_top))
+    (Or.inr (memLp_circPoly b _).eLpNorm_ne_top) hlim3
+    (Or.inr (ENNReal.mul_ne_top hCt (memLp_circPoly a _).eLpNorm_ne_top))
   refine le_of_tendsto_of_tendsto hlim1 hlim4 ?_
   -- the inequality on the line
   filter_upwards [self_mem_nhdsWithin] with ε hε
   have hε' : (0 : ℝ) < ε := hε
-  set h : ℝ → X := fun y => φ (ε * y) • trigPoly a (y : UnitAddCircle)
-  set v : ℝ → Y →L[ℂ] ℂ := fun y => ψ (ε * y) • trigPoly b (y : UnitAddCircle)
+  set h : ℝ → X := fun y => φ (ε * y) • circPoly a (y : UnitAddCircle)
+  set v : ℝ → Y →L[ℂ] ℂ := fun y => ψ (ε * y) • circPoly b (y : UnitAddCircle)
   have hmult : eLpNorm (𝓕⁻ fun ξ => m ξ (𝓕 h ξ)) (ENNReal.ofReal p) volume ≤
       C * eLpNorm h (ENNReal.ofReal p) volume := eLpNorm_multiplier_dilate_le hC φ hε' a
   have hpair := enorm_integral_dual_le hpq
@@ -1046,13 +1051,13 @@ private theorem enorm_integral_trigPoly_multiplier_le [CompleteSpace X] [Complet
     _ = _ := by ring
 
 /-- A trigonometric polynomial with a nonzero coefficient has a nonzero norm. -/
-private theorem eLpNorm_trigPoly_ne_zero [CompleteSpace X] {p : ℝ} (hp : 0 < p) {c : ℤ →₀ X}
-    (hc : c ≠ 0) : eLpNorm (trigPoly c) (ENNReal.ofReal p) haarAddCircle ≠ 0 := by
+private theorem eLpNorm_circPoly_ne_zero [CompleteSpace X] {p : ℝ} (hp : 0 < p) {c : ℤ →₀ X}
+    (hc : c ≠ 0) : eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle ≠ 0 := by
   intro h
   rw [eLpNorm_eq_zero_iff (by simpa using hp),
-    (continuous_trigPoly c).ae_eq_iff_eq _ continuous_zero] at h
+    (continuous_circPoly c).ae_eq_iff_eq _ continuous_zero] at h
   refine hc (Finsupp.ext fun n => ?_)
-  rw [← integral_fourier_smul_trigPoly c n, h]
+  rw [← integral_fourier_smul_circPoly c n, h]
   simp
 
 /-- **HNVW I, Proposition 5.7.1** (transference from `ℝ^d` to `𝕋^d`), for `d = 1`: let
@@ -1061,7 +1066,7 @@ private theorem eLpNorm_trigPoly_ne_zero [CompleteSpace X] {p : ℝ} (hp : 0 < p
 with `G = ĥ`). If `m (·) x` is continuous at the integers for all `x`, then
 `‖Σ_k m (k) a_k e_k‖_{L^p (𝕋; Y)} ≤ C ‖Σ_k a_k e_k‖_{L^p (𝕋; X)}`, with the same constant, for all
 trigonometric polynomials. (In the book the integers are Lebesgue points of `m (·) x`.) -/
-theorem eLpNorm_trigPoly_multiplier_le [CompleteSpace X] [CompleteSpace Y] {p : ℝ} (hp : 1 < p)
+theorem eLpNorm_circPoly_multiplier_le [CompleteSpace X] [CompleteSpace Y] {p : ℝ} (hp : 1 < p)
     {m : ℝ → X →L[ℂ] Y} {M : ℝ} (hM : ∀ ξ, ‖m ξ‖ ≤ M)
     (hm : ∀ x, AEStronglyMeasurable (fun ξ => m ξ x) volume)
     (hc : ∀ (k : ℤ) (x : X), ContinuousAt (fun ξ => m ξ x) k) {C : ℝ≥0∞}
@@ -1069,18 +1074,18 @@ theorem eLpNorm_trigPoly_multiplier_le [CompleteSpace X] [CompleteSpace Y] {p : 
       C * eLpNorm (𝓕⁻ (G : ℝ → X)) (ENNReal.ofReal p) volume) (a : ℤ →₀ X) :
     eLpNorm (fun t : UnitAddCircle => a.sum fun k y => fourier k t • m k y) (ENNReal.ofReal p)
         haarAddCircle ≤
-      C * eLpNorm (trigPoly a) (ENNReal.ofReal p) haarAddCircle := by
+      C * eLpNorm (circPoly a) (ENNReal.ofReal p) haarAddCircle := by
   rcases eq_or_ne C ∞ with rfl | hCt
   · rcases eq_or_ne a 0 with rfl | ha
     · have h0 : (fun t : UnitAddCircle => (0 : ℤ →₀ X).sum fun k y => fourier k t • m k y) =
           fun _ => 0 := funext fun t => Finsupp.sum_zero_index
       rw [h0, eLpNorm_fun_zero]
       exact zero_le
-    · rw [ENNReal.top_mul (eLpNorm_trigPoly_ne_zero (by linarith) ha)]
+    · rw [ENNReal.top_mul (eLpNorm_circPoly_ne_zero (by linarith) ha)]
       exact le_top
   have hpq : p.HolderConjugate (p / (p - 1)) := (Real.holderConjugate_iff_eq_conjExponent hp).2 rfl
-  refine eLpNorm_le_of_forall_trigPoly hpq ?_ fun b =>
-    enorm_integral_trigPoly_multiplier_le hpq hM hm hc hCt hC a b
+  refine eLpNorm_le_of_forall_circPoly hpq ?_ fun b =>
+    enorm_integral_circPoly_multiplier_le hpq hM hm hc hCt hC a b
   have hcont : Continuous fun t : UnitAddCircle => a.sum fun k y => fourier k t • m k y :=
     continuous_finsetSum _ fun k _ => (map_continuous (fourier k)).smul continuous_const
   exact hcont.memLp_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
@@ -1136,4 +1141,4 @@ theorem eLpNorm_fourierInv_multiplier_dilate_le {p : ℝ} (hp : 0 < p) {m : ℝ 
         exact hC G'
     _ = _ := by ring
 
-end VectorValuedHarmonicAnalysis
+end HarmonicAnalysis

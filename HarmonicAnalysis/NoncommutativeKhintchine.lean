@@ -1,6 +1,11 @@
+/-
+Copyright (c) 2026 The-Anh Vu-Le. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: The-Anh Vu-Le
+-/
 module
 
-public import VectorValuedHarmonicAnalysis.Paley.Rademacher
+public import HarmonicAnalysis.Paley.Rademacher
 import BanachProbability.KConvexity.Schatten
 import BanachProbability.Schatten.CubeDuality
 
@@ -62,7 +67,7 @@ A shorter proof of the upper bound, by exchangeable pairs, with the constant `�
 open BanachProbability BanachProbability.SignCube
 open scoped Matrix
 
-namespace VectorValuedHarmonicAnalysis
+namespace HarmonicAnalysis
 
 section RealMatrices
 
@@ -275,4 +280,4 @@ theorem ncKhintchine_of_normal : ∃ C : ℝ, 0 < C ∧ ∀ (n : Type) [Fintype 
   simp only [← hx, max_self] at h1
   exact h1
 
-end VectorValuedHarmonicAnalysis
+end HarmonicAnalysis

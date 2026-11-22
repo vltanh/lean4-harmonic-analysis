@@ -1,6 +1,11 @@
+/-
+Copyright (c) 2026 The-Anh Vu-Le. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: The-Anh Vu-Le
+-/
 module
 
-public import VectorValuedHarmonicAnalysis.Hardy.Basic
+public import HarmonicAnalysis.Hardy.Basic
 import Mathlib.LinearAlgebra.Matrix.Bilinear
 
 /-!
@@ -8,7 +13,7 @@ import Mathlib.LinearAlgebra.Matrix.Bilinear
 
 Tools for the matrix-valued Hardy classes `H¹` and `H²` of the circle.
 
-* `trigPoly_add`, `trigPoly_mapRange`, `exists_trigPoly_mul`: sums and images under linear maps of
+* `circPoly_add`, `circPoly_mapRange`, `exists_circPoly_mul`: sums and images under linear maps of
   trigonometric polynomials, products of analytic polynomials.
 * `IsHardyOne`: the Hardy class `H¹`, the matrix-valued functions with integrable entries whose
   Fourier coefficients of negative order vanish.
@@ -16,7 +21,7 @@ Tools for the matrix-valued Hardy classes `H¹` and `H²` of the circle.
   everywhere if its Fourier coefficients are zero.
 * `TendstoLTwo F f`: the entries of `F N` converge to those of `f` in `L²`; Fourier coefficients of
   the limit and of products, subsequences that converge almost everywhere. The analytic polynomials
-  are dense in `H²` (`IsHardyTwo.exists_tendsto_trigPoly`).
+  are dense in `H²` (`IsHardyTwo.exists_tendsto_circPoly`).
 * `fejerCoeff f K`: the coefficients of the `K`-th Fejér mean of `f`, a trigonometric polynomial.
   For `K ≥ 1` it is an average of `f` for the Fejér kernel, a probability density, so that it
   satisfies the bounds that `f` satisfies; the Fejér means of `f` converge to `f` in `L¹`.
@@ -31,7 +36,7 @@ Tools for the matrix-valued Hardy classes `H¹` and `H²` of the circle.
 open MeasureTheory AddCircle Filter
 open scoped ENNReal Matrix Topology
 
-namespace VectorValuedHarmonicAnalysis
+namespace HarmonicAnalysis
 
 variable {l m n : Type*}
 
@@ -42,45 +47,45 @@ section Polynomials
 variable {V V' : Type*} [AddCommMonoid V] [Module ℂ V] [AddCommMonoid V'] [Module ℂ V']
 
 /-- The trigonometric polynomial whose coefficients are zero. -/
-theorem trigPoly_zero (t : UnitAddCircle) : trigPoly (0 : ℤ →₀ V) t = 0 :=
+theorem circPoly_zero (t : UnitAddCircle) : circPoly (0 : ℤ →₀ V) t = 0 :=
   Finsupp.sum_zero_index
 
 /-- The trigonometric polynomial `e_k x`. -/
-theorem trigPoly_single (k : ℤ) (x : V) (t : UnitAddCircle) :
-    trigPoly (Finsupp.single k x) t = fourier k t • x :=
+theorem circPoly_single (k : ℤ) (x : V) (t : UnitAddCircle) :
+    circPoly (Finsupp.single k x) t = fourier k t • x :=
   Finsupp.sum_single_index (smul_zero _)
 
 /-- The sum of two trigonometric polynomials. -/
-theorem trigPoly_add (c d : ℤ →₀ V) (t : UnitAddCircle) :
-    trigPoly (c + d) t = trigPoly c t + trigPoly d t :=
+theorem circPoly_add (c d : ℤ →₀ V) (t : UnitAddCircle) :
+    circPoly (c + d) t = circPoly c t + circPoly d t :=
   Finsupp.sum_add_index' (fun _ => smul_zero _) fun _ _ _ => smul_add _ _ _
 
 /-- The image of a trigonometric polynomial under a linear map. -/
-theorem trigPoly_mapRange (T : V →ₗ[ℂ] V') (c : ℤ →₀ V) (t : UnitAddCircle) :
-    trigPoly (c.mapRange T (map_zero T)) t = T (trigPoly c t) := by
-  rw [trigPoly, Finsupp.sum_mapRange_index fun _ => smul_zero _, trigPoly, map_finsuppSum]
+theorem circPoly_mapRange (T : V →ₗ[ℂ] V') (c : ℤ →₀ V) (t : UnitAddCircle) :
+    circPoly (c.mapRange T (map_zero T)) t = T (circPoly c t) := by
+  rw [circPoly, Finsupp.sum_mapRange_index fun _ => smul_zero _, circPoly, map_finsuppSum]
   simp only [map_smul]
 
 /-- The product of a scalar and a trigonometric polynomial. -/
-theorem trigPoly_smul (z : ℂ) (c : ℤ →₀ V) (t : UnitAddCircle) :
-    trigPoly (z • c) t = z • trigPoly c t :=
-  trigPoly_mapRange (LinearMap.lsmul ℂ V z) c t
+theorem circPoly_smul (z : ℂ) (c : ℤ →₀ V) (t : UnitAddCircle) :
+    circPoly (z • c) t = z • circPoly c t :=
+  circPoly_mapRange (LinearMap.lsmul ℂ V z) c t
 
 /-- A finite sum of trigonometric polynomials. -/
-theorem trigPoly_sum {ι : Type*} (s : Finset ι) (c : ι → ℤ →₀ V) (t : UnitAddCircle) :
-    trigPoly (∑ i ∈ s, c i) t = ∑ i ∈ s, trigPoly (c i) t := by
+theorem circPoly_sum {ι : Type*} (s : Finset ι) (c : ι → ℤ →₀ V) (t : UnitAddCircle) :
+    circPoly (∑ i ∈ s, c i) t = ∑ i ∈ s, circPoly (c i) t := by
   classical
   induction s using Finset.induction_on with
-  | empty => exact trigPoly_zero t
-  | insert i s hi ih => rw [Finset.sum_insert hi, Finset.sum_insert hi, trigPoly_add, ih]
+  | empty => exact circPoly_zero t
+  | insert i s hi ih => rw [Finset.sum_insert hi, Finset.sum_insert hi, circPoly_add, ih]
 
 end Polynomials
 
 /-- The product of two analytic polynomials is an analytic polynomial. -/
-theorem exists_trigPoly_mul [Fintype m] {c : ℤ →₀ Matrix l m ℂ} {d : ℤ →₀ Matrix m n ℂ}
+theorem exists_circPoly_mul [Fintype m] {c : ℤ →₀ Matrix l m ℂ} {d : ℤ →₀ Matrix m n ℂ}
     (hc : ∀ k ∈ c.support, 0 ≤ k) (hd : ∀ k ∈ d.support, 0 ≤ k) :
     ∃ e : ℤ →₀ Matrix l n ℂ, (∀ k ∈ e.support, 0 ≤ k) ∧
-      ∀ t, trigPoly e t = trigPoly c t * trigPoly d t := by
+      ∀ t, circPoly e t = circPoly c t * circPoly d t := by
   refine ⟨∑ p ∈ c.support, ∑ q ∈ d.support, Finsupp.single (p + q) (c p * d q), fun k hk => ?_,
     fun t => ?_⟩
   · by_contra hlt
@@ -90,33 +95,33 @@ theorem exists_trigPoly_mul [Fintype m] {c : ℤ →₀ Matrix l m ℂ} {d : ℤ
     have h1 := hc p hp
     have h2 := hd q hq
     exact Finsupp.single_eq_of_ne (by omega)
-  · simp only [trigPoly_sum, trigPoly_single]
-    rw [trigPoly, trigPoly, Finsupp.sum, Finsupp.sum, Matrix.sum_mul]
+  · simp only [circPoly_sum, circPoly_single]
+    rw [circPoly, circPoly, Finsupp.sum, Finsupp.sum, Matrix.sum_mul]
     refine Finset.sum_congr rfl fun p _ => ?_
     rw [Matrix.mul_sum]
     refine Finset.sum_congr rfl fun q _ => ?_
     rw [fourier_add, Matrix.smul_mul, Matrix.mul_smul, smul_smul]
 
 /-- If `P` is an analytic polynomial, `e_1 P` is an analytic polynomial without constant term. -/
-theorem exists_trigPoly_fourier_smul {c : ℤ →₀ Matrix m n ℂ} (hc : ∀ k ∈ c.support, 0 ≤ k) :
+theorem exists_circPoly_fourier_smul {c : ℤ →₀ Matrix m n ℂ} (hc : ∀ k ∈ c.support, 0 ≤ k) :
     ∃ d : ℤ →₀ Matrix m n ℂ, (∀ k ∈ d.support, 0 < k) ∧
-      ∀ t, trigPoly d t = fourier 1 t • trigPoly c t := by
+      ∀ t, circPoly d t = fourier 1 t • circPoly c t := by
   refine ⟨c.embDomain (addRightEmbedding 1), fun k hk => ?_, fun t => ?_⟩
   · rw [Finsupp.support_embDomain] at hk
     obtain ⟨q, hq, rfl⟩ := Finset.mem_map.1 hk
     rw [addRightEmbedding_apply]
     have := hc q hq
     omega
-  · rw [trigPoly, Finsupp.sum_embDomain, trigPoly, Finsupp.smul_sum]
+  · rw [circPoly, Finsupp.sum_embDomain, circPoly, Finsupp.smul_sum]
     refine Finsupp.sum_congr fun q _ => ?_
     rw [addRightEmbedding_apply, smul_smul, ← fourier_add, add_comm]
 
 /-- If `P` is an analytic polynomial without constant term, `(1 + P) D` is an analytic polynomial
 with the constant coefficient `D`. -/
-theorem exists_trigPoly_eq_one_add_mul [Fintype n] [DecidableEq n] {c : ℤ →₀ Matrix n n ℂ}
+theorem exists_circPoly_eq_one_add_mul [Fintype n] [DecidableEq n] {c : ℤ →₀ Matrix n n ℂ}
     (hc : ∀ k ∈ c.support, 0 < k) (D : Matrix n l ℂ) :
     ∃ d : ℤ →₀ Matrix n l ℂ, (∀ k ∈ d.support, 0 ≤ k) ∧ d 0 = D ∧
-      ∀ t, trigPoly d t = (1 + trigPoly c t) * D := by
+      ∀ t, circPoly d t = (1 + circPoly c t) * D := by
   classical
   let T : Matrix n n ℂ →ₗ[ℂ] Matrix n l ℂ := mulRightLinearMap n ℂ D
   refine ⟨Finsupp.single 0 D + c.mapRange T (map_zero T), fun k hk => ?_, ?_, fun t => ?_⟩
@@ -126,7 +131,7 @@ theorem exists_trigPoly_eq_one_add_mul [Fintype n] [DecidableEq n] {c : ℤ →�
   · have h0 : c 0 = 0 := Finsupp.notMem_support_iff.1 fun h => lt_irrefl _ (hc 0 h)
     rw [Finsupp.add_apply, Finsupp.mapRange_apply, h0, map_zero T, add_zero,
       Finsupp.single_eq_same]
-  · rw [trigPoly_add, trigPoly_single, fourier_zero, one_smul, trigPoly_mapRange, Matrix.add_mul,
+  · rw [circPoly_add, circPoly_single, fourier_zero, one_smul, circPoly_mapRange, Matrix.add_mul,
       Matrix.one_mul]
     rfl
 
@@ -589,9 +594,9 @@ theorem exists_tendstoLTwo_diagonal [Finite m] [Finite n]
   exact (eLpNorm_add_le one_le_two).trans (add_le_add (hν K i j) le_rfl)
 
 /-- The analytic polynomials are dense in `H²`. -/
-theorem IsHardyTwo.exists_tendsto_trigPoly {f : UnitAddCircle → Matrix m n ℂ} (hf : IsHardyTwo f) :
+theorem IsHardyTwo.exists_tendsto_circPoly {f : UnitAddCircle → Matrix m n ℂ} (hf : IsHardyTwo f) :
     ∃ c : ℕ → ℤ →₀ Matrix m n ℂ, (∀ N, ∀ k ∈ (c N).support, 0 ≤ k) ∧
-      TendstoLTwo (fun N => trigPoly (c N)) f := by
+      TendstoLTwo (fun N => circPoly (c N)) f := by
   refine ⟨fun N => ∑ k ∈ Finset.Icc (-N : ℤ) N, Finsupp.single k (matFourierCoeff f k),
     fun N k hk => ?_, fun i j => (tendsto_eLpNorm_partialSum (hf.1 i j)).congr fun N => ?_⟩
   · by_contra hlt
@@ -601,11 +606,11 @@ theorem IsHardyTwo.exists_tendsto_trigPoly {f : UnitAddCircle → Matrix m n ℂ
     by_cases hq : k = q
     · rw [← hq, Finsupp.single_eq_same, hf.2 k (by omega)]
     · exact Finsupp.single_eq_of_ne hq
-  · have h1 (t : UnitAddCircle) : trigPoly (∑ k ∈ Finset.Icc (-N : ℤ) N,
+  · have h1 (t : UnitAddCircle) : circPoly (∑ k ∈ Finset.Icc (-N : ℤ) N,
         Finsupp.single k (matFourierCoeff f k)) t i j =
         ∑ k ∈ Finset.Icc (-N : ℤ) N, fourier k t * fourierCoeff (fun t => f t i j) k := by
-      rw [trigPoly_sum, Matrix.sum_apply]
-      simp only [trigPoly_single]
+      rw [circPoly_sum, Matrix.sum_apply]
+      simp only [circPoly_single]
       rfl
     simp only [h1]
 
@@ -725,11 +730,11 @@ private theorem fejerMean_eq_sum {u : UnitAddCircle → ℂ} (hu : Integrable u 
   ring
 
 /-- The Fejér means of an integrable function are its averages for the Fejér kernel. -/
-theorem trigPoly_fejerCoeff_apply {f : UnitAddCircle → Matrix m n ℂ}
+theorem circPoly_fejerCoeff_apply {f : UnitAddCircle → Matrix m n ℂ}
     (hf : ∀ i j, Integrable (fun t => f t i j) haarAddCircle) (K : ℕ) (t : UnitAddCircle) (i : m)
-    (j : n) : trigPoly (fejerCoeff f K) t i j =
+    (j : n) : circPoly (fejerCoeff f K) t i j =
       ∫ s, (fejerKernel K (t - s) : ℂ) * f s i j ∂haarAddCircle := by
-  have h1 : trigPoly (fejerCoeff f K) t =
+  have h1 : circPoly (fejerCoeff f K) t =
       ∑ k ∈ Finset.Ioo (-(K : ℤ)) K, fourier k t • fejerCoeff f K k :=
     Finsupp.onFinset_sum _ fun k => smul_zero _
   refine Eq.trans ?_ (fejerMean_eq_sum (hf i j) K t).symm
@@ -781,14 +786,14 @@ theorem nonneg_of_mem_support_fejerCoeff {f : UnitAddCircle → Matrix m n ℂ}
   simp [fejerCoeff, hf k (not_le.1 hneg)]
 
 /-- The Fejér means of a bounded function are bounded by the same constant. -/
-theorem norm_trigPoly_fejerCoeff_le {f : UnitAddCircle → Matrix m n ℂ}
+theorem norm_circPoly_fejerCoeff_le {f : UnitAddCircle → Matrix m n ℂ}
     (hf : ∀ i j, Integrable (fun t => f t i j) haarAddCircle) {C : ℝ} {i : m} {j : n}
     (hC : ∀ᵐ t ∂haarAddCircle, ‖f t i j‖ ≤ C) {K : ℕ} (hK : 0 < K) (t : UnitAddCircle) :
-    ‖trigPoly (fejerCoeff f K) t i j‖ ≤ C := by
+    ‖circPoly (fejerCoeff f K) t i j‖ ≤ C := by
   have hint : Integrable (fun s => fejerKernel K (t - s) * C) haarAddCircle :=
     integrable_haar_of_continuous
       (((continuous_fejerKernel K).comp (continuous_sub_left t)).mul continuous_const)
-  rw [trigPoly_fejerCoeff_apply hf]
+  rw [circPoly_fejerCoeff_apply hf]
   refine (norm_integral_le_of_norm_le hint ?_).trans_eq ?_
   · filter_upwards [hC] with s hs
     rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg (fejerKernel_nonneg _ _)]
@@ -796,12 +801,12 @@ theorem norm_trigPoly_fejerCoeff_le {f : UnitAddCircle → Matrix m n ℂ}
   · rw [integral_mul_const, integral_fejerKernel_sub hK, one_mul]
 
 /-- The Fejér means of a Hermitian function are Hermitian. -/
-theorem isHermitian_trigPoly_fejerCoeff {f : UnitAddCircle → Matrix n n ℂ}
+theorem isHermitian_circPoly_fejerCoeff {f : UnitAddCircle → Matrix n n ℂ}
     (hf : ∀ i j, Integrable (fun t => f t i j) haarAddCircle)
     (hH : ∀ᵐ t ∂haarAddCircle, (f t).IsHermitian) (K : ℕ) (t : UnitAddCircle) :
-    (trigPoly (fejerCoeff f K) t).IsHermitian := by
+    (circPoly (fejerCoeff f K) t).IsHermitian := by
   ext i j
-  rw [Matrix.conjTranspose_apply, trigPoly_fejerCoeff_apply hf, trigPoly_fejerCoeff_apply hf,
+  rw [Matrix.conjTranspose_apply, circPoly_fejerCoeff_apply hf, circPoly_fejerCoeff_apply hf,
     Complex.star_def, ← integral_conj]
   refine integral_congr_ae ?_
   filter_upwards [hH] with s hs
@@ -838,9 +843,9 @@ private theorem integral_norm_fejerMean_le {u : UnitAddCircle → ℂ} (hu : Int
         rw [integral_mul_const, integral_sub_right_eq_self, integral_fejerKernel hK, one_mul]
 
 /-- The trigonometric polynomials are dense in `L¹`. -/
-private theorem exists_integral_norm_sub_trigPoly_le {u : UnitAddCircle → ℂ}
+private theorem exists_integral_norm_sub_circPoly_le {u : UnitAddCircle → ℂ}
     (hu : Integrable u haarAddCircle) {ε : ℝ} (hε : 0 < ε) :
-    ∃ c : ℤ →₀ ℂ, ∫ t, ‖u t - trigPoly c t‖ ∂haarAddCircle ≤ ε := by
+    ∃ c : ℤ →₀ ℂ, ∫ t, ‖u t - circPoly c t‖ ∂haarAddCircle ≤ ε := by
   obtain ⟨g, hg, hgint⟩ := hu.exists_boundedContinuous_integral_sub_le (half_pos hε)
   have hmem : g.toContinuousMap ∈
       (Submodule.span ℂ (Set.range (fourier (T := 1)))).topologicalClosure := by
@@ -849,18 +854,18 @@ private theorem exists_integral_norm_sub_trigPoly_le {u : UnitAddCircle → ℂ}
   obtain ⟨p, hp, hdist⟩ := Metric.mem_closure_iff.1 hmem (ε / 2) (half_pos hε)
   obtain ⟨c, rfl⟩ := Finsupp.mem_span_range_iff_exists_finsupp.1 hp
   refine ⟨c, ?_⟩
-  have hpoly (t : UnitAddCircle) : ‖g t - trigPoly c t‖ ≤ ε / 2 := by
+  have hpoly (t : UnitAddCircle) : ‖g t - circPoly c t‖ ≤ ε / 2 := by
     rw [dist_eq_norm] at hdist
     refine le_trans (le_of_eq ?_) ((ContinuousMap.norm_coe_le_norm _ t).trans hdist.le)
-    rw [ContinuousMap.sub_apply, trigPoly, Finsupp.sum, Finsupp.sum, ContinuousMap.sum_apply]
+    rw [ContinuousMap.sub_apply, circPoly, Finsupp.sum, Finsupp.sum, ContinuousMap.sum_apply]
     simp only [ContinuousMap.smul_apply, smul_eq_mul, mul_comm]
     rfl
   have hint1 : Integrable (fun t => ‖u t - g t‖) haarAddCircle := (hu.sub hgint).norm
   have hint2 : Integrable (fun t => ‖u t - g t‖ + ε / 2) haarAddCircle :=
     hint1.add (integrable_const _)
-  have hint3 : Integrable (fun t => ‖u t - trigPoly c t‖) haarAddCircle :=
-    (hu.sub (integrable_haar_of_continuous (continuous_trigPoly c))).norm
-  calc ∫ t, ‖u t - trigPoly c t‖ ∂haarAddCircle
+  have hint3 : Integrable (fun t => ‖u t - circPoly c t‖) haarAddCircle :=
+    (hu.sub (integrable_haar_of_continuous (continuous_circPoly c))).norm
+  calc ∫ t, ‖u t - circPoly c t‖ ∂haarAddCircle
       ≤ ∫ t, (‖u t - g t‖ + ε / 2) ∂haarAddCircle :=
         integral_mono hint3 hint2 fun t =>
           (norm_sub_le_norm_sub_add_norm_sub _ (g t) _).trans (by gcongr; exact hpoly t)
@@ -869,8 +874,8 @@ private theorem exists_integral_norm_sub_trigPoly_le {u : UnitAddCircle → ℂ}
     _ ≤ ε := by linarith
 
 /-- The Fourier coefficients of a scalar trigonometric polynomial are its coefficients. -/
-private theorem fourierCoeff_trigPoly (c : ℤ →₀ ℂ) (k : ℤ) : fourierCoeff (trigPoly c) k = c k :=
-  integral_fourier_smul_trigPoly c k
+private theorem fourierCoeff_circPoly (c : ℤ →₀ ℂ) (k : ℤ) : fourierCoeff (circPoly c) k = c k :=
+  integral_fourier_smul_circPoly c k
 
 /-- The weights of the Fejér means converge to `1`. -/
 private theorem tendsto_fejerWeight (k : ℤ) :
@@ -878,11 +883,11 @@ private theorem tendsto_fejerWeight (k : ℤ) :
   simpa [fejerWeight] using (tendsto_const_div_atTop_nhds_zero_nat |(k : ℝ)|).const_sub 1
 
 /-- The Fejér means of a trigonometric polynomial converge to it in `L¹`. -/
-private theorem tendsto_fejerMean_trigPoly (c : ℤ →₀ ℂ) :
-    Tendsto (fun K => ∫ t, ‖fejerMean (trigPoly c) K t - trigPoly c t‖ ∂haarAddCircle) atTop
+private theorem tendsto_fejerMean_circPoly (c : ℤ →₀ ℂ) :
+    Tendsto (fun K => ∫ t, ‖fejerMean (circPoly c) K t - circPoly c t‖ ∂haarAddCircle) atTop
       (𝓝 0) := by
-  have hc : Integrable (trigPoly c) haarAddCircle :=
-    integrable_haar_of_continuous (continuous_trigPoly c)
+  have hc : Integrable (circPoly c) haarAddCircle :=
+    integrable_haar_of_continuous (continuous_circPoly c)
   have hlim : Tendsto (fun K => ∑ k ∈ c.support, |fejerWeight K k - 1| * ‖c k‖) atTop (𝓝 0) := by
     have h1 (k : ℤ) : Tendsto (fun K => |fejerWeight K k - 1| * ‖c k‖) atTop (𝓝 0) := by
       simpa using (((tendsto_fejerWeight k).sub_const 1).abs).mul_const ‖c k‖
@@ -895,15 +900,15 @@ private theorem tendsto_fejerMean_trigPoly (c : ℤ →₀ ℂ) :
     rw [Finset.mem_Ioo]
     omega
   filter_upwards [hev] with K hK
-  have e (t : UnitAddCircle) : fejerMean (trigPoly c) K t - trigPoly c t =
+  have e (t : UnitAddCircle) : fejerMean (circPoly c) K t - circPoly c t =
       ∑ k ∈ c.support, ((fejerWeight K k : ℂ) - 1) * c k * fourier k t := by
     rw [fejerMean_eq_sum hc, ← Finset.sum_subset hK fun k _ hk => by
-      rw [fourierCoeff_trigPoly, Finsupp.notMem_support_iff.1 hk, mul_zero, zero_mul], trigPoly,
+      rw [fourierCoeff_circPoly, Finsupp.notMem_support_iff.1 hk, mul_zero, zero_mul], circPoly,
       Finsupp.sum, ← Finset.sum_sub_distrib]
     refine Finset.sum_congr rfl fun k _ => ?_
-    rw [fourierCoeff_trigPoly, smul_eq_mul]
+    rw [fourierCoeff_circPoly, smul_eq_mul]
     ring
-  have hb (t : UnitAddCircle) : ‖fejerMean (trigPoly c) K t - trigPoly c t‖ ≤
+  have hb (t : UnitAddCircle) : ‖fejerMean (circPoly c) K t - circPoly c t‖ ≤
       ∑ k ∈ c.support, |fejerWeight K k - 1| * ‖c k‖ := by
     rw [e]
     refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun k _ => le_of_eq ?_)
@@ -961,11 +966,11 @@ private theorem integral_norm_fejerMean_sub_le {u p : UnitAddCircle → ℂ}
 private theorem tendsto_fejerMean {u : UnitAddCircle → ℂ} (hu : Integrable u haarAddCircle) :
     Tendsto (fun K => ∫ t, ‖fejerMean u K t - u t‖ ∂haarAddCircle) atTop (𝓝 0) := by
   refine Metric.tendsto_atTop'.2 fun ε hε => ?_
-  obtain ⟨c, hc⟩ := exists_integral_norm_sub_trigPoly_le hu (half_pos (half_pos hε))
-  obtain ⟨K₀, hK₀⟩ := Metric.tendsto_atTop'.1 (tendsto_fejerMean_trigPoly c) (ε / 2) (half_pos hε)
+  obtain ⟨c, hc⟩ := exists_integral_norm_sub_circPoly_le hu (half_pos (half_pos hε))
+  obtain ⟨K₀, hK₀⟩ := Metric.tendsto_atTop'.1 (tendsto_fejerMean_circPoly c) (ε / 2) (half_pos hε)
   refine ⟨K₀, fun K hK => ?_⟩
   have h1 := integral_norm_fejerMean_sub_le hu
-    (integrable_haar_of_continuous (continuous_trigPoly c)) (pos_of_gt hK)
+    (integrable_haar_of_continuous (continuous_circPoly c)) (pos_of_gt hK)
   have h2 := hK₀ K hK
   rw [Real.dist_0_eq_abs, abs_of_nonneg (integral_nonneg fun t => norm_nonneg _)] at h2 ⊢
   linarith
@@ -973,25 +978,25 @@ private theorem tendsto_fejerMean {u : UnitAddCircle → ℂ} (hu : Integrable u
 /-- The Fejér means of an integrable function converge to it in `L¹`. -/
 theorem tendsto_integral_norm_fejerCoeff_sub {f : UnitAddCircle → Matrix m n ℂ}
     (hf : ∀ i j, Integrable (fun t => f t i j) haarAddCircle) (i : m) (j : n) :
-    Tendsto (fun K => ∫ t, ‖trigPoly (fejerCoeff f K) t i j - f t i j‖ ∂haarAddCircle) atTop
+    Tendsto (fun K => ∫ t, ‖circPoly (fejerCoeff f K) t i j - f t i j‖ ∂haarAddCircle) atTop
       (𝓝 0) := by
-  simp only [trigPoly_fejerCoeff_apply hf]
+  simp only [circPoly_fejerCoeff_apply hf]
   exact tendsto_fejerMean (hf i j)
 
 /-- A subsequence of the Fejér means of an integrable function converges to it almost everywhere. -/
 theorem exists_seq_tendsto_fejerCoeff [Finite m] [Finite n] {f : UnitAddCircle → Matrix m n ℂ}
     (hf : ∀ i j, Integrable (fun t => f t i j) haarAddCircle) :
     ∃ ns : ℕ → ℕ, StrictMono ns ∧ (∀ N, 0 < ns N) ∧ ∀ᵐ t ∂haarAddCircle,
-      Tendsto (fun N => trigPoly (fejerCoeff f (ns N)) t) atTop (𝓝 (f t)) := by
-  have hcont (K : ℕ) (i : m) (j : n) : Continuous fun t => trigPoly (fejerCoeff f K) t i j :=
-    (continuous_trigPoly_matrix _).matrix_elem i j
+      Tendsto (fun N => circPoly (fejerCoeff f (ns N)) t) atTop (𝓝 (f t)) := by
+  have hcont (K : ℕ) (i : m) (j : n) : Continuous fun t => circPoly (fejerCoeff f K) t i j :=
+    (continuous_circPoly_matrix _).matrix_elem i j
   have hlim (i : m) (j : n) : Tendsto (fun N => eLpNorm (fun t =>
-      trigPoly (fejerCoeff f (N + 1)) t i j - f t i j) 1 haarAddCircle) atTop (𝓝 0) := by
+      circPoly (fejerCoeff f (N + 1)) t i j - f t i j) 1 haarAddCircle) atTop (𝓝 0) := by
     have h1 := ENNReal.tendsto_ofReal ((tendsto_integral_norm_fejerCoeff_sub hf i j).comp
       (tendsto_add_atTop_nat 1))
     rw [ENNReal.ofReal_zero] at h1
     refine h1.congr fun N => ?_
-    have hint : Integrable (fun t => trigPoly (fejerCoeff f (N + 1)) t i j - f t i j)
+    have hint : Integrable (fun t => circPoly (fejerCoeff f (N + 1)) t i j - f t i j)
         haarAddCircle :=
       (integrable_haar_of_continuous (hcont (N + 1) i j)).sub (hf i j)
     rw [eLpNorm_one_eq_lintegral_enorm hint.aestronglyMeasurable]
@@ -1006,15 +1011,15 @@ theorem exists_seq_tendsto_fejerCoeff [Finite m] [Finite n] {f : UnitAddCircle �
 
 /-- The Fourier coefficients of the product of a trigonometric polynomial `P = Σ_q c_q e_q` and a
 function `f` with integrable entries: `(P f)^ (k) = Σ_q c_q f̂ (k − q)`. -/
-theorem matFourierCoeff_trigPoly_mul [Fintype m] (c : ℤ →₀ Matrix l m ℂ)
+theorem matFourierCoeff_circPoly_mul [Fintype m] (c : ℤ →₀ Matrix l m ℂ)
     {f : UnitAddCircle → Matrix m n ℂ} (hf : ∀ i j, Integrable (fun t => f t i j) haarAddCircle)
-    (k : ℤ) : matFourierCoeff (fun t => trigPoly c t * f t) k =
+    (k : ℤ) : matFourierCoeff (fun t => circPoly c t * f t) k =
       ∑ q ∈ c.support, c q * matFourierCoeff f (k - q) := by
   ext i j
-  have e : (fun t => (trigPoly c t * f t) i j) =
+  have e : (fun t => (circPoly c t * f t) i j) =
       ∑ q ∈ c.support, fun t => fourier q t • (c q * f t) i j := by
     ext t
-    rw [trigPoly, Finsupp.sum, Matrix.sum_mul, Matrix.sum_apply, Finset.sum_apply]
+    rw [circPoly, Finsupp.sum, Matrix.sum_mul, Matrix.sum_apply, Finset.sum_apply]
     exact Finset.sum_congr rfl fun q _ => by rw [Matrix.smul_mul, Matrix.smul_apply]
   have hint (q : ℤ) : Integrable (fun t => (c q * f t) i j) haarAddCircle :=
     integrable_continuous_mul continuous_const hf i j
@@ -1061,10 +1066,10 @@ private theorem IsHardyOne.bounded_mul_of_finite [Fintype m] [Finite l]
       matFourierCoeff (fun t => g t * f t) 0 = matFourierCoeff g 0 * matFourierCoeff f 0 := by
   obtain ⟨ns, -, hpos, hlim⟩ := exists_seq_tendsto_fejerCoeff hg.1
   have key (k : ℤ) := tendsto_matFourierCoeff_of_bounded
-    (fun N i j => ((continuous_trigPoly_matrix _).matrix_elem i j).aestronglyMeasurable)
-    (fun N t i j => norm_trigPoly_fejerCoeff_le hg.1 (hC.mono fun t ht => ht i j) (hpos N) t)
+    (fun N i j => ((continuous_circPoly_matrix _).matrix_elem i j).aestronglyMeasurable)
+    (fun N t i j => norm_circPoly_fejerCoeff_le hg.1 (hC.mono fun t ht => ht i j) (hpos N) t)
     hlim hf.1 k
-  simp only [matFourierCoeff_trigPoly_mul _ hf.1] at key
+  simp only [matFourierCoeff_circPoly_mul _ hf.1] at key
   -- the Fourier coefficients of negative order of `f` vanish, and the Fejér means are analytic
   have hzero (N : ℕ) (k q : ℤ) (hq : q ∈ (fejerCoeff g (ns N)).support) (hkq : k < q) :
       fejerCoeff g (ns N) q * matFourierCoeff f (k - q) = 0 := by
@@ -1121,4 +1126,4 @@ theorem IsHardyTwo.mul_bounded [Fintype m] {f : UnitAddCircle → Matrix l m ℂ
   simpa only [← Matrix.transpose_mul, Matrix.transpose_transpose] using
     (hg.transpose.bounded_mul (hC.mono fun t ht i j => ht j i) hf.transpose).transpose
 
-end VectorValuedHarmonicAnalysis
+end HarmonicAnalysis

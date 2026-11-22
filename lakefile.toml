@@ -11,6 +11,11 @@ weak.linter.mathlibStandardSet = true
 maxSynthPendingDepth = 3
 
 [[require]]
+name = "BanachProbability"
+git = "https://github.com/vltanh/lean4-banach-probability"
+rev = "422b8a00311e840b1d9544d516445576e2efd641"
+
+[[require]]
 name = "mathlib"
 scope = "leanprover-community"
 rev = "v4.36.0-rc2"

@@ -1,6 +1,11 @@
+/-
+Copyright (c) 2026 The-Anh Vu-Le. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: The-Anh Vu-Le
+-/
 module
 
-public import VectorValuedHarmonicAnalysis.HilbertTransform.Fourier
+public import HarmonicAnalysis.VectorValued.HilbertTransform.Fourier
 import Mathlib.Analysis.Fourier.Convolution
 import Mathlib.Analysis.Real.Pi.Bounds
 
@@ -38,7 +43,7 @@ that are the same for all `k` up to dilation is needed, `w = 1 / φ̂` on `[1/2,
 open MeasureTheory BanachProbability
 open scoped ENNReal FourierTransform
 
-namespace VectorValuedHarmonicAnalysis
+namespace HarmonicAnalysis
 
 /-! ### The Fourier transform of `φ = h * h̃` -/
 
@@ -1131,4 +1136,4 @@ theorem eLpNormRad_lineBlock_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (hβ : 
         · exact eLpNormRad_lineBlock_neg_le hp hβ hG hf K
     _ = _ := by ring
 
-end VectorValuedHarmonicAnalysis
+end HarmonicAnalysis

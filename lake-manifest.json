@@ -15,6 +15,18 @@
    "configFile": "lakefile.lean"
   },
   {
+   "url": "https://github.com/vltanh/lean4-banach-probability",
+   "type": "git",
+   "subDir": null,
+   "scope": "",
+   "rev": "422b8a00311e840b1d9544d516445576e2efd641",
+   "name": "BanachProbability",
+   "manifestFile": "lake-manifest.json",
+   "inputRev": "422b8a00311e840b1d9544d516445576e2efd641",
+   "inherited": false,
+   "configFile": "lakefile.toml"
+  },
+  {
    "url": "https://github.com/leanprover-community/plausible",
    "type": "git",
    "subDir": null,

@@ -1,6 +1,11 @@
+/-
+Copyright (c) 2026 The-Anh Vu-Le. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: The-Anh Vu-Le
+-/
 module
 
-public import VectorValuedHarmonicAnalysis.Hardy.RieszFactorization
+public import HarmonicAnalysis.Hardy.RieszFactorization
 import BanachProbability.Noncommutative.ComplexSchattenUMD
 
 /-!
@@ -64,7 +69,7 @@ Departures from the source:
 open MeasureTheory AddCircle BanachProbability BanachProbability.SignCube
 open scoped ENNReal Matrix
 
-namespace VectorValuedHarmonicAnalysis
+namespace HarmonicAnalysis
 
 variable {n : Type*} [Fintype n] [DecidableEq n]
 
@@ -103,9 +108,9 @@ private theorem nonneg_of_mem_support_coeffOn {S : Finset ℕ} {v : ℤ → V} :
   obtain ⟨p, -, rfl⟩ := Finset.mem_map.1 (Finsupp.support_onFinset_subset hk)
   exact Int.natCast_nonneg p
 
-private theorem trigPoly_coeffOn [Module ℂ V] (S : Finset ℕ) (v : ℤ → V) (t : UnitAddCircle) :
-    trigPoly (coeffOn S v) t = ∑ p ∈ S, fourier (p : ℤ) t • v p := by
-  rw [trigPoly, coeffOn, Finsupp.onFinset_sum _ fun _ => smul_zero _, Finset.sum_map]
+private theorem circPoly_coeffOn [Module ℂ V] (S : Finset ℕ) (v : ℤ → V) (t : UnitAddCircle) :
+    circPoly (coeffOn S v) t = ∑ p ∈ S, fourier (p : ℤ) t • v p := by
+  rw [circPoly, coeffOn, Finsupp.onFinset_sum _ fun _ => smul_zero _, Finset.sum_map]
   refine Finset.sum_congr rfl fun p hp => ?_
   simp [hp]
 
@@ -119,18 +124,18 @@ theorem matFourierCoeff_mul_two_pow {g h : UnitAddCircle → Matrix n n ℂ} (hg
     matFourierCoeff (fun t => g t * h t) (2 ^ k) =
       matFourierCoeff (fun t => g t * paleyBlockClosed h k t) (2 ^ k) +
         matFourierCoeff (fun t => paleyBlockOpen g k t * h t) (2 ^ k) := by
-  have hH : paleyBlockClosed h k = trigPoly (coeffOn _ (matFourierCoeff h)) :=
-    funext fun t => (trigPoly_coeffOn _ _ t).symm
-  have hG : paleyBlockOpen g k = trigPoly (coeffOn _ (matFourierCoeff g)) :=
-    funext fun t => (trigPoly_coeffOn _ _ t).symm
+  have hH : paleyBlockClosed h k = circPoly (coeffOn _ (matFourierCoeff h)) :=
+    funext fun t => (circPoly_coeffOn _ _ t).symm
+  have hG : paleyBlockOpen g k = circPoly (coeffOn _ (matFourierCoeff g)) :=
+    funext fun t => (circPoly_coeffOn _ _ t).symm
   have hk : (2 ^ k : ℤ) = ((2 ^ k : ℕ) : ℤ) := by push_cast; rfl
   rw [hH, hG, hk, matFourierCoeff_mul hg hh,
-    matFourierCoeff_mul hg (isHardyTwo_trigPoly nonneg_of_mem_support_coeffOn),
-    matFourierCoeff_mul (isHardyTwo_trigPoly nonneg_of_mem_support_coeffOn) hh,
+    matFourierCoeff_mul hg (isHardyTwo_circPoly nonneg_of_mem_support_coeffOn),
+    matFourierCoeff_mul (isHardyTwo_circPoly nonneg_of_mem_support_coeffOn) hh,
     ← Finset.sum_add_distrib]
   refine Finset.sum_congr rfl fun q hq => ?_
   have hq : q ≤ 2 ^ k := Nat.lt_succ_iff.1 (Finset.mem_range.1 hq)
-  rw [← Nat.cast_sub hq, matFourierCoeff_trigPoly, matFourierCoeff_trigPoly, coeffOn_apply,
+  rw [← Nat.cast_sub hq, matFourierCoeff_circPoly, matFourierCoeff_circPoly, coeffOn_apply,
     coeffOn_apply]
   simp only [Finset.mem_filter, Finset.mem_Icc]
   -- the terms with `2 q ≤ 2^k` make up `A_k`, the others `B_k`
@@ -194,7 +199,7 @@ private theorem trigBlock_dyadicBlock_succ {V : Type*} [AddCommMonoid V] [Module
     trigBlock (dyadicBlock ((j : ℕ) + 1)) c t =
       ∑ p ∈ (Finset.Ico (2 ^ j) (2 ^ (j + 1)) : Finset ℕ), fourier (p : ℤ) t • c p := by
   classical
-  rw [trigBlock, trigPoly, Finsupp.sum_of_support_subset
+  rw [trigBlock, circPoly, Finsupp.sum_of_support_subset
     (s := (Finset.Ico (2 ^ j) (2 ^ (j + 1))).map Nat.castEmbedding) _ _ _ fun _ _ => smul_zero _,
     Finset.sum_map]
   · refine Finset.sum_congr rfl fun p hp => ?_
@@ -277,7 +282,7 @@ private theorem sum_openFreq (c : ℤ →₀ X) (k : ℕ) (t : UnitAddCircle) :
 
 private theorem aestronglyMeasurable_trigBlock (s : Set ℤ) (c : ℤ →₀ X) :
     AEStronglyMeasurable (trigBlock s c) haarAddCircle :=
-  (continuous_trigPoly _).aestronglyMeasurable
+  (continuous_circPoly _).aestronglyMeasurable
 
 private theorem aestronglyMeasurable_freqTerm (c : ℤ →₀ X) (j : ℕ) :
     AEStronglyMeasurable (freqTerm c j) haarAddCircle :=
@@ -309,7 +314,7 @@ private theorem eLpNormRad_closed_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (h
     (c : ℤ →₀ X) (K : ℕ) :
     eLpNormRad (fun (k : Fin K) (t : UnitAddCircle) =>
         ∑ q ∈ closedFreq k, fourier (q : ℤ) t • c q) p haarAddCircle ≤
-      5 * (littlewoodPaleyBound β * eLpNorm (trigPoly c) (ENNReal.ofReal p) haarAddCircle) := by
+      5 * (littlewoodPaleyBound β * eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle) := by
   have hF := fun j : ℕ => aestronglyMeasurable_trigBlock (dyadicBlock ((j : ℕ) + 1)) c
   have h0 := eLpNormRad_dyadicBlock_succ_le hp hβ c K
   have h1 := eLpNormRad_prev_le hp.le hF K
@@ -317,8 +322,8 @@ private theorem eLpNormRad_closed_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (h
   simp only [sum_closedFreq]
   refine (eLpNormRad_add_le hp.le (fun k => aestronglyMeasurable_prev hF k)
     fun k => aestronglyMeasurable_freqTerm c k).trans ?_
-  calc _ ≤ littlewoodPaleyBound β * eLpNorm (trigPoly c) (ENNReal.ofReal p) haarAddCircle +
-        4 * (littlewoodPaleyBound β * eLpNorm (trigPoly c) (ENNReal.ofReal p) haarAddCircle) :=
+  calc _ ≤ littlewoodPaleyBound β * eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle +
+        4 * (littlewoodPaleyBound β * eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle) :=
         add_le_add (h1.trans h0) (h2.trans (by gcongr))
     _ = _ := by ring
 
@@ -328,7 +333,7 @@ private theorem eLpNormRad_open_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (hβ
     (c : ℤ →₀ X) (K : ℕ) :
     eLpNormRad (fun (k : Fin K) (t : UnitAddCircle) =>
         ∑ q ∈ openFreq k, fourier (q : ℤ) t • c q) p haarAddCircle ≤
-      13 * (littlewoodPaleyBound β * eLpNorm (trigPoly c) (ENNReal.ofReal p) haarAddCircle) := by
+      13 * (littlewoodPaleyBound β * eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle) := by
   have hF := fun j : ℕ => aestronglyMeasurable_trigBlock (dyadicBlock ((j : ℕ) + 1)) c
   have hL := aestronglyMeasurable_freqTerm c
   have h0 := eLpNormRad_dyadicBlock_succ_le hp hβ c K
@@ -344,10 +349,10 @@ private theorem eLpNormRad_open_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (hβ
     fun k => (aestronglyMeasurable_prev hL k).const_smul _).trans ?_
   refine (add_le_add_left (eLpNormRad_add_le hp.le (fun k => aestronglyMeasurable_prev hF k)
     fun k => hL k) _).trans ?_
-  calc _ ≤ littlewoodPaleyBound β * eLpNorm (trigPoly c) (ENNReal.ofReal p) haarAddCircle +
-        4 * (littlewoodPaleyBound β * eLpNorm (trigPoly c) (ENNReal.ofReal p) haarAddCircle) +
+  calc _ ≤ littlewoodPaleyBound β * eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle +
+        4 * (littlewoodPaleyBound β * eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle) +
         2 * (4 * (littlewoodPaleyBound β *
-          eLpNorm (trigPoly c) (ENNReal.ofReal p) haarAddCircle)) :=
+          eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle)) :=
         add_le_add (add_le_add (h1.trans h0) (h2.trans (by gcongr)))
           (h4.trans (by
             gcongr
@@ -419,8 +424,8 @@ private noncomputable def partialCoeff (q : ℝ≥0∞) (h : UnitAddCircle → M
 
 omit [Fact (1 ≤ q)] in
 /-- For `h ∈ H²` this polynomial is the partial sum of the Fourier series of `h`. -/
-private theorem norm_trigPoly_partialCoeff {h : UnitAddCircle → Matrix n n ℂ} (hh : IsHardyTwo h)
-    (N : ℕ) (t : UnitAddCircle) : ‖trigPoly (partialCoeff q h N) t‖ = complexSchattenNorm q
+private theorem norm_circPoly_partialCoeff {h : UnitAddCircle → Matrix n n ℂ} (hh : IsHardyTwo h)
+    (N : ℕ) (t : UnitAddCircle) : ‖circPoly (partialCoeff q h N) t‖ = complexSchattenNorm q
       (∑ k ∈ Finset.Icc (-N : ℤ) N, fourier k t • matFourierCoeff h k) := by
   have h1 : (Finset.range (N + 1)).map Nat.castEmbedding ⊆ Finset.Icc (-N : ℤ) N := by
     intro p hp
@@ -428,7 +433,7 @@ private theorem norm_trigPoly_partialCoeff {h : UnitAddCircle → Matrix n n ℂ
     rw [Finset.mem_range] at hr
     simp only [Nat.castEmbedding_apply, Finset.mem_Icc]
     omega
-  rw [partialCoeff, trigPoly_coeffOn, ← Finset.sum_subset h1, Finset.sum_map,
+  rw [partialCoeff, circPoly_coeffOn, ← Finset.sum_subset h1, Finset.sum_map,
     ← ComplexSchattenSpace.norm_ofMatrix, map_sum]
   · simp only [map_smul]
     rfl
@@ -466,7 +471,7 @@ private theorem avg_integral_block_le {S : ℕ → Finset ℕ} (hS : ∀ k, ∀ 
     (hle : ∀ c : ℤ →₀ ComplexSchattenSpace q n n,
       eLpNormRad (fun (k : Fin K) (t : UnitAddCircle) =>
           ∑ p ∈ S k, fourier (p : ℤ) t • c p) 2 haarAddCircle ≤
-        C * eLpNorm (trigPoly c) (ENNReal.ofReal 2) haarAddCircle)
+        C * eLpNorm (circPoly c) (ENNReal.ofReal 2) haarAddCircle)
     {h : UnitAddCircle → Matrix n n ℂ} (hh : IsHardyTwo h) :
     (avg fun ε : Fin K → Bool => ∫ t : UnitAddCircle, complexSchattenNorm q
         (∑ k, coin (ε k) • ∑ p ∈ S k, fourier (p : ℤ) t • matFourierCoeff h p) ^ 2
@@ -479,8 +484,8 @@ private theorem avg_integral_block_le {S : ℕ → Finset ℕ} (hS : ∀ k, ∀ 
     (u := fun (k : Fin K) (t : UnitAddCircle) =>
       ∑ p ∈ S k, fourier (p : ℤ) t • partialCoeff q h N p)
     (fun k => continuous_finsetSum _ fun p _ => (fourier _).continuous.smul continuous_const)
-    (continuous_trigPoly _) hC (hle (partialCoeff q h N))
-  simpa only [norm_sum_block_partialCoeff hS hN, norm_trigPoly_partialCoeff hh] using key
+    (continuous_circPoly _) hC (hle (partialCoeff q h N))
+  simpa only [norm_sum_block_partialCoeff hS hN, norm_circPoly_partialCoeff hh] using key
 
 end Hardy
 
@@ -778,19 +783,19 @@ theorem paley_schatten : ∃ M : ℝ, 0 < M ∧ ∀ (n : Type) [Fintype n] [Deci
     ∃ a b : Fin K → Matrix n n ℂ, (∀ k : Fin K, c (2 ^ (k : ℕ)) = a k + b k) ∧
       complexSchattenNorm (ENNReal.ofReal p) (blockRow a) +
         complexSchattenNorm (ENNReal.ofReal p) (blockCol b) ≤
-      M * ∫ t, complexSchattenNorm (ENNReal.ofReal p) (trigPoly c t) ∂haarAddCircle := by
+      M * ∫ t, complexSchattenNorm (ENNReal.ofReal p) (circPoly c t) ∂haarAddCircle := by
   obtain ⟨C₁, hC₁, hclosed⟩ := exists_avg_integral_paleyBlockClosed_le
   obtain ⟨C₂, hC₂, hopen⟩ := exists_avg_integral_paleyBlockOpen_le
   refine ⟨√C₁ + √C₂, by positivity, ?_⟩
   intro n _ _ p hp1 hp2 c hc K
   -- `f = g h`, (α) and (β)
   obtain ⟨g, h, hg, hh, hfac, hβ⟩ := exists_mul_eq_integral_complexSchattenNorm_eq
-    (one_pos.trans_le hp1) (isHardyTwo_trigPoly hc).isHardyOne
+    (one_pos.trans_le hp1) (isHardyTwo_circPoly hc).isHardyOne
   refine ⟨fun k => matFourierCoeff (fun t => g t * paleyBlockClosed h k t) (2 ^ (k : ℕ)),
     fun k => matFourierCoeff (fun t => paleyBlockOpen g k t * h t) (2 ^ (k : ℕ)), fun k => ?_, ?_⟩
   · -- `f̂ (2^k) = A_k + B_k`
     rw [← matFourierCoeff_mul_two_pow hg hh, ← matFourierCoeff_congr_ae hfac,
-      matFourierCoeff_trigPoly]
+      matFourierCoeff_circPoly]
   rw [add_mul, hβ]
   refine add_le_add ?_ ?_
   · -- the `A_k`: (γ) for the norms of Theorem III.1
@@ -806,4 +811,4 @@ theorem paley_schatten : ∃ M : ℝ, 0 < M ∧ ∀ (n : Type) [Fintype n] [Deci
       (Real.sqrt_le_sqrt (hopen n p hp1 hp2 g hg K)) (Real.sqrt_nonneg _)).trans_eq ?_)
     rw [Real.sqrt_mul hC₂.le, mul_assoc]
 
-end VectorValuedHarmonicAnalysis
+end HarmonicAnalysis
