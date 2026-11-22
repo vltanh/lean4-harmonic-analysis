@@ -57,14 +57,48 @@ def multiplierNorm (m : V → ℂ) (p : ℝ) : ℝ≥0∞ :=
 /-- `T_m f` is continuous for every Schwartz function `f`. -/
 theorem continuous_fourierMultiplier (m : V → ℂ) (f : 𝓢(V, ℂ)) :
     Continuous (fourierMultiplier m f) := by
-  sorry
+  have hL : Continuous fun p : V × V ↦ (-innerₗ V) p.1 p.2 := by
+    simp only [LinearMap.neg_apply, innerₗ_apply_apply]
+    fun_prop
+  by_cases hg : Integrable (fun ξ => m ξ • 𝓕 (f : V → ℂ) ξ)
+  · exact VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar hL hg
+  · have : fourierMultiplier m f = 0 := by
+      ext w
+      exact integral_undef (mt (VectorFourier.fourierIntegral_convergent_iff
+        Real.continuous_fourierChar hL w).1 hg)
+    rw [this]
+    exact continuous_const
 
 /-- `‖T_m f‖_p ≤ ‖T_m‖_p ‖f‖_p` for every Schwartz function `f`. -/
 theorem eLpNorm_fourierMultiplier_le (m : V → ℂ) (p : ℝ) (f : 𝓢(V, ℂ)) :
     eLpNorm (fourierMultiplier m f) (ENNReal.ofReal p) volume ≤
       multiplierNorm m p * eLpNorm (f : V → ℂ) (ENNReal.ofReal p) volume := by
-  sorry
+  have hle : eLpNorm (fourierMultiplier m f) (ENNReal.ofReal p) volume /
+      eLpNorm (f : V → ℂ) (ENNReal.ofReal p) volume ≤ multiplierNorm m p :=
+    le_iSup (fun f : 𝓢(V, ℂ) => eLpNorm (fourierMultiplier m f) (ENNReal.ofReal p) volume /
+      eLpNorm (f : V → ℂ) (ENNReal.ofReal p) volume) f
+  by_cases h0 : eLpNorm (f : V → ℂ) (ENNReal.ofReal p) volume = 0
+  · rcases eq_or_ne (ENNReal.ofReal p) 0 with hp | hp
+    · rw [hp, eLpNorm_exponent_zero (continuous_fourierMultiplier m f).aestronglyMeasurable]
+      exact zero_le
+    · have hf : (f : V → ℂ) = 0 := by
+        rw [eLpNorm_eq_zero_iff hp] at h0
+        exact (f.continuous.ae_eq_iff_eq volume continuous_zero).1 h0
+      have hT : fourierMultiplier m f = 0 := by
+        ext w
+        simp [fourierMultiplier, hf, Real.fourier_eq, Real.fourierInv_eq]
+      simp [hT]
+  · calc eLpNorm (fourierMultiplier m f) (ENNReal.ofReal p) volume
+        = eLpNorm (fourierMultiplier m f) (ENNReal.ofReal p) volume /
+            eLpNorm (f : V → ℂ) (ENNReal.ofReal p) volume *
+            eLpNorm (f : V → ℂ) (ENNReal.ofReal p) volume :=
+          (ENNReal.div_mul_cancel h0 (f.memLp _).eLpNorm_lt_top.ne).symm
+      _ ≤ _ := by gcongr
 
+-- The measurability hypotheses `hu`, `hv` are not used by the proof (for `1 ≤ p` the triangle
+-- inequality for `eLpNorm` holds for all functions, and `hφu`, `hφv` already imply them); they
+-- stay in the statement.
+set_option linter.unusedVariables false in
 /-- Density: if Schwartz functions `φ_k` satisfy `φ_k → u` and `T_m φ_k → v` in `L^p`, `1 ≤ p`,
 then `‖v‖_p / ‖u‖_p ≤ ‖T_m‖_p`. -/
 theorem div_le_multiplierNorm_of_tendsto (m : V → ℂ) {p : ℝ} (hp : 1 ≤ p) {φ : ℕ → 𝓢(V, ℂ)}
@@ -75,6 +109,40 @@ theorem div_le_multiplierNorm_of_tendsto (m : V → ℂ) {p : ℝ} (hp : 1 ≤ p
       (ENNReal.ofReal p) volume) atTop (𝓝 0)) :
     eLpNorm v (ENNReal.ofReal p) volume / eLpNorm u (ENNReal.ofReal p) volume ≤
       multiplierNorm m p := by
-  sorry
+  set P := ENNReal.ofReal p
+  set M := multiplierNorm m p
+  rcases eq_or_ne M ⊤ with hM | hM
+  · rw [hM]
+    exact le_top
+  refine ENNReal.div_le_of_le_mul ?_
+  have hP : 1 ≤ P := by simpa [P] using ENNReal.ofReal_le_ofReal hp
+  have hlim : Tendsto (fun k => eLpNorm (fun x => fourierMultiplier m (φ k) x - v x) P volume +
+      M * (eLpNorm (fun x => φ k x - u x) P volume + eLpNorm u P volume)) atTop
+      (𝓝 (M * eLpNorm u P volume)) := by
+    have := hφv.add (ENNReal.Tendsto.const_mul (hφu.add_const (eLpNorm u P volume)) (Or.inr hM))
+    simpa using this
+  refine ge_of_tendsto' hlim fun k => ?_
+  have h1 : eLpNorm v P volume ≤ eLpNorm (fun x => fourierMultiplier m (φ k) x - v x) P volume +
+      eLpNorm (fourierMultiplier m (φ k)) P volume := by
+    have := eLpNorm_sub_le (μ := volume) (f := fourierMultiplier m (φ k))
+      (g := fun x => fourierMultiplier m (φ k) x - v x) hP
+    rw [add_comm]
+    convert this using 2
+    ext x
+    simp
+  have h2 : eLpNorm (φ k : V → ℂ) P volume ≤
+      eLpNorm (fun x => φ k x - u x) P volume + eLpNorm u P volume := by
+    have := eLpNorm_add_le (μ := volume) (f := fun x => φ k x - u x) (g := u) hP
+    convert this using 2
+    ext x
+    simp
+  calc eLpNorm v P volume
+      ≤ eLpNorm (fun x => fourierMultiplier m (φ k) x - v x) P volume +
+          eLpNorm (fourierMultiplier m (φ k)) P volume := h1
+    _ ≤ eLpNorm (fun x => fourierMultiplier m (φ k) x - v x) P volume +
+          M * eLpNorm (φ k : V → ℂ) P volume := by
+        gcongr
+        exact eLpNorm_fourierMultiplier_le m p (φ k)
+    _ ≤ _ := by gcongr
 
 end HarmonicAnalysis

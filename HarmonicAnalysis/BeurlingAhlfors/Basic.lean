@@ -44,7 +44,7 @@ With `ℂ ≅ ℝ²` by `x + iy ↦ (x, y)` and Mathlib's Fourier transform
 noncomputable section
 
 open MeasureTheory Filter Topology
-open scoped SchwartzMap ENNReal ComplexConjugate
+open scoped SchwartzMap ENNReal ComplexConjugate FourierTransform Real
 
 namespace HarmonicAnalysis
 
@@ -79,10 +79,39 @@ theorem continuousAt_beurlingSymbol {ξ : ℂ} (hξ : ξ ≠ 0) : ContinuousAt b
 theorem measurable_beurlingSymbol : Measurable beurlingSymbol :=
   Complex.continuous_conj.measurable.div measurable_id
 
+/-- The Fourier symbol of `∂̄^k`: `𝓕 (∂̄^k F) (ξ) = (π i ξ)^k 𝓕 F (ξ)`. -/
+private lemma fourier_dzbarCLM_pow (k : ℕ) (F : 𝓢(ℂ, ℂ)) (ξ : ℂ) :
+    𝓕 ((dzbarCLM ^ k) F : ℂ → ℂ) ξ = ((π : ℂ) * Complex.I * ξ) ^ k • 𝓕 (F : ℂ → ℂ) ξ := by
+  induction k with
+  | zero => simp
+  | succ k ih =>
+    rw [pow_succ', mul_apply_eq_comp, fourier_dzbarCLM, ih, smul_smul, ← pow_succ']
+
+/-- The Fourier symbol of `∂^k`: `𝓕 (∂^k F) (ξ) = (π i ξ̄)^k 𝓕 F (ξ)`. -/
+private lemma fourier_dzCLM_pow (k : ℕ) (F : 𝓢(ℂ, ℂ)) (ξ : ℂ) :
+    𝓕 ((dzCLM ^ k) F : ℂ → ℂ) ξ = ((π : ℂ) * Complex.I * conj ξ) ^ k • 𝓕 (F : ℂ → ℂ) ξ := by
+  induction k with
+  | zero => simp
+  | succ k ih =>
+    rw [pow_succ', mul_apply_eq_comp, fourier_dzCLM, ih, smul_smul, ← pow_succ']
+
 /-- `𝓑^k (∂̄^k F) = ∂^k F` for every Schwartz function `F`. -/
 theorem beurlingPow_dzbarCLM_pow (k : ℕ) (F : 𝓢(ℂ, ℂ)) :
     beurlingPow k ((dzbarCLM ^ k) F : ℂ → ℂ) = ((dzCLM ^ k) F : ℂ → ℂ) := by
-  sorry
+  -- On the Fourier side, `m^k (π i ξ)^k = (π i ξ̄)^k`.
+  have hsymb : (fun ξ => beurlingSymbol ξ ^ k • 𝓕 ((dzbarCLM ^ k) F : ℂ → ℂ) ξ) =
+      𝓕 ((dzCLM ^ k) F : ℂ → ℂ) := by
+    ext ξ
+    rw [fourier_dzbarCLM_pow, fourier_dzCLM_pow, smul_smul]
+    congr 1
+    rcases eq_or_ne ξ 0 with rfl | hξ
+    · rcases k with _ | k <;> simp [beurlingSymbol]
+    · rw [beurlingSymbol, ← mul_pow]
+      congr 1
+      field_simp
+  -- Fourier inversion on `𝓢(ℂ, ℂ)`.
+  rw [beurlingPow, fourierMultiplier, hsymb, ← SchwartzMap.fourier_coe,
+    ← SchwartzMap.fourierInv_coe, FourierTransform.fourierInv_fourier_eq]
 
 /-- Density: if Schwartz functions `φ_k` satisfy `∂̄^k φ_k → u` and `∂^k φ_k → v` in `L^p`,
 `1 ≤ p`, then `‖v‖_p / ‖u‖_p ≤ ‖𝓑^k‖_p`. -/
