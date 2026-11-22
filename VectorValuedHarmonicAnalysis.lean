@@ -3,8 +3,15 @@ module
 public import VectorValuedHarmonicAnalysis.Dyadic.Average
 public import VectorValuedHarmonicAnalysis.Dyadic.Martingale
 public import VectorValuedHarmonicAnalysis.Dyadic.Shift
+public import VectorValuedHarmonicAnalysis.Hardy.Approximation
 public import VectorValuedHarmonicAnalysis.Hardy.Basic
-public import VectorValuedHarmonicAnalysis.Hardy.Factorization
+public import VectorValuedHarmonicAnalysis.Hardy.FunctionalCalculus
+public import VectorValuedHarmonicAnalysis.Hardy.GeometricMean
+public import VectorValuedHarmonicAnalysis.Hardy.Jensen
+public import VectorValuedHarmonicAnalysis.Hardy.Outer
+public import VectorValuedHarmonicAnalysis.Hardy.RangeFunction
+public import VectorValuedHarmonicAnalysis.Hardy.RieszFactorization
+public import VectorValuedHarmonicAnalysis.Hardy.Szego
 public import VectorValuedHarmonicAnalysis.HilbertTransform.Fourier
 public import VectorValuedHarmonicAnalysis.HilbertTransform.Truncated
 public import VectorValuedHarmonicAnalysis.LittlewoodPaley.Circle

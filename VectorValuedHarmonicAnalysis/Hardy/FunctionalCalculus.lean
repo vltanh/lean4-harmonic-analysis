@@ -10,10 +10,11 @@ import Mathlib.Analysis.SpecialFunctions.ContinuousFunctionalCalculus.ExpLog.Bas
 /-!
 # Functions of matrices and of matrix-valued functions
 
-* The matrices `Mᴴ M`: their entries, trace and determinant.
+* The matrices `Mᴴ M`: their entries, trace and determinant. Matrices of full rank; the range of a
+  product and of `M Mᴴ`.
 * The trace of a matrix-valued function on the circle: integrability, mean value, and limits of the
-  integrals (`tendsto_integral_trace_mul`, `TendstoLTwo.tendsto_integral_trace`). The determinant:
-  measurability.
+  integrals (`tendsto_integral_trace_mul`, `TendstoLTwo.tendsto_integral_trace`). The determinant
+  and the inverse: measurability.
 * The continuous functional calculus of Hermitian matrices: trace and determinant of `φ (W)`,
   measurability of `t ↦ φ (W t)` for a Hermitian matrix-valued function `W` on the circle.
 * The square root of a positive semidefinite function, which has entries in `L²` if the function has
@@ -85,9 +86,34 @@ theorem conjTranspose_mul_mul_eq [Fintype n] {B : Matrix m n ℂ} {W : Matrix n 
 
 end ConjTransposeMul
 
+/-! ### Rank and range -/
+
+section Range
+
+variable {l m n : Type*} [Fintype n]
+
+/-- A square matrix of full rank is invertible. -/
+theorem det_ne_zero_of_rank_eq [DecidableEq n] {M : Matrix n n ℂ} (h : M.rank = Fintype.card n) :
+    M.det ≠ 0 :=
+  ((Matrix.isUnit_iff_isUnit_det M).1 (Matrix.mulVec_surjective_iff_isUnit.1
+    (Matrix.mulVec_surjective_iff_rank_eq_card.2 h))).ne_zero
+
+/-- The range of a product is contained in that of its left factor. -/
+theorem range_mul_le [Fintype l] (M : Matrix m n ℂ) (N : Matrix n l ℂ) :
+    LinearMap.range (M * N).mulVecLin ≤ LinearMap.range M.mulVecLin := by
+  rw [Matrix.mulVecLin_mul]
+  exact LinearMap.range_comp_le_range _ _
+
+/-- The range of `M Mᴴ` is that of `M`. -/
+theorem range_mul_conjTranspose [Fintype m] (M : Matrix m n ℂ) :
+    LinearMap.range (M * Mᴴ).mulVecLin = LinearMap.range M.mulVecLin :=
+  Submodule.eq_of_le_of_finrank_eq (range_mul_le M Mᴴ) (Matrix.rank_self_mul_conjTranspose M)
+
+end Range
+
 variable {m n : Type*} [Fintype m] [Fintype n]
 
-/-! ### Trace and determinant of a matrix-valued function -/
+/-! ### Trace, determinant and inverse of a matrix-valued function -/
 
 /-- The real part of the trace of a function with integrable entries is integrable. -/
 theorem integrable_trace_re {W : UnitAddCircle → Matrix n n ℂ}
@@ -200,6 +226,19 @@ theorem aestronglyMeasurable_det {W : UnitAddCircle → Matrix n n ℂ}
   exact Finset.aestronglyMeasurable_fun_sum _ fun σ _ =>
     (Finset.aestronglyMeasurable_fun_prod _ fun i _ => hW (σ i) i).const_smul _
 
+/-- The entries of the inverse of a matrix-valued function with measurable entries are
+measurable. -/
+theorem aestronglyMeasurable_inv {W : UnitAddCircle → Matrix n n ℂ}
+    (hW : ∀ i j, AEStronglyMeasurable (fun t => W t i j) haarAddCircle) (i j : n) :
+    AEStronglyMeasurable (fun t => (W t)⁻¹ i j) haarAddCircle := by
+  simp only [Matrix.inv_def, Ring.inverse_eq_inv', Matrix.smul_apply, smul_eq_mul,
+    Matrix.adjugate_apply]
+  refine (aestronglyMeasurable_det hW).inv₀.mul (aestronglyMeasurable_det fun a b => ?_)
+  by_cases h : a = j
+  · simp only [h, Matrix.updateRow_self]
+    exact aestronglyMeasurable_const
+  · simpa only [Matrix.updateRow_ne h] using hW a b
+
 /-! ### The functional calculus -/
 
 omit [DecidableEq n] [Fintype n] in
@@ -283,22 +322,34 @@ theorem eq_cfc_sqrt {R W : Matrix n n ℂ} (hR : R.PosSemidef) (h : R * R = W) :
   rw [← CFC.sqrt_unique h hR.nonneg,
     CFC.sqrt_unique (cfc_sqrt_mul_self hW) (posSemidef_cfc_sqrt W).nonneg]
 
+omit [Fintype n] [DecidableEq n] in
+/-- If `Aᴴ A = W`, `A` is measurable and the diagonal entries of `W` are integrable, the entries of
+`A` are in `L²`. -/
+theorem memLp_of_conjTranspose_mul_self {A : UnitAddCircle → Matrix m n ℂ}
+    {W : UnitAddCircle → Matrix n n ℂ}
+    (hA : ∀ i j, AEStronglyMeasurable (fun t => A t i j) haarAddCircle)
+    (hW : ∀ j, Integrable (fun t => W t j j) haarAddCircle)
+    (h : ∀ᵐ t ∂haarAddCircle, (A t)ᴴ * A t = W t) (i : m) (j : n) :
+    MemLp (fun t => A t i j) 2 haarAddCircle := by
+  rw [memLp_two_iff_integrable_sq_norm (hA i j)]
+  refine (hW j).mono ((hA i j).norm.pow 2) ?_
+  filter_upwards [h] with t ht
+  rw [Real.norm_of_nonneg (sq_nonneg _)]
+  have h1 := norm_apply_sq_le_conjTranspose_mul_self (A t) i j
+  rw [ht] at h1
+  exact h1.trans (Complex.re_le_norm _)
+
 /-- The square root of a positive semidefinite function with integrable entries has its entries in
 `L²`. -/
 theorem memLp_cfc_sqrt {W : UnitAddCircle → Matrix n n ℂ}
     (hW : ∀ i j, Integrable (fun t => W t i j) haarAddCircle)
     (hpos : ∀ᵐ t ∂haarAddCircle, (W t).PosSemidef) (i j : n) :
     MemLp (fun t => cfc Real.sqrt (W t) i j) 2 haarAddCircle := by
-  have hm : AEStronglyMeasurable (fun t => cfc Real.sqrt (W t) i j) haarAddCircle :=
-    aestronglyMeasurable_cfc (fun i j => (hW i j).aestronglyMeasurable)
-      (hpos.mono fun t ht => ht.isHermitian) Real.continuous_sqrt i j
-  rw [memLp_two_iff_integrable_sq_norm hm]
-  refine (hW j j).mono (hm.norm.pow 2) ?_
+  refine memLp_of_conjTranspose_mul_self (aestronglyMeasurable_cfc
+    (fun i j => (hW i j).aestronglyMeasurable) (hpos.mono fun t ht => ht.isHermitian)
+      Real.continuous_sqrt) (fun j => hW j j) ?_ i j
   filter_upwards [hpos] with t ht
-  have h := norm_apply_sq_le_conjTranspose_mul_self (cfc Real.sqrt (W t)) i j
-  rw [(posSemidef_cfc_sqrt (W t)).isHermitian.eq, cfc_sqrt_mul_self ht] at h
-  rw [Real.norm_of_nonneg (sq_nonneg _)]
-  exact h.trans (Complex.re_le_norm _)
+  rw [(posSemidef_cfc_sqrt (W t)).isHermitian.eq, cfc_sqrt_mul_self ht]
 
 /-! ### The exponential -/
 

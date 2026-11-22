@@ -130,7 +130,7 @@ theorem exists_trigPoly_eq_one_add_mul [Fintype n] [DecidableEq n] {c : ℤ →�
       Matrix.one_mul]
     rfl
 
-/-! ### Integrable functions -/
+/-! ### Measurable and integrable functions -/
 
 /-- Continuous functions on the circle are integrable. -/
 theorem integrable_haar_of_continuous {E : Type*} [NormedAddCommGroup E] {u : UnitAddCircle → E}
@@ -146,6 +146,15 @@ theorem exists_bound_of_continuous [Finite m] [Finite n] {f : UnitAddCircle → 
     isCompact_univ.exists_bound_of_continuousOn (E := m → n → ℂ) hf.continuousOn
   exact ⟨C, fun t i j => ((norm_le_pi_norm _ j).trans (norm_le_pi_norm _ i)).trans
     (hC t (Set.mem_univ t))⟩
+
+/-- The entries of a product of functions with measurable entries are measurable. -/
+theorem aestronglyMeasurable_mul [Fintype m] {f : UnitAddCircle → Matrix l m ℂ}
+    {g : UnitAddCircle → Matrix m n ℂ}
+    (hf : ∀ i j, AEStronglyMeasurable (fun t => f t i j) haarAddCircle)
+    (hg : ∀ i j, AEStronglyMeasurable (fun t => g t i j) haarAddCircle) (i : l) (j : n) :
+    AEStronglyMeasurable (fun t => (f t * g t) i j) haarAddCircle := by
+  simp only [Matrix.mul_apply]
+  exact Finset.aestronglyMeasurable_fun_sum _ fun o _ => (hf i o).mul (hg o j)
 
 /-- The entries of the product of a continuous function and a function with integrable entries are
 integrable. -/
@@ -175,6 +184,12 @@ theorem integrable_mul_of_memLp [Fintype m] {g : UnitAddCircle → Matrix l m �
     Integrable (fun t => (g t * f t) i j) haarAddCircle := by
   simp only [Matrix.mul_apply]
   exact integrable_finsetSum _ fun o _ => (hg i o).integrable_mul (hf o j)
+
+/-- The entries of `fᴴ f` are integrable if those of `f` are in `L²`. -/
+theorem integrable_conjTranspose_mul_self [Fintype m] {f : UnitAddCircle → Matrix m n ℂ}
+    (hf : ∀ i j, MemLp (fun t => f t i j) 2 haarAddCircle) (i j : n) :
+    Integrable (fun t => ((f t)ᴴ * f t) i j) haarAddCircle :=
+  integrable_mul_of_memLp (g := fun t => (f t)ᴴ) (fun i j => (hf j i).star) hf i j
 
 /-- The product of a bounded function and a function with entries in `L²` has entries in `L²`. -/
 theorem memLp_bounded_mul [Fintype m] {g : UnitAddCircle → Matrix l m ℂ}
@@ -677,6 +692,11 @@ private theorem continuous_fejerKernel (K : ℕ) : Continuous (fejerKernel K) :=
     continuous_finsetSum _ fun j _ => (fourier (j : ℤ)).continuous
   exact (this.norm.pow 2).div_const _
 
+/-- The Fejér kernel is bounded. -/
+private theorem exists_norm_fejerKernel_le (K : ℕ) : ∃ C : ℝ, ∀ t, ‖fejerKernel K t‖ ≤ C := by
+  obtain ⟨C, hC⟩ := (isCompact_range (continuous_fejerKernel K)).isBounded.exists_norm_le
+  exact ⟨C, fun t => hC _ ⟨t, rfl⟩⟩
+
 /-- The characters are multiplicative. -/
 private theorem fourier_sub_apply (k : ℤ) (t s : UnitAddCircle) :
     fourier k (t - s) = fourier k t * fourier (-k) s := by
@@ -799,10 +819,10 @@ private theorem integral_norm_fejerMean_le {u : UnitAddCircle → ℂ} (hu : Int
     ∫ t, ‖fejerMean u K t‖ ∂haarAddCircle ≤ ∫ t, ‖u t‖ ∂haarAddCircle := by
   have hint : Integrable (fun q : UnitAddCircle × UnitAddCircle =>
       fejerKernel K (q.1 - q.2) * ‖u q.2‖) (haarAddCircle.prod haarAddCircle) := by
-    obtain ⟨C, hC⟩ := (isCompact_range (continuous_fejerKernel K)).isBounded.exists_norm_le
+    obtain ⟨C, hC⟩ := exists_norm_fejerKernel_le K
     exact (hu.norm.comp_snd haarAddCircle).bdd_mul (c := C)
       ((continuous_fejerKernel K).comp continuous_sub).aestronglyMeasurable
-      (ae_of_all _ fun q => hC _ ⟨_, rfl⟩)
+      (ae_of_all _ fun q => hC _)
   calc ∫ t, ‖fejerMean u K t‖ ∂haarAddCircle
       ≤ ∫ t, ∫ s, fejerKernel K (t - s) * ‖u s‖ ∂haarAddCircle ∂haarAddCircle := by
         refine integral_mono (integrable_haar_of_continuous (continuous_fejerMean hu K).norm)
@@ -897,11 +917,11 @@ private theorem tendsto_fejerMean_trigPoly (c : ℤ →₀ ℂ) :
 private theorem integrable_fejerKernel_mul {u : UnitAddCircle → ℂ} (hu : Integrable u haarAddCircle)
     (K : ℕ) (t : UnitAddCircle) :
     Integrable (fun s => (fejerKernel K (t - s) : ℂ) * u s) haarAddCircle := by
-  obtain ⟨C, hC⟩ := (isCompact_range (continuous_fejerKernel K)).isBounded.exists_norm_le
+  obtain ⟨C, hC⟩ := exists_norm_fejerKernel_le K
   refine hu.bdd_mul (c := C) (Complex.continuous_ofReal.comp ((continuous_fejerKernel K).comp
     (continuous_sub_left t))).aestronglyMeasurable (ae_of_all _ fun s => ?_)
   rw [Complex.norm_real]
-  exact hC _ ⟨_, rfl⟩
+  exact hC _
 
 /-- `‖σ_K u − u‖₁ ≤ ‖σ_K p − p‖₁ + 2 ‖u − p‖₁` for the Fejér means `σ_K`, `K ≥ 1`. -/
 private theorem integral_norm_fejerMean_sub_le {u p : UnitAddCircle → ℂ}
@@ -1016,10 +1036,8 @@ private theorem tendsto_matFourierCoeff_of_bounded [Fintype m]
     Tendsto (fun N => matFourierCoeff (fun t => G N t * f t) k) atTop
       (𝓝 (matFourierCoeff (fun t => g t * f t) k)) := by
   refine tendsto_pi_nhds.2 fun i => tendsto_pi_nhds.2 fun j => ?_
-  have hmeas (N : ℕ) : AEStronglyMeasurable (fun t => (G N t * f t) i j) haarAddCircle := by
-    simp only [Matrix.mul_apply]
-    exact Finset.aestronglyMeasurable_fun_sum _ fun o _ =>
-      (hG N i o).mul (hf o j).aestronglyMeasurable
+  have hmeas (N : ℕ) : AEStronglyMeasurable (fun t => (G N t * f t) i j) haarAddCircle :=
+    aestronglyMeasurable_mul (hG N) (fun i j => (hf i j).aestronglyMeasurable) i j
   refine tendsto_integral_of_dominated_convergence (fun t => ∑ o, C * ‖f t o j‖)
     (fun N => (fourier (-k)).continuous.aestronglyMeasurable.smul (hmeas N))
     (integrable_finsetSum _ fun o _ => (hf o j).norm.const_mul C)

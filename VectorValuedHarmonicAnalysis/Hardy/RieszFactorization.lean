@@ -16,6 +16,9 @@ on one separable Hilbert space; here the values are matrices, and rectangular ma
 * `isFactorable_cfc_sqrt` (Lemma 10.4): `(Aᴴ A)^{1/2}` is factorable if `A ∈ H¹`.
 * `exists_mul_eq_of_isHardyOne` (Theorem 4).
 * `complexSchattenNorm_sq_of_factorization`: the Schatten norms of the factors.
+
+(Lemma 10.1 is `isFactorable_iff`; Lemmas 10.2 and 10.5 concern infinite dimension and are not
+needed.)
 -/
 
 @[expose] public section
@@ -51,8 +54,10 @@ private theorem IsHardyOne.isHardyTwo_of_bounded {f : UnitAddCircle → Matrix l
 /-- Sarason (1967), end of the proof of Theorem 4: if `B` is outer and its constant coefficient is
 surjective, a function `Q` with entries in `L²` such that `Q B` is analytic is analytic. There are
 analytic polynomials `G_N` such that `B G_N → 1` in `L²`; by Schwarz's inequality,
-`(Q B) G_N → Q` in `L¹`, and `(Q B) G_N` is analytic. (Applied to `1 × 1` matrices, this is also the
-"well-known property of outer functions" at the end of the proof of Lemma 10.4.) -/
+`(Q B) G_N → Q` in `L¹`, and `(Q B) G_N` is analytic. (With a `1 × 1` outer function this is also
+the "well-known property of outer functions" used at the end of the proof of Lemma 10.4, for which
+Sarason cites Hoffman, p. 75. The case of a bounded `Q` is `IsOuter.isHardyTwo_of_bounded_mul`, the
+argument of Helson–Lowdenslager (1961), p. 208.) -/
 private theorem IsOuter.isHardyTwo_of_isHardyOne_mul [Fintype m] [Fintype n] [DecidableEq n]
     {B : UnitAddCircle → Matrix m n ℂ} (hB : IsOuter B)
     (h0 : (matFourierCoeff B 0).rank = Fintype.card m) {Q : UnitAddCircle → Matrix l m ℂ}
@@ -69,56 +74,14 @@ private theorem IsOuter.isHardyTwo_of_isHardyOne_mul [Fintype m] [Fintype n] [De
   simpa only [Matrix.mul_assoc] using
     (hQB.mul_bounded (isHardyTwo_trigPoly (hc N)).isHardyOne (ae_of_all _ hD)).1.2 k hk
 
-/-- A square matrix of full rank is invertible. -/
-private theorem det_ne_zero_of_rank_eq [Fintype n] [DecidableEq n] {M : Matrix n n ℂ}
-    (h : M.rank = Fintype.card n) : M.det ≠ 0 :=
-  isUnit_iff_ne_zero.1 ((Matrix.isUnit_iff_isUnit_det M).1 <| Matrix.mulVec_surjective_iff_isUnit.1
-    (Matrix.mulVec_surjective_iff_rank_eq_card.2 h))
-
-/-- The entries of the inverse of a matrix-valued function with measurable entries are
-measurable. -/
-private theorem aestronglyMeasurable_inv [Fintype n] [DecidableEq n]
-    {W : UnitAddCircle → Matrix n n ℂ}
-    (hW : ∀ i j, AEStronglyMeasurable (fun t => W t i j) haarAddCircle) (i j : n) :
-    AEStronglyMeasurable (fun t => (W t)⁻¹ i j) haarAddCircle := by
-  simp only [Matrix.inv_def, Ring.inverse_eq_inv', Matrix.smul_apply, smul_eq_mul,
-    Matrix.adjugate_apply]
-  refine (aestronglyMeasurable_det hW).inv₀.mul (aestronglyMeasurable_det fun a b => ?_)
-  by_cases h : a = j
-  · simp only [h, Matrix.updateRow_self]
-    exact aestronglyMeasurable_const
-  · simpa only [Matrix.updateRow_ne h] using hW a b
-
-/-- The entries of a product of functions with measurable entries are measurable. -/
-private theorem aestronglyMeasurable_mul [Fintype m] {f : UnitAddCircle → Matrix l m ℂ}
-    {g : UnitAddCircle → Matrix m n ℂ}
-    (hf : ∀ i j, AEStronglyMeasurable (fun t => f t i j) haarAddCircle)
-    (hg : ∀ i j, AEStronglyMeasurable (fun t => g t i j) haarAddCircle) (i : l) (j : n) :
-    AEStronglyMeasurable (fun t => (f t * g t) i j) haarAddCircle := by
-  simp only [Matrix.mul_apply]
-  exact Finset.aestronglyMeasurable_fun_sum _ fun o _ => (hf i o).mul (hg o j)
-
-/-- If `Aᴴ A = W` and the diagonal entries of `W` are integrable, the entries of `A` are in `L²`. -/
-private theorem memLp_of_conjTranspose_mul_self [Fintype m] {A : UnitAddCircle → Matrix m n ℂ}
-    {W : UnitAddCircle → Matrix n n ℂ}
-    (hA : ∀ i j, AEStronglyMeasurable (fun t => A t i j) haarAddCircle)
-    (hW : ∀ j, Integrable (fun t => W t j j) haarAddCircle)
-    (h : ∀ᵐ t ∂haarAddCircle, (A t)ᴴ * A t = W t) (i : m) (j : n) :
-    MemLp (fun t => A t i j) 2 haarAddCircle := by
-  rw [memLp_two_iff_integrable_sq_norm (hA i j)]
-  refine (hW j).mono ((hA i j).norm.pow 2) ?_
-  filter_upwards [h] with t ht
-  rw [Real.norm_of_nonneg (sq_nonneg _)]
-  have h1 := norm_apply_sq_le_conjTranspose_mul_self (A t) i j
-  rw [ht] at h1
-  exact h1.trans ((le_abs_self _).trans (Complex.abs_re_le_norm _))
-
 end Preliminaries
 
 variable {m n : Type*} [Fintype m] [Fintype n] [DecidableEq n]
 
 /-- Sarason (1967), Lemma 10.3: a factorable function is `Bᴴ B` with `B` outer. The constant
-coefficient of `B` is surjective, and `B` has at most as many rows as columns. -/
+coefficient of `B` is surjective, and `B` has at most as many rows as columns. (Proved in Helson's
+book, cited by Sarason; here by Helson–Lowdenslager (1961), `exists_isOuter`. For Sarason's
+definition of outer functions see Outer.lean.) -/
 theorem IsFactorable.exists_isOuter {R : UnitAddCircle → Matrix n n ℂ} (hR : IsFactorable R) :
     ∃ (q : ℕ) (B : UnitAddCircle → Matrix (Fin q) n ℂ), q ≤ Fintype.card n ∧ IsOuter B ∧
       (matFourierCoeff B 0).rank = q ∧ ∀ᵐ t ∂haarAddCircle, (B t)ᴴ * B t = R t := by
@@ -134,11 +97,7 @@ omit [DecidableEq n] in
 /-- The range of `R²` is that of `R`, for a Hermitian matrix `R`. -/
 private theorem range_mul_self {R : Matrix n n ℂ} (hR : R.IsHermitian) :
     LinearMap.range (R * R).mulVecLin = LinearMap.range R.mulVecLin := by
-  refine Submodule.eq_of_le_of_finrank_eq ?_ ?_
-  · rw [Matrix.mulVecLin_mul]
-    exact LinearMap.range_comp_le_range _ _
-  · have h := Matrix.rank_conjTranspose_mul_self R
-    rwa [hR.eq] at h
+  simpa only [hR.eq] using range_mul_conjTranspose R
 
 omit [Fintype n] [DecidableEq n] in
 /-- `Aᴴ A` is factorable if `A ∈ H²`. -/
@@ -176,8 +135,7 @@ private theorem isFactorable_cfc_sqrt_of_bounded {A : UnitAddCircle → Matrix m
     (hA : IsHardyOne A) (hC : ∀ᵐ t ∂haarAddCircle, ∀ i j, ‖A t i j‖ ≤ C) :
     IsFactorable fun t => cfc Real.sqrt ((A t)ᴴ * A t) := by
   have hA2 := hA.isHardyTwo_of_bounded hC
-  have hint : ∀ i j, Integrable (fun t => ((A t)ᴴ * A t) i j) haarAddCircle :=
-    integrable_mul_of_memLp (g := fun t => (A t)ᴴ) (fun i j => (hA2.1 j i).star) hA2.1
+  have hint := integrable_conjTranspose_mul_self hA2.1
   have hpos : ∀ᵐ t ∂haarAddCircle, ((A t)ᴴ * A t).PosSemidef :=
     ae_of_all _ fun t => Matrix.posSemidef_conjTranspose_mul_self (A t)
   have hR (t : UnitAddCircle) : (cfc Real.sqrt ((A t)ᴴ * A t)).PosSemidef := posSemidef_cfc_sqrt _
@@ -190,7 +148,7 @@ private theorem isFactorable_cfc_sqrt_of_bounded {A : UnitAddCircle → Matrix m
   · filter_upwards [hrange] with t ht
     rw [ht, ← range_mul_self (hR t).isHermitian, hsq]
   · simp only
-    rw [← hsq t, rangeDet_mul_self (hR t), hsq t, Real.log_pow]
+    rw [← hsq t, rangeDet_mul_self (hR t).isHermitian, hsq t, Real.log_pow]
     push_cast
     ring
 
@@ -264,8 +222,8 @@ private theorem IsHardyOne.sq_smul {A : UnitAddCircle → Matrix m n ℂ} (hA : 
   exact (mul_assoc _ _ _).trans (mul_comm _ _)
 
 omit [Fintype n] [DecidableEq n] in
-/-- Sarason (1967), end of the proof of Lemma 10.4: let `h` be an outer scalar function and
-`B₀ ∈ H²`. If the entries of `B = h⁻¹ B₀` are in `L²`, then `B ∈ H²`. -/
+/-- Sarason (1967), end of the proof of Lemma 10.4: let `h` be an outer scalar function with
+`ĥ (0) ≠ 0` and `B₀ ∈ H²`. If the entries of `B = h⁻¹ B₀` are in `L²`, then `B ∈ H²`. -/
 private theorem IsHardyTwo.inv_smul {k : Type*} {B₀ : UnitAddCircle → Matrix k n ℂ}
     (hB₀ : IsHardyTwo B₀) {h : UnitAddCircle → Matrix Unit Unit ℂ} (hh : IsOuter h)
     (h0 : (matFourierCoeff h 0).rank = Fintype.card Unit)
@@ -379,8 +337,8 @@ private theorem polarFactor_mul_eq (hM : IsUnit (M * Mᴴ).det)
   exact hAP.symm
 
 omit [DecidableEq n] in
-/-- "`Jᴴ J` is almost everywhere the projection onto the closure of the range of `A₂ᴴ`, and we have
-`Jᴴ J A₂ᴴ = A₂ᴴ`." -/
+/-- `Jᴴ J A₂ᴴ = A₂ᴴ`, the equality from which (15) gives `A₁ᴴ A₁ = A₂ A₂ᴴ`. In the source, because
+`Jᴴ J` is the projection onto the closure of the range of `A₂ᴴ`; here by computation. -/
 private theorem polarFactor_conjTranspose_mul_mul (hM : IsUnit (M * Mᴴ).det)
     (h : Aᴴ * A = Mᴴ * M * (Mᴴ * M)) :
     (polarFactor A M)ᴴ * polarFactor A M * Mᴴ = Mᴴ := by
@@ -411,7 +369,7 @@ private theorem polarFactor_factorization (hM : IsUnit (M * Mᴴ).det)
 end Polar
 
 /-- An outer function whose constant coefficient is surjective is surjective almost everywhere, by
-Helson–Lowdenslager's Theorem 9. -/
+Helson–Lowdenslager (1961), Theorem 9. -/
 private theorem IsOuter.isUnit_det_mul_conjTranspose {q : ℕ}
     {B : UnitAddCircle → Matrix (Fin q) n ℂ} (hB : IsOuter B)
     (h0 : (matFourierCoeff B 0).rank = q) :
@@ -438,7 +396,7 @@ private theorem exists_mul_eq_of_isHardyOne_fin {A : UnitAddCircle → Matrix m 
     exact polarFactor_factorization h1 h2
   have hstar (i : n) (j : Fin q) : MemLp (fun t => (A₂ t)ᴴ i j) 2 haarAddCircle :=
     (hA₂.1.1 j i).star
-  -- `J` is measurable
+  -- `A₁ = J A₂ᴴ` is measurable
   have hm (i : m) (j : Fin q) : AEStronglyMeasurable (fun t => A₁ t i j) haarAddCircle := by
     have hA2 (i j) := (hA₂.1.1 i j).aestronglyMeasurable
     have hA2' (i j) := (hstar i j).aestronglyMeasurable

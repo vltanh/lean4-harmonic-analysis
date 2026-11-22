@@ -20,7 +20,8 @@ In the statements the square functions are written without square roots of matri
 `‖(Σ x_kᵀ x_k)^{1/2}‖_{S_q} = ‖Σ x_kᵀ x_k‖_{S_{q/2}}^{1/2}`, and similarly for `Σ x_k x_kᵀ`. For
 normal `x_k` the two square functions agree (`ncKhintchine_of_normal`).
 
-In the proof the `x_k` are viewed as complex matrices, and the square functions are
+The sources consider complex operators on Hilbert spaces; here the `x_k` are real matrices. In the
+proof they are viewed as complex matrices, and the square functions are
 `‖blockCol x‖_{S_q}` and `‖blockRow x‖_{S_q}` (`BanachProbability.Schatten.Block`), the norms of
 `C_q (ℓ²_R)` and `C_q (ℓ²_L)`.
 
@@ -29,6 +30,7 @@ In the proof the `x_k` are viewed as complex matrices, and the square functions 
 It is the convexity inequality (I.7) of Lust-Piquard–Pisier, p. 247, which follows from (I.5) and
 the triangle inequality in `C_F`, here `C_F = S_{q/2}`: `‖blockCol x‖_{S_q}² ≤ E ‖Σ ε_k x_k‖_{S_q}²`
 (`BanachProbability.complexSchattenNorm_blockCol_sq_le_avg`), and its row form; then `L² ≤ L^q`.
+(`BanachProbability.ncKhintchine_lower_col` and `ncKhintchine_lower_row` are the same bounds.)
 
 ## The upper bound
 
@@ -77,31 +79,24 @@ private theorem complexSchattenNorm_blockCol_map_ofReal {q : ℝ} (hq : 0 < q)
     complexSchattenNorm (ENNReal.ofReal q) (blockCol fun k => (x k).map Complex.ofReal) =
       √(schattenNorm (ENNReal.ofReal (q / 2)) (∑ k, (x k)ᵀ * x k)) := by
   have hq0 : ENNReal.ofReal q ≠ 0 := (ENNReal.ofReal_pos.2 hq).ne'
-  have hq2 : ENNReal.ofReal (q / 2) ≠ 0 := (ENNReal.ofReal_pos.2 (by linarith)).ne'
-  have h := complexSchattenNorm_blockCol_sq hq0 fun k => (x k).map Complex.ofReal
-  have e : ∑ k, ((x k).map Complex.ofReal)ᴴ * (x k).map Complex.ofReal =
-      (∑ k, (x k)ᵀ * x k).map Complex.ofReal := by
-    ext i j
-    simp [Matrix.sum_apply, Matrix.mul_apply]
-  rw [e, ← ENNReal.ofReal_ofNat 2, ← ENNReal.ofReal_div_of_pos two_pos,
-    complexSchattenNorm_map_ofReal hq2] at h
-  rw [← h, Real.sqrt_sq (complexSchattenNorm_nonneg _ _)]
+  change complexSchattenNorm _ ((blockCol x).map Complex.ofReal) = _
+  rw [complexSchattenNorm_map_ofReal hq0, ENNReal.ofReal_div_of_pos two_pos, ENNReal.ofReal_ofNat,
+    show ∑ k, (x k)ᵀ * x k = (blockCol x)ᵀ * blockCol x from
+      (conjTranspose_blockCol_mul_blockCol x x).symm,
+    schattenNorm_transpose_mul_self hq0, Real.sqrt_sq (schattenNorm_nonneg _ _)]
 
 /-- `‖blockRow x‖_{S_q} = ‖Σ x_k x_kᵀ‖_{S_{q/2}}^{1/2}` for real matrices. -/
 private theorem complexSchattenNorm_blockRow_map_ofReal {q : ℝ} (hq : 0 < q)
     (x : Fin K → Matrix n n ℝ) :
     complexSchattenNorm (ENNReal.ofReal q) (blockRow fun k => (x k).map Complex.ofReal) =
       √(schattenNorm (ENNReal.ofReal (q / 2)) (∑ k, x k * (x k)ᵀ)) := by
-  have hq0 : ENNReal.ofReal q ≠ 0 := (ENNReal.ofReal_pos.2 hq).ne'
-  have hq2 : ENNReal.ofReal (q / 2) ≠ 0 := (ENNReal.ofReal_pos.2 (by linarith)).ne'
-  have h := complexSchattenNorm_blockRow_sq hq0 fun k => (x k).map Complex.ofReal
-  have e : ∑ k, (x k).map Complex.ofReal * ((x k).map Complex.ofReal)ᴴ =
-      (∑ k, x k * (x k)ᵀ).map Complex.ofReal := by
-    ext i j
-    simp [Matrix.sum_apply, Matrix.mul_apply]
-  rw [e, ← ENNReal.ofReal_ofNat 2, ← ENNReal.ofReal_div_of_pos two_pos,
-    complexSchattenNorm_map_ofReal hq2] at h
-  rw [← h, Real.sqrt_sq (complexSchattenNorm_nonneg _ _)]
+  have h := complexSchattenNorm_blockCol_map_ofReal hq fun k => (x k)ᵀ
+  simp only [Matrix.transpose_transpose] at h
+  rw [← h, ← complexSchattenNorm_blockRow_conjTranspose]
+  congr 2
+  funext k
+  ext i j
+  simp
 
 /-- `‖Σ ε_k x_k‖_{S_p}` is the same when the real matrices `x_k` are viewed as complex ones. -/
 private theorem complexSchattenNorm_sum_coin_smul_map_ofReal {p : ℝ} (hp : 0 < p)
@@ -158,7 +153,7 @@ private theorem avg_trace_transpose_mul_eq (x : Fin K → Matrix n n ℝ)
   simp only [← e, Matrix.trace_mul_comm (φ _)ᵀ]
   exact avg_trace_sum_coin_smul_mul x fun ε => (φ ε)ᵀ
 
-/-- The duality of `C_q (ℓ²_R) ∩ C_q (ℓ²_L)` and `C_{q'} (ℓ²_R) + C_{q'} (ℓ²_L)`
+/-- The bound in the duality of `C_q (ℓ²_R) ∩ C_q (ℓ²_L)` and `C_{q'} (ℓ²_R) + C_{q'} (ℓ²_L)`
 (Lust-Piquard–Pisier, (I.12), p. 248, with the maximum of the two norms): if `φ_k = a_k + b_k`, then
 `Σ tr (x_k φ_kᵀ) ≤ max (‖blockCol x‖_q, ‖blockRow x‖_q) (‖blockRow a‖_{q'} + ‖blockCol b‖_{q'})`.
 -/

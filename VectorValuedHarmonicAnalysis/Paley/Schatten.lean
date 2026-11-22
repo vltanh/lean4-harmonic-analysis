@@ -1,6 +1,6 @@
 module
 
-public import VectorValuedHarmonicAnalysis.Hardy.Factorization
+public import VectorValuedHarmonicAnalysis.Hardy.RieszFactorization
 import BanachProbability.Noncommutative.ComplexSchattenUMD
 
 /-!
@@ -24,8 +24,10 @@ The square functions are written as norms of block rows and block columns
 
 ## The proof
 
-The proof is that of Theorem III.1 (pp. 249–250 and 252–253). Write `f = g h` with `g, h ∈ H²`.
-Splitting `f̂ (2^k) = Σ ĝ (q) ĥ (2^k − q)` at `q = 2^{k−1}` gives `f̂ (2^k) = A_k + B_k` with
+The proof is that of Theorem III.1 (pp. 249–250 and 252–253). By Sarason's theorem (1967), `f = g h`
+with `g, h ∈ H²` and `‖f‖_{L¹ (C_p)} = ‖g‖_{L² (C_{2p})} ‖h‖_{L² (C_{2p})}`
+(`exists_mul_eq_integral_complexSchattenNorm_eq`; (α), (β), p. 252). Splitting
+`f̂ (2^k) = Σ ĝ (q) ĥ (2^k − q)` at `q = 2^{k−1}` gives `f̂ (2^k) = A_k + B_k` with
 `A_k = ∫ g H_{2^k} e_{−2^k}` and `B_k = ∫ G_{2^k} h e_{−2^k}`. By Jensen's inequality in
 `C_p (ℓ²_L)`, Hölder's inequality and the Cauchy–Schwarz inequality, the square function of the
 `A_k` is at most the norm of `g` in `L² (𝕋; C_{2p})` times that of the square function of the
@@ -52,8 +54,6 @@ Departures from the source:
   as a known argument. The fact is proved in BanachProbability by Randrianantoanina's theorem on
   noncommutative martingale transforms (`BanachProbability.umdConst_two_complexSchattenSpace_le`;
   J. Funct. Anal. 194 (2002)).
-* In place of the equality (β), p. 252, `exists_riesz_factorization` gives
-  `∫ ‖g‖_{S_{2p}}² ≤ ∫ ‖f‖_{S_p}` and `∫ ‖h‖_{S_{2p}}² ≤ 2 ∫ ‖f‖_{S_p}`.
 * The case `p = 1` is covered by the proof of Theorem III.1. The proof of Theorem II.1, with
   Parseval's identity in place of (III.2) and (III.3), is not followed, and its constant `1 + √2` is
   not obtained.
@@ -637,11 +637,6 @@ private theorem continuous_paleyBlockOpen (g : UnitAddCircle → Matrix n n ℂ)
     Continuous (paleyBlockOpen g k) :=
   continuous_finsetSum _ fun _ _ => (fourier _).continuous.smul continuous_const
 
-/-- Continuous functions on the circle are integrable. -/
-private theorem integrable_of_continuous {f : UnitAddCircle → ℝ} (hf : Continuous f) :
-    Integrable f haarAddCircle :=
-  hf.integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
-
 /-- (III.2), integrated. -/
 private theorem integral_sq_le_avg {q : ℝ} (hq : 1 ≤ q) {K : ℕ}
     {U : Fin K → UnitAddCircle → Matrix n n ℂ} (hU : ∀ k, Continuous (U k)) {N : UnitAddCircle → ℝ}
@@ -656,9 +651,9 @@ private theorem integral_sq_le_avg {q : ℝ} (hq : 1 ≤ q) {K : ℕ}
     (continuous_complexSchattenNorm (ENNReal.one_le_ofReal.2 hq)).comp (hsum ε)
   have hint (ε : Fin K → Bool) : Integrable (fun t =>
       complexSchattenNorm (ENNReal.ofReal q) (∑ k, coin (ε k) • U k t) ^ 2) haarAddCircle :=
-    integrable_of_continuous ((hcont ε).pow 2)
+    integrable_haar_of_continuous ((hcont ε).pow 2)
   rw [avg, ← integral_finsetSum _ fun ε _ => hint ε, ← integral_div]
-  refine integral_mono (integrable_of_continuous (hN.pow 2)) ?_ fun t => ?_
+  refine integral_mono (integrable_haar_of_continuous (hN.pow 2)) ?_ fun t => ?_
   · exact (integrable_finsetSum _ fun ε _ => hint ε).div_const _
   · exact hle t
 
@@ -760,67 +755,21 @@ end SquareFunction
 
 /-! ### Paley's inequality -/
 
-/-- A trigonometric polynomial with vanishing `L¹` norm is zero. -/
-private theorem eq_zero_of_integral_norm_eq_zero {q : ℝ≥0∞} (hq : 1 ≤ q)
-    {c : ℤ →₀ Matrix n n ℂ}
-    (h : ∫ t, complexSchattenNorm q (trigPoly c t) ∂haarAddCircle = 0) : c = 0 := by
-  have hcont : Continuous fun t => complexSchattenNorm q (trigPoly c t) :=
-    (continuous_complexSchattenNorm hq).comp (continuous_trigPoly_matrix c)
-  have h0 := (integral_eq_zero_iff_of_nonneg (fun t => complexSchattenNorm_nonneg q _)
-    (integrable_of_continuous hcont)).1 h
-  have hae : ∀ᵐ t ∂haarAddCircle, trigPoly c t = trigPoly 0 t := by
-    filter_upwards [h0] with t ht
-    rw [(complexSchattenNorm_eq_zero_iff (zero_lt_one.trans_le hq).ne').1 ht, trigPoly,
-      Finsupp.sum_zero_index]
-  ext1 k
-  rw [← matFourierCoeff_trigPoly c k, matFourierCoeff_congr_ae hae, matFourierCoeff_trigPoly]
-
-/-- The factorization of an analytic polynomial `f = g h`, with
-`∫ ‖g‖_{S_{2p}}² ≤ ∫ ‖f‖_{S_p}` and `∫ ‖h‖_{S_{2p}}² ≤ 2 ∫ ‖f‖_{S_p}`: the pointwise bounds of
-`exists_riesz_factorization`, for `δ = ∫ ‖f‖_{S_p}`, integrated. It is (α), p. 252, with these two
-inequalities in place of the equality (β). -/
-private theorem exists_riesz_factorization_integral {p : ℝ} (hp : 1 ≤ p)
-    {c : ℤ →₀ Matrix n n ℂ} (hc : ∀ k ∈ c.support, 0 ≤ k) :
+/-- Lust-Piquard–Pisier, (α) and (β), p. 252, for `C_E = C_p`: `f ∈ H¹` is a product `f = g h` of
+functions of `H²` such that `‖f‖_{H¹ (C_p)} = ‖g‖_{H² (C_{2p})} ‖h‖_{H² (C_{2p})}`. These are the
+factors of Sarason's theorem (`exists_mul_eq_of_isHardyOne`). -/
+theorem exists_mul_eq_integral_complexSchattenNorm_eq {p : ℝ} (hp : 0 < p)
+    {f : UnitAddCircle → Matrix n n ℂ} (hf : IsHardyOne f) :
     ∃ g h : UnitAddCircle → Matrix n n ℂ, IsHardyTwo g ∧ IsHardyTwo h ∧
-      (∀ᵐ t ∂haarAddCircle, trigPoly c t = g t * h t) ∧
-      ∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p)) (g t) ^ 2 ∂haarAddCircle ≤
-        ∫ t, complexSchattenNorm (ENNReal.ofReal p) (trigPoly c t) ∂haarAddCircle ∧
-      ∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p)) (h t) ^ 2 ∂haarAddCircle ≤
-        2 * ∫ t, complexSchattenNorm (ENNReal.ofReal p) (trigPoly c t) ∂haarAddCircle := by
-  have h1p : 1 ≤ ENNReal.ofReal p := ENNReal.one_le_ofReal.2 hp
-  have h12p : 1 ≤ ENNReal.ofReal (2 * p) := ENNReal.one_le_ofReal.2 (by linarith)
-  have hint : Integrable (fun t => complexSchattenNorm (ENNReal.ofReal p) (trigPoly c t))
-      haarAddCircle := integrable_of_continuous
-    ((continuous_complexSchattenNorm h1p).comp (continuous_trigPoly_matrix c))
-  set N := ∫ t, complexSchattenNorm (ENNReal.ofReal p) (trigPoly c t) ∂haarAddCircle with hN
-  have hN0 : 0 ≤ N := integral_nonneg fun t => complexSchattenNorm_nonneg _ _
-  rcases hN0.eq_or_lt with h0 | hpos
-  · -- `f = 0`
-    have hf (t : UnitAddCircle) : trigPoly c t = 0 := by
-      rw [eq_zero_of_integral_norm_eq_zero h1p h0.symm, trigPoly, Finsupp.sum_zero_index]
-    have hzero : ∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p)) (trigPoly c t) ^ 2
-        ∂haarAddCircle = 0 := by
-      simp only [hf, (complexSchattenNorm_eq_zero_iff (zero_lt_one.trans_le h12p).ne').2 rfl]
-      simp
-    refine ⟨trigPoly c, trigPoly c, isHardyTwo_trigPoly hc, isHardyTwo_trigPoly hc,
-      ae_of_all _ fun t => ?_, hzero.trans_le hN0, hzero.trans_le (by positivity)⟩
-    rw [hf, Matrix.mul_zero]
-  obtain ⟨g, h, hg, hh, hfac, hgn, hhn⟩ := exists_riesz_factorization hc hpos
-  refine ⟨g, h, hg, hh, hfac, ?_, ?_⟩
-  · refine integral_mono_ae (memLp_complexSchattenNorm h12p hg.1).integrable_sq hint ?_
-    exact hgn.mono fun t ht => ht p hp
-  · have h1 : ∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p)) (h t) ^ 2 ∂haarAddCircle ≤
-        ∫ t, (complexSchattenNorm (ENNReal.ofReal p) (trigPoly c t) + N) ∂haarAddCircle :=
-      integral_mono_ae (memLp_complexSchattenNorm h12p hh.1).integrable_sq
-        (hint.add (integrable_const N)) (hhn.mono fun t ht => ht p hp)
-    rw [integral_add hint (integrable_const N), integral_const] at h1
-    simp only [probReal_univ, one_smul, ← hN] at h1
-    linarith
-
-private theorem sqrt_mul_mul_sqrt_mul {a N : ℝ} (ha : 0 ≤ a) (hN : 0 ≤ N) (b : ℝ) :
-    √(a * N) * √(b * N) = √(a * b) * N := by
-  rw [← Real.sqrt_mul (mul_nonneg ha hN), show a * N * (b * N) = a * b * N ^ 2 by ring,
-    Real.sqrt_mul' _ (sq_nonneg N), Real.sqrt_sq hN]
+      (∀ᵐ t ∂haarAddCircle, f t = g t * h t) ∧
+      ∫ t, complexSchattenNorm (ENNReal.ofReal p) (f t) ∂haarAddCircle =
+        √(∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p)) (g t) ^ 2 ∂haarAddCircle) *
+          √(∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p)) (h t) ^ 2 ∂haarAddCircle) := by
+  obtain ⟨g, h, hg, hh, hgh⟩ := exists_mul_eq_of_isHardyOne hf
+  have key := hgh.mono fun t ht => complexSchattenNorm_sq_of_factorization hp ht.2.1 ht.2.2
+  refine ⟨g, h, hg, hh, hgh.mono fun t ht => ht.1, ?_⟩
+  rw [integral_congr_ae (key.mono fun t ht => ht.1), integral_congr_ae (key.mono fun t ht => ht.2),
+    Real.mul_self_sqrt (integral_nonneg fun t => complexSchattenNorm_nonneg _ _)]
 
 /-- **Paley's inequality in the Schatten classes** (Lust-Piquard–Pisier (1991), Theorem III.1 (i)
 for the Paley projection and `C_p`), with a constant independent of `1 ≤ p ≤ 2` and of the size. -/
@@ -832,33 +781,29 @@ theorem paley_schatten : ∃ M : ℝ, 0 < M ∧ ∀ (n : Type) [Fintype n] [Deci
       M * ∫ t, complexSchattenNorm (ENNReal.ofReal p) (trigPoly c t) ∂haarAddCircle := by
   obtain ⟨C₁, hC₁, hclosed⟩ := exists_avg_integral_paleyBlockClosed_le
   obtain ⟨C₂, hC₂, hopen⟩ := exists_avg_integral_paleyBlockOpen_le
-  refine ⟨√(C₁ * 2) + √(C₂ * 2), by positivity, ?_⟩
+  refine ⟨√C₁ + √C₂, by positivity, ?_⟩
   intro n _ _ p hp1 hp2 c hc K
-  -- `f = g h`
-  obtain ⟨g, h, hg, hh, hfac, hG, hH⟩ := exists_riesz_factorization_integral hp1 hc
-  set N := ∫ t, complexSchattenNorm (ENNReal.ofReal p) (trigPoly c t) ∂haarAddCircle
-  have hN : 0 ≤ N := integral_nonneg fun t => complexSchattenNorm_nonneg _ _
+  -- `f = g h`, (α) and (β)
+  obtain ⟨g, h, hg, hh, hfac, hβ⟩ := exists_mul_eq_integral_complexSchattenNorm_eq
+    (one_pos.trans_le hp1) (isHardyTwo_trigPoly hc).isHardyOne
   refine ⟨fun k => matFourierCoeff (fun t => g t * paleyBlockClosed h k t) (2 ^ (k : ℕ)),
     fun k => matFourierCoeff (fun t => paleyBlockOpen g k t * h t) (2 ^ (k : ℕ)), fun k => ?_, ?_⟩
   · -- `f̂ (2^k) = A_k + B_k`
     rw [← matFourierCoeff_mul_two_pow hg hh, ← matFourierCoeff_congr_ae hfac,
       matFourierCoeff_trigPoly]
-  rw [add_mul]
+  rw [add_mul, hβ]
   refine add_le_add ?_ ?_
   · -- the `A_k`: (γ) for the norms of Theorem III.1
     have hA := complexSchattenNorm_blockRow_matFourierCoeff_le hp1 hg.1
       (fun k : Fin K => continuous_paleyBlockClosed h k) fun k => 2 ^ (k : ℕ)
-    have hb := (hclosed n p hp1 hp2 h hh K).trans (mul_le_mul_of_nonneg_left hH hC₁.le)
-    refine hA.trans ((mul_le_mul (Real.sqrt_le_sqrt hG) (Real.sqrt_le_sqrt hb) (Real.sqrt_nonneg _)
-      (Real.sqrt_nonneg _)).trans_eq ?_)
-    rw [← mul_assoc, ← one_mul √N, ← Real.sqrt_one, ← Real.sqrt_mul zero_le_one,
-      sqrt_mul_mul_sqrt_mul zero_le_one hN, one_mul]
+    refine hA.trans ((mul_le_mul_of_nonneg_left
+      (Real.sqrt_le_sqrt (hclosed n p hp1 hp2 h hh K)) (Real.sqrt_nonneg _)).trans_eq ?_)
+    rw [Real.sqrt_mul hC₁.le, mul_left_comm]
   · -- the `B_k`: (δ) for the norms of Theorem III.1
     have hB := complexSchattenNorm_blockCol_matFourierCoeff_le hp1 hh.1
       (fun k : Fin K => continuous_paleyBlockOpen g k) fun k => 2 ^ (k : ℕ)
-    have hb := (hopen n p hp1 hp2 g hg K).trans (mul_le_mul_of_nonneg_left hG hC₂.le)
-    refine hB.trans ((mul_le_mul (Real.sqrt_le_sqrt hb) (Real.sqrt_le_sqrt hH) (Real.sqrt_nonneg _)
-      (Real.sqrt_nonneg _)).trans_eq ?_)
-    exact sqrt_mul_mul_sqrt_mul hC₂.le hN 2
+    refine hB.trans ((mul_le_mul_of_nonneg_right
+      (Real.sqrt_le_sqrt (hopen n p hp1 hp2 g hg K)) (Real.sqrt_nonneg _)).trans_eq ?_)
+    rw [Real.sqrt_mul hC₂.le, mul_assoc]
 
 end VectorValuedHarmonicAnalysis

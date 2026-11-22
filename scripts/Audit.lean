@@ -7,8 +7,15 @@ public meta import Lean.Elab.Command
 import all VectorValuedHarmonicAnalysis.Dyadic.Average
 import all VectorValuedHarmonicAnalysis.Dyadic.Martingale
 import all VectorValuedHarmonicAnalysis.Dyadic.Shift
+import all VectorValuedHarmonicAnalysis.Hardy.Approximation
 import all VectorValuedHarmonicAnalysis.Hardy.Basic
-import all VectorValuedHarmonicAnalysis.Hardy.Factorization
+import all VectorValuedHarmonicAnalysis.Hardy.FunctionalCalculus
+import all VectorValuedHarmonicAnalysis.Hardy.GeometricMean
+import all VectorValuedHarmonicAnalysis.Hardy.Jensen
+import all VectorValuedHarmonicAnalysis.Hardy.Outer
+import all VectorValuedHarmonicAnalysis.Hardy.RangeFunction
+import all VectorValuedHarmonicAnalysis.Hardy.RieszFactorization
+import all VectorValuedHarmonicAnalysis.Hardy.Szego
 import all VectorValuedHarmonicAnalysis.HilbertTransform.Fourier
 import all VectorValuedHarmonicAnalysis.HilbertTransform.Truncated
 import all VectorValuedHarmonicAnalysis.LittlewoodPaley.Circle

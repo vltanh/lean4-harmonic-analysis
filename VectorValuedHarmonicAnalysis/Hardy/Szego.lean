@@ -285,12 +285,6 @@ private theorem card_le_rank_of_szegoInf_pos {q : Type*} [Fintype q]
   refine (hle D hD).trans ?_
   gcongr
 
-/-- A square matrix of rank `n` is invertible. -/
-private theorem det_ne_zero_of_card_le_rank {M : Matrix n n ℂ} (h : Fintype.card n ≤ M.rank) :
-    M.det ≠ 0 := by
-  have h1 := Matrix.mulVec_surjective_iff_rank_eq_card.2 (le_antisymm M.rank_le_card_width h)
-  exact ((Matrix.isUnit_iff_isUnit_det M).1 (Matrix.mulVec_surjective_iff_isUnit.1 h1)).ne_zero
-
 /-- Helson–Lowdenslager (1958), (65), from (64): the factorization furnished by a matrix-valued
 function `X` with orthonormal columns, indexed by a set with `n` elements. (The `B` of the source,
 `C^{1/2} (1 + H)^{−1}` with the conventions used here, is `Xᴴ A` for `X = A (1 + H) C^{−1/2}`, where
@@ -303,7 +297,8 @@ private theorem exists_isOuter_of_innovation {q : Type*} [Finite q] [DecidableEq
     ∃ B : UnitAddCircle → Matrix n n ℂ, IsOuter B ∧ (matFourierCoeff B 0).det ≠ 0 ∧
       ∀ᵐ t ∂haarAddCircle, (B t)ᴴ * B t = (A t)ᴴ * A t := by
   cases nonempty_fintype q
-  refine ⟨_, hB.submatrix e.symm, det_ne_zero_of_card_le_rank ?_, ?_⟩
+  refine ⟨_, hB.submatrix e.symm, det_ne_zero_of_rank_eq (le_antisymm ?_ ?_), ?_⟩
+  · exact Matrix.rank_le_card_width _
   · exact hrank.trans_eq (Matrix.rank_submatrix _ e.symm (Equiv.refl n)).symm
   · filter_upwards [hXX] with t ht
     rw [Matrix.conjTranspose_submatrix, Matrix.submatrix_mul_equiv, Matrix.submatrix_id_id,
@@ -769,7 +764,7 @@ theorem integrable_log_det_of_isHardyTwo {B : UnitAddCircle → Matrix n n ℂ} 
   cases isEmpty_or_nonempty n
   · simp [Matrix.det_isEmpty]
   have hn : (0 : ℝ) < Fintype.card n := by exact_mod_cast Fintype.card_pos
-  have hint := integrable_mul_of_memLp (g := fun t => (B t)ᴴ) (fun i j => (hB.1 j i).star) hB.1
+  have hint := integrable_conjTranspose_mul_self hB.1
   have h1 := norm_det_rpow_le_szegoInf hB (ae_of_all _ fun t => rfl)
   obtain ⟨hpos, hlog⟩ := posDef_of_szegoInf_pos hint
     (ae_of_all _ fun t => Matrix.posSemidef_conjTranspose_mul_self _)
