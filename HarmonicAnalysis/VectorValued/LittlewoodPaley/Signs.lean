@@ -9,43 +9,56 @@ public import HarmonicAnalysis.VectorValued.McConnell.Multiplier
 public import Mathlib.Data.Int.Log
 import HarmonicAnalysis.VectorValued.LittlewoodPaley.Line
 import Mathlib.Analysis.Calculus.BumpFunction.InnerProduct
+import Mathlib.Analysis.SpecialFunctions.Log.Base
+import Mathlib.MeasureTheory.Function.SpecialFunctions.Basic
 
 /-!
 # Littlewood–Paley inequalities for every choice of the signs
 
 **Theorem** (`exists_eLpNorm_fourierInv_dyadicSign_le`; T. R. McConnell, *On Fourier multiplier
 transformations of Banach-valued functions*, Trans. Amer. Math. Soc. 285 (1984), 739–757, Theorem
-1.3, for `n = 1`, the direction from UMD spaces to the inequalities). Let `X` be a complex UMD space
-with the `UMD_p` constant `β`, `1 < p < ∞`. For all signs `ε_j`, `ε'_j`, `j ∈ ℤ`, the multiplier
-`m = Σ_j ε_j 1_{[2^j, 2^{j+1})} + Σ_j ε'_j 1_{(−2^{j+1}, −2^j]}` satisfies (1.13):
-`c⁻¹ ‖f‖_p ≤ ‖T_m f‖_p ≤ c ‖f‖_p`, with `c = C β⁶ ħ²`, where `C` is an absolute constant and `ħ` is
-the bound of the Hilbert transform (`hilbertBound β`).
+1.3 and (1.13), p. 742, for `n = 1`, the direction from UMD spaces to the inequalities). Let `X` be
+a complex UMD space with a `UMD_p` constant `β`, `1 < p < ∞`. For all signs `ε_j`, `ε'_j`, `j ∈ ℤ`,
+the multiplier `m = Σ_j ε_j 1_{[2^j, 2^{j+1})} + Σ_j ε'_j 1_{(−2^{j+1}, −2^j]}` satisfies (1.13):
+`c⁻¹ ‖f‖_p ≤ ‖T_m f‖_p ≤ c ‖f‖_p`, with `c = C β⁸ ħ²`, where `C` is an absolute constant and `ħ` is
+the bound of the Hilbert transform (`hilbertBound β`). Here `f = 𝓕⁻ G ∈ L^p` with `G ∈ L¹` (the
+source has Schwartz functions in (3.18)). The converse, which the source deduces from a result of
+Bourgain (p. 756), is not treated.
 
 ## The proof
 
 The proof is McConnell's, pp. 754–756. The Hilbert transform reduces to `f` with spectrum in
-`(0, ∞)`. Four smooth multipliers `m_1, …, m_4` with `m_1 + ⋯ + m_4 = 1` on `ℝ ∖ {0}` are sums of
-bumps `φ (2^{2j} |·|)`, `φ (2^{2j+1} |·|)`, `ψ (2^{2j} |·|)`, `ψ (2^{2j+1} |·|)`, supported in
-`2^k ≤ |ξ| ≤ 2^{k+1}` and `3/4 · 2^k ≤ |ξ| ≤ 3/2 · 2^k`, where `φ = 1` near `3/2`; they satisfy the
-hypothesis of Theorem 1.1 on `ℝ ∖ {0}` (they are not continuous at `0`), and so do
+`(0, ∞)`. Four multipliers `m_1, …, m_4`, smooth on `ℝ ∖ {0}` and with `m_1 + ⋯ + m_4 = 1` there,
+are sums of bumps `φ (2^{2j} |·|)`, `φ (2^{2j+1} |·|)`, `ψ (2^{2j} |·|)`, `ψ (2^{2j+1} |·|)`,
+supported in `2^k ≤ |ξ| ≤ 2^{k+1}` and `3/4 · 2^k ≤ |ξ| ≤ 3/2 · 2^k`, where `φ = 1` near `3/2`; they
+satisfy the hypothesis of Theorem 1.1 on `ℝ ∖ {0}` (they are not continuous at `0`), and so do
 `M (ω, ·) = Σ_j ξ_j (ω) ρ (2^{2j} |·|)` for independent signs `ξ_j`, where `ρ` is supported in
-`[1/2, 3]` and equal to `1` on `[3/4, 2]`, which contains the supports of `φ` and `ψ` (for `m_2`,
+`[5/8, 17/8]` and equal to `1` on `[3/4, 2]`, which contains the supports of `φ` and `ψ` (for `m_2`,
 `m_4` the bumps are `ρ (2^{2j+1} |·|)`). As `M² = 1` on the support of `m_1`, Theorem 1.1 compares
-`‖T_{m_1} T_m f‖_p` with `E ‖T_M T_{m_1} T_m f‖_p`; on the support of one bump `m` is almost
-everywhere a sign times `sign (· − α_j)`, so that the Hilbert transform and two applications of
-Burkholder's inequality (2.1) to the Rademacher sums lead back to `E ‖T_M T_{m_1} f‖_p`, and Theorem
-1.1 is used twice more.
+`‖T_{m_1} T_m f‖_p` with `(E ‖T_M T_{m_1} T_m f‖_p^p)^{1/p}`; on the positive half of the support of
+one bump `m` is almost everywhere a sign times `sign (· − α_j)`, so that the Hilbert transform and
+two applications of Burkholder's inequality (2.1) to the Rademacher sums lead back to
+`(E ‖T_M T_{m_1} f‖_p^p)^{1/p}`, and Theorem 1.1 is used twice more.
 
-Corrections to the source: (3.19) is printed as an equality, and it is a two-sided inequality, by
-Theorem 1.1; `φ (3/2) = 1` (p. 754) is not enough for `ψ` to be smooth; the function `ρ` of p. 755,
-with support in `[1/2, 4]` and `ρ = 1` on `[1, 2]`, serves `m_1` and (dilated) `m_2` only.
+Corrections to the source:
 
-Details that differ from the source: Theorem 1.1 is applied to finite parts of the sums `m_i` and
-`M (ω, ·)`, which have compact support in `ℝ ∖ {0}`, with constants that do not depend on the number
-of the terms; the limit is taken in (3.17), by dominated convergence and Fatou's lemma. The
-inequality (2.1) is stated there for real coefficients, and it is applied on p. 755 to the complex
-coefficients `ε_j e^{2πiα_j x}`; for the Rademacher sums, which are the martingales in question, it
-is the contraction principle `eLpNormRad_smul_le`, with the factor `2`.
+* (3.19) is printed as an equality, and it is a two-sided inequality, by Theorem 1.1;
+* `φ (3/2) = 1` (p. 754) is not enough for `ψ` to be smooth;
+* in the last display of p. 756, `‖T_{m_1} T_m f‖` stands for `‖T_{m_1} T_m f‖_p^p`;
+* by p. 741 the dyadic intervals are all the `[k 2^{−l}, (k + 1) 2^{−l}]`, for which the series
+  `T_(ε) f` of p. 742 makes no sense; Theorem 1.3 means the intervals `± [2^j, 2^{j+1})` (p. 755).
+
+Details that differ from the source:
+
+* One function `ρ`, equal to `1` on `[3/4, 2]`, serves `φ` and `ψ`; the source has `ρ = 1` on
+  `[1, 2]`, with support in `[1/2, 4]`, for `m_1`, and the same proof for the others (with the
+  dilates `ρ (2 ·)`, `ρ (4/3 ·)`, `ρ (8/3 ·)`).
+* Theorem 1.1 is applied to finite parts of the sums `m_i` and `M (ω, ·)`, which have compact
+  support in `ℝ ∖ {0}`, with constants that do not depend on the number of the terms; the limit is
+  taken in (3.17), by dominated convergence and Fatou's lemma.
+* The inequality (2.1) is stated for real coefficients, and it is applied on pp. 755–756 to the
+  complex coefficients `ε_j e^{iα_j x}` and `e^{−iα_j x}` (here with `2π`). It is used for the real
+  and the imaginary parts, whence a factor `2` (`eLpNormRad_smul_le_umd`).
 -/
 
 @[expose] public section
@@ -58,6 +71,38 @@ namespace HarmonicAnalysis
 /-- `Σ_j ε_j 1_{[2^j, 2^{j+1})}`, a function on `ℝ` that vanishes on `(−∞, 0]`. -/
 noncomputable def dyadicSign (ε : ℤ → ℝ) (ξ : ℝ) : ℝ :=
   if 0 < ξ then ε (Int.log 2 ξ) else 0
+
+/-- `dyadicSign ε = ε_j` on `[2^j, 2^{j+1})`. -/
+theorem dyadicSign_eq (ε : ℤ → ℝ) {j : ℤ} {ξ : ℝ} (h1 : 2 ^ j ≤ ξ) (h2 : ξ < 2 ^ (j + 1)) :
+    dyadicSign ε ξ = ε j := by
+  have h0 : 0 < ξ := (zpow_pos two_pos j).trans_le h1
+  have h3 : j ≤ Int.log 2 ξ :=
+    (Int.zpow_le_iff_le_log one_lt_two h0).1 (by rwa [Nat.cast_ofNat])
+  have h4 : Int.log 2 ξ < j + 1 :=
+    (Int.lt_zpow_iff_log_lt one_lt_two h0).1 (by rwa [Nat.cast_ofNat])
+  rw [dyadicSign, ite_eq_left h0, le_antisymm (Int.lt_add_one_iff.1 h4) h3]
+
+/-- `dyadicSign ε` is bounded by `1`, if `ε_j ∈ {−1, 0, 1}`. -/
+theorem abs_dyadicSign_le {ε : ℤ → ℝ} (hε : ∀ j, ε j = 1 ∨ ε j = 0 ∨ ε j = -1) (ξ : ℝ) :
+    |dyadicSign ε ξ| ≤ 1 := by
+  rw [dyadicSign]
+  split_ifs
+  · rcases hε (Int.log 2 ξ) with h | h | h <;> simp [h]
+  · simp
+
+/-- `dyadicSign ε` is measurable, as `Int.log 2 ξ = ⌊log₂ ξ⌋` for `ξ > 0`. -/
+theorem measurable_dyadicSign (ε : ℤ → ℝ) : Measurable (dyadicSign ε) := by
+  have h1 : dyadicSign ε = fun ξ => if 0 < ξ then ε ⌊Real.logb 2 ξ⌋ else 0 := by
+    funext ξ
+    rw [dyadicSign]
+    refine ite_congr rfl (fun hξ => ?_) fun _ => rfl
+    have h2 := Real.floor_logb_natCast (b := 2) hξ.le
+    rw [Nat.cast_ofNat] at h2
+    rw [h2]
+  rw [h1]
+  refine Measurable.ite measurableSet_Ioi ?_ measurable_const
+  exact (measurable_from_top (f := ε)).comp
+    (Int.measurable_floor.comp (Real.measurable_log.div_const _))
 
 /-! ### The bumps -/
 
@@ -80,7 +125,8 @@ private theorem supp_iteratedDeriv {g : ℝ → ℂ}
     rw [← norm_eq_zero, ← norm_iteratedFDeriv_eq_norm_iteratedDeriv, h, norm_zero]
   exact closure_minimal (fun η hη => hg η hη) hcl (support_iteratedFDeriv_subset k h1)
 
-/-- A bump on `[5/8, 17/8]`, extended to an even function, satisfies (1.10) with some constant. -/
+/-- A bump on `[5/8, 17/8]`, extended to an even function, satisfies (3.1), which is (1.10), with
+some constant. -/
 private theorem exists_isBump {h : ℝ → ℝ} (hh : ContDiff ℝ 2 h)
     (hs : ∀ ξ, h ξ ≠ 0 → 5 / 8 ≤ ξ ∧ ξ ≤ 17 / 8) :
     ∃ c, IsBump (fun ξ => ((h |ξ| : ℝ) : ℂ)) c := by
@@ -97,26 +143,17 @@ private theorem exists_isBump {h : ℝ → ℝ} (hh : ContDiff ℝ 2 h)
     exact Complex.ofRealCLM.contDiff.comp (hh.add (hh.comp contDiff_neg))
   have hsupp : ∀ ξ, ((h |ξ| : ℝ) : ℂ) ≠ 0 → 5 / 8 ≤ |ξ| ∧ |ξ| ≤ 17 / 8 := fun ξ hξ =>
     hs _ (by simpa using hξ)
-  have hcont : ∀ k ≤ 2, ∃ c, ∀ ξ,
-      |ξ| ^ k * ‖iteratedDeriv k (fun ξ => ((h |ξ| : ℝ) : ℂ)) ξ‖ ≤ c := by
-    intro k hk
-    have h1 := hC.continuous_iteratedDeriv k (by exact_mod_cast hk)
-    obtain ⟨c, hc⟩ :=
-      (isCompact_Icc (a := (-(17 / 8) : ℝ)) (b := 17 / 8)).exists_bound_of_continuousOn
-        ((continuous_abs.pow k).mul h1.norm).continuousOn
-    refine ⟨max c 0, fun ξ => ?_⟩
-    by_cases h0 : iteratedDeriv k (fun ξ => ((h |ξ| : ℝ) : ℂ)) ξ = 0
-    · simp [h0]
-    · have h2 := (supp_iteratedDeriv hsupp k h0).2
-      exact le_max_of_le_left ((le_abs_self _).trans (hc ξ (abs_le.1 h2)))
-  obtain ⟨c0, h0⟩ := hcont 0 (by norm_num)
-  obtain ⟨c1, h1⟩ := hcont 1 (by norm_num)
-  obtain ⟨c2, h2⟩ := hcont 2 le_rfl
-  refine ⟨max c0 (max c1 c2), hC, hsupp, fun k hk ξ => ?_⟩
-  interval_cases k
-  · exact (h0 ξ).trans (le_max_left _ _)
-  · exact (h1 ξ).trans ((le_max_left _ _).trans (le_max_right _ _))
-  · exact (h2 ξ).trans ((le_max_right _ _).trans (le_max_right _ _))
+  obtain ⟨c, hc⟩ := exists_isMihlin hC (HasCompactSupport.intro
+    (isCompact_Icc (a := (-(17 / 8) : ℝ)) (b := 17 / 8)) fun ξ hξ => by
+      by_contra h0
+      exact hξ (abs_le.1 (hsupp ξ h0).2))
+  refine ⟨c, hC, hsupp, fun k hk ξ => ?_⟩
+  by_cases h0 : iteratedDeriv k (fun ξ => ((h |ξ| : ℝ) : ℂ)) ξ = 0
+  · simpa [h0] using (abs_nonneg (h 1)).trans (by simpa using hc.2 0 (by norm_num) 1 one_ne_zero)
+  · refine hc.2 k hk ξ fun h1 => ?_
+    have h2 := (supp_iteratedDeriv hsupp k h0).1
+    rw [h1, abs_zero] at h2
+    norm_num at h2
 
 private theorem IsBump.mono {g : ℝ → ℂ} {c c' : ℝ} (hg : IsBump g c) (hc : c ≤ c') : IsBump g c' :=
   ⟨hg.contDiff, hg.supp, fun k hk ξ => (hg.bound k hk ξ).trans hc⟩
@@ -130,8 +167,8 @@ private noncomputable def lpPhi : ContDiffBump (3 / 2 : ℝ) :=
 private noncomputable def lpChi : ContDiffBump (9 / 8 : ℝ) :=
   ⟨3 / 8, 1 / 2, by norm_num, by norm_num⟩
 
-/-- `ρ`, smooth, supported in `[5/8, 17/8]`, with `ρ = 1` on `[3/4, 2]`. (The function `ρ` of the
-source has support in `[1/2, 4]` and `ρ = 1` on `[1, 2]`; this serves `m_1` and `m_2` only.) -/
+/-- `ρ`, smooth, supported in `[5/8, 17/8]`, with `ρ = 1` on `[3/4, 2]`, for `φ` and `ψ`. (The
+function `ρ` of the source, for `m_1`, has support in `[1/2, 4]` and `ρ = 1` on `[1, 2]`.) -/
 private noncomputable def lpRho : ContDiffBump (11 / 8 : ℝ) :=
   ⟨5 / 8, 3 / 4, by norm_num, by norm_num⟩
 
@@ -219,7 +256,7 @@ private theorem contDiff_lpPsi : ContDiff ℝ 2 lpPsi :=
 /-- The even bumps `φ (|·|)`, `ψ (|·|)`, `ρ (|·|)` of the source. -/
 private noncomputable def evenBump (h : ℝ → ℝ) (ξ : ℝ) : ℂ := ((h |ξ| : ℝ) : ℂ)
 
-/-- The three bumps satisfy (1.10) with one constant. -/
+/-- The three bumps satisfy (3.1), which is (1.10), with one constant. -/
 private theorem exists_isBump_all : ∃ c, IsBump (evenBump lpPhi) c ∧ IsBump (evenBump lpPsi) c ∧
     IsBump (evenBump lpRho) c := by
   obtain ⟨c1, h1⟩ := exists_isBump (h := lpPhi) lpPhi.contDiff fun ξ hξ => by
@@ -299,8 +336,8 @@ private theorem iteratedDeriv_bumpSum {g : ℝ → ℂ} {c : ℝ} (hg : IsBump g
   refine h1.trans (Finset.sum_congr rfl fun i _ => ?_)
   rw [iteratedDeriv_const_mul_field, iteratedDeriv_comp_const_smul (hg.contDiff.of_le hk')]
 
-/-- The sums of the dilated bumps satisfy (1.10), with a constant that depends neither on the
-coefficients, of modulus at most `1`, nor on the number of the terms (p. 755). -/
+/-- The sums of the dilated bumps satisfy (3.1), which is (1.10), with a constant that depends
+neither on the coefficients, of modulus at most `1`, nor on the number of the terms (p. 755). -/
 private theorem isMihlin_bumpSum {g : ℝ → ℂ} {c : ℝ} (hg : IsBump g c) (a : ℤ) {K : ℕ}
     {u : Fin K → ℂ} (hu : ∀ i, ‖u i‖ ≤ 1) : IsMihlin (bumpSum g a u) c := by
   refine ⟨(contDiff_bumpSum hg a u).contDiffOn, fun k hk ξ _ => ?_⟩
@@ -362,7 +399,7 @@ private theorem zero_notMem_tsupport_bumpSum {g : ℝ → ℂ} {c : ℝ} (hg : I
   by_contra h0
   linarith [(bumpSum_ne_zero hg h0).1]
 
-/-! ### Fourier multipliers and Rademacher sums -/
+/-! ### Fourier multipliers -/
 
 section Multipliers
 
@@ -372,128 +409,29 @@ private theorem integrable_bdd_smul {m : ℝ → ℂ} {c : ℝ} (hm : AEStrongly
     (hc : ∀ ξ, ‖m ξ‖ ≤ c) {G : ℝ → X} (hG : Integrable G) : Integrable fun ξ => m ξ • G ξ :=
   hG.bdd_smul c hm (ae_of_all _ hc)
 
-/-- `𝓕⁻` depends only on the class of the function. -/
-private theorem fourierInv_congr_ae {G H : ℝ → X} (h : G =ᵐ[volume] H) : 𝓕⁻ G = 𝓕⁻ H := by
-  funext x
-  rw [fourierInv_eq_expChar, fourierInv_eq_expChar]
-  exact integral_congr_ae (h.mono fun ξ hξ => by simp only [hξ])
-
-/-- `𝓕⁻` is linear. -/
-private theorem fourierInv_smul' (c : ℂ) (G : ℝ → X) (x : ℝ) :
-    𝓕⁻ (fun ξ => c • G ξ) x = c • 𝓕⁻ G x := by
-  rw [fourierInv_eq_expChar, fourierInv_eq_expChar, ← integral_smul]
-  exact integral_congr_ae (ae_of_all _ fun ξ => smul_comm _ _ _)
-
 /-- `𝓕⁻` is linear. -/
 private theorem fourierInv_add' {G H : ℝ → X} (hG : Integrable G) (hH : Integrable H) (x : ℝ) :
     𝓕⁻ (fun ξ => G ξ + H ξ) x = 𝓕⁻ G x + 𝓕⁻ H x := by
   simp only [fourierInv_eq_expChar, smul_add]
   exact integral_add (integrable_expChar_smul hG x) (integrable_expChar_smul hH x)
 
-/-- `𝓕⁻` is linear: sums with signs. -/
-private theorem fourierInv_sum_coin {K : ℕ} {G : Fin K → ℝ → X} (hG : ∀ k, Integrable (G k))
-    (σ : Fin K → Bool) :
-    (fun x => ∑ k, SignCube.coin (σ k) • 𝓕⁻ (G k) x) =
-      𝓕⁻ fun ξ => ∑ k, SignCube.coin (σ k) • G k ξ := by
-  funext x
-  simp only [fourierInv_eq_expChar]
-  simp_rw [← integral_smul, Finset.smul_sum]
-  rw [integral_finsetSum]
-  · exact Finset.sum_congr rfl fun k _ => integral_congr_ae (ae_of_all _ fun v => smul_comm _ _ _)
-  · intro k _
-    exact integrable_expChar_smul ((hG k).smul (SignCube.coin (σ k))) x
-
-/-- The average over the signs of a constant. -/
-private theorem avg_signs_const (K : ℕ) (D : ℝ≥0∞) :
-    ((2 : ℝ≥0∞) ^ K)⁻¹ * ∑ _ε : Fin K → Bool, D = D := by
-  rw [Finset.sum_const, Finset.card_univ, Fintype.card_fun, Fintype.card_bool, Fintype.card_fin,
-    nsmul_eq_mul, ← mul_assoc, Nat.cast_pow, Nat.cast_ofNat,
-    ENNReal.inv_mul_cancel (pow_ne_zero _ two_ne_zero) (ENNReal.pow_ne_top ENNReal.ofNat_ne_top),
-    one_mul]
-
-/-- A number that is bounded by the norm of every signed sum is bounded by the norm of the
-Rademacher sum. -/
-private theorem le_mul_eLpNormRad {K : ℕ} {p : ℝ} (hp : 0 < p) {f : Fin K → ℝ → X}
-    (hf : ∀ k, AEStronglyMeasurable (f k) volume) {C D : ℝ≥0∞}
-    (h : ∀ σ : Fin K → Bool, D ≤
-      C * eLpNorm (fun x => ∑ k, SignCube.coin (σ k) • f k x) (ENNReal.ofReal p) volume) :
-    D ≤ C * eLpNormRad f p volume := by
-  rw [← ENNReal.rpow_le_rpow_iff hp, ENNReal.mul_rpow_of_nonneg _ _ hp.le, eLpNormRad_rpow hp hf,
-    mul_left_comm, Finset.mul_sum (a := C ^ p), ← avg_signs_const K (D ^ p)]
-  refine mul_le_mul_right (Finset.sum_le_sum fun σ _ => ?_) _
-  rw [← ENNReal.mul_rpow_of_nonneg _ _ hp.le]
-  exact ENNReal.rpow_le_rpow (h σ) hp.le
-
-/-- A common bound of the norms of the signed sums bounds the norm of the Rademacher sum. -/
-private theorem eLpNormRad_le {K : ℕ} {p : ℝ} (hp : 0 < p) {f : Fin K → ℝ → X}
-    (hf : ∀ k, AEStronglyMeasurable (f k) volume) {D : ℝ≥0∞}
-    (h : ∀ σ : Fin K → Bool,
-      eLpNorm (fun x => ∑ k, SignCube.coin (σ k) • f k x) (ENNReal.ofReal p) volume ≤ D) :
-    eLpNormRad f p volume ≤ D := by
-  rw [← ENNReal.rpow_le_rpow_iff hp, eLpNormRad_rpow hp hf, ← avg_signs_const K (D ^ p)]
-  exact mul_le_mul_right (Finset.sum_le_sum fun σ _ => ENNReal.rpow_le_rpow (h σ) hp.le) _
-
-/-! ### The modulated Hilbert transforms -/
-
-private theorem norm_sign_le (ξ : ℝ) : ‖((Real.sign ξ : ℝ) : ℂ)‖ ≤ 1 := by
-  rcases Real.sign_apply_eq ξ with h | h | h <;> simp [h]
-
-private theorem integrable_sign_smul {G : ℝ → X} (hG : Integrable G) :
-    Integrable fun ξ => (Real.sign ξ : ℂ) • G ξ :=
-  integrable_bdd_smul (Complex.measurable_ofReal.comp measurable_realSign).aestronglyMeasurable
-    norm_sign_le hG
-
-/-- `s H_α * g (x) = s e^{2πiαx} H_0 * (e^{−2πiα·} g) (x)` (p. 755), where `Ĥ_α = sign (· − α)` and
-`G (· + α)` is the Fourier transform of `e^{−2πiα·} g`. -/
-private theorem fourierInv_sign_sub (s α : ℝ) (G : ℝ → X) :
-    (𝓕⁻ fun ξ => ((s * Real.sign (ξ - α) : ℝ) : ℂ) • G ξ) =
-      fun x => ((s : ℂ) * expChar α x) • 𝓕⁻ (fun ξ => (Real.sign ξ : ℂ) • G (ξ + α)) x := by
-  funext x
-  have h := fourierInv_smul_expChar (-α) (fun ξ => (Real.sign ξ : ℂ) • G (ξ + α)) x
-  simp only [neg_neg, ← sub_eq_add_neg, sub_add_cancel] at h
-  rw [mul_smul, ← h, ← fourierInv_smul']
-  simp only [Complex.ofReal_mul, mul_smul]
-
-private theorem memLp_expChar_smul {P : ℝ≥0∞} {f : ℝ → X} (hf : MemLp f P volume) (a : ℝ) :
-    MemLp (fun x => expChar a x • f x) P volume :=
-  hf.of_le ((continuous_expChar a).aestronglyMeasurable.smul hf.aestronglyMeasurable)
-    (ae_of_all _ fun x => by rw [norm_smul, norm_expChar, one_mul])
+/-! ### Burkholder's inequality and the modulated Hilbert transforms -/
 
 variable [CompleteSpace X]
 
-/-- (3.20), p. 755, for the Rademacher sums: `H_0` is applied to the sum for each choice of the
-signs. -/
-private theorem eLpNormRad_fourierInv_sign_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞}
-    (hβ : IsUMDBound X p β) {K : ℕ} {G : Fin K → ℝ → X} (hG : ∀ k, Integrable (G k))
-    (hf : ∀ k, MemLp (𝓕⁻ (G k)) (ENNReal.ofReal p) volume) :
-    eLpNormRad (fun k => 𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G k ξ) p volume ≤
-      hilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
-  have hsG := fun k => integrable_sign_smul (hG k)
-  refine eLpNormRad_le_of_forall (by linarith)
-    (fun k => (continuous_fourierInv_of_integrable (hsG k)).aestronglyMeasurable)
-    (fun k => (continuous_fourierInv_of_integrable (hG k)).aestronglyMeasurable) fun σ => ?_
-  have h1 : (fun x => ∑ k, SignCube.coin (σ k) • 𝓕⁻ (fun ξ => (Real.sign ξ : ℂ) • G k ξ) x) =
-      𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • ∑ k, SignCube.coin (σ k) • G k ξ := by
-    rw [fourierInv_sum_coin hsG]
-    simp only [Finset.smul_sum, smul_comm (_ : ℂ) (_ : ℝ)]
-  have h2 := fourierInv_sum_coin hG σ
-  rw [h1, h2]
-  refine eLpNorm_fourierInv_sign_le hp hβ
-    (integrable_finsetSum _ fun k _ => (hG k).smul (SignCube.coin (σ k))) ?_
-  rw [← h2]
-  exact memLp_finsetSum _ fun k _ => (hf k).const_smul _
-
-/-- The two inequalities on pp. 755–756:
-`E ‖Σ_j ε_j ξ_j e^{2πiα_j·} H_0 * (e^{−2πiα_j·} g_j)‖_p ≤ 4 ħ E ‖Σ_j ξ_j g_j‖_p`. Burkholder's
-inequality (2.1) for the Rademacher sums, with the coefficients `ε_j e^{2πiα_j x}` and
-`e^{−2πiα_j x}` of modulus `1`, is the contraction principle `eLpNormRad_smul_le`, with the factor
-`2`. -/
+/-- The two inequalities on p. 756: with the norm `(E ‖·‖_p^p)^{1/p}` of the Rademacher sums,
+`‖Σ_j ε_j ξ_j e^{2πiα_j·} H_0 * (e^{−2πiα_j·} g_j)‖ ≤ 4 β² ħ ‖Σ_j ξ_j g_j‖`. Burkholder's inequality
+(2.1) is applied at each point `x` to the Rademacher sums, whose terms are martingale differences,
+with the coefficients `ε_j e^{2πiα_j x}` and `e^{−2πiα_j x}` of modulus `1`; each time it costs the
+factor `2 β`, as the coefficients are complex. Between these two steps `H_0` is applied to the sum,
+for each choice of the signs, with (3.20). Here `s_j = ε_j`, and the formula
+`H_α * g (x) = e^{2πiαx} H_0 * (e^{−2πiα·} g) (x)` of p. 755 is `fourierInv_sign_sub`. -/
 private theorem eLpNormRad_fourierInv_sign_sub_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞}
     (hβ : IsUMDBound X p β) {K : ℕ} {G : Fin K → ℝ → X} (hG : ∀ k, Integrable (G k))
     (hf : ∀ k, MemLp (𝓕⁻ (G k)) (ENNReal.ofReal p) volume) {s : Fin K → ℝ} (hs : ∀ k, |s k| ≤ 1)
     (α : Fin K → ℝ) :
     eLpNormRad (fun k => 𝓕⁻ fun ξ => ((s k * Real.sign (ξ - α k) : ℝ) : ℂ) • G k ξ) p volume ≤
-      4 * hilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
+      4 * β ^ 2 * hilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
   set G' : Fin K → ℝ → X := fun k ξ => G k (ξ + α k)
   have hG' : ∀ k, Integrable (G' k) := fun k => (hG k).comp_add_right (α k)
   have hinv : ∀ k, 𝓕⁻ (G' k) = fun x => expChar (-α k) x • 𝓕⁻ (G k) x := fun k =>
@@ -501,7 +439,8 @@ private theorem eLpNormRad_fourierInv_sign_sub_le {p : ℝ} (hp : 1 < p) {β : �
   have hcont := fun k => continuous_fourierInv_of_integrable (integrable_sign_smul (hG' k))
   simp only [fourierInv_sign_sub]
   -- (2.1) with the coefficients `ε_j e^{2πiα_j x}`
-  have h1 := eLpNormRad_smul_le hp.le (μ := volume) (c := fun k x => (s k : ℂ) * expChar (α k) x)
+  have h1 := eLpNormRad_smul_le_umd hp.le hβ (μ := volume)
+    (c := fun k x => (s k : ℂ) * expChar (α k) x)
     (f := fun k => 𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G' k ξ)
     (fun k x => by
       rw [norm_mul, norm_expChar, mul_one, Complex.norm_real]
@@ -516,15 +455,16 @@ private theorem eLpNormRad_fourierInv_sign_sub_le {p : ℝ} (hp : 1 < p) {β : �
       exact memLp_expChar_smul (hf k) _
   -- (2.1) with the coefficients `e^{−2πiα_j x}`
   have h3 : eLpNormRad (fun k => 𝓕⁻ (G' k)) p volume ≤
-      2 * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
+      2 * β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
     simp only [hinv]
-    exact eLpNormRad_smul_le hp.le (c := fun k => expChar (-α k)) (fun k x => (norm_expChar _ _).le)
-      (fun k => (continuous_expChar _).aestronglyMeasurable) fun k => (hf k).aestronglyMeasurable
-  calc _ ≤ 2 * eLpNormRad (fun k => 𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G' k ξ) p volume := h1
-    _ ≤ 2 * (hilbertBound β * (2 * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume)) := by
+    exact eLpNormRad_smul_le_umd hp.le hβ (c := fun k => expChar (-α k))
+      (fun k x => (norm_expChar _ _).le) (fun k => (continuous_expChar _).aestronglyMeasurable)
+      fun k => (hf k).aestronglyMeasurable
+  calc _ ≤ 2 * β * eLpNormRad (fun k => 𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G' k ξ) p volume := h1
+    _ ≤ 2 * β * (hilbertBound β * (2 * β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume)) := by
         gcongr
         exact h2.trans (by gcongr)
-    _ = 4 * hilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by ring
+    _ = 4 * β ^ 2 * hilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by ring
 
 /-! ### The estimate (3.18) -/
 
@@ -562,7 +502,7 @@ private theorem sum_coin_fourierInv_bump {g : ℝ → ℂ} {c : ℝ} (hg : IsBum
     (σ : Fin K → Bool) {G : ℝ → X} (hG : Integrable G) :
     (fun x => ∑ i : Fin K, SignCube.coin (σ i) • 𝓕⁻ (fun ξ => g (dil a i * ξ) • G ξ) x) =
       𝓕⁻ fun ξ => bumpSum g a (coinC σ) ξ • G ξ := by
-  rw [fourierInv_sum_coin fun i : Fin K => integrable_bump_smul hg (dil a i) hG]
+  rw [← funext (fourierInv_sum_smul (fun i : Fin K => integrable_bump_smul hg (dil a i) hG) _)]
   congr 1
   funext ξ
   rw [bumpSum, Finset.sum_smul]
@@ -595,7 +535,7 @@ private theorem eLpNorm_bumpSum_le_eLpNormRad {p : ℝ} (hp : 1 < p) {β : ℝ�
     eLpNorm (𝓕⁻ fun ξ => bumpSum g a (fun _ : Fin K => 1) ξ • H ξ) (ENNReal.ofReal p) volume ≤
       ENNReal.ofReal c * (1088 * β ^ 2) *
         eLpNormRad (fun i : Fin K => 𝓕⁻ fun ξ => g (dil a i * ξ) • H ξ) p volume := by
-  refine le_mul_eLpNormRad (by linarith) (fun i => (continuous_fourierInv_of_integrable
+  refine le_mul_eLpNormRad_of_forall_le (by linarith) (fun i => (continuous_fourierInv_of_integrable
     (integrable_bump_smul hg _ hH)).aestronglyMeasurable) fun σ => ?_
   rw [sum_coin_fourierInv_bump hg a σ hH]
   have h1 : (fun ξ => bumpSum g a (fun _ : Fin K => 1) ξ • H ξ) =
@@ -615,7 +555,7 @@ private theorem eLpNormRad_bump_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞}
     (hgs : ∀ ξ, g ξ ≠ 0 → 3 / 4 ≤ |ξ| ∧ |ξ| < 2) (a : ℤ) (K : ℕ) {G : ℝ → X} (hG : Integrable G) :
     eLpNormRad (fun i : Fin K => 𝓕⁻ fun ξ => g (dil a i * ξ) • G ξ) p volume ≤
       (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 2 * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
-  refine eLpNormRad_le (by linarith) (fun i => (continuous_fourierInv_of_integrable
+  refine eLpNormRad_le_of_forall_le (by linarith) (fun i => (continuous_fourierInv_of_integrable
     (integrable_bump_smul hg _ hG)).aestronglyMeasurable) fun σ => ?_
   rw [sum_coin_fourierInv_bump hg a σ hG]
   have h1 : (fun ξ => bumpSum g a (coinC σ) ξ • G ξ) =
@@ -649,55 +589,41 @@ private theorem bumpConst_ne_top (c : ℝ) {β : ℝ≥0∞} (hβ : β ≠ ⊤) 
     (ENNReal.mul_ne_top ENNReal.ofNat_ne_top (ENNReal.pow_ne_top hβ))
 
 /-- On `3/4 · 2^k ≤ ξ < 2 · 2^k`, the function `m` is `ε_{k−1}` for `ξ < 2^k` and `ε_k` for
-`ξ ≥ 2^k`: there are a sign `ε` and a number `α` such that `m = ε sign (· − α)` there, except at
+`ξ ≥ 2^k`: there are a sign `s` and a number `α` such that `m = s sign (· − α)` there, except at
 `2^k` (p. 755). -/
 private theorem exists_dyadicSign_eq {ε : ℤ → ℝ} (hε : ∀ j, ε j = 1 ∨ ε j = -1) (k : ℤ) :
-    ∃ s α : ℝ, |s| ≤ 1 ∧ ∀ ξ, 3 / 4 * (2 : ℝ) ^ k ≤ ξ → ξ < 2 * 2 ^ k → ξ ≠ 2 ^ k →
+    ∃ s α : ℝ, (s = 1 ∨ s = -1) ∧ ∀ ξ, 3 / 4 * (2 : ℝ) ^ k ≤ ξ → ξ < 2 * 2 ^ k → ξ ≠ 2 ^ k →
       dyadicSign ε ξ = s * Real.sign (ξ - α) := by
   have hk : (0 : ℝ) < 2 ^ k := by positivity
-  have habs : |ε k| ≤ 1 := by rcases hε k with h | h <;> simp [h]
   -- the values of `m`
-  have hlt : ∀ ξ, 3 / 4 * (2 : ℝ) ^ k ≤ ξ → ξ < 2 ^ k → dyadicSign ε ξ = ε (k - 1) := by
-    intro ξ h1 h2
-    have h0 : 0 < ξ := by linarith
-    have h3 : (2 : ℝ) ^ (k - 1) = 2 ^ k / 2 := by rw [zpow_sub_one₀ two_ne_zero, div_eq_mul_inv]
-    have h4 := (Int.zpow_le_iff_le_log (b := 2) one_lt_two (x := k - 1) h0).1 (by
-      push_cast
-      linarith)
-    have h5 := (Int.lt_zpow_iff_log_lt (b := 2) one_lt_two (x := k) h0).1 (by exact_mod_cast h2)
-    rw [dyadicSign, ite_eq_left h0, show Int.log 2 ξ = k - 1 by omega]
-  have hge : ∀ ξ, (2 : ℝ) ^ k ≤ ξ → ξ < 2 * 2 ^ k → dyadicSign ε ξ = ε k := by
-    intro ξ h1 h2
-    have h0 : 0 < ξ := by linarith
-    have h3 : (2 : ℝ) ^ (k + 1) = 2 * 2 ^ k := by rw [zpow_add_one₀ two_ne_zero, mul_comm]
-    have h4 := (Int.zpow_le_iff_le_log (b := 2) one_lt_two (x := k) h0).1 (by exact_mod_cast h1)
-    have h5 := (Int.lt_zpow_iff_log_lt (b := 2) one_lt_two (x := k + 1) h0).1 (by
-      push_cast
-      linarith)
-    rw [dyadicSign, ite_eq_left h0, show Int.log 2 ξ = k by omega]
+  have hlt : ∀ ξ, 3 / 4 * (2 : ℝ) ^ k ≤ ξ → ξ < 2 ^ k → dyadicSign ε ξ = ε (k - 1) := fun ξ h1 h2 =>
+    dyadicSign_eq ε (by rw [zpow_sub_one₀ two_ne_zero]; linarith) (by rwa [sub_add_cancel])
+  have hge : ∀ ξ, (2 : ℝ) ^ k ≤ ξ → ξ < 2 * 2 ^ k → dyadicSign ε ξ = ε k := fun ξ h1 h2 =>
+    dyadicSign_eq ε h1 (by rwa [zpow_add_one₀ two_ne_zero, mul_comm])
   by_cases hε' : ε (k - 1) = ε k
-  · refine ⟨ε k, 0, habs, fun ξ h1 h2 _ => ?_⟩
+  · refine ⟨ε k, 0, hε k, fun ξ h1 h2 _ => ?_⟩
     rw [sub_zero, Real.sign_of_pos (by linarith), mul_one]
     rcases lt_or_ge ξ (2 ^ k) with h | h
     · rw [hlt ξ h1 h, hε']
     · rw [hge ξ h h2]
-  · refine ⟨ε k, 2 ^ k, habs, fun ξ h1 h2 h3 => ?_⟩
+  · refine ⟨ε k, 2 ^ k, hε k, fun ξ h1 h2 h3 => ?_⟩
     rcases lt_or_gt_of_ne h3 with h | h
     · rw [hlt ξ h1 h, Real.sign_of_neg (by linarith)]
       rcases hε k with h4 | h4 <;> rcases hε (k - 1) with h5 | h5 <;> simp_all
     · rw [hge ξ h.le h2, Real.sign_of_pos (by linarith), mul_one]
 
 omit [CompleteSpace X] in
-/-- `Φ_j * T_m f = ε_j H_{α_j} * Φ_j * f` on the Fourier side, for `f` with spectrum in `(0, ∞)`
-(p. 755). -/
+/-- `Φ_j * T_m f = s H_α * Φ_j * f` on the Fourier side, with a sign `s = ε_j` and `α = α_j`, for
+`f` with spectrum in `(0, ∞)` (p. 755). -/
 private theorem exists_bump_dyadicSign_ae_eq {g : ℝ → ℂ}
     (hgs : ∀ ξ, g ξ ≠ 0 → 3 / 4 ≤ |ξ| ∧ |ξ| < 2) (a : ℤ) (i : ℕ) {ε : ℤ → ℝ}
     (hε : ∀ j, ε j = 1 ∨ ε j = -1) {G : ℝ → X} (hG0 : ∀ ξ ≤ 0, G ξ = 0) :
-    ∃ s α : ℝ, |s| ≤ 1 ∧ (fun ξ => g (dil a i * ξ) • ((dyadicSign ε ξ : ℝ) : ℂ) • G ξ) =ᵐ[volume]
-      fun ξ => ((s * Real.sign (ξ - α) : ℝ) : ℂ) • g (dil a i * ξ) • G ξ := by
+    ∃ s α : ℝ, (s = 1 ∨ s = -1) ∧
+      (fun ξ => g (dil a i * ξ) • ((dyadicSign ε ξ : ℝ) : ℂ) • G ξ) =ᵐ[volume]
+        fun ξ => ((s * Real.sign (ξ - α) : ℝ) : ℂ) • g (dil a i * ξ) • G ξ := by
   obtain ⟨s, α, hs, h⟩ := exists_dyadicSign_eq hε (a + 2 * (i : ℤ))
   refine ⟨s, α, hs, ?_⟩
-  filter_upwards [compl_mem_ae_iff.2 (measure_singleton ((2 : ℝ) ^ (a + 2 * (i : ℤ))))] with ξ hξ
+  filter_upwards [Measure.ae_ne volume ((2 : ℝ) ^ (a + 2 * (i : ℤ)))] with ξ hξ
   rcases le_or_gt ξ 0 with h0 | h0
   · simp [hG0 ξ h0]
   by_cases h1 : g (dil a i * ξ) = 0
@@ -708,37 +634,6 @@ private theorem exists_bump_dyadicSign_ae_eq {g : ℝ → ℂ}
     div_lt_iff₀ hk] at h2
   rw [h ξ h2.1 h2.2 hξ, smul_comm]
 
-private theorem measurable_intLog : Measurable fun ξ : ℝ => Int.log 2 ξ := by
-  refine measurable_to_countable' fun k => ?_
-  have h : (fun ξ : ℝ => Int.log 2 ξ) ⁻¹' {k} =
-      (Set.Ioi 0 ∩ Set.Ico ((2 : ℝ) ^ k) (2 ^ (k + 1))) ∪ (Set.Iic 0 ∩ {_ξ : ℝ | k = 0}) := by
-    ext ξ
-    simp only [Set.mem_preimage, Set.mem_singleton_iff, Set.mem_union, Set.mem_inter_iff,
-      Set.mem_Ioi, Set.mem_Ico, Set.mem_Iic, Set.mem_ofPred_eq]
-    rcases le_or_gt ξ 0 with h0 | h0
-    · rw [Int.log_of_right_le_zero 2 h0]
-      simp [h0, h0.not_gt, eq_comm]
-    · have h1 := Int.zpow_le_iff_le_log (b := 2) one_lt_two (x := k) h0
-      have h2 := Int.lt_zpow_iff_log_lt (b := 2) one_lt_two (x := k + 1) h0
-      push_cast at h1 h2
-      rw [h1, h2]
-      simp only [h0, h0.not_ge, true_and, false_and, or_false]
-      omega
-  rw [h]
-  exact (measurableSet_Ioi.inter measurableSet_Ico).union
-    (measurableSet_Iic.inter (MeasurableSet.const _))
-
-private theorem measurable_dyadicSign (ε : ℤ → ℝ) : Measurable (dyadicSign ε) :=
-  Measurable.ite measurableSet_Ioi ((measurable_from_top (f := ε)).comp measurable_intLog)
-    measurable_const
-
-private theorem abs_dyadicSign_le {ε : ℤ → ℝ} (hε : ∀ j, ε j = 1 ∨ ε j = -1) (ξ : ℝ) :
-    |dyadicSign ε ξ| ≤ 1 := by
-  unfold dyadicSign
-  split_ifs
-  · rcases hε (Int.log 2 ξ) with h | h <;> simp [h]
-  · simp
-
 omit [CompleteSpace X] in
 private theorem integrable_dyadicSign_smul {ε : ℤ → ℝ} (hε : ∀ j, ε j = 1 ∨ ε j = -1) {G : ℝ → X}
     (hG : Integrable G) : Integrable fun ξ => ((dyadicSign ε ξ : ℝ) : ℂ) • G ξ :=
@@ -746,10 +641,10 @@ private theorem integrable_dyadicSign_smul {ε : ℤ → ℝ} (hε : ∀ j, ε j
     (Complex.measurable_ofReal.comp (measurable_dyadicSign ε)).aestronglyMeasurable (c := 1)
     (fun ξ => by
       rw [Function.comp_apply, Complex.norm_real]
-      exact abs_dyadicSign_le hε ξ) hG
+      exact abs_dyadicSign_le (fun j => (hε j).imp_right Or.inr) ξ) hG
 
 /-- **(3.18)**: `‖T_{m_i} T_m f‖_p ≤ c ‖f‖_p` for `f` with spectrum in `(0, ∞)`, for one of the four
-families (a finite part of it), `g (|·|)` being `φ (|·|)` or `ψ (|·|)`. -/
+families (a finite part of it), `g` being `φ (|·|)` or `ψ (|·|)`. -/
 private theorem eLpNorm_bumpSum_dyadicSign_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞}
     (hβ : IsUMDBound X p β) {c : ℝ} (hρ : IsBump (evenBump lpRho) c) {g : ℝ → ℂ} (hg : IsBump g c)
     (hgs : ∀ ξ, g ξ ≠ 0 → 3 / 4 ≤ |ξ| ∧ |ξ| < 2) (a : ℤ) (K : ℕ) {ε : ℤ → ℝ}
@@ -758,7 +653,7 @@ private theorem eLpNorm_bumpSum_dyadicSign_le {p : ℝ} (hp : 1 < p) {β : ℝ�
     (hfin : β ≠ ⊤ ∨ eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume = 0) :
     eLpNorm (𝓕⁻ fun ξ => bumpSum g a (fun _ : Fin K => 1) ξ • ((dyadicSign ε ξ : ℝ) : ℂ) • G ξ)
         (ENNReal.ofReal p) volume ≤
-      4 * (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 3 * hilbertBound β *
+      4 * (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 3 * β ^ 2 * hilbertBound β *
         eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
   set B := ENNReal.ofReal c * (1088 * β ^ 2) with hB
   have hgG : ∀ i : Fin K, Integrable fun ξ => g (dil a i * ξ) • G ξ := fun i =>
@@ -774,24 +669,26 @@ private theorem eLpNorm_bumpSum_dyadicSign_le {p : ℝ} (hp : 1 < p) {β : ℝ�
   have h1 := eLpNorm_bumpSum_le_eLpNormRad hp hβ hρ hg hgs a K (integrable_dyadicSign_smul hε hG)
   have h2 : (fun i : Fin K => 𝓕⁻ fun ξ => g (dil a i * ξ) • ((dyadicSign ε ξ : ℝ) : ℂ) • G ξ) =
       fun i : Fin K => 𝓕⁻ fun ξ => ((s i * Real.sign (ξ - α i) : ℝ) : ℂ) • g (dil a i * ξ) • G ξ :=
-    funext fun i => fourierInv_congr_ae (hae i)
+    funext fun i => funext (Real.fourierInv_congr_ae (hae i))
+  have hs1 : ∀ i, |s i| ≤ 1 := fun i => by rcases hs i with h | h <;> simp [h]
   rw [h2] at h1
   -- (2.1), (3.20), (2.1), and Theorem 1.1 twice
   calc _ ≤ B * eLpNormRad (fun i : Fin K => 𝓕⁻ fun ξ =>
         ((s i * Real.sign (ξ - α i) : ℝ) : ℂ) • g (dil a i * ξ) • G ξ) p volume := h1
-    _ ≤ B * (4 * hilbertBound β *
+    _ ≤ B * (4 * β ^ 2 * hilbertBound β *
         eLpNormRad (fun i : Fin K => 𝓕⁻ fun ξ => g (dil a i * ξ) • G ξ) p volume) := by
         gcongr
-        exact eLpNormRad_fourierInv_sign_sub_le hp hβ hgG hmem hs α
-    _ ≤ B * (4 * hilbertBound β * (B ^ 2 * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume)) := by
+        exact eLpNormRad_fourierInv_sign_sub_le hp hβ hgG hmem hs1 α
+    _ ≤ B * (4 * β ^ 2 * hilbertBound β *
+        (B ^ 2 * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume)) := by
         gcongr
         exact eLpNormRad_bump_le hp hβ hρ hg hgs a K hG
-    _ = 4 * B ^ 3 * hilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by ring
+    _ = 4 * B ^ 3 * β ^ 2 * hilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by ring
 
 /-! ### The sum of the four families -/
 
-/-- The four families, with the indices `k` from `−2N` to `2N − 1`:
-`m_1 + m_2 + m_3 + m_4`. -/
+/-- The sum of finite parts of the four families `m_1, …, m_4`, with the indices `k` from `−2N` to
+`2N − 1`. -/
 private noncomputable def fourSum (N : ℕ) (ξ : ℝ) : ℂ :=
   bumpSum (evenBump lpPhi) (-(2 * (N : ℤ))) (fun _ : Fin (2 * N) => 1) ξ +
     bumpSum (evenBump lpPhi) (-(2 * (N : ℤ)) + 1) (fun _ : Fin (2 * N) => 1) ξ +
@@ -911,16 +808,10 @@ omit [CompleteSpace X] in
 private theorem tendsto_fourierInv_fourSum {c : ℝ} (hφ : IsBump (evenBump lpPhi) c)
     (hψ : IsBump (evenBump lpPsi) c) {H : ℝ → X} (hH : Integrable H) (x : ℝ) :
     Tendsto (fun N => 𝓕⁻ (fun ξ => fourSum N ξ • H ξ) x) atTop (𝓝 (𝓕⁻ H x)) := by
-  simp only [fourierInv_eq_expChar]
-  refine tendsto_integral_of_dominated_convergence (fun ξ => 4 * c * ‖H ξ‖)
-    (fun N => (integrable_expChar_smul (integrable_bdd_smul
-      (continuous_fourSum hφ hψ N).aestronglyMeasurable (norm_fourSum_le hφ hψ N) hH)
-        x).aestronglyMeasurable)
-    (hH.norm.const_mul _) (fun N => ae_of_all _ fun ξ => ?_) ?_
-  · rw [norm_smul, norm_expChar, one_mul, norm_smul]
-    exact mul_le_mul_of_nonneg_right (norm_fourSum_le hφ hψ N ξ) (norm_nonneg _)
-  · filter_upwards [compl_mem_ae_iff.2 (measure_singleton (0 : ℝ))] with ξ hξ
-    simpa using ((tendsto_fourSum hξ).smul_const (H ξ)).const_smul (expChar ξ x)
+  simpa using tendsto_fourierInv_of_dominated hH (a := fourSum) (b := fun _ => 1) (C := 4 * c)
+    (Eventually.of_forall fun N => (continuous_fourSum hφ hψ N).aestronglyMeasurable)
+    (Eventually.of_forall fun N => ae_of_all _ (norm_fourSum_le hφ hψ N))
+    ((Measure.ae_ne volume 0).mono fun ξ hξ => tendsto_fourSum hξ) x
 
 omit [CompleteSpace X] in
 /-- (3.17), p. 755, for the finite sums: `‖Σ_i T_{m_i} h‖_p ≤ Σ_i ‖T_{m_i} h‖_p`. -/
@@ -963,7 +854,7 @@ private theorem eLpNorm_fourierInv_dyadicSign_pos_le {p : ℝ} (hp : 1 < p) {β 
     (hf : MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume)
     (hfin : β ≠ ⊤ ∨ eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume = 0) :
     eLpNorm (𝓕⁻ fun ξ => ((dyadicSign ε ξ : ℝ) : ℂ) • G ξ) (ENNReal.ofReal p) volume ≤
-      16 * (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 3 * hilbertBound β *
+      16 * (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 3 * β ^ 2 * hilbertBound β *
         eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
   have hH := integrable_dyadicSign_smul hε hG
   have hsφ : ∀ ξ, evenBump lpPhi ξ ≠ 0 → 3 / 4 ≤ |ξ| ∧ |ξ| < 2 := fun ξ hξ => by
@@ -974,43 +865,38 @@ private theorem eLpNorm_fourierInv_dyadicSign_pos_le {p : ℝ} (hp : 1 < p) {β 
     constructor <;> linarith
   have hN : ∀ N, eLpNorm (𝓕⁻ fun ξ => fourSum N ξ • ((dyadicSign ε ξ : ℝ) : ℂ) • G ξ)
       (ENNReal.ofReal p) volume ≤
-      4 * (4 * (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 3 * hilbertBound β *
+      4 * (4 * (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 3 * β ^ 2 * hilbertBound β *
         eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume) := fun N =>
     eLpNorm_fourSum_le hp.le hφ hψ hH N fun g hg a K => by
       rcases hg with rfl | rfl
       · exact eLpNorm_bumpSum_dyadicSign_le hp hβ hρ hφ hsφ a K hε hG hG0 hf hfin
       · exact eLpNorm_bumpSum_dyadicSign_le hp hβ hρ hψ hsψ a K hε hG hG0 hf hfin
   -- Fatou's lemma
-  refine (Lp.eLpNorm_lim_le_liminf_eLpNorm (p := ENNReal.ofReal p) (μ := volume)
+  refine (Lp.eLpNorm_le_of_ae_tendsto (Eventually.of_forall hN)
     (fun N => (continuous_fourierInv_of_integrable (integrable_bdd_smul
       (continuous_fourSum hφ hψ N).aestronglyMeasurable (norm_fourSum_le hφ hψ N)
-        hH)).aestronglyMeasurable) _
+        hH)).aestronglyMeasurable)
     (continuous_fourierInv_of_integrable hH).aestronglyMeasurable
-    (ae_of_all _ fun x => tendsto_fourierInv_fourSum hφ hψ hH x)).trans
-      ((liminf_le_liminf (Eventually.of_forall hN)).trans ((liminf_const _).le.trans_eq ?_))
+    (ae_of_all _ fun x => tendsto_fourierInv_fourSum hφ hψ hH x)).trans_eq ?_
   ring
 
-/-! ### The half-lines -/
+/-! ### Reduction to the positive half-line -/
 
 omit [CompleteSpace X] in
 /-- `1_{(0,∞)} = (1 + sign) / 2` almost everywhere. -/
 private theorem fourierInv_indicator_Ioi {G : ℝ → X} (hG : Integrable G) :
     𝓕⁻ ((Set.Ioi (0 : ℝ)).indicator G) =
-      (2⁻¹ : ℂ) • (𝓕⁻ G + 𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G ξ) := by
+      (1 / 2 : ℂ) • (𝓕⁻ G + 𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G ξ) := by
   funext x
   rw [Pi.smul_apply, Pi.add_apply, ← fourierInv_add' hG (integrable_sign_smul hG),
-    ← fourierInv_smul']
-  refine congrFun (fourierInv_congr_ae ?_) x
-  filter_upwards [compl_mem_ae_iff.2 (measure_singleton (0 : ℝ))] with ξ hξ
-  rcases lt_or_gt_of_ne (hξ : ξ ≠ 0) with h | h
+    ← fourierInv_const_smul]
+  refine Real.fourierInv_congr_ae ?_ x
+  filter_upwards [Measure.ae_ne volume (0 : ℝ)] with ξ hξ
+  rcases lt_or_gt_of_ne hξ with h | h
   · rw [Set.indicator_of_notMem (fun h' : ξ ∈ Set.Ioi 0 => h.not_gt h'), Real.sign_of_neg h]
     simp
   · rw [Set.indicator_of_mem (Set.mem_Ioi.2 h), Real.sign_of_pos h, Complex.ofReal_one, one_smul,
-      ← two_smul ℂ, smul_smul, inv_mul_cancel₀ two_ne_zero, one_smul]
-
-private theorem enorm_two_inv : ‖(2⁻¹ : ℂ)‖ₑ = 2⁻¹ := by
-  rw [← ofReal_norm, norm_inv, Complex.norm_ofNat, ENNReal.ofReal_inv_of_pos two_pos,
-    ENNReal.ofReal_ofNat]
+      ← two_smul ℂ, smul_smul, one_div_mul_cancel two_ne_zero, one_smul]
 
 omit [NormedSpace ℂ X] [CompleteSpace X] in
 /-- Averages of two functions. -/
@@ -1020,9 +906,7 @@ private theorem half_mul_eLpNorm_add_le {p : ℝ} (hp : 1 ≤ p) {u v : ℝ → 
   calc _ ≤ (2⁻¹ : ℝ≥0∞) * (D + D) := by
         gcongr
         exact (eLpNorm_add_le (ENNReal.one_le_ofReal.2 hp)).trans (add_le_add hu hv)
-    _ = D := by
-        rw [← two_mul, ← mul_assoc, ENNReal.inv_mul_cancel two_ne_zero ENNReal.ofNat_ne_top,
-          one_mul]
+    _ = D := by rw [mul_add, ← add_mul, ENNReal.inv_two_add_inv_two, one_mul]
 
 private theorem one_le_hilbertBound (β : ℝ≥0∞) : 1 ≤ hilbertBound β :=
   le_trans (by norm_num) (le_add_self : (11 : ℝ≥0∞) ≤ 4 * β ^ 2 + 11)
@@ -1034,7 +918,7 @@ private theorem eLpNorm_fourierInv_Ioi_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0�
     (hf : MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume) :
     eLpNorm (𝓕⁻ ((Set.Ioi (0 : ℝ)).indicator G)) (ENNReal.ofReal p) volume ≤
       hilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
-  rw [fourierInv_indicator_Ioi hG, eLpNorm_const_smul, enorm_two_inv]
+  rw [fourierInv_indicator_Ioi hG, eLpNorm_const_smul, enorm_half (Or.inl rfl)]
   exact half_mul_eLpNorm_add_le hp.le (le_mul_of_one_le_left' (one_le_hilbertBound β))
     (eLpNorm_fourierInv_sign_le hp hβ hG hf)
 
@@ -1047,7 +931,7 @@ private theorem eLpNorm_fourierInv_dyadicSign_le_aux {p : ℝ} (hp : 1 < p) {β 
     (hf : MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume)
     (hfin : β ≠ ⊤ ∨ eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume = 0) :
     eLpNorm (𝓕⁻ fun ξ => ((dyadicSign ε ξ : ℝ) : ℂ) • G ξ) (ENNReal.ofReal p) volume ≤
-      16 * (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 3 * hilbertBound β ^ 2 *
+      16 * (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 3 * β ^ 2 * hilbertBound β ^ 2 *
         eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
   set G₁ := (Set.Ioi (0 : ℝ)).indicator G with hG₁
   have h1 := eLpNorm_fourierInv_Ioi_le hp hβ hG hf
@@ -1067,26 +951,11 @@ private theorem eLpNorm_fourierInv_dyadicSign_le_aux {p : ℝ} (hp : 1 < p) {β 
       exact le_antisymm h1 zero_le)
   rw [h2]
   refine h3.trans ?_
-  calc _ ≤ 16 * (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 3 * hilbertBound β *
+  calc _ ≤ 16 * (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 3 * β ^ 2 * hilbertBound β *
         (hilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume) := by gcongr
     _ = _ := by ring
 
 /-! ### The two half-lines -/
-
-omit [CompleteSpace X] in
-/-- The reflection `ξ → −ξ`. -/
-private theorem fourierInv_comp_neg' (G : ℝ → X) :
-    (𝓕⁻ fun ξ => G (-ξ)) = fun x => 𝓕⁻ G (-x) := by
-  funext x
-  rw [Real.fourierInv_eq_fourier_neg, Real.fourierInv_eq_fourier_comp_neg]
-
-omit [CompleteSpace X] in
-private theorem eLpNorm_fourierInv_comp_neg {G : ℝ → X} (hG : Integrable G) (P : ℝ≥0∞) :
-    eLpNorm (𝓕⁻ fun ξ => G (-ξ)) P volume = eLpNorm (𝓕⁻ G) P volume := by
-  rw [fourierInv_comp_neg']
-  exact eLpNorm_comp_measurePreserving
-    (continuous_fourierInv_of_integrable hG).aestronglyMeasurable
-    (Measure.measurePreserving_neg volume)
 
 /-- The multiplier `m`, with the two half-lines. -/
 private noncomputable def fullSign (ε ε' : ℤ → ℝ) (ξ : ℝ) : ℝ :=
@@ -1142,8 +1011,8 @@ private theorem eLpNorm_fourierInv_fullSign_le {p : ℝ} (hp : 1 < p) {D : ℝ�
   exact (eLpNorm_add_le (ENNReal.one_le_ofReal.2 hp.le)).trans (add_le_add (h ε hε G hG hf) h2)
 
 omit [CompleteSpace X] in
-/-- The left-hand inequality of (1.13), from the right-hand one for `T_m f`, as `m² = 1`
-(p. 755). -/
+/-- The left-hand inequality of (1.13), from the right-hand one for `T_m f`, as `m² = 1` (p. 755,
+where `m² = 1` on `ℝ₊`, after the reduction; here for the two half-lines together). -/
 private theorem eLpNorm_le_eLpNorm_fourierInv_fullSign {p : ℝ} {D : ℝ≥0∞} {ε ε' : ℤ → ℝ}
     (hε : ∀ j, ε j = 1 ∨ ε j = -1) (hε' : ∀ j, ε' j = 1 ∨ ε' j = -1)
     (h : ∀ G : ℝ → X, Integrable G → MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume →
@@ -1156,8 +1025,8 @@ private theorem eLpNorm_le_eLpNorm_fourierInv_fullSign {p : ℝ} {D : ℝ≥0∞
   · have h1 := h _ (integrable_fullSign_smul hε hε' hG) hm
     have h2 : (𝓕⁻ fun ξ => ((fullSign ε ε' ξ : ℝ) : ℂ) • ((fullSign ε ε' ξ : ℝ) : ℂ) • G ξ) =
         𝓕⁻ G := by
-      refine fourierInv_congr_ae ?_
-      filter_upwards [compl_mem_ae_iff.2 (measure_singleton (0 : ℝ))] with ξ hξ
+      refine funext (Real.fourierInv_congr_ae ?_)
+      filter_upwards [Measure.ae_ne volume (0 : ℝ)] with ξ hξ
       rw [smul_smul, ← Complex.ofReal_mul, fullSign_mul_self hε hε' hξ, Complex.ofReal_one,
         one_smul]
     rwa [h2] at h1
@@ -1183,15 +1052,15 @@ private theorem exists_eLpNorm_fourierInv_dyadicSign_le_aux : ∃ C : NNReal, �
     IsUMDBound X p β → ∀ ε : ℤ → ℝ, (∀ j, ε j = 1 ∨ ε j = -1) →
     ∀ G : ℝ → X, Integrable G → MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume →
       eLpNorm (𝓕⁻ fun ξ => ((dyadicSign ε ξ : ℝ) : ℂ) • G ξ) (ENNReal.ofReal p) volume ≤
-        C * β ^ 6 * hilbertBound β ^ 2 * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
+        C * β ^ 8 * hilbertBound β ^ 2 * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
   obtain ⟨c, hφ, hψ, hρ⟩ := exists_isBump_all
   refine ⟨16 * (c.toNNReal * 1088) ^ 3 + 1, fun X _ _ _ p hp β hβ ε hε G hG hf => ?_⟩
   have hħ : hilbertBound β ^ 2 ≠ 0 :=
     pow_ne_zero 2 (zero_lt_one.trans_le (one_le_hilbertBound β)).ne'
   by_cases hfin : β ≠ ⊤ ∨ eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume = 0
   · refine (eLpNorm_fourierInv_dyadicSign_le_aux hp hβ hφ hψ hρ hε hG hf hfin).trans ?_
-    have h : 16 * (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 3 =
-        16 * (ENNReal.ofReal c * 1088) ^ 3 * β ^ 6 := by ring
+    have h : 16 * (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 3 * β ^ 2 =
+        16 * (ENNReal.ofReal c * 1088) ^ 3 * β ^ 8 := by ring
     rw [h]
     gcongr
     push_cast
@@ -1210,31 +1079,32 @@ theorem exists_eLpNorm_fourierInv_dyadicSign_le : ∃ C : NNReal, ∀ (X : Type*
     ∀ G : ℝ → X, Integrable G → MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume →
       eLpNorm (𝓕⁻ fun ξ => ((dyadicSign ε ξ + dyadicSign ε' (-ξ) : ℝ) : ℂ) • G ξ)
           (ENNReal.ofReal p) volume ≤
-        C * β ^ 6 * hilbertBound β ^ 2 * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume ∧
+        C * β ^ 8 * hilbertBound β ^ 2 * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume ∧
       eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume ≤
-        C * β ^ 6 * hilbertBound β ^ 2 *
+        C * β ^ 8 * hilbertBound β ^ 2 *
           eLpNorm (𝓕⁻ fun ξ => ((dyadicSign ε ξ + dyadicSign ε' (-ξ) : ℝ) : ℂ) • G ξ)
             (ENNReal.ofReal p) volume := by
   obtain ⟨C, hC⟩ := exists_eLpNorm_fourierInv_dyadicSign_le_aux
   refine ⟨2 * C, fun X _ _ _ p hp β hβ ε ε' hε hε' G hG hf => ?_⟩
-  have hD : ((2 * C : NNReal) : ℝ≥0∞) * β ^ 6 * hilbertBound β ^ 2 =
-      2 * (C * β ^ 6 * hilbertBound β ^ 2) := by
+  have hD : ((2 * C : NNReal) : ℝ≥0∞) * β ^ 8 * hilbertBound β ^ 2 =
+      2 * (C * β ^ 8 * hilbertBound β ^ 2) := by
     push_cast
     ring
   rw [hD]
   have h : ∀ G : ℝ → X, Integrable G → MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume →
       eLpNorm (𝓕⁻ fun ξ => ((fullSign ε ε' ξ : ℝ) : ℂ) • G ξ) (ENNReal.ofReal p) volume ≤
-        2 * (C * β ^ 6 * hilbertBound β ^ 2) * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume :=
+        2 * (C * β ^ 8 * hilbertBound β ^ 2) * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume :=
     fun G hG hf => eLpNorm_fourierInv_fullSign_le hp hε hε' (hC X p hp β hβ) hG hf
   exact ⟨h G hG hf, eLpNorm_le_eLpNorm_fourierInv_fullSign hε hε' h hG hf⟩
 
-/-- The right-hand inequality on the positive half-line, for coefficients `−1`, `0` and `1`. -/
+/-- The right-hand inequality on the positive half-line, for coefficients `−1`, `0` and `1` (not in
+the source): they are averages of two sequences of signs. -/
 theorem exists_eLpNorm_fourierInv_dyadicSign_le' : ∃ C : NNReal, ∀ (X : Type*)
     [NormedAddCommGroup X] [NormedSpace ℂ X] [CompleteSpace X] (p : ℝ), 1 < p → ∀ β : ℝ≥0∞,
     IsUMDBound X p β → ∀ ε : ℤ → ℝ, (∀ j, ε j = 1 ∨ ε j = 0 ∨ ε j = -1) →
     ∀ G : ℝ → X, Integrable G → MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume →
       eLpNorm (𝓕⁻ fun ξ => ((dyadicSign ε ξ : ℝ) : ℂ) • G ξ) (ENNReal.ofReal p) volume ≤
-        C * β ^ 6 * hilbertBound β ^ 2 * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
+        C * β ^ 8 * hilbertBound β ^ 2 * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
   obtain ⟨C, hC⟩ := exists_eLpNorm_fourierInv_dyadicSign_le_aux
   refine ⟨C, fun X _ _ _ p hp β hβ ε hε G hG hf => ?_⟩
   -- `ε` is the average of two sequences of signs
@@ -1252,14 +1122,14 @@ theorem exists_eLpNorm_fourierInv_dyadicSign_le' : ∃ C : NNReal, ∀ (X : Type
     · exact h12 _
     · ring
   have heq : (𝓕⁻ fun ξ => ((dyadicSign ε ξ : ℝ) : ℂ) • G ξ) =
-      (2⁻¹ : ℂ) • ((𝓕⁻ fun ξ => ((dyadicSign ε₁ ξ : ℝ) : ℂ) • G ξ) +
+      (1 / 2 : ℂ) • ((𝓕⁻ fun ξ => ((dyadicSign ε₁ ξ : ℝ) : ℂ) • G ξ) +
         𝓕⁻ fun ξ => ((dyadicSign ε₂ ξ : ℝ) : ℂ) • G ξ) := by
     funext x
     rw [Pi.smul_apply, Pi.add_apply, ← fourierInv_add' (integrable_dyadicSign_smul h₁ hG)
-      (integrable_dyadicSign_smul h₂ hG), ← fourierInv_smul']
-    simp only [hd, Complex.ofReal_mul, Complex.ofReal_add, Complex.ofReal_inv, Complex.ofReal_ofNat,
-      ← add_smul, ← mul_smul]
-  rw [heq, eLpNorm_const_smul, enorm_two_inv]
+      (integrable_dyadicSign_smul h₂ hG), ← fourierInv_const_smul]
+    simp only [hd, one_div, Complex.ofReal_mul, Complex.ofReal_add, Complex.ofReal_inv,
+      Complex.ofReal_ofNat, ← add_smul, ← mul_smul]
+  rw [heq, eLpNorm_const_smul, enorm_half (Or.inl rfl)]
   exact half_mul_eLpNorm_add_le hp.le (hC X p hp β hβ ε₁ h₁ G hG hf) (hC X p hp β hβ ε₂ h₂ G hG hf)
 
 end HarmonicAnalysis

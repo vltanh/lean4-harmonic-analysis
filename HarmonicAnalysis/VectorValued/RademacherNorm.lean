@@ -9,6 +9,7 @@ public import BanachProbability.SignCube.Bridge
 public import BanachProbability.RandomSums.Contraction
 public import HarmonicAnalysis.FourierMultiplier.Density
 public import HarmonicAnalysis.VectorValued.Defs
+import BanachProbability.UMD.Incremental
 import Mathlib.MeasureTheory.Integral.Prod
 
 /-!
@@ -20,18 +21,23 @@ the product of `μ` with the uniform probability on the signs. Facts:
 
 * the `p`-th power is the average over the signs (`eLpNormRad_rpow`,
   `eLpNormRad_rpow_eq_lintegral`), and bounds that hold for every fixed choice of signs hold for the
-  Rademacher sums (`eLpNormRad_le_of_forall`);
+  Rademacher sums (`eLpNormRad_le_of_forall`, `eLpNormRad_le_of_forall_le`,
+  `le_mul_eLpNormRad_of_forall_le`);
 * the triangle inequality (`eLpNormRad_add_le`), scalar factors (`eLpNormRad_fun_const_smul`), sums
   with one term (`eLpNormRad_one`), measure-preserving maps (`eLpNormRad_comp_measurePreserving`);
 * Kahane's contraction principle for pointwise multipliers (`eLpNormRad_smul_le`), the invariance
   under pointwise signs (`eLpNormRad_sign_smul`), partial sums (`eLpNormRad_indicator_le`,
   `eLpNormRad_comp_le`);
+* in UMD spaces, Burkholder's inequality for martingale transforms, applied to Rademacher sums, for
+  pointwise multipliers (`eLpNormRad_smul_le_umd`);
 * Minkowski's integral inequality (`eLpNormRad_integral_le`).
 
 Sources: Hytönen–van Neerven–Veraar–Weis (HNVW), *Analysis in Banach spaces I* (2016) and *II*
 (2017): the contraction principle is Proposition 3.2.10 of volume I, pp. 181–182, and Theorem 6.1.13
 of volume II, p. 9; Minkowski's integral inequality is Proposition 1.2.22 of volume I, p. 24, with
-the exponents `1` and `p`.
+the exponents `1` and `p`. Burkholder's inequality is (2.1), p. 743, of T. R. McConnell, *On Fourier
+multiplier transformations of Banach-valued functions*, Trans. Amer. Math. Soc. 285 (1984), 739–757,
+and its use for Rademacher sums is on pp. 755–756 there.
 
 The signs are real throughout the vector-valued part, also in complex spaces, where the book uses
 complex Rademacher variables. This costs a factor in the contraction principle for complex scalars:
@@ -75,9 +81,17 @@ private theorem rad_lintegral_uniformOn (G : (Fin K → Bool) → ℝ≥0∞) :
       ENNReal.ofReal_ofNat]
   rw [hμ, mul_comm]
 
+/-- The average over the signs of a constant. -/
+private theorem rad_avg_const (K : ℕ) (D : ℝ≥0∞) :
+    ((2 : ℝ≥0∞) ^ K)⁻¹ * ∑ _ε : Fin K → Bool, D = D := by
+  rw [Finset.sum_const, Finset.card_univ, Fintype.card_fun, Fintype.card_bool, Fintype.card_fin,
+    nsmul_eq_mul, ← mul_assoc, Nat.cast_pow, Nat.cast_ofNat,
+    ENNReal.inv_mul_cancel (pow_ne_zero _ two_ne_zero) (ENNReal.pow_ne_top ENNReal.ofNat_ne_top),
+    one_mul]
+
 /-- The Rademacher sum of measurable functions is measurable on the product. -/
 private theorem rad_aestronglyMeasurable {f : Fin K → α → E}
-    (hf : ∀ k, AEStronglyMeasurable (f k) μ) (ν : Measure (Fin K → Bool)) [SFinite ν] :
+    (hf : ∀ k, AEStronglyMeasurable (f k) μ) (ν : Measure (Fin K → Bool)) :
     AEStronglyMeasurable (fun z : α × (Fin K → Bool) => ∑ k, coin (z.2 k) • f k z.1)
       (μ.prod ν) :=
   Finset.aestronglyMeasurable_fun_sum _ fun k _ =>
@@ -135,6 +149,26 @@ theorem eLpNormRad_le_of_forall {β : Type*} [MeasurableSpace β] {ν : Measure 
   rw [← ENNReal.mul_rpow_of_nonneg _ _ hp.le]
   exact ENNReal.rpow_le_rpow (h ε) hp.le
 
+/-- A common bound of the norms of the signed sums bounds the norm of the Rademacher sum. -/
+theorem eLpNormRad_le_of_forall_le {p : ℝ} (hp : 0 < p) {f : Fin K → α → E}
+    (hf : ∀ k, AEStronglyMeasurable (f k) μ) {D : ℝ≥0∞} (h : ∀ ε : Fin K → Bool,
+      eLpNorm (fun x => ∑ k, coin (ε k) • f k x) (ENNReal.ofReal p) μ ≤ D) :
+    eLpNormRad f p μ ≤ D := by
+  rw [← ENNReal.rpow_le_rpow_iff hp, eLpNormRad_rpow hp hf, ← rad_avg_const K (D ^ p)]
+  exact mul_le_mul_right (Finset.sum_le_sum fun ε _ => ENNReal.rpow_le_rpow (h ε) hp.le) _
+
+/-- A number that is bounded by the norm of every signed sum is bounded by the norm of the
+Rademacher sum. -/
+theorem le_mul_eLpNormRad_of_forall_le {p : ℝ} (hp : 0 < p) {f : Fin K → α → E}
+    (hf : ∀ k, AEStronglyMeasurable (f k) μ) {C D : ℝ≥0∞} (h : ∀ ε : Fin K → Bool,
+      D ≤ C * eLpNorm (fun x => ∑ k, coin (ε k) • f k x) (ENNReal.ofReal p) μ) :
+    D ≤ C * eLpNormRad f p μ := by
+  rw [← ENNReal.rpow_le_rpow_iff hp, ENNReal.mul_rpow_of_nonneg _ _ hp.le, eLpNormRad_rpow hp hf,
+    mul_left_comm, Finset.mul_sum (a := C ^ p), ← rad_avg_const K (D ^ p)]
+  refine mul_le_mul_right (Finset.sum_le_sum fun ε _ => ?_) _
+  rw [← ENNReal.mul_rpow_of_nonneg _ _ hp.le]
+  exact ENNReal.rpow_le_rpow (h ε) hp.le
+
 /-- The norm of a Rademacher sum depends only on the classes of the functions. -/
 theorem eLpNormRad_congr_ae {p : ℝ} {f g : Fin K → α → E} (h : ∀ k, f k =ᵐ[μ] g k) :
     eLpNormRad f p μ = eLpNormRad g p μ := by
@@ -163,7 +197,6 @@ theorem eLpNormRad_fun_const_smul {𝕜 : Type*} [NormedDivisionRing 𝕜] [Modu
 /-- The Rademacher sum with one term. -/
 theorem eLpNormRad_one {p : ℝ} (hp : 0 < p) {f : α → E} (hf : AEStronglyMeasurable f μ) :
     eLpNormRad (fun _ : Fin 1 => f) p μ = eLpNorm f (ENNReal.ofReal p) μ := by
-  refine ENNReal.rpow_left_injective hp.ne' ?_
   have h : ∀ ε : Fin 1 → Bool, eLpNorm (fun x => ∑ k, coin (ε k) • f x) (ENNReal.ofReal p) μ =
       eLpNorm f (ENNReal.ofReal p) μ := fun ε => by
     simp only [Finset.univ_unique, Finset.sum_singleton]
@@ -171,11 +204,9 @@ theorem eLpNormRad_one {p : ℝ} (hp : 0 < p) {f : α → E} (hf : AEStronglyMea
     · simp only [h, one_smul]
     · simp only [h, neg_smul, one_smul]
       exact eLpNorm_neg f _ _
-  simp only
-  rw [eLpNormRad_rpow hp fun _ => hf]
-  simp only [h, Finset.sum_const, Finset.card_univ, Fintype.card_pi, Fintype.card_bool,
-    Finset.prod_const, nsmul_eq_mul, ← mul_assoc, Fintype.card_fin, pow_one, Nat.cast_ofNat]
-  rw [ENNReal.inv_mul_cancel two_ne_zero ENNReal.ofNat_ne_top, one_mul]
+  refine le_antisymm (eLpNormRad_le_of_forall_le hp (fun _ => hf) fun ε => (h ε).le) ?_
+  rw [← one_mul (eLpNormRad _ p μ)]
+  exact le_mul_eLpNormRad_of_forall_le hp (fun _ => hf) fun ε => by rw [one_mul, h]
 
 /-- Measure-preserving maps, such as the translations and the reflection of the line, preserve the
 norms of Rademacher sums. -/
@@ -309,6 +340,85 @@ theorem eLpNormRad_comp_le {L : ℕ} {p : ℝ} (hp : 1 ≤ p) {σ : Fin K → Fi
   rw [hK]
   refine lpNorm_sum_coin_smul_le hp (fun l => ?_) fun l => f l x
   split_ifs <;> simp
+
+/-! ### Burkholder's inequality for martingale transforms
+
+The terms `d_k = ε_k v_k` of a Rademacher sum are martingale differences, and in a UMD space
+Burkholder's inequality `‖Σ_k c_k d_k‖_p ≤ β ‖Σ_k d_k‖_p`, `|c_k| ≤ 1` (McConnell (1984), (2.1),
+p. 743), applies to them. -/
+
+/-- Burkholder's inequality for a Rademacher sum and real numbers `|c_k| ≤ 1`. -/
+theorem eLpNorm_sum_coin_smul_le_umd [CompleteSpace E] {p : ℝ} (hp : 1 ≤ p) {β : ℝ≥0∞}
+    (hβ : IsUMDBound E p β) {c : Fin K → ℝ} (hc : ∀ k, |c k| ≤ 1) (v : Fin K → E) :
+    eLpNorm (fun ε : Fin K → Bool => ∑ k, coin (ε k) • c k • v k) (ENNReal.ofReal p)
+        (ProbabilityTheory.uniformOn Set.univ) ≤
+      β * eLpNorm (fun ε : Fin K → Bool => ∑ k, coin (ε k) • v k) (ENNReal.ofReal p)
+        (ProbabilityTheory.uniformOn Set.univ) := by
+  have hp0 : 0 < p := by linarith
+  have key := ((isUMDBound_iff_isDeterministicUMDBound hp).1 hβ).eLpNorm_le_of_norm_le_one hp
+    (martingale_paleyWalsh (fun (k : Fin K) (_ : Fin K → Bool) => v k) fun _ _ _ _ => rfl)
+    (fun ε => paleyWalsh_zero _ ε) (a := fun n => if h : n - 1 < K then c ⟨n - 1, h⟩ else 1)
+    (fun n => by
+      split_ifs
+      · exact hc _
+      · simp) K
+  have h1 := fun ε : Fin K → Bool =>
+    umdd_sum_shift_smul_paleyWalsh (fun k _ => c k) (fun k (_ : Fin K → Bool) => v k) K ε
+  simp only [h1] at key
+  simpa [paleyWalsh, umdd_eLpNorm_norm_uniformOn _ hp0, eLpNorm_uniformOn _ hp0] using key
+
+/-- Burkholder's inequality for a Rademacher sum and complex numbers `|c_k| ≤ 1`: the real and the
+imaginary parts, hence the factor `2`. -/
+private theorem rad_eLpNorm_smul_le_umd {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
+    [CompleteSpace E] {p : ℝ} (hp : 1 ≤ p) {β : ℝ≥0∞} (hβ : IsUMDBound E p β) {c : Fin K → ℂ}
+    (hc : ∀ k, ‖c k‖ ≤ 1) (v : Fin K → E) :
+    eLpNorm (fun ε : Fin K → Bool => ∑ k, coin (ε k) • c k • v k) (ENNReal.ofReal p)
+        (ProbabilityTheory.uniformOn Set.univ) ≤
+      2 * β * eLpNorm (fun ε : Fin K → Bool => ∑ k, coin (ε k) • v k) (ENNReal.ofReal p)
+        (ProbabilityTheory.uniformOn Set.univ) := by
+  have hre := eLpNorm_sum_coin_smul_le_umd hp hβ
+    (fun k => (Complex.abs_re_le_norm (c k)).trans (hc k)) v
+  have him := eLpNorm_sum_coin_smul_le_umd hp hβ
+    (fun k => (Complex.abs_im_le_norm (c k)).trans (hc k)) v
+  have hsum : (fun ε : Fin K → Bool => ∑ k, coin (ε k) • c k • v k) =
+      (fun ε => ∑ k, coin (ε k) • (c k).re • v k) +
+        Complex.I • fun ε => ∑ k, coin (ε k) • (c k).im • v k := by
+    funext ε
+    simp only [Pi.add_apply, Pi.smul_apply, Finset.smul_sum, ← Finset.sum_add_distrib]
+    refine Finset.sum_congr rfl fun k _ => ?_
+    conv_lhs => rw [← Complex.re_add_im (c k), add_smul, mul_comm, mul_smul, Complex.coe_smul,
+      Complex.coe_smul, smul_add, smul_comm (coin (ε k)) Complex.I]
+  rw [hsum]
+  refine (eLpNorm_add_le (ENNReal.one_le_ofReal.2 hp)).trans ?_
+  rw [eLpNorm_const_smul, ← ofReal_norm, Complex.norm_I, ENNReal.ofReal_one, one_mul, mul_assoc,
+    two_mul]
+  exact add_le_add hre him
+
+/-- **Burkholder's inequality for Rademacher sums of functions** (McConnell (1984), (2.1), as on
+pp. 755–756), for pointwise multipliers `c_k (x) ∈ ℂ`, `|c_k (x)| ≤ 1`: the inequality for the
+martingale transform at each point `x`, integrated in `x`. The coefficients are real in (2.1) and
+complex on pp. 755–756; the factor `2` is for their real and imaginary parts. -/
+theorem eLpNormRad_smul_le_umd {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
+    [CompleteSpace E] {p : ℝ} (hp : 1 ≤ p) {β : ℝ≥0∞} (hβ : IsUMDBound E p β) {c : Fin K → α → ℂ}
+    (hc : ∀ k x, ‖c k x‖ ≤ 1) (hcm : ∀ k, AEStronglyMeasurable (c k) μ) {f : Fin K → α → E}
+    (hf : ∀ k, AEStronglyMeasurable (f k) μ) :
+    eLpNormRad (fun k x => c k x • f k x) p μ ≤ 2 * β * eLpNormRad f p μ := by
+  have hp0 : 0 < p := by linarith
+  have hm : AEMeasurable (fun x => ENNReal.ofReal (SignCube.lpNorm (fun y => ‖y‖) p
+      (fun ε : Fin K → Bool => ∑ k, coin (ε k) • f k x) ^ p)) μ :=
+    (((Finset.aemeasurable_fun_sum _ fun ε _ =>
+      (rad_aestronglyMeasurable_sum hf ε).norm.aemeasurable.pow_const p).div_const _).pow_const
+        _).pow_const p |>.ennreal_ofReal
+  rw [← ENNReal.rpow_le_rpow_iff hp0, ENNReal.mul_rpow_of_nonneg _ _ hp0.le,
+    eLpNormRad_rpow_eq_lintegral hp0 (f := fun k x => c k x • f k x)
+      (fun k => (hcm k).smul (hf k)), eLpNormRad_rpow_eq_lintegral hp0 hf,
+    ← lintegral_const_mul'' _ hm]
+  refine lintegral_mono fun x => ?_
+  have h := ENNReal.rpow_le_rpow (rad_eLpNorm_smul_le_umd hp hβ (fun k => hc k x) fun k => f k x)
+    hp0.le
+  rwa [eLpNorm_uniformOn _ hp0, eLpNorm_uniformOn _ hp0, ENNReal.mul_rpow_of_nonneg _ _ hp0.le,
+    ENNReal.ofReal_rpow_of_nonneg (lpNorm_nonneg (fun _ => norm_nonneg _) _ _) hp0.le,
+    ENNReal.ofReal_rpow_of_nonneg (lpNorm_nonneg (fun _ => norm_nonneg _) _ _) hp0.le] at h
 
 /-! ### Minkowski's integral inequality -/
 

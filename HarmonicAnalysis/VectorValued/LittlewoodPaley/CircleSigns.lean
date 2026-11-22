@@ -7,9 +7,6 @@ module
 
 public import HarmonicAnalysis.VectorValued.LittlewoodPaley.Signs
 public import HarmonicAnalysis.VectorValued.LittlewoodPaley.Circle
-import Mathlib.Analysis.SpecialFunctions.Log.Base
-import Mathlib.MeasureTheory.Function.SpecialFunctions.Basic
-import Mathlib.NumberTheory.Real.Irrational
 
 /-!
 # Dyadic multipliers on the circle for every choice of the signs
@@ -25,18 +22,20 @@ signs, for
   `a_n = ε_ℓ + ε_{ℓ+1}` for `n = 2^ℓ`.
 
 The last multiplier is that of F. Lust-Piquard and G. Pisier, *Non commutative Khintchine and Paley
-inequalities*, Ark. Mat. 29 (1991), p. 253, for `k_ℓ = 2^ℓ`; they deduce its boundedness from
-Bourgain's version of the Marcinkiewicz multiplier theorem and refer also to T. R. McConnell, *On
-Fourier multiplier transformations of Banach-valued functions*, Trans. Amer. Math. Soc. 285 (1984),
-739–757, Theorem 1.3, which is used here. It gives the first two multipliers, `L_ε` and `R_ε`, by
-transference; the third one, which takes the value `ε_ℓ + ε_{ℓ+1}` at `2^ℓ`, is
-`R_ε + P L_{ε (· + 1)}`, where `P = ½ (L_1 − L_θ R_{−θ})`, `θ_ℓ = (−1)^ℓ`, is the projection onto
-the frequencies `2^ℓ`. If the first two multipliers have norms at most `K`, for all the signs, then
-`P` has norm at most `½ (K + K²)` and the third one `K + ½ (K + K²) K`.
+inequalities*, Ark. Mat. 29 (1991), p. 253, for `k_ℓ = 2^ℓ`; their sums `ℓ ≤ L` are finite, whence
+the coefficients `ε_ℓ = 0` here. They deduce its boundedness from Bourgain's version of the
+Marcinkiewicz multiplier theorem and refer also to T. R. McConnell, *On Fourier multiplier
+transformations of Banach-valued functions*, Trans. Amer. Math. Soc. 285 (1984), 739–757, Theorem
+1.3, which is used here. It gives the first two multipliers, `L_ε` and `R_ε`, by transference; the
+third one, which takes the value `ε_ℓ + ε_{ℓ+1}` at `2^ℓ`, is
+`R_ε + ½ L_{ε (· + 1)} − ½ L_{θ ε (· + 1)} R_{−θ}`, where `θ_ℓ = (−1)^ℓ`. If the first two
+multipliers have norms at most `K`, for all the signs, then the third one has norm at most
+`K + ½ K + ½ K²`.
 
 The transference is that of Hytönen–van Neerven–Veraar–Weis (HNVW), *Analysis in Banach spaces I*
-(2016), pp. 458–466 (`HarmonicAnalysis.VectorValued.Transference`), with their irrational dilations
-`ρ` near `1`: `ρ > 1` for the blocks closed on the left and `ρ < 1` for those closed on the right.
+(2016), pp. 458–460 and 465–466 (`HarmonicAnalysis.VectorValued.Transference`), with their
+irrational dilations `ρ > 1` near `1` for the blocks closed on the left. For the blocks closed on
+the right the dilations are `ρ < 1`, which is added here.
 -/
 
 @[expose] public section
@@ -75,12 +74,6 @@ noncomputable def closedBlockSign (ε : ℕ → ℝ) (n : ℤ) : ℝ :=
 theorem mulCoeff_apply (a : ℤ → ℂ) (c : ℤ →₀ X) (n : ℤ) : mulCoeff a c n = a n • c n :=
   rfl
 
-/-- The product of two multipliers. -/
-theorem mulCoeff_mulCoeff (a b : ℤ → ℂ) (c : ℤ →₀ X) :
-    mulCoeff a (mulCoeff b c) = mulCoeff (fun n => a n * b n) c := by
-  ext n
-  simp only [mulCoeff_apply, mul_smul]
-
 /-- `T_a f = Σ_n a_n c_n e_n`. -/
 theorem circPoly_mulCoeff (a : ℤ → ℂ) (c : ℤ →₀ X) (t : UnitAddCircle) :
     circPoly (mulCoeff a c) t = c.sum fun n x => fourier n t • a n • x :=
@@ -99,38 +92,6 @@ private theorem mulCoeff_congr {a b : ℤ → ℂ} {c : ℤ →₀ X} (h : ∀ n
 
 `dyadicSign η (ρ ·)`, for an irrational `ρ > 0` and `η_j = 0` for `j < −1`: it is bounded and
 measurable, and continuous at the integers. -/
-
-/-- The symbol is bounded by `1`. -/
-private theorem abs_dyadicSign_le {η : ℤ → ℝ} (hη : ∀ j, η j = 1 ∨ η j = 0 ∨ η j = -1) (ξ : ℝ) :
-    |dyadicSign η ξ| ≤ 1 := by
-  rw [dyadicSign]
-  split_ifs
-  · rcases hη (Int.log 2 ξ) with h | h | h <;> simp [h]
-  · simp
-
-/-- The symbol is measurable, as `Int.log 2 ξ = ⌊log₂ ξ⌋` for `ξ > 0`. -/
-private theorem measurable_dyadicSign (η : ℤ → ℝ) : Measurable (dyadicSign η) := by
-  have h1 : dyadicSign η = fun ξ => if 0 < ξ then η ⌊Real.logb 2 ξ⌋ else 0 := by
-    funext ξ
-    rw [dyadicSign]
-    refine ite_congr rfl (fun hξ => ?_) fun _ => rfl
-    have h2 := Real.floor_logb_natCast (b := 2) hξ.le
-    rw [Nat.cast_ofNat] at h2
-    rw [h2]
-  rw [h1]
-  refine Measurable.ite measurableSet_Ioi ?_ measurable_const
-  exact (measurable_from_top (f := η)).comp
-    (Int.measurable_floor.comp (Real.measurable_log.div_const _))
-
-/-- `dyadicSign η = η_j` on `[2^j, 2^{j+1})`. -/
-private theorem dyadicSign_eq (η : ℤ → ℝ) {j : ℤ} {ξ : ℝ} (h1 : 2 ^ j ≤ ξ)
-    (h2 : ξ < 2 ^ (j + 1)) : dyadicSign η ξ = η j := by
-  have h0 : 0 < ξ := (zpow_pos two_pos j).trans_le h1
-  have h3 : j ≤ Int.log 2 ξ :=
-    (Int.zpow_le_iff_le_log one_lt_two h0).1 (by rwa [Nat.cast_ofNat])
-  have h4 : Int.log 2 ξ < j + 1 :=
-    (Int.lt_zpow_iff_log_lt one_lt_two h0).1 (by rwa [Nat.cast_ofNat])
-  rw [dyadicSign, ite_eq_left h0, le_antisymm (Int.lt_add_one_iff.1 h4) h3]
 
 /-- `dyadicSign η = 0` on `(−∞, 1/2)`, if `η_j = 0` for `j < −1`. -/
 private theorem dyadicSign_eq_zero {η : ℤ → ℝ} (hη : ∀ j < -1, η j = 0) {ξ : ℝ}
@@ -177,20 +138,14 @@ private theorem continuousAt_dyadicSign {η : ℤ → ℝ} (hη : ∀ j < -1, η
 
 /-! ### Transference -/
 
-/-- The multipliers `dyadicSign η`, `η_j ∈ {−1, 0, 1}`, are bounded on `L^p (ℝ; X)` with norm
-`K`. -/
+/-- The multipliers `dyadicSign η`, `η_j ∈ {−1, 0, 1}`, are bounded on `L^p (ℝ; X)` with norms at
+most `K`. -/
 private def DyadicSignBound (X : Type*) [NormedAddCommGroup X] [NormedSpace ℂ X] (p : ℝ)
     (K : ℝ≥0∞) : Prop :=
   ∀ η : ℤ → ℝ, (∀ j, η j = 1 ∨ η j = 0 ∨ η j = -1) →
     ∀ G : ℝ → X, Integrable G → MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume →
       eLpNorm (𝓕⁻ fun ξ => ((dyadicSign η ξ : ℝ) : ℂ) • G ξ) (ENNReal.ofReal p) volume ≤
         K * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume
-
-/-- The Schwartz functions are in `L^r (ℝ; X)`. -/
-private theorem memLp_fourierInv (G : 𝓢(ℝ, X)) (r : ℝ≥0∞) :
-    MemLp (𝓕⁻ (G : ℝ → X)) r volume := by
-  rw [← SchwartzMap.fourierInv_coe]
-  exact (𝓕⁻ G : 𝓢(ℝ, X)).memLp r volume
 
 section
 
@@ -230,8 +185,8 @@ private theorem eLpNorm_mulCoeff_dyadicSign_le (hp : 1 < p) (hK : DyadicSignBoun
 /-! ### The blocks closed on one side
 
 As in HNVW I, pp. 465–466: an irrational `ρ` near `1` moves the frequencies `n > 0` of `f` into the
-blocks `[2^j, 2^{j+1})` of the line, to the right for the blocks closed on the left (`ρ > 1`), to
-the left for those closed on the right (`ρ < 1`). -/
+blocks `[2^j, 2^{j+1})` of the line, to the right for the blocks closed on the left (`ρ > 1`, as in
+the book), to the left for those closed on the right (`ρ < 1`). -/
 
 /-- `η_j = ε_{j + s}`, for `j ≥ −s`, and `η_j = 0` for `j < −s`. -/
 private def shiftSign (ε : ℕ → ℝ) (s j : ℤ) : ℝ :=
@@ -266,7 +221,7 @@ private theorem dyadicSign_left {N : ℕ} {ρ : ℝ} (hρ : 1 < ρ) (hρN : ρ *
     simp
 
 /-- The blocks closed on the right: `n − 1 < ρ n < n`, if `ρ < 1` is near `1`, so that
-`2^{ℓ−1} ≤ ρ n < 2^ℓ` if `2^{ℓ−1} < n ≤ 2^ℓ`. -/
+`2^{ℓ−1} ≤ ρ n < 2^ℓ` if `2^{ℓ−1} < n ≤ 2^ℓ` (for `n = 1`, `ℓ = 0`, this is `1/2 ≤ ρ < 1`). -/
 private theorem dyadicSign_right {N : ℕ} {ρ : ℝ} (hρ2 : 1 / 2 ≤ ρ) (hρ : ρ < 1)
     (hρN : N - 1 < ρ * N) {n : ℤ} (hn : n ≤ N) (ε : ℕ → ℝ) :
     dyadicSign (shiftSign ε 1) (ρ * n) = rightBlockSign ε n := by
@@ -308,15 +263,9 @@ private theorem eLpNorm_leftBlockSign_le (hp : 1 < p) (hK : DyadicSignBound X p 
     (hε : ∀ ℓ, ε ℓ = 1 ∨ ε ℓ = 0 ∨ ε ℓ = -1) (c : ℤ →₀ X) :
     eLpNorm (circPoly (mulCoeff (fun n => (leftBlockSign ε n : ℂ)) c)) (ENNReal.ofReal p)
       haarAddCircle ≤ K * eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle := by
-  obtain ⟨N, hN2, hN⟩ := exists_le_natCast c.support
-  have hN0 : (0 : ℝ) < N := by exact_mod_cast (by omega : 0 < N)
-  obtain ⟨ρ, hρi, hρ1, hρN⟩ := exists_irrational_btwn (lt_add_of_pos_right (1 : ℝ)
-    (one_div_pos.2 hN0))
-  have hρN' : ρ * N < N + 1 := by
-    calc ρ * N < (1 + 1 / N) * N := by gcongr
-      _ = N + 1 := by field_simp
+  obtain ⟨N, ρ, hρi, hρ1, hρN, hN⟩ := exists_irrational_dilation c.support
   rw [← mulCoeff_congr fun n hn =>
-    congrArg Complex.ofReal (dyadicSign_left hρ1 hρN' (hN n hn) ε)]
+    congrArg Complex.ofReal (dyadicSign_left hρ1 hρN ((le_abs_self n).trans (hN n hn)) ε)]
   exact eLpNorm_mulCoeff_dyadicSign_le hp hK (shiftSign_mem hε 0)
     (fun j hj => shiftSign_eq_zero ε (by norm_num) hj) (by linarith) hρi c
 
@@ -347,21 +296,13 @@ private theorem eLpNorm_rightBlockSign_le (hp : 1 < p) (hK : DyadicSignBound X p
 private def altSign (ℓ : ℕ) : ℝ :=
   (-1) ^ ℓ
 
-private theorem altSign_mem (ℓ : ℕ) : altSign ℓ = 1 ∨ altSign ℓ = 0 ∨ altSign ℓ = -1 := by
-  rcases neg_one_pow_eq_or ℝ ℓ with h | h
-  · exact Or.inl h
-  · exact Or.inr (Or.inr h)
-
 private theorem neg_altSign_mem (ℓ : ℕ) :
     -altSign ℓ = 1 ∨ -altSign ℓ = 0 ∨ -altSign ℓ = -1 := by
-  rcases neg_one_pow_eq_or ℝ ℓ with h | h
-  · exact Or.inr (Or.inr (congrArg Neg.neg h))
-  · exact Or.inl (by rw [altSign, h, neg_neg])
+  rcases neg_one_pow_eq_or ℝ ℓ with h | h <;> simp [altSign, h]
 
-/-- `P = ½ (L_1 − L_θ R_{−θ})`, `θ_ℓ = (−1)^ℓ`. -/
-private noncomputable def powTwoProj (n : ℤ) : ℝ :=
-  1 / 2 * leftBlockSign (fun _ => 1) n +
-    -1 / 2 * (leftBlockSign altSign n * rightBlockSign (fun ℓ => -altSign ℓ) n)
+private theorem altSign_mul_mem (ℓ : ℕ) {a : ℝ} (ha : a = 1 ∨ a = 0 ∨ a = -1) :
+    altSign ℓ * a = 1 ∨ altSign ℓ * a = 0 ∨ altSign ℓ * a = -1 := by
+  rcases neg_one_pow_eq_or ℝ ℓ with h | h <;> rcases ha with rfl | rfl | rfl <;> simp [altSign, h]
 
 /-- `⌈log₂ k⌉ = ⌊log₂ k⌋` or `⌈log₂ k⌉ = ⌊log₂ k⌋ + 1`. -/
 private theorem clog_eq_log_or (k : ℕ) :
@@ -371,92 +312,55 @@ private theorem clog_eq_log_or (k : ℕ) :
     Nat.clog_le_of_le_pow (Nat.lt_pow_succ_log_self one_lt_two k).le
   omega
 
-/-- `P` is the projection onto the frequencies `2^ℓ`, `ℓ ≥ 0`. -/
-private theorem powTwoProj_eq {n : ℤ} (hn : 0 < n) :
-    powTwoProj n = if Nat.clog 2 n.toNat = Nat.log 2 n.toNat then 1 else 0 := by
-  have h1 (j : ℕ) : (-1 : ℝ) ^ j * (-1) ^ j = 1 := by rw [← mul_pow]; norm_num
-  simp only [powTwoProj, leftBlockSign, rightBlockSign, ite_eq_left hn, altSign]
-  rcases clog_eq_log_or n.toNat with h | h
-  · rw [ite_eq_left h, h, mul_neg, h1]
-    norm_num
-  · rw [ite_eq_right (by omega), h, pow_succ, mul_neg_one, neg_neg, h1]
-    norm_num
-
-/-- The multiplier of the closed blocks is `R_ε + P L_{ε (· + 1)}`. -/
+/-- The multiplier of the closed blocks is `R_ε + ½ L_{ε (· + 1)} − ½ L_{θ ε (· + 1)} R_{−θ}`. With
+`ℓ = ⌊log₂ n⌋` and `ℓ' = ⌈log₂ n⌉` the sum of the last two terms at `n > 0` is
+`½ ε_{ℓ+1} (1 + θ_ℓ θ_{ℓ'})`, that is, `ε_{ℓ+1}` if `n = 2^ℓ` and `0` otherwise. -/
 private theorem closedBlockSign_eq (ε : ℕ → ℝ) (n : ℤ) : closedBlockSign ε n =
-    rightBlockSign ε n + powTwoProj n * leftBlockSign (fun ℓ => ε (ℓ + 1)) n := by
+    rightBlockSign ε n + (1 / 2 * leftBlockSign (fun ℓ => ε (ℓ + 1)) n + -1 / 2 *
+      (leftBlockSign (fun ℓ => altSign ℓ * ε (ℓ + 1)) n *
+        rightBlockSign (fun ℓ => -altSign ℓ) n)) := by
   rcases le_or_gt n 0 with hn | hn
-  · simp only [closedBlockSign, rightBlockSign, leftBlockSign, ite_eq_right (not_lt.2 hn),
-      mul_zero, add_zero]
-  · rw [powTwoProj_eq hn]
-    simp only [closedBlockSign, rightBlockSign, leftBlockSign, ite_eq_left hn]
+  · simp [closedBlockSign, rightBlockSign, leftBlockSign, ite_eq_right (not_lt.2 hn)]
+  · have h1 (j : ℕ) : (-1 : ℝ) ^ j * (-1) ^ j = 1 := by rw [← mul_pow]; norm_num
+    simp only [closedBlockSign, rightBlockSign, leftBlockSign, ite_eq_left hn, altSign]
     rcases clog_eq_log_or n.toNat with h | h
-    · rw [ite_eq_left h, h, Finset.sum_Icc_succ_top (by omega), Finset.Icc_self,
-        Finset.sum_singleton, one_mul]
-    · rw [ite_eq_right (by omega), h, Finset.Icc_self, Finset.sum_singleton, zero_mul, add_zero]
-
-/-- The projection `P` onto the frequencies `2^ℓ`. -/
-private theorem eLpNorm_powTwoProj_le (hp : 1 < p) (hK : DyadicSignBound X p K) (c : ℤ →₀ X) :
-    eLpNorm (circPoly (mulCoeff (fun n => (powTwoProj n : ℂ)) c)) (ENNReal.ofReal p)
-        haarAddCircle ≤
-      2⁻¹ * (K + K * K) * eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle := by
-  set u := mulCoeff (fun n => (leftBlockSign (fun _ => 1) n : ℂ)) c
-  set v := mulCoeff (fun n => (rightBlockSign (fun ℓ => -altSign ℓ) n : ℂ)) c
-  set w := mulCoeff (fun n => (leftBlockSign altSign n : ℂ)) v
-  have hu := eLpNorm_leftBlockSign_le hp hK (fun _ => Or.inl rfl) c
-  have hv := eLpNorm_rightBlockSign_le hp hK neg_altSign_mem c
-  have hw := eLpNorm_leftBlockSign_le hp hK altSign_mem v
-  have h1 : mulCoeff (fun n => (powTwoProj n : ℂ)) c = (1 / 2 : ℂ) • u + (-1 / 2 : ℂ) • w := by
-    ext n
-    simp only [u, v, w, powTwoProj, mulCoeff_apply, Finsupp.add_apply, Finsupp.smul_apply,
-      smul_smul, ← add_smul]
-    push_cast
-    ring_nf
-  have h2 : circPoly (mulCoeff (fun n => (powTwoProj n : ℂ)) c) =
-      (1 / 2 : ℂ) • circPoly u + (-1 / 2 : ℂ) • circPoly w := by
-    funext t
-    rw [h1, circPoly_add, circPoly_smul, circPoly_smul]
-    rfl
-  have h3 : ‖(1 / 2 : ℂ)‖ₑ = 2⁻¹ := by
-    rw [one_div, enorm_inv two_ne_zero, ← ofReal_norm, Complex.norm_ofNat,
-      ENNReal.ofReal_ofNat]
-  have h4 : ‖(-1 / 2 : ℂ)‖ₑ = 2⁻¹ := by rw [neg_div, enorm_neg, h3]
-  rw [h2]
-  refine (eLpNorm_add_le (ENNReal.one_le_ofReal.2 hp.le)).trans ?_
-  rw [eLpNorm_const_smul, eLpNorm_const_smul, h3, h4]
-  calc _ ≤ 2⁻¹ * (K * eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle) +
-        2⁻¹ * (K * (K * eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle)) := by
-        gcongr
-        exact hw.trans (by gcongr)
-    _ = _ := by ring
+    · rw [h, Finset.sum_Icc_succ_top (by omega), Finset.Icc_self, Finset.sum_singleton]
+      linear_combination (-1 / 2 * ε (Nat.log 2 n.toNat + 1)) * h1 (Nat.log 2 n.toNat)
+    · rw [h, Finset.Icc_self, Finset.sum_singleton, pow_succ]
+      linear_combination (1 / 2 * ε (Nat.log 2 n.toNat + 1)) * h1 (Nat.log 2 n.toNat)
 
 /-- The multipliers of the closed blocks. -/
 private theorem eLpNorm_closedBlockSign_le (hp : 1 < p) (hK : DyadicSignBound X p K) {ε : ℕ → ℝ}
     (hε : ∀ ℓ, ε ℓ = 1 ∨ ε ℓ = 0 ∨ ε ℓ = -1) (c : ℤ →₀ X) :
     eLpNorm (circPoly (mulCoeff (fun n => (closedBlockSign ε n : ℂ)) c)) (ENNReal.ofReal p)
-        haarAddCircle ≤ (K + 2⁻¹ * (K + K * K) * K) *
+        haarAddCircle ≤ (K + (2⁻¹ * K + 2⁻¹ * K ^ 2)) *
       eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle := by
+  have hp1 : 1 ≤ ENNReal.ofReal p := ENNReal.one_le_ofReal.2 hp.le
   set u := mulCoeff (fun n => (rightBlockSign ε n : ℂ)) c
   set v := mulCoeff (fun n => (leftBlockSign (fun ℓ => ε (ℓ + 1)) n : ℂ)) c
-  set w := mulCoeff (fun n => (powTwoProj n : ℂ)) v
+  set z := mulCoeff (fun n => (rightBlockSign (fun ℓ => -altSign ℓ) n : ℂ)) c
+  set w := mulCoeff (fun n => (leftBlockSign (fun ℓ => altSign ℓ * ε (ℓ + 1)) n : ℂ)) z
   have hu := eLpNorm_rightBlockSign_le hp hK hε c
   have hv := eLpNorm_leftBlockSign_le hp hK (fun ℓ => hε (ℓ + 1)) c
-  have hw := eLpNorm_powTwoProj_le hp hK v
-  have h1 : mulCoeff (fun n => (closedBlockSign ε n : ℂ)) c = u + w := by
+  have hz := eLpNorm_rightBlockSign_le hp hK neg_altSign_mem c
+  have hw := eLpNorm_leftBlockSign_le hp hK (fun ℓ => altSign_mul_mem ℓ (hε (ℓ + 1))) z
+  have h1 : mulCoeff (fun n => (closedBlockSign ε n : ℂ)) c =
+      u + ((1 / 2 : ℂ) • v + (-1 / 2 : ℂ) • w) := by
     ext n
-    simp only [u, v, w, closedBlockSign_eq, mulCoeff_apply, Finsupp.add_apply, smul_smul,
-      ← add_smul]
+    simp only [u, v, z, w, closedBlockSign_eq, mulCoeff_apply, Finsupp.add_apply,
+      Finsupp.smul_apply, smul_smul, ← add_smul]
     push_cast
-    rfl
+    ring_nf
   have h2 : circPoly (mulCoeff (fun n => (closedBlockSign ε n : ℂ)) c) =
-      circPoly u + circPoly w := by
+      circPoly u + ((1 / 2 : ℂ) • circPoly v + (-1 / 2 : ℂ) • circPoly w) := by
     funext t
-    rw [h1, circPoly_add]
+    rw [h1, circPoly_add, circPoly_add, circPoly_smul, circPoly_smul]
     rfl
   rw [h2]
-  refine (eLpNorm_add_le (ENNReal.one_le_ofReal.2 hp.le)).trans ?_
-  calc _ ≤ K * eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle +
-        2⁻¹ * (K + K * K) * (K * eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle) := by
+  refine (eLpNorm_add_le hp1).trans ((add_le_add_right (eLpNorm_add_le hp1) _).trans ?_)
+  rw [eLpNorm_const_smul, eLpNorm_const_smul, enorm_half (Or.inl rfl), enorm_half (Or.inr rfl)]
+  set F := eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle
+  calc _ ≤ K * F + (2⁻¹ * (K * F) + 2⁻¹ * (K * (K * F))) := by
         gcongr
         exact hw.trans (by gcongr)
     _ = _ := by ring
@@ -464,8 +368,10 @@ private theorem eLpNorm_closedBlockSign_le (hp : 1 < p) (hK : DyadicSignBound X 
 end
 
 /-- The multipliers with the coefficients `ε_ℓ ∈ {−1, 0, 1}` on the dyadic blocks closed on the
-left, on those closed on the right, and on the closed dyadic blocks are bounded on `L^p (𝕋; X)`,
-uniformly in the coefficients, if `X` is a UMD space. -/
+left, on those closed on the right, and on the closed dyadic blocks are bounded on the trigonometric
+polynomials in `L^p (𝕋; X)`, uniformly in the coefficients, if `X` is a UMD space. The constant is
+`C β = K + ½ K + ½ K²`, where `K = C₀ β⁸ ħ²` is the constant of
+`exists_eLpNorm_fourierInv_dyadicSign_le'`. -/
 theorem exists_eLpNorm_blockSign_le : ∃ C : ℝ≥0∞ → ℝ≥0∞, (∀ β, β ≠ ⊤ → C β ≠ ⊤) ∧
     ∀ (X : Type*) [NormedAddCommGroup X] [NormedSpace ℂ X] [CompleteSpace X] (p : ℝ), 1 < p →
     ∀ β : ℝ≥0∞, IsUMDBound X p β → ∀ ε : ℕ → ℝ, (∀ ℓ, ε ℓ = 1 ∨ ε ℓ = 0 ∨ ε ℓ = -1) →
@@ -473,8 +379,8 @@ theorem exists_eLpNorm_blockSign_le : ∃ C : ℝ≥0∞ → ℝ≥0∞, (∀ β
     ∀ c : ℤ →₀ X, eLpNorm (circPoly (mulCoeff (fun n => (a n : ℂ)) c)) (ENNReal.ofReal p)
         haarAddCircle ≤ C β * eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle := by
   obtain ⟨C₀, hC₀⟩ := exists_eLpNorm_fourierInv_dyadicSign_le'
-  set K : ℝ≥0∞ → ℝ≥0∞ := fun β => C₀ * β ^ 6 * hilbertBound β ^ 2
-  refine ⟨fun β => K β + 2⁻¹ * (K β + K β * K β) * K β, fun β hβ => ?_, ?_⟩
+  set K : ℝ≥0∞ → ℝ≥0∞ := fun β => C₀ * β ^ 8 * hilbertBound β ^ 2
+  refine ⟨fun β => K β + (2⁻¹ * K β + 2⁻¹ * K β ^ 2), fun β hβ => ?_, ?_⟩
   · have h1 : K β ≠ ⊤ := by
       simp only [K, hilbertBound]
       finiteness

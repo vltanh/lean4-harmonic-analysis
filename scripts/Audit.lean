@@ -56,7 +56,13 @@ import all HarmonicAnalysis.VectorValued.Dyadic.Shift
 import all HarmonicAnalysis.VectorValued.HilbertTransform.Fourier
 import all HarmonicAnalysis.VectorValued.HilbertTransform.Truncated
 import all HarmonicAnalysis.VectorValued.LittlewoodPaley.Circle
+import all HarmonicAnalysis.VectorValued.LittlewoodPaley.CircleSigns
 import all HarmonicAnalysis.VectorValued.LittlewoodPaley.Line
+import all HarmonicAnalysis.VectorValued.LittlewoodPaley.Signs
+import all HarmonicAnalysis.VectorValued.McConnell.Chain
+import all HarmonicAnalysis.VectorValued.McConnell.Kernel
+import all HarmonicAnalysis.VectorValued.McConnell.Multiplier
+import all HarmonicAnalysis.VectorValued.McConnell.PoissonKernel
 import all HarmonicAnalysis.VectorValued.RademacherNorm
 import all HarmonicAnalysis.VectorValued.Transference
 import all PaleySchatten.Solution

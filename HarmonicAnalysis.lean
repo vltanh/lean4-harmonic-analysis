@@ -42,6 +42,12 @@ public import HarmonicAnalysis.VectorValued.HilbertTransform.Fourier
 public import HarmonicAnalysis.VectorValued.Transference
 public import HarmonicAnalysis.VectorValued.LittlewoodPaley.Line
 public import HarmonicAnalysis.VectorValued.LittlewoodPaley.Circle
+public import HarmonicAnalysis.VectorValued.McConnell.PoissonKernel
+public import HarmonicAnalysis.VectorValued.McConnell.Chain
+public import HarmonicAnalysis.VectorValued.McConnell.Kernel
+public import HarmonicAnalysis.VectorValued.McConnell.Multiplier
+public import HarmonicAnalysis.VectorValued.LittlewoodPaley.Signs
+public import HarmonicAnalysis.VectorValued.LittlewoodPaley.CircleSigns
 public import HarmonicAnalysis.Hardy.Defs
 public import HarmonicAnalysis.Hardy.Basic
 public import HarmonicAnalysis.Hardy.Approximation

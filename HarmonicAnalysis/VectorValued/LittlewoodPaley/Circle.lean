@@ -7,8 +7,8 @@ module
 
 public import HarmonicAnalysis.VectorValued.LittlewoodPaley.Line
 public import HarmonicAnalysis.VectorValued.Transference
+public import Mathlib.NumberTheory.Real.Irrational
 import Mathlib.Analysis.Normed.Lp.PiLp
-import Mathlib.NumberTheory.Real.Irrational
 
 /-!
 # The Littlewood–Paley inequality on the circle for UMD spaces
@@ -127,9 +127,10 @@ private theorem mem_lineBlock_iff {N : ℕ} {ρ : ℝ} (hρ : 1 < ρ) (hρN : ρ
   · obtain ⟨n, rfl⟩ : ∃ n : ℕ, k = (n : ℤ) + 1 := ⟨(k - 1).toNat, by omega⟩
     exact mem_lineBlock_iff_of_pos hρ hρN hj n
 
-/-- The dilation `ρ` for a finite set of frequencies (HNVW I, p. 465). -/
-private theorem exists_dilation (s : Finset ℤ) : ∃ ρ : ℝ, Irrational ρ ∧ 1 < ρ ∧
-    ∀ j ∈ s, ∀ k, ρ * j ∈ lineBlock k ↔ j ∈ dyadicBlock k := by
+/-- The dilation `ρ` for a finite set `s` of frequencies (HNVW I, pp. 465–466): an irrational
+`ρ > 1` with `ρ < 1 + 1 / N`, where `|j| ≤ N` for `j ∈ s`. -/
+theorem exists_irrational_dilation (s : Finset ℤ) : ∃ (N : ℕ) (ρ : ℝ), Irrational ρ ∧ 1 < ρ ∧
+    ρ * N < N + 1 ∧ ∀ j ∈ s, |j| ≤ N := by
   obtain ⟨N, hN, hs⟩ : ∃ N : ℕ, 1 ≤ N ∧ ∀ j ∈ s, |j| ≤ N := by
     refine ⟨s.sup Int.natAbs + 1, by omega, fun j hj => ?_⟩
     have h := Finset.le_sup (f := Int.natAbs) hj
@@ -138,10 +139,9 @@ private theorem exists_dilation (s : Finset ℤ) : ∃ ρ : ℝ, Irrational ρ �
   have hN0 : (0 : ℝ) < N := by exact_mod_cast hN
   obtain ⟨ρ, hρi, hρ1, hρN⟩ := exists_irrational_btwn (lt_add_of_pos_right (1 : ℝ)
     (one_div_pos.2 hN0))
-  have hρN' : ρ * N < N + 1 := by
-    calc ρ * N < (1 + 1 / N) * N := by gcongr
-      _ = N + 1 := by field_simp
-  exact ⟨ρ, hρi, hρ1, fun j hj => mem_lineBlock_iff hρ1 hρN' (hs j hj)⟩
+  refine ⟨N, ρ, hρi, hρ1, ?_, hs⟩
+  calc ρ * N < (1 + 1 / N) * N := by gcongr
+    _ = N + 1 := by field_simp
 
 /-- The indicators of the dilated intervals are continuous at the integers. -/
 private theorem continuousAt_indicator_lineBlock {ρ : ℝ} (hρ : Irrational ρ) (k j : ℤ) :
@@ -179,9 +179,8 @@ private theorem continuousAt_indicator_lineBlock {ρ : ℝ} (hρ : Irrational ρ
 /-! ### Rademacher sums as a multiplier
 
 HNVW I, p. 466: `Y = L^p (Ω; X)` and `m (ξ) x = Σ_k ε_k 1_{I_k} (ξ) x`, with `Ω = {±1}^n` (real
-signs). Here `Y` is
-the space of the functions `{±1}^n → X` with the norm of `ℓ^p`; it is `L^p (Ω; X)` up to the factor
-`2^{n/p}`. -/
+signs). Here `Y` is the space of the functions `{±1}^n → X` with the norm of `ℓ^p`; it is
+`L^p (Ω; X)` up to the factor `2^{n/p}`. -/
 
 /-- The space of the functions `{±1}^n → X` with the norm of `ℓ^p`. -/
 private abbrev SignFun (X : Type*) (p : ℝ) (n : ℕ) : Type _ :=
@@ -189,11 +188,10 @@ private abbrev SignFun (X : Type*) (p : ℝ) (n : ℕ) : Type _ :=
 
 section
 
-variable {p : ℝ} [Fact (1 ≤ ENNReal.ofReal p)] {n : ℕ}
+variable {p : ℝ} {n : ℕ}
 
 /-- `x ↦ ε_k ⊗ x`. -/
-private noncomputable def signOp (p : ℝ) [Fact (1 ≤ ENNReal.ofReal p)] {n : ℕ} (k : Fin n) :
-    X →L[ℂ] SignFun X p n :=
+private noncomputable def signOp (p : ℝ) {n : ℕ} (k : Fin n) : X →L[ℂ] SignFun X p n :=
   (PiLp.continuousLinearEquiv (ENNReal.ofReal p) ℂ
     (fun _ : Fin n → Bool => X)).symm.toContinuousLinearMap ∘L
       ContinuousLinearMap.pi fun ε => SignCube.coin (ε k) • ContinuousLinearMap.id ℂ X
@@ -202,6 +200,8 @@ private theorem sum_signOp_apply (f : Fin n → X) (ε : Fin n → Bool) :
     (∑ k, signOp p k (f k)) ε = ∑ k, SignCube.coin (ε k) • f k := by
   rw [WithLp.ofLp_sum, Finset.sum_apply]
   rfl
+
+variable [Fact (1 ≤ ENNReal.ofReal p)]
 
 omit [NormedSpace ℂ X] in
 private theorem enorm_signFun_rpow (hp : 0 < p) (y : SignFun X p n) :
@@ -337,13 +337,13 @@ private theorem eLpNormRad_dyadicBlock_le_of_line [CompleteSpace X] {p : ℝ} (h
   have hp0 : 0 < p := by linarith
   have : Fact (1 ≤ ENNReal.ofReal p) := ⟨ENNReal.one_le_ofReal.2 hp.le⟩
   -- Proposition 5.7.1 for the dilate `m (ρ ·)`, with (5.61)
-  obtain ⟨ρ, hρi, hρ1, hρ⟩ := exists_dilation c.support
+  obtain ⟨N, ρ, hρi, hρ1, hρN, hN⟩ := exists_irrational_dilation c.support
   have h := eLpNorm_circPoly_multiplier_le hp (m := fun ξ => signMultiplier X p κ (ρ * ξ))
     (fun ξ => norm_signMultiplier_le κ _) (aestronglyMeasurable_signMultiplier κ ρ)
     (continuousAt_signMultiplier κ hρi)
     (eLpNorm_fourierInv_multiplier_dilate_le hp0 (fun G =>
       eLpNorm_fourierInv_signMultiplier_le hp0 κ G.integrable (hline G)) (by linarith)) c
-  rw [funext (sum_signMultiplier κ hρ),
+  rw [funext (sum_signMultiplier κ fun j hj => mem_lineBlock_iff hρ1 hρN (hN j hj)),
     eLpNorm_sum_signOp hp0 (f := fun k => trigBlock (dyadicBlock (κ k)) c)
     fun k => (continuous_circPoly _).aestronglyMeasurable, mul_assoc,
     ENNReal.mul_le_mul_iff_right] at h
@@ -351,8 +351,8 @@ private theorem eLpNormRad_dyadicBlock_le_of_line [CompleteSpace X] {p : ℝ} (h
   · exact (ENNReal.rpow_pos (by positivity) (by simp)).ne'
   · exact ENNReal.rpow_ne_top_of_nonneg (by positivity) (by simp)
 
-private theorem memLp_fourierInv (G : 𝓢(ℝ, X)) [CompleteSpace X] (r : ℝ≥0∞) :
-    MemLp (𝓕⁻ (G : ℝ → X)) r volume := by
+/-- The inverse Fourier transforms of Schwartz functions are in `L^r (ℝ; X)`. -/
+theorem memLp_fourierInv (G : 𝓢(ℝ, X)) (r : ℝ≥0∞) : MemLp (𝓕⁻ (G : ℝ → X)) r volume := by
   rw [← SchwartzMap.fourierInv_coe]
   exact (𝓕⁻ G : 𝓢(ℝ, X)).memLp r volume
 

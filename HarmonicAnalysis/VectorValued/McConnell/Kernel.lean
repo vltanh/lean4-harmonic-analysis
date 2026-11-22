@@ -6,6 +6,7 @@ Authors: The-Anh Vu-Le
 module
 
 public import HarmonicAnalysis.VectorValued.McConnell.PoissonKernel
+import Mathlib.Analysis.Calculus.Deriv.Abs
 import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
 import Mathlib.Analysis.Fourier.FourierTransformDeriv
 import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
@@ -16,13 +17,13 @@ import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
 `IsMihlin m c`: the function `m : ℝ → ℂ` is of class `C²` on `ℝ ∖ {0}` and
 `|ξ|^k |m^{(k)} (ξ)| ≤ c` for `k = 0, 1, 2`. This is (1.10) of T. R. McConnell, *On Fourier
 multiplier transformations of Banach-valued functions*, Trans. Amer. Math. Soc. 285 (1984), 739–757,
-for `n = 1`; there `m` is real-valued and of class `C²` on `ℝ`, here it is complex-valued and `C²`
-only on `ℝ ∖ {0}`, as needed on p. 755.
+for `n = 1`; there `m` is real-valued and of class `C²` on `ℝ`, here it is complex-valued, and `C²`
+only on `ℝ ∖ {0}`, as needed on p. 755. The source's `λ` is `2πξ`; (1.10) is invariant.
 
 If moreover `m` has compact support in `ℝ ∖ {0}`, let `v (s, y)` be the Poisson integral of the
 inverse Fourier transform of `m`. Then `v_{yy} (s, y) = 𝓕⁻ (m (ξ) (2π|ξ|)² e^{−2π|ξ|y}) (s)`
-(`mihlinKernel m y s`), and `y² |v_{yy} (s, y)| ≤ 17 c h (s, y)`, `h` the Poisson kernel:
-McConnell's Lemma 3.1, with an explicit constant (`norm_mihlinKernel_le`).
+(`mihlinKernel m y s`, `iteratedDeriv_two_poissonInt`), and `y² |v_{yy} (s, y)| ≤ 17 c h (s, y)`,
+`h` the Poisson kernel: McConnell's Lemma 3.1, with an explicit constant (`norm_mihlinKernel_le`).
 -/
 
 @[expose] public section
@@ -37,17 +38,81 @@ namespace HarmonicAnalysis
 def IsMihlin (m : ℝ → ℂ) (c : ℝ) : Prop :=
   ContDiffOn ℝ 2 m {0}ᶜ ∧ ∀ k ≤ 2, ∀ ξ ≠ 0, |ξ| ^ k * ‖iteratedDeriv k m ξ‖ ≤ c
 
-/-- The inverse Fourier transform of `m (ξ) (2π|ξ|)² e^{−2π|ξ|y}`, which is `v_{yy} (·, y)` for
-`y > 0`: `v` is the Poisson integral of the inverse Fourier transform of `m`. -/
+/-- The inverse Fourier transform of `m (ξ) (2π|ξ|)² e^{−2π|ξ|y}`. For `y > 0` it is
+`v_{yy} (·, y)`, where `v (s, y) = poissonInt m y s` is the Poisson integral of the inverse Fourier
+transform of `m` (`hasDerivAt_poissonDeriv`, `iteratedDeriv_two_poissonInt`). -/
 noncomputable def mihlinKernel (m : ℝ → ℂ) (y s : ℝ) : ℂ :=
   𝓕⁻ (fun ξ : ℝ =>
     m ξ * (((2 * Real.pi * |ξ|) ^ 2 * Real.exp (-(2 * Real.pi * |ξ| * y)) : ℝ) : ℂ)) s
 
+/-! ### Multipliers with (1.10) -/
+
+/-- (1.10) for `k = 0`. -/
+theorem norm_le_of_isMihlin {m : ℝ → ℂ} {c : ℝ} (hm : IsMihlin m c) {ξ : ℝ} (hξ : ξ ≠ 0) :
+    ‖m ξ‖ ≤ c := by
+  simpa using hm.2 0 (by norm_num) ξ hξ
+
+/-- The constant of (1.10) is nonnegative. -/
+theorem nonneg_of_isMihlin {m : ℝ → ℂ} {c : ℝ} (hm : IsMihlin m c) : 0 ≤ c :=
+  (norm_nonneg _).trans (norm_le_of_isMihlin hm one_ne_zero)
+
+/-- The product of a multiplier with support in `ℝ ∖ {0}` and a function of class `C²` on `ℝ ∖ {0}`
+is of class `C²`. -/
+theorem contDiff_mul_of_notMem_tsupport {m g : ℝ → ℂ} (hm : ContDiffOn ℝ 2 m {0}ᶜ)
+    (h0 : (0 : ℝ) ∉ tsupport m) (hg : ∀ ξ ≠ 0, ContDiffAt ℝ 2 g ξ) :
+    ContDiff ℝ 2 fun ξ => m ξ * g ξ := by
+  refine contDiff_iff_contDiffAt.2 fun ξ => ?_
+  by_cases hξ : ξ = 0
+  · subst hξ
+    refine contDiffAt_const (c := (0 : ℂ)).congr_of_eventuallyEq ?_
+    filter_upwards [notMem_tsupport_iff_eventuallyEq.1 h0] with η hη
+    rw [hη, Pi.zero_apply, zero_mul]
+  · exact (hm.contDiffAt (isOpen_compl_singleton.mem_nhds hξ)).mul (hg ξ hξ)
+
+/-- A multiplier with support in `ℝ ∖ {0}` is continuous. -/
+theorem continuous_of_isMihlin {m : ℝ → ℂ} {c : ℝ} (hm : IsMihlin m c)
+    (h0 : (0 : ℝ) ∉ tsupport m) : Continuous m := by
+  simpa using (contDiff_mul_of_notMem_tsupport hm.1 h0 (g := fun _ => 1)
+    fun _ _ => contDiffAt_const).continuous
+
+/-- The derivatives of a function with compact support have compact support. -/
+private theorem hasCompactSupport_iteratedDeriv {a : ℝ → ℂ} (hs : HasCompactSupport a) (k : ℕ) :
+    HasCompactSupport (iteratedDeriv k a) := by
+  induction k with
+  | zero => rwa [iteratedDeriv_zero]
+  | succ k ih =>
+    rw [iteratedDeriv_succ]
+    exact ih.deriv
+
+/-- Functions of class `C²` with compact support, in particular those with compact support in
+`ℝ ∖ {0}`, satisfy (1.10). -/
+theorem exists_isMihlin {a : ℝ → ℂ} (hcd : ContDiff ℝ 2 a) (hs : HasCompactSupport a) :
+    ∃ C, IsMihlin a C := by
+  have h : ∀ k ≤ 2, ∃ M, ∀ ξ, |ξ| ^ k * ‖iteratedDeriv k a ξ‖ ≤ M := fun k hk => by
+    have hk' : ((k : ℕ) : WithTop ℕ∞) ≤ 2 := by exact_mod_cast hk
+    have hcont : Continuous fun ξ => |ξ| ^ k * ‖iteratedDeriv k a ξ‖ :=
+      (continuous_abs.pow k).mul (hcd.continuous_iteratedDeriv k hk').norm
+    obtain ⟨M, hM⟩ := hcont.bounded_above_of_compact_support
+      ((hasCompactSupport_iteratedDeriv hs k).norm.mul_left)
+    exact ⟨M, fun ξ => (le_abs_self _).trans (hM ξ)⟩
+  obtain ⟨M₀, h₀⟩ := h 0 (by norm_num)
+  obtain ⟨M₁, h₁⟩ := h 1 (by norm_num)
+  obtain ⟨M₂, h₂⟩ := h 2 le_rfl
+  refine ⟨max M₀ (max M₁ M₂), hcd.contDiffOn, fun k hk ξ _ => ?_⟩
+  interval_cases k
+  exacts [(h₀ ξ).trans (le_max_left _ _),
+    (h₁ ξ).trans ((le_max_left _ _).trans (le_max_right _ _)),
+    (h₂ ξ).trans ((le_max_right _ _).trans (le_max_right _ _))]
+
 /-! ### The symbol of the kernel -/
 
-/-- The symbol `m (ξ) (2π|ξ|)² e^{−2π|ξ|y}`. -/
-private noncomputable def kernelSymbol (m : ℝ → ℂ) (y ξ : ℝ) : ℂ :=
-  m ξ * (((2 * Real.pi * |ξ|) ^ 2 * Real.exp (-(2 * Real.pi * |ξ| * y)) : ℝ) : ℂ)
+/-- The symbol `m (ξ) (2π|ξ|)² e^{−2π|ξ|y}` of the kernel `v_{yy} (·, y)`. -/
+noncomputable def kernelSymbol (m : ℝ → ℂ) (y ξ : ℝ) : ℂ :=
+  m ξ * ((freq ξ ^ 2 * Real.exp (-(freq ξ * y)) : ℝ) : ℂ)
+
+/-- The kernel is the inverse Fourier transform of the symbol. -/
+theorem mihlinKernel_eq (m : ℝ → ℂ) (y : ℝ) : mihlinKernel m y = 𝓕⁻ (kernelSymbol m y) :=
+  rfl
 
 /-- The function `(2πξ)² e^{−aξ}`; for `a = ± 2πy` it is `(2π|ξ|)² e^{−2π|ξ|y}` on a half-line. -/
 private noncomputable def expSymbol (a ξ : ℝ) : ℂ :=
@@ -96,47 +161,63 @@ private theorem exists_kernelSymbol_eventuallyEq (m : ℝ → ℂ) (y : ℝ) {ξ
   rcases hξ.lt_or_gt with h | h
   · refine ⟨-(2 * Real.pi * y), by rw [abs_of_neg h]; ring, ?_⟩
     filter_upwards [eventually_lt_nhds h] with η hη
-    rw [Pi.mul_apply, kernelSymbol, expSymbol, abs_of_neg hη, mul_neg, neg_sq]
+    rw [Pi.mul_apply, kernelSymbol, expSymbol, freq, abs_of_neg hη, mul_neg, neg_sq]
     congr 4
     ring
   · refine ⟨2 * Real.pi * y, by rw [abs_of_pos h], ?_⟩
     filter_upwards [eventually_gt_nhds h] with η hη
-    rw [Pi.mul_apply, kernelSymbol, expSymbol, abs_of_pos hη]
+    rw [Pi.mul_apply, kernelSymbol, expSymbol, freq, abs_of_pos hη]
     congr 4
     ring
+
+/-- `2π|ξ|` is of class `C²` on `ℝ ∖ {0}`. -/
+theorem contDiffAt_freq {ξ : ℝ} (hξ : ξ ≠ 0) : ContDiffAt ℝ 2 freq ξ :=
+  contDiffAt_const.mul (contDiffAt_abs hξ)
 
 /-- The symbol is of class `C²`: "`m` vanishes in a neighborhood of the origin so that there is no
 difficulty differentiating `|λ|`" (McConnell (1984), p. 750). -/
 private theorem contDiff_kernelSymbol {m : ℝ → ℂ} (hm : ContDiffOn ℝ 2 m {0}ᶜ)
-    (h0 : (0 : ℝ) ∉ tsupport m) (y : ℝ) : ContDiff ℝ 2 (kernelSymbol m y) := by
-  refine contDiff_iff_contDiffAt.2 fun ξ => ?_
-  by_cases hξ : ξ = 0
-  · subst hξ
-    refine contDiffAt_const (c := (0 : ℂ)).congr_of_eventuallyEq ?_
-    filter_upwards [notMem_tsupport_iff_eventuallyEq.1 h0] with η hη
-    rw [kernelSymbol, hη, Pi.zero_apply, zero_mul]
-  · obtain ⟨a, -, ha⟩ := exists_kernelSymbol_eventuallyEq m y hξ
-    exact ((hm.contDiffAt (isOpen_compl_singleton.mem_nhds hξ)).mul
-      (contDiff_expSymbol a).contDiffAt).congr_of_eventuallyEq ha
+    (h0 : (0 : ℝ) ∉ tsupport m) (y : ℝ) : ContDiff ℝ 2 (kernelSymbol m y) :=
+  contDiff_mul_of_notMem_tsupport hm h0 fun ξ hξ => Complex.ofRealCLM.contDiff.contDiffAt.comp ξ
+    (((contDiffAt_freq hξ).pow 2).mul ((contDiffAt_freq hξ).mul contDiffAt_const).neg.exp)
 
 /-- The symbol has compact support. -/
 private theorem hasCompactSupport_kernelSymbol {m : ℝ → ℂ} (hs : HasCompactSupport m) (y : ℝ) :
     HasCompactSupport (kernelSymbol m y) :=
   hs.mul_right
 
-/-- The kernel is the inverse Fourier transform of the symbol. -/
-private theorem mihlinKernel_eq (m : ℝ → ℂ) (y s : ℝ) :
-    mihlinKernel m y s = 𝓕⁻ (kernelSymbol m y) s :=
-  rfl
+/-- The symbol is integrable. -/
+private theorem integrable_kernelSymbol {m : ℝ → ℂ} (hm : ContDiffOn ℝ 2 m {0}ᶜ)
+    (hs : HasCompactSupport m) (h0 : (0 : ℝ) ∉ tsupport m) (y : ℝ) :
+    Integrable (kernelSymbol m y) :=
+  (contDiff_kernelSymbol hm h0 y).continuous.integrable_of_hasCompactSupport
+    (hasCompactSupport_kernelSymbol hs y)
 
 /-! ### The kernel -/
+
+/-- The kernel is the derivative of order `2` of the Poisson integral `v`. -/
+theorem iteratedPoissonDeriv_two (m : ℝ → ℂ) (y : ℝ) :
+    iteratedPoissonDeriv 2 m y = mihlinKernel m y := by
+  rw [mihlinKernel_eq]
+  refine congrArg _ (funext fun ξ => ?_)
+  rw [smul_eq_mul, mul_comm, neg_sq, kernelSymbol]
+
+/-- `mihlinKernel m y s` is the derivative of `v_y (s, y)` in `y`, `y > 0`. -/
+theorem hasDerivAt_poissonDeriv {m : ℝ → ℂ} (hm : Integrable m) {y : ℝ} (hy : 0 < y) (s : ℝ) :
+    HasDerivAt (fun y => poissonDeriv m y s) (mihlinKernel m y s) y := by
+  simpa only [iteratedPoissonDeriv_one, Nat.reduceAdd, iteratedPoissonDeriv_two] using
+    hasDerivAt_iteratedPoissonDeriv 1 hm hy s
+
+/-- `mihlinKernel m y s` is the second derivative `v_{yy} (s, y)` in `y` of the Poisson integral
+`v (s, y) = poissonInt m y s` of `𝓕⁻ m`, `y > 0`. -/
+theorem iteratedDeriv_two_poissonInt {m : ℝ → ℂ} (hm : Integrable m) {y : ℝ} (hy : 0 < y)
+    (s : ℝ) : iteratedDeriv 2 (fun y => poissonInt m y s) y = mihlinKernel m y s := by
+  rw [iteratedDeriv_poissonInt 2 hm hy, iteratedPoissonDeriv_two]
 
 /-- The kernel is a continuous function of `s`. -/
 theorem continuous_mihlinKernel {m : ℝ → ℂ} {c : ℝ} (hm : IsMihlin m c) (hs : HasCompactSupport m)
     (h0 : (0 : ℝ) ∉ tsupport m) (y : ℝ) : Continuous (mihlinKernel m y) :=
-  continuous_fourierInv_of_integrable
-    ((contDiff_kernelSymbol hm.1 h0 y).continuous.integrable_of_hasCompactSupport
-      (hasCompactSupport_kernelSymbol hs y))
+  continuous_fourierInv_of_integrable (integrable_kernelSymbol hm.1 hs h0 y)
 
 /-- `∫ r^k e^{−r} dξ = 2 k! / b` for `r = b|ξ|`, `b > 0`. -/
 private theorem integral_abs_pow_mul_exp (k : ℕ) {b : ℝ} (hb : 0 < b) :
@@ -150,7 +231,7 @@ private theorem integral_abs_pow_mul_exp (k : ℕ) {b : ℝ} (hb : 0 < b) :
   rw [add_sub_cancel_right, Real.rpow_natCast, mul_comm]
 
 /-- `r^k e^{−r}`, `r = b|ξ|`, is integrable. -/
-private theorem integrable_abs_pow_mul_exp (k : ℕ) {b : ℝ} (hb : 0 < b) :
+theorem integrable_abs_pow_mul_exp (k : ℕ) {b : ℝ} (hb : 0 < b) :
     Integrable fun ξ : ℝ => (b * |ξ|) ^ k * Real.exp (-(b * |ξ|)) := by
   refine Integrable.of_integral_ne_zero ?_
   rw [integral_abs_pow_mul_exp k hb]
@@ -161,11 +242,10 @@ private theorem norm_kernelSymbol_le {m : ℝ → ℂ} {c : ℝ} (hm : IsMihlin 
     (ξ : ℝ) : ‖kernelSymbol m y ξ‖ ≤
       c / y ^ 2 * ((2 * Real.pi * y * |ξ|) ^ 2 * Real.exp (-(2 * Real.pi * y * |ξ|))) := by
   rcases eq_or_ne ξ 0 with rfl | hξ
-  · simp [kernelSymbol]
-  have h := hm.2 0 (by norm_num) ξ hξ
-  rw [pow_zero, one_mul, iteratedDeriv_zero] at h
+  · simp [kernelSymbol, freq]
+  have h := norm_le_of_isMihlin hm hξ
   have h1 : 2 * Real.pi * |ξ| * y = 2 * Real.pi * y * |ξ| := by ring
-  rw [kernelSymbol, norm_mul, Complex.norm_real, Real.norm_of_nonneg (by positivity), h1]
+  rw [kernelSymbol, freq, norm_mul, Complex.norm_real, Real.norm_of_nonneg (by positivity), h1]
   calc ‖m ξ‖ * ((2 * Real.pi * |ξ|) ^ 2 * Real.exp (-(2 * Real.pi * y * |ξ|)))
       ≤ c * ((2 * Real.pi * |ξ|) ^ 2 * Real.exp (-(2 * Real.pi * y * |ξ|))) := by gcongr
     _ = _ := by
@@ -225,10 +305,9 @@ private theorem norm_iteratedDeriv_two_kernelSymbol_le {m : ℝ → ℂ} {c : �
     rw [hr]
     positivity
   have hmc : ContDiffAt ℝ 2 m ξ := hm.1.contDiffAt (isOpen_compl_singleton.mem_nhds hξ)
-  have h0 := hm.2 0 (by norm_num) ξ hξ
+  have h0 := norm_le_of_isMihlin hm hξ
   have h1 := hm.2 1 (by norm_num) ξ hξ
   have h2 := hm.2 2 le_rfl ξ hξ
-  rw [pow_zero, one_mul, iteratedDeriv_zero] at h0
   rw [pow_one] at h1
   have hL : iteratedDeriv 2 (kernelSymbol m y) ξ = m ξ * iteratedDeriv 2 (expSymbol a) ξ +
       2 * iteratedDeriv 1 m ξ * iteratedDeriv 1 (expSymbol a) ξ +
@@ -270,16 +349,9 @@ private theorem fourierInv_iteratedDeriv_two_kernelSymbol {m : ℝ → ℂ} {c :
       -(((2 * Real.pi * s) ^ 2 : ℝ) : ℂ) * mihlinKernel m y s := by
   have hF := contDiff_kernelSymbol hm.1 h0 y
   have hc := hasCompactSupport_kernelSymbol hs y
-  have hint : ∀ n : ℕ, (n : ℕ∞) ≤ (2 : ℕ∞) → Integrable (iteratedDeriv n (kernelSymbol m y)) := by
-    intro n hn
-    refine (hF.continuous_iteratedDeriv n (by exact_mod_cast hn)).integrable_of_hasCompactSupport ?_
-    rw [iteratedDeriv_eq_iterate]
-    clear hn
-    induction n with
-    | zero => exact hc
-    | succ n ih =>
-      rw [Function.iterate_succ_apply']
-      exact ih.deriv
+  have hint : ∀ n : ℕ, (n : ℕ∞) ≤ (2 : ℕ∞) → Integrable (iteratedDeriv n (kernelSymbol m y)) :=
+    fun n hn => Continuous.integrable_of_hasCompactSupport
+      (hF.continuous_iteratedDeriv n (by exact_mod_cast hn)) (hasCompactSupport_iteratedDeriv hc n)
   rw [Real.fourierInv_eq_fourier_neg, Real.fourier_iteratedDeriv (N := 2) hF hint le_rfl,
     mihlinKernel_eq, Real.fourierInv_eq_fourier_neg]
   simp only [smul_eq_mul]

@@ -152,6 +152,19 @@ theorem map_chainSum {y : ℕ → ℝ} (hy : Monotone y) {N i : ℕ} (hi : i ≤
     congr 1
     exact (add_comm _ _).trans (sub_add_sub_cancel _ _ _)
 
+/-- The chain up to the height `y_N` is the chain up to `y_{N+1}` without its last increment: the
+laws of the process under the measures `P^{x, A}` are consistent (McConnell (1984), p. 745). -/
+theorem map_init_chainLaw (y : ℕ → ℝ) (N : ℕ) :
+    (chainLaw y (N + 1)).map Fin.init = chainLaw y N := by
+  have h := measurePreserving_snd.comp (measurePreserving_piFinSuccAbove
+    (fun i : Fin (N + 1) => cauchyLaw (y (i + 1) - y i)) (Fin.last N))
+  simpa [chainLaw, Function.comp_def, MeasurableEquiv.piFinSuccAbove] using h.map_eq
+
+/-- `X (y_i)`, `i ≤ N`, does not depend on the increment `ξ_N`. -/
+theorem chainSum_init {N : ℕ} (ξ : Fin (N + 1) → ℝ) {i : ℕ} (hi : i ≤ N) :
+    chainSum (Fin.init ξ : Fin N → ℝ) i = chainSum ξ i := by
+  simp [chainSum, Fin.sum_univ_castSucc, Fin.init, hi.not_gt]
+
 /-- `∫ P^x dx = ∫ P_{(x', A)} dx'`: McConnell (1984), from (2.3) and (2.6) (p. 749), used in (3.10)
 and in the displays before Lemma 3.2 (p. 750) and after (3.11) (p. 751). On the left the chain
 starts at `X (y_0) = x`, on the right at `X (y_N) = x'`. -/
@@ -246,7 +259,7 @@ private theorem stronglyMeasurable_tail (hDm : ∀ i, StronglyMeasurable (D i))
   rw [e]
   exact (hDm i).comp_measurable (comap_measurable _)
 
-/-- `E [D_i | ℱ_k] = 0` for `k = N − 1 − i`: a set `s` in `ℱ_k` does not depend on the `i`-th
+/-- `E [D_i | ℱ_k] = 0` for `k ≤ N − 1 − i`: a set `s` in `ℱ_k` does not depend on the `i`-th
 variable, and the mean of `D_i` over this variable is zero. -/
 private theorem setIntegral_tail_eq_zero [NormedSpace ℝ X]
     (hDm : ∀ i, StronglyMeasurable (D i)) {C : ℝ} (hDC : ∀ i ξ, ‖D i ξ‖ ≤ C)
@@ -307,7 +320,7 @@ private theorem martingale_tailSum [NormedSpace ℝ X] [CompleteSpace X]
       omega
     · simp only [tailSum_succ_of_le hk]
 
-/-- **Burkholder's inequality**, McConnell (1984), (2.1), for a Banach space with the `UMD_p`
+/-- **Burkholder's inequality**, McConnell (1984), (2.1), for a Banach space with a `UMD_p`
 constant `β`: the functions `D_i`, `i = N − 1, …, 0`, of independent variables form a martingale
 difference sequence, since `D_i` depends only on the variables with index `≥ i` and its mean over
 the `i`-th variable is zero; the coefficients `e_i ∈ [−1, 1]` are deterministic (they lie in the
@@ -484,8 +497,8 @@ private theorem map_interleave (y : ℕ → ℝ) (N : ℕ) :
 
 /-- McConnell (1984), Lemma 3.2: for an independent copy `X̃` of the process, started at `0`, the
 sequence `X (y_0) − X̃ (y_0), X (y_1) − X̃ (y_0), X (y_1) − X̃ (y_1), …, X (y_N) − X̃ (y_N)` has the
-same distribution as `X (2y_0), X (y_0 + y_1), X (2y_1), …, X (2y_N)`. (The starting point `x` of
-`X` is subtracted on both sides.) -/
+same distribution as `X (2y_0), X (y_0 + y_1), X (2y_1), …, X (2y_N)`. (Here `y_0 = 0`, as in the
+proof there; the starting point `x` of `X` is subtracted on both sides.) -/
 theorem map_two_chains (y : ℕ → ℝ) (N : ℕ) :
     ((chainLaw y N).prod (chainLaw y N)).map (fun w (j : Fin (2 * N + 1)) =>
         chainSum w.1 ((j + 1) / 2) - chainSum w.2 (j / 2)) =

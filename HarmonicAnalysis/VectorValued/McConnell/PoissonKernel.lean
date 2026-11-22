@@ -8,7 +8,7 @@ module
 public import HarmonicAnalysis.VectorValued.LittlewoodPaley.Line
 public import Mathlib.Probability.Distributions.Cauchy
 public import Mathlib.MeasureTheory.Group.Convolution
-import HarmonicAnalysis.FourierMultiplier.Density
+import Mathlib.Analysis.Calculus.ParametricIntegral
 import Mathlib.Analysis.Fourier.Inversion
 import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 import Mathlib.MeasureTheory.Measure.CharacteristicFunction.Basic
@@ -24,7 +24,9 @@ Fourier transform is `e^{−2π|ξ|y}`; hence the Cauchy laws form a convolution
 
 `u (x, a + b) = ∫ u (x − t, b) dν_a (t)`, `ν_a` the Cauchy law with parameter `a`
 
-(`integral_poissonInt_sub`).
+(`integral_poissonInt_sub`). The derivatives `∂^k u / ∂y^k`, `y > 0`, are the functions
+`iteratedPoissonDeriv k G y` (`hasDerivAt_iteratedPoissonDeriv`, `iteratedDeriv_poissonInt`); `u_y`
+is `poissonDeriv G y` (`hasDerivAt_poissonInt`).
 
 Source: T. R. McConnell, *On Fourier multiplier transformations of Banach-valued functions*, Trans.
 Amer. Math. Soc. 285 (1984), 739–757, Section 2, for `n = 1`. There, for a Brownian motion started
@@ -78,7 +80,7 @@ theorem continuous_cauchyDensity {y : ℝ} (hy : 0 < y) : Continuous (cauchyDens
   positivity
 
 /-- The Cauchy density is integrable. -/
-private theorem integrable_cauchyDensity {y : ℝ} (hy : 0 < y) : Integrable (cauchyDensity y) := by
+theorem integrable_cauchyDensity {y : ℝ} (hy : 0 < y) : Integrable (cauchyDensity y) := by
   rw [← cauchyPDFReal_eq hy]
   exact ProbabilityTheory.integrable_cauchyPDFReal 0
 
@@ -246,25 +248,44 @@ noncomputable def poissonInt (G : ℝ → X) (y : ℝ) : ℝ → X :=
 theorem poissonInt_zero (G : ℝ → X) : poissonInt G 0 = 𝓕⁻ G := by
   simp [poissonInt]
 
-/-- `e^{−2π|ξ|y} ≤ 1` for `y ≥ 0`. -/
-private theorem norm_exp_neg_abs_le {y : ℝ} (hy : 0 ≤ y) (ξ : ℝ) :
-    ‖((Real.exp (-(2 * Real.pi * |ξ| * y)) : ℝ) : ℂ)‖ ≤ 1 := by
-  have hpi := Real.pi_pos
-  rw [Complex.norm_real, Real.norm_of_nonneg (Real.exp_pos _).le, Real.exp_le_one_iff,
-    neg_nonpos]
+/-- `t = 2π|ξ|`, so that `e^{−ty}` is the multiplier of the Poisson integral. -/
+noncomputable def freq (ξ : ℝ) : ℝ :=
+  2 * Real.pi * |ξ|
+
+/-- `2π|ξ| ≥ 0`. -/
+theorem freq_nonneg (ξ : ℝ) : 0 ≤ freq ξ := by
+  unfold freq
   positivity
 
-/-- `e^{−2π|ξ|y} G` is integrable. -/
-private theorem integrable_exp_neg_abs_smul {G : ℝ → X} (hG : Integrable G) {y : ℝ} (hy : 0 ≤ y) :
-    Integrable fun ξ => ((Real.exp (-(2 * Real.pi * |ξ| * y)) : ℝ) : ℂ) • G ξ :=
+/-- `2π|ξ| > 0` for `ξ ≠ 0`. -/
+theorem freq_pos {ξ : ℝ} (hξ : ξ ≠ 0) : 0 < freq ξ := by
+  unfold freq
+  positivity
+
+/-- `2π|ξ|` is a continuous function of `ξ`. -/
+@[fun_prop]
+theorem continuous_freq : Continuous freq := by
+  unfold freq
+  fun_prop
+
+/-- `e^{−2π|ξ|y} ≤ 1` for `y ≥ 0`. -/
+private theorem norm_exp_neg_freq_le {y : ℝ} (hy : 0 ≤ y) (ξ : ℝ) :
+    ‖((Real.exp (-(freq ξ * y)) : ℝ) : ℂ)‖ ≤ 1 := by
+  rw [Complex.norm_real, Real.norm_of_nonneg (Real.exp_pos _).le, Real.exp_le_one_iff,
+    neg_nonpos]
+  exact mul_nonneg (freq_nonneg ξ) hy
+
+/-- The symbol `e^{−2π|ξ|y} G` of the Poisson integral is integrable. -/
+theorem integrable_poissonSymbol {G : ℝ → X} (hG : Integrable G) {y : ℝ} (hy : 0 ≤ y) :
+    Integrable fun ξ => ((Real.exp (-(freq ξ * y)) : ℝ) : ℂ) • G ξ :=
   hG.bdd_smul 1 (by fun_prop : Continuous fun ξ : ℝ =>
-    ((Real.exp (-(2 * Real.pi * |ξ| * y)) : ℝ) : ℂ)).aestronglyMeasurable
-    (ae_of_all _ (norm_exp_neg_abs_le hy))
+    ((Real.exp (-(freq ξ * y)) : ℝ) : ℂ)).aestronglyMeasurable
+    (ae_of_all _ (norm_exp_neg_freq_le hy))
 
 /-- Poisson integrals are continuous. -/
 theorem continuous_poissonInt {G : ℝ → X} (hG : Integrable G) {y : ℝ} (hy : 0 ≤ y) :
     Continuous (poissonInt G y) :=
-  continuous_fourierInv_of_integrable (integrable_exp_neg_abs_smul hG hy)
+  continuous_fourierInv_of_integrable (integrable_poissonSymbol hG hy)
 
 /-- Poisson integrals of `f = 𝓕⁻ G`, `G ∈ L¹`, are bounded by `‖G‖_1`. -/
 theorem norm_poissonInt_le {G : ℝ → X} (hG : Integrable G) {y : ℝ} (hy : 0 ≤ y) (x : ℝ) :
@@ -272,7 +293,7 @@ theorem norm_poissonInt_le {G : ℝ → X} (hG : Integrable G) {y : ℝ} (hy : 0
   rw [poissonInt, fourierInv_eq_expChar]
   refine norm_integral_le_of_norm_le hG.norm (ae_of_all _ fun ξ => ?_)
   rw [norm_smul, norm_expChar, one_mul, norm_smul]
-  exact mul_le_of_le_one_left (norm_nonneg _) (norm_exp_neg_abs_le hy ξ)
+  exact mul_le_of_le_one_left (norm_nonneg _) (norm_exp_neg_freq_le hy ξ)
 
 /-- `∫ e_v (x − t) dν_a (t) = e_v (x) e^{−2π|v|a}`. -/
 private theorem integral_expChar_sub_cauchyLaw {a : ℝ} (ha : 0 ≤ a) (x v : ℝ) :
@@ -303,9 +324,11 @@ transform, and the identity follows from Fubini's theorem and the Fourier transf
 theorem integral_poissonInt_sub [CompleteSpace X] {G : ℝ → X} (hG : Integrable G) {a b : ℝ}
     (ha : 0 ≤ a) (hb : 0 ≤ b) (x : ℝ) :
     ∫ t, poissonInt G b (x - t) ∂cauchyLaw a = poissonInt G (a + b) x := by
+  have h := integral_integral_swap
+    (integrable_expChar_sub_smul (integrable_poissonSymbol hG hb) (a := a) x)
+  simp only [freq] at h
   simp only [poissonInt, fourierInv_eq_expChar]
-  rw [integral_integral_swap
-    (integrable_expChar_sub_smul (integrable_exp_neg_abs_smul hG hb) x)]
+  rw [h]
   refine integral_congr_ae (ae_of_all _ fun v => ?_)
   simp only
   rw [integral_smul_const, integral_expChar_sub_cauchyLaw ha, mul_smul, smul_smul
@@ -313,35 +336,108 @@ theorem integral_poissonInt_sub [CompleteSpace X] {G : ℝ → X} (hG : Integrab
   congr 4
   ring
 
-/-- The Poisson integral is a contraction of `L^p`: by (2.7), `u (x, y) = ∫ f (x − t) dν_y (t)`, and
-`ν_y` is a probability measure. -/
-theorem eLpNorm_poissonInt_le [CompleteSpace X] {p : ℝ} (hp : 1 ≤ p) {G : ℝ → X}
-    (hG : Integrable G) {y : ℝ} (hy : 0 ≤ y) :
-    eLpNorm (poissonInt G y) (ENNReal.ofReal p) volume ≤
-      eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
-  have hp0 : 0 < p := by linarith
-  have hc : Continuous (𝓕⁻ G) := continuous_fourierInv_of_integrable hG
-  -- (2.7) with `y_2 = 0`
-  have h1 : ∀ x, ‖poissonInt G y x‖ₑ ≤ ∫⁻ t, 1 * ‖𝓕⁻ G (x - t)‖ₑ ∂cauchyLaw y := fun x => by
-    have h := integral_poissonInt_sub hG hy le_rfl x
-    rw [add_zero, poissonInt_zero] at h
-    rw [← h]
-    simpa only [one_mul] using enorm_integral_le_lintegral_enorm _
-  rw [← ENNReal.rpow_le_rpow_iff hp0,
-    eLpNorm_ofReal_rpow_eq_lintegral hp0 (continuous_poissonInt hG hy).aestronglyMeasurable,
-    eLpNorm_ofReal_rpow_eq_lintegral hp0 hc.aestronglyMeasurable]
-  -- Jensen's inequality and Tonelli's theorem
-  calc ∫⁻ x, ‖poissonInt G y x‖ₑ ^ p
-      ≤ ∫⁻ x, (∫⁻ t, 1 * ‖𝓕⁻ G (x - t)‖ₑ ∂cauchyLaw y) ^ p := by
-        gcongr with x
-        exact h1 x
-    _ ≤ (∫⁻ _, 1 ∂cauchyLaw y) ^ (p - 1) *
-        ∫⁻ t, 1 * (∫⁻ x, ‖𝓕⁻ G (x - t)‖ₑ ^ p) ∂cauchyLaw y :=
-        lintegral_rpow_lintegral_mul_le measurable_const
-          (hc.comp (continuous_fst.sub continuous_snd)).enorm.measurable hp
-    _ = ∫⁻ x, ‖𝓕⁻ G x‖ₑ ^ p := by
-        have h2 : ∀ t : ℝ, ∫⁻ x, ‖𝓕⁻ G (x - t)‖ₑ ^ p = ∫⁻ x, ‖𝓕⁻ G x‖ₑ ^ p := fun t =>
-          lintegral_sub_right_eq_self (fun x => ‖𝓕⁻ G x‖ₑ ^ p) t
-        simp [h2]
+/-! ### Derivatives in `y` -/
+
+/-- The inverse Fourier transform of `−2π|ξ| e^{−2π|ξ|y} G`. For `y > 0` it is `u_y (·, y)`, `u` the
+Poisson integral of `f = 𝓕⁻ G` (`hasDerivAt_poissonInt`). -/
+noncomputable def poissonDeriv (G : ℝ → X) (y : ℝ) : ℝ → X :=
+  𝓕⁻ fun ξ => ((-(2 * Real.pi * |ξ|) * Real.exp (-(2 * Real.pi * |ξ| * y)) : ℝ) : ℂ) • G ξ
+
+/-- The inverse Fourier transform of `(−2π|ξ|)^k e^{−2π|ξ|y} G`. For `y > 0` it is the `k`-th
+derivative in `y` of the Poisson integral of `𝓕⁻ G` (`iteratedDeriv_poissonInt`). -/
+noncomputable def iteratedPoissonDeriv (k : ℕ) (G : ℝ → X) (y : ℝ) : ℝ → X :=
+  𝓕⁻ fun ξ => (((-freq ξ) ^ k * Real.exp (-(freq ξ * y)) : ℝ) : ℂ) • G ξ
+
+/-- The derivative of order `0` is the Poisson integral. -/
+theorem iteratedPoissonDeriv_zero (G : ℝ → X) (y : ℝ) :
+    iteratedPoissonDeriv 0 G y = poissonInt G y := by
+  simp only [iteratedPoissonDeriv, poissonInt, freq, pow_zero, one_mul]
+
+/-- The derivative of order `1` is `poissonDeriv`. -/
+theorem iteratedPoissonDeriv_one (G : ℝ → X) (y : ℝ) :
+    iteratedPoissonDeriv 1 G y = poissonDeriv G y := by
+  simp only [iteratedPoissonDeriv, poissonDeriv, freq, pow_one]
+
+/-- `t^k e^{−ty} ≤ k! / y^k`, `t = 2π|ξ|`. -/
+private theorem freq_pow_mul_exp_le (k : ℕ) {y : ℝ} (hy : 0 < y) (ξ : ℝ) :
+    freq ξ ^ k * Real.exp (-(freq ξ * y)) ≤ k.factorial / y ^ k := by
+  have h := Real.pow_div_factorial_le_exp _ (mul_nonneg (freq_nonneg ξ) hy.le) k
+  rw [div_le_iff₀ (by positivity), mul_pow] at h
+  rw [Real.exp_neg, ← div_eq_mul_inv, div_le_div_iff₀ (Real.exp_pos _) (by positivity), mul_comm
+    (k.factorial : ℝ)]
+  exact h
+
+/-- The bound of the symbol of the `k`-th derivative. -/
+private theorem norm_freq_pow_mul_exp_le (k : ℕ) {y : ℝ} (hy : 0 < y) (ξ : ℝ) :
+    ‖(((-freq ξ) ^ k * Real.exp (-(freq ξ * y)) : ℝ) : ℂ)‖ ≤ k.factorial / y ^ k := by
+  rw [Complex.norm_real, Real.norm_eq_abs, abs_mul, abs_pow, abs_neg, Real.abs_exp,
+    abs_of_nonneg (freq_nonneg ξ)]
+  exact freq_pow_mul_exp_le k hy ξ
+
+/-- The symbol of the `k`-th derivative is integrable. -/
+private theorem integrable_iteratedPoissonSymbol (k : ℕ) {G : ℝ → X} (hG : Integrable G) {y : ℝ}
+    (hy : 0 < y) :
+    Integrable fun ξ => (((-freq ξ) ^ k * Real.exp (-(freq ξ * y)) : ℝ) : ℂ) • G ξ :=
+  hG.bdd_smul (k.factorial / y ^ k) (Continuous.aestronglyMeasurable (by fun_prop))
+    (ae_of_all _ (norm_freq_pow_mul_exp_le k hy))
+
+/-- The derivatives are continuous in `x`. -/
+theorem continuous_iteratedPoissonDeriv (k : ℕ) {G : ℝ → X} (hG : Integrable G) {y : ℝ}
+    (hy : 0 < y) : Continuous (iteratedPoissonDeriv k G y) :=
+  continuous_fourierInv_of_integrable (integrable_iteratedPoissonSymbol k hG hy)
+
+/-- `|∂^k u / ∂y^k| ≤ k! y^{−k} ‖G‖_1`. -/
+theorem norm_iteratedPoissonDeriv_le (k : ℕ) {G : ℝ → X} (hG : Integrable G) {y : ℝ} (hy : 0 < y)
+    (x : ℝ) : ‖iteratedPoissonDeriv k G y x‖ ≤ k.factorial / y ^ k * ∫ ξ, ‖G ξ‖ := by
+  rw [iteratedPoissonDeriv, fourierInv_eq_expChar, ← integral_const_mul]
+  refine norm_integral_le_of_norm_le (hG.norm.const_mul _) (ae_of_all _ fun ξ => ?_)
+  rw [norm_smul, norm_expChar, one_mul, norm_smul]
+  exact mul_le_mul_of_nonneg_right (norm_freq_pow_mul_exp_le k hy ξ) (norm_nonneg _)
+
+/-- The `k + 1`-st derivative is the derivative in `y` of the `k`-th one, `y > 0`. -/
+theorem hasDerivAt_iteratedPoissonDeriv (k : ℕ) {G : ℝ → X} (hG : Integrable G) {y : ℝ}
+    (hy : 0 < y) (x : ℝ) :
+    HasDerivAt (fun y => iteratedPoissonDeriv k G y x) (iteratedPoissonDeriv (k + 1) G y x) y := by
+  simp only [iteratedPoissonDeriv, fourierInv_eq_expChar]
+  -- differentiation under the integral sign
+  refine (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := volume) (s := Set.Ioi (y / 2))
+    (F := fun η ξ => expChar ξ x • (((-freq ξ) ^ k * Real.exp (-(freq ξ * η)) : ℝ) : ℂ) • G ξ)
+    (F' := fun η ξ =>
+      expChar ξ x • (((-freq ξ) ^ (k + 1) * Real.exp (-(freq ξ * η)) : ℝ) : ℂ) • G ξ)
+    (bound := fun ξ => (k + 1).factorial / (y / 2) ^ (k + 1) * ‖G ξ‖) (Ioi_mem_nhds (by linarith))
+    ((eventually_gt_nhds hy).mono fun η hη => (integrable_expChar_smul
+      (integrable_iteratedPoissonSymbol k hG hη) x).aestronglyMeasurable)
+    (integrable_expChar_smul (integrable_iteratedPoissonSymbol k hG hy) x)
+    (integrable_expChar_smul (integrable_iteratedPoissonSymbol (k + 1) hG hy)
+      x).aestronglyMeasurable
+    (ae_of_all _ fun ξ η hη => ?_) (hG.norm.const_mul _) (ae_of_all _ fun ξ η _ => ?_)).2
+  · have hη : y / 2 < η := hη
+    rw [norm_smul, norm_expChar, one_mul, norm_smul]
+    refine mul_le_mul_of_nonneg_right ?_ (norm_nonneg _)
+    refine (norm_freq_pow_mul_exp_le (k + 1) (by linarith) ξ).trans ?_
+    gcongr
+  · have h1 : HasDerivAt (fun η : ℝ => (-freq ξ) ^ k * Real.exp (-(freq ξ * η)))
+        ((-freq ξ) ^ (k + 1) * Real.exp (-(freq ξ * η))) η := by
+      refine ((((hasDerivAt_id η).const_mul (freq ξ)).fun_neg.exp).const_mul _).congr_deriv ?_
+      simp only [id, mul_one]
+      ring
+    exact (h1.ofReal_comp.smul_const (G ξ)).const_smul (expChar ξ x)
+
+/-- `poissonDeriv G y x` is the derivative `u_y (x, y)` of the Poisson integral, `y > 0`. -/
+theorem hasDerivAt_poissonInt {G : ℝ → X} (hG : Integrable G) {y : ℝ} (hy : 0 < y) (x : ℝ) :
+    HasDerivAt (fun y => poissonInt G y x) (poissonDeriv G y x) y := by
+  simpa only [iteratedPoissonDeriv_zero, zero_add, iteratedPoissonDeriv_one] using
+    hasDerivAt_iteratedPoissonDeriv 0 hG hy x
+
+/-- `iteratedPoissonDeriv k G y x` is the derivative `∂^k u / ∂y^k (x, y)` of the Poisson integral,
+`y > 0`. -/
+theorem iteratedDeriv_poissonInt (k : ℕ) {G : ℝ → X} (hG : Integrable G) {y : ℝ} (hy : 0 < y)
+    (x : ℝ) : iteratedDeriv k (fun y => poissonInt G y x) y = iteratedPoissonDeriv k G y x := by
+  induction k generalizing y with
+  | zero => rw [iteratedDeriv_zero, iteratedPoissonDeriv_zero]
+  | succ k ih =>
+    rw [iteratedDeriv_succ]
+    refine ((hasDerivAt_iteratedPoissonDeriv k hG hy x).congr_of_eventuallyEq ?_).deriv
+    filter_upwards [eventually_gt_nhds hy] with η hη using ih hη
 
 end HarmonicAnalysis
