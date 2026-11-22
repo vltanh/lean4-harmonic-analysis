@@ -57,6 +57,7 @@ meta def mainResults : List Name :=
    ``HarmonicAnalysis.exists_tendsto_hasCompactFourierSupportOffZero,
    ``HarmonicAnalysis.eLpNorm_tsum_le_torusMultiplierNorm,
    ``HarmonicAnalysis.hasSum_periodize,
+   ``HarmonicAnalysis.tendsto_eLpNorm_tsum_fourier_mul_mFourier,
    ``HarmonicAnalysis.limsup_eLpNorm_sampledCoeff_le,
    ``HarmonicAnalysis.tendsto_riemannSum,
    ``HarmonicAnalysis.multiplierNorm_le_torusMultiplierNorm,

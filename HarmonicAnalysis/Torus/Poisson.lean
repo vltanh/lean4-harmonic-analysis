@@ -26,10 +26,12 @@ For a Schwartz function `f` on `ℂ ≅ ℝ²` and `R > 0`:
 * `HarmonicAnalysis.hasSum_periodize` (Poisson summation on `ℤ²`):
   `Σ_{j ∈ ℤ²} f (R (y + j)) = Σ_{n ∈ ℤ²} R⁻² 𝓕 f (n / R) e^{2πi ⟨n, y⟩}`, the Fourier series of
   the periodisation, which converges absolutely.
-* `HarmonicAnalysis.limsup_eLpNorm_sampledCoeff_le`: for `1 < p < ∞`,
-  `limsup_{R → ∞} R^{2/p} ‖Σ_n sampledCoeff R f (n) e_n‖_{L^p (𝕋²)} ≤ ‖f‖_{L^p (ℂ)}`.
-  On the cell `R · (−½, ½]²`, `Σ_j f (y + R j) = f (y) + O (R^{−3})`, and the mean
-  `R⁻² 𝓕 f (0)` removed at `n = 0` contributes `O (R^{2/p − 2})`.
+* `HarmonicAnalysis.tendsto_eLpNorm_tsum_fourier_mul_mFourier`, Lemma 5.7.5 of
+  Hytönen–van Neerven–Veraar–Weis (HNVW) for `ℝ² ≅ ℂ` and scalar functions, with `ε = 1 / R`: for
+  `1 ≤ p < ∞`, `R^{2/p} ‖Σ_n R⁻² 𝓕 f (n / R) e_n‖_{L^p (𝕋²)} → ‖f‖_{L^p (ℂ)}` as `R → ∞`.
+* `HarmonicAnalysis.limsup_eLpNorm_sampledCoeff_le`, the upper bound with the mean removed: for
+  `1 < p < ∞`, `limsup_{R → ∞} R^{2/p} ‖Σ_n sampledCoeff R f (n) e_n‖_{L^p (𝕋²)} ≤ ‖f‖_{L^p (ℂ)}`.
+  The mean `R⁻² 𝓕 f (0)` removed at `n = 0` contributes `O (R^{2/p − 2})`.
 
 ## Proofs
 
@@ -39,10 +41,25 @@ locally uniformly (Weierstrass M-test, with the Schwartz decay of `f` and Peetre
 (`HarmonicAnalysis.torusLift`); its Fourier coefficients are the samples `R⁻² 𝓕 f (n / R)`
 (`HarmonicAnalysis.mFourierCoeff_torusLift_periodize`: the translates of the centred cell tile
 `ℂ`, then the change of variables `x = R y`), which are summable, and the Fourier series of a
-continuous function with summable coefficients converges to it everywhere. For the `L^p` bound:
-the decomposition `HarmonicAnalysis.periodize_div_eq`, the bound
-`HarmonicAnalysis.exists_norm_tsum_ite_le` on the dilated cell, and Minkowski's inequality
-(`HarmonicAnalysis.exists_ofReal_rpow_mul_eLpNorm_le`).
+continuous function with summable coefficients converges to it everywhere.
+
+Lemma 5.7.5 by HNVW's argument (p. 461): Poisson summation; the change of variables `x = R y`, which
+turns the norm over `𝕋²` into the norm over the cell `R · (−½, ½]²`
+(`HarmonicAnalysis.ofReal_rpow_mul_eLpNorm_torus_eq_dilatedCell`); the decomposition
+`Σ_j f (x + R j) = f (x) + Σ_{j ≠ 0} f (x + R j)` (`HarmonicAnalysis.periodize_div_eq`); the decay
+`|f (x + R j)| ≤ C (R |j|)^{−3}` on the cell, so that the error is `O (R^{−3})` there
+(`HarmonicAnalysis.exists_norm_tsum_ite_le`) and `O (R^{2/p − 3})` in `L^p`, by Minkowski's
+inequality; and the norms of `f` over the cells, which tend to `‖f‖_p`. HNVW sums the norms of the
+terms `f (· + R j)`, `j ≠ 0`; here they are summed pointwise first.
+
+A correction to the source: the decay bound holds on the centred cell, not on the cell `R · [0, 1)²`
+(with which HNVW identifies the dilated torus in Lemma 5.7.3), where `x + R j` can be near `0` for
+`j ≠ 0`.
+
+## References
+
+* T. Hytönen, J. van Neerven, M. Veraar, L. Weis, *Analysis in Banach Spaces, Volume I*, Ergebnisse
+  der Mathematik 63, Springer, 2016: Lemma 5.7.5 (p. 461).
 -/
 
 @[expose] public section
@@ -342,26 +359,157 @@ theorem exists_norm_tsum_ite_le (f : 𝓢(ℂ, ℂ)) : ∃ K, 0 ≤ K ∧ ∀ R 
     _ ≤ C / (R * ‖j‖ / 2) ^ 3 := by gcongr
     _ = 8 * C * (R ^ 3)⁻¹ * (‖j‖ ^ 3)⁻¹ := by field_simp; ring
 
-/-- The rescaled `L^p (𝕋²)` norm of the series with the samples of `𝓕 f`, for `1 ≤ p` and
-`R > 0`: `R^{2/p} ‖Σ_n sampledCoeff R f (n) e_n‖_{L^p (𝕋²)} ≤ ‖f‖_p + (K R^{−3} + R⁻² |𝓕 f (0)|)
-R^{2/p}`. By Poisson summation, the series at `x / R` is `f (x) + Σ_{j ≠ 0} f (x + R j) −
-R⁻² 𝓕 f (0)`; on the dilated cell `R · (−½, ½]²`, of measure `R²`, the last two terms are at most
-`K R^{−3} + R⁻² |𝓕 f (0)|`; Minkowski's inequality concludes. -/
+/-- The measure of the dilated cell `R · (−½, ½]²` is `R²`. -/
+private theorem volume_dilatedCell {R : ℝ} (hR : 0 < R) :
+    volume {y : ℂ | y / R ∈ centredCell} = ENNReal.ofReal (R ^ 2) := by
+  have h := setLIntegral_dilatedCell (fun _ => (1 : ℝ≥0∞)) hR
+  simp only [lintegral_const, Measure.restrict_apply_univ, one_mul] at h
+  rw [h, volume_pi, Measure.pi_univ]
+  simp
+
+/-- The estimate in the proof of HNVW, Lemma 5.7.5, for `1 ≤ p` and `R > 0`: by Poisson summation,
+`R^{2/p} ‖Σ_n R⁻² 𝓕 f (n / R) e_n‖_{L^p (𝕋²)}` is the `L^p` norm of `Σ_j f (x + R j)` over the
+dilated cell `Q_R = R · (−½, ½]²`, of measure `R²`. There `Σ_j f (x + R j) = f (x) + O (R^{−3})`, so
+by Minkowski's inequality it differs from `‖f 1_{Q_R}‖_p` by at most `K R^{−3} R^{2/p}`. -/
+private theorem exists_eLpNorm_periodize_le (f : 𝓢(ℂ, ℂ)) {p : ℝ} (hp : 1 ≤ p) :
+    ∃ K, 0 ≤ K ∧ ∀ R : ℝ, 0 < R →
+      ENNReal.ofReal (R ^ (2 / p)) * eLpNorm (fun x => ∑' n : Fin 2 → ℤ, ((R : ℂ) ^ 2)⁻¹ *
+          𝓕 (f : ℂ → ℂ) (latticePoint n / R) * mFourier n x) (ENNReal.ofReal p) volume ≤
+        eLpNorm ({y : ℂ | y / R ∈ centredCell}.indicator f) (ENNReal.ofReal p) volume +
+          ENNReal.ofReal (K * (R ^ 3)⁻¹ * R ^ (2 / p)) ∧
+      eLpNorm ({y : ℂ | y / R ∈ centredCell}.indicator f) (ENNReal.ofReal p) volume ≤
+        ENNReal.ofReal (R ^ (2 / p)) * eLpNorm (fun x => ∑' n : Fin 2 → ℤ, ((R : ℂ) ^ 2)⁻¹ *
+          𝓕 (f : ℂ → ℂ) (latticePoint n / R) * mFourier n x) (ENNReal.ofReal p) volume +
+          ENNReal.ofReal (K * (R ^ 3)⁻¹ * R ^ (2 / p)) := by
+  obtain ⟨K, hK0, hK⟩ := exists_norm_tsum_ite_le f
+  have hp0 : 0 < p := by linarith
+  have hP : 1 ≤ ENNReal.ofReal p := by simpa using hp
+  refine ⟨K, hK0, fun R hR => ?_⟩
+  rw [ofReal_rpow_mul_eLpNorm_torus_eq_dilatedCell _ hp0 hR]
+  -- Poisson summation.
+  simp_rw [fun y => (hasSum_periodize f hR y).tsum_eq]
+  set Q := {y : ℂ | y / R ∈ centredCell}
+  have hQ : MeasurableSet Q := measurableSet_dilatedCell R
+  set B := K * (R ^ 3)⁻¹
+  have hB : 0 ≤ B := by positivity
+  set G : ℂ → ℂ := Q.indicator fun y => periodize R f (y / R)
+  -- The error on the dilated cell.
+  have hE : eLpNorm (fun y => G y - Q.indicator f y) (ENNReal.ofReal p) volume ≤
+      ENNReal.ofReal (B * R ^ (2 / p)) := by
+    have hm : AEStronglyMeasurable (fun y => G y - Q.indicator f y) volume :=
+      ((((continuous_periodize f hR).comp (continuous_id.div_const _)).aestronglyMeasurable
+        (μ := volume)).indicator hQ).sub (f.continuous.aestronglyMeasurable.indicator hQ)
+    have hpt : ∀ y, ‖G y - Q.indicator f y‖ ≤ Q.indicator (fun _ => B) y := by
+      intro y
+      by_cases hy : y ∈ Q
+      · simp only [G, Set.indicator_of_mem hy]
+        rw [periodize_div_eq f hR, add_sub_cancel_left]
+        exact hK R hR y hy
+      · simp [G, Set.indicator_of_notMem hy]
+    refine (eLpNorm_mono_real hm hpt).trans_eq ?_
+    rw [eLpNorm_indicator_const hQ.nullMeasurableSet (by simpa using hp0) ENNReal.ofReal_ne_top,
+      volume_dilatedCell hR, Real.enorm_eq_ofReal hB, ENNReal.toReal_ofReal hp0.le,
+      ENNReal.ofReal_rpow_of_nonneg (by positivity) (by positivity), ← ENNReal.ofReal_mul hB,
+      ← Real.rpow_natCast, ← Real.rpow_mul hR.le]
+    congr 3
+    push_cast
+    ring
+  constructor
+  · have h := eLpNorm_add_le (μ := volume) hP (f := Q.indicator f)
+      (g := fun y => G y - Q.indicator f y)
+    rw [show (Q.indicator f + fun y => G y - Q.indicator f y) = G by ext y; simp] at h
+    exact h.trans (by gcongr)
+  · have h := eLpNorm_sub_le (μ := volume) hP (f := G) (g := fun y => G y - Q.indicator f y)
+    rw [show (G - fun y => G y - Q.indicator f y) = Q.indicator f by ext y; simp] at h
+    exact h.trans (by gcongr)
+
+/-- **HNVW, Lemma 5.7.5** (for `ℝ² ≅ ℂ` and scalar functions, with `ε = 1 / R`, so that
+`ε^{2/p'} 𝓕 f (ε n) = R^{2/p} R⁻² 𝓕 f (n / R)`): for a Schwartz function `f` and `1 ≤ p < ∞`,
+`R^{2/p} ‖Σ_{n ∈ ℤ²} R⁻² 𝓕 f (n / R) e_n‖_{L^p (𝕋²)} → ‖f‖_{L^p (ℂ)}` as `R → ∞`. -/
+theorem tendsto_eLpNorm_tsum_fourier_mul_mFourier (f : 𝓢(ℂ, ℂ)) {p : ℝ} (hp : 1 ≤ p) :
+    Tendsto (fun R : ℝ => ENNReal.ofReal (R ^ (2 / p)) * eLpNorm (fun x => ∑' n : Fin 2 → ℤ,
+        ((R : ℂ) ^ 2)⁻¹ * 𝓕 (f : ℂ → ℂ) (latticePoint n / R) * mFourier n x) (ENNReal.ofReal p)
+        volume) atTop (nhds (eLpNorm (f : ℂ → ℂ) (ENNReal.ofReal p) volume)) := by
+  obtain ⟨K, hK0, hK⟩ := exists_eLpNorm_periodize_le f hp
+  have hp0 : 0 < p := by linarith
+  -- The error term tends to `0`, because `2 / p − 3 < 0`.
+  have herr : Tendsto (fun R : ℝ => ENNReal.ofReal (K * (R ^ 3)⁻¹ * R ^ (2 / p))) atTop
+      (nhds 0) := by
+    have h2p : 2 / p < 3 := by rw [div_lt_iff₀ hp0]; linarith
+    have h := (tendsto_rpow_neg_atTop (y := 3 - 2 / p) (by linarith)).const_mul K
+    rw [mul_zero] at h
+    have h' : Tendsto (fun R : ℝ => K * (R ^ 3)⁻¹ * R ^ (2 / p)) atTop (nhds 0) := by
+      refine h.congr' ?_
+      filter_upwards [eventually_gt_atTop 0] with R hR
+      rw [show -(3 - 2 / p) = 2 / p - ((3 : ℕ) : ℝ) by push_cast; ring,
+        Real.rpow_sub_natCast hR.ne']
+      ring
+    simpa using ENNReal.tendsto_ofReal h'
+  -- The norms over the dilated cells exhaust the norm over `ℂ`.
+  have hcell : Tendsto (fun R : ℝ => eLpNorm ({y : ℂ | y / R ∈ centredCell}.indicator f)
+      (ENNReal.ofReal p) volume) atTop (nhds (eLpNorm (f : ℂ → ℂ) (ENNReal.ofReal p) volume)) := by
+    have hm : ∀ R : ℝ, AEStronglyMeasurable ({y : ℂ | y / R ∈ centredCell}.indicator f) volume :=
+      fun R => f.continuous.aestronglyMeasurable.indicator (measurableSet_dilatedCell R)
+    have hP0 : ENNReal.ofReal p ≠ 0 := by simpa using hp0
+    simp_rw [fun R => eLpNorm_eq_lintegral_rpow_enorm_toReal hP0 ENNReal.ofReal_ne_top (hm R)]
+    rw [eLpNorm_eq_lintegral_rpow_enorm_toReal hP0 ENNReal.ofReal_ne_top
+      f.continuous.aestronglyMeasurable, ENNReal.toReal_ofReal hp0.le]
+    have hfm : Measurable fun y : ℂ => ‖f y‖ₑ ^ p := f.continuous.enorm.measurable.pow_const p
+    have hcell' : ∀ (R : ℝ) (y : ℂ), ‖{y : ℂ | y / R ∈ centredCell}.indicator f y‖ₑ ^ p =
+        {y : ℂ | y / R ∈ centredCell}.indicator (fun y => ‖f y‖ₑ ^ p) y := fun R y => by
+      by_cases hy : y ∈ {y : ℂ | y / R ∈ centredCell}
+      · simp only [Set.indicator_of_mem hy]
+      · simp only [Set.indicator_of_notMem hy, enorm_zero, ENNReal.zero_rpow_of_pos hp0]
+    simp_rw [hcell']
+    refine (tendsto_lintegral_filter_of_dominated_convergence (fun y => ‖f y‖ₑ ^ p)
+      (Eventually.of_forall fun R => hfm.indicator (measurableSet_dilatedCell R))
+      (Eventually.of_forall fun R => ae_of_all _ fun y => Set.indicator_le_self _ _ y) ?_
+      (ae_of_all _ fun y => ?_)).ennrpow_const _
+    · have := lintegral_rpow_enorm_lt_top_of_eLpNorm_lt_top hP0 ENNReal.ofReal_ne_top
+        (f.memLp (ENNReal.ofReal p) volume).eLpNorm_lt_top
+      rw [ENNReal.toReal_ofReal hp0.le] at this
+      exact this.ne
+    · refine tendsto_const_nhds.congr' ?_
+      filter_upwards [eventually_div_mem_centredCell y] with R hR
+      exact (Set.indicator_of_mem (s := {y : ℂ | y / R ∈ centredCell}) (a := y) hR
+        fun y => ‖f y‖ₑ ^ p).symm
+  have hlow := ENNReal.Tendsto.sub hcell herr (Or.inl
+    (f.memLp (ENNReal.ofReal p) volume).eLpNorm_lt_top.ne)
+  rw [tsub_zero] at hlow
+  have hupp := hcell.add herr
+  rw [add_zero] at hupp
+  refine tendsto_of_tendsto_of_tendsto_of_le_of_le' hlow hupp ?_ ?_
+  · filter_upwards [eventually_gt_atTop 0] with R hR
+    exact tsub_le_iff_right.2 (hK R hR).2
+  · filter_upwards [eventually_gt_atTop 0] with R hR
+    exact (hK R hR).1
+
+/-- The rescaled `L^p (𝕋²)` norm of the series with the samples of `𝓕 f`, the mean removed, for
+`1 ≤ p` and `R > 0`: `R^{2/p} ‖Σ_n sampledCoeff R f (n) e_n‖_{L^p (𝕋²)} ≤ ‖f‖_p + (K R^{−3} +
+R⁻² |𝓕 f (0)|) R^{2/p}`. The estimate of HNVW, Lemma 5.7.5 (`exists_eLpNorm_periodize_le`), and the
+triangle inequality for the mean `R⁻² 𝓕 f (0)`. -/
 theorem exists_ofReal_rpow_mul_eLpNorm_le (f : 𝓢(ℂ, ℂ)) {p : ℝ} (hp : 1 ≤ p) :
     ∃ K, 0 ≤ K ∧ ∀ R : ℝ, 0 < R →
       ENNReal.ofReal (R ^ (2 / p)) *
           eLpNorm (fun x => ∑' n, sampledCoeff R f n * mFourier n x) (ENNReal.ofReal p) volume ≤
         eLpNorm (f : ℂ → ℂ) (ENNReal.ofReal p) volume +
           ENNReal.ofReal ((K * (R ^ 3)⁻¹ + (R ^ 2)⁻¹ * ‖𝓕 (f : ℂ → ℂ) 0‖) * R ^ (2 / p)) := by
-  obtain ⟨K, hK0, hK⟩ := exists_norm_tsum_ite_le f
+  obtain ⟨K, hK0, hK⟩ := exists_eLpNorm_periodize_le f hp
   have hp0 : 0 < p := by linarith
+  have hP : 1 ≤ ENNReal.ofReal p := by simpa using hp
   refine ⟨K, hK0, fun R hR => ?_⟩
-  set F : UnitAddTorus (Fin 2) → ℂ := fun x => ∑' n, sampledCoeff R f n * mFourier n x
+  set G : UnitAddTorus (Fin 2) → ℂ := fun z => ∑' n : Fin 2 → ℤ, ((R : ℂ) ^ 2)⁻¹ *
+    𝓕 (f : ℂ → ℂ) (latticePoint n / R) * mFourier n z
   set c : ℂ := ((R : ℂ) ^ 2)⁻¹ * 𝓕 (f : ℂ → ℂ) 0
-  -- Poisson summation without the term `n = 0`.
-  have hF : ∀ y : ℂ, F (ofComplex y) = periodize R f y - c := by
-    intro y
-    have h := (hasSum_periodize f hR y).update 0 0
+  have hc : ‖c‖ₑ = ENNReal.ofReal ((R ^ 2)⁻¹ * ‖𝓕 (f : ℂ → ℂ) 0‖) := by
+    rw [← ofReal_norm]
+    simp [c, norm_inv, norm_pow, Complex.norm_real, abs_of_pos hR]
+  -- The series without the term `n = 0`.
+  have hF : (fun z => ∑' n, sampledCoeff R f n * mFourier n z) = G - fun _ => c := by
+    funext z
+    obtain ⟨y, rfl⟩ := isOpenQuotientMap_ofComplex.surjective z
+    have hP := hasSum_periodize f hR y
+    have h := hP.update 0 0
     have h2 : Function.update (fun n : Fin 2 → ℤ => ((R : ℂ) ^ 2)⁻¹ *
         𝓕 (f : ℂ → ℂ) (latticePoint n / R) * mFourier n (ofComplex y)) 0 0 =
         fun n => sampledCoeff R f n * mFourier n (ofComplex y) := by
@@ -371,60 +519,32 @@ theorem exists_ofReal_rpow_mul_eLpNorm_le (f : 𝓢(ℂ, ℂ)) {p : ℝ} (hp : 1
         simp [sampledCoeff]
       · simp [Function.update, hn, sampledCoeff]
     rw [h2] at h
-    simp only [F, h.tsum_eq, c, latticePoint_zero, zero_div, mFourier_zero,
-      ContinuousMap.one_apply, mul_one]
+    simp only [G, h.tsum_eq, hP.tsum_eq, c, latticePoint_zero, zero_div, mFourier_zero,
+      ContinuousMap.one_apply, mul_one, Pi.sub_apply]
     ring
-  rw [ofReal_rpow_mul_eLpNorm_torus_eq_dilatedCell F hp0 hR]
-  simp_rw [hF]
-  set Q := {y : ℂ | y / R ∈ centredCell}
-  have hQ : MeasurableSet Q := measurableSet_dilatedCell R
-  set B := K * (R ^ 3)⁻¹ + (R ^ 2)⁻¹ * ‖𝓕 (f : ℂ → ℂ) 0‖
-  have hB : 0 ≤ B := by positivity
-  -- The pointwise bound on the dilated cell.
-  have hpt : ∀ y, ‖Q.indicator (fun y => periodize R f (y / R) - c) y‖ ≤
-      ((Q.indicator fun y => ‖f y‖) + Q.indicator fun _ => B) y := by
-    intro y
-    by_cases hy : y ∈ Q
-    · simp only [Pi.add_apply, Set.indicator_of_mem hy]
-      rw [periodize_div_eq f hR]
-      have h1 := hK R hR y hy
-      have h2 : ‖c‖ = (R ^ 2)⁻¹ * ‖𝓕 (f : ℂ → ℂ) 0‖ := by
-        simp [c, norm_inv, norm_pow, Complex.norm_real, abs_of_pos hR]
-      calc _ ≤ ‖f y + ∑' j : Fin 2 → ℤ, if j = 0 then 0 else f (y + R * latticePoint j)‖ + ‖c‖ :=
-            norm_sub_le _ _
-        _ ≤ ‖f y‖ + ‖∑' j : Fin 2 → ℤ, if j = 0 then 0 else f (y + R * latticePoint j)‖ + ‖c‖ :=
-            by gcongr; exact norm_add_le _ _
-        _ ≤ ‖f y‖ + B := by rw [h2]; linarith
-    · simp [Set.indicator_of_notMem hy]
-  have hmeas : AEStronglyMeasurable (Q.indicator fun y => periodize R f (y / R) - c) volume :=
-    (((continuous_periodize f hR).comp (continuous_id.div_const _)).sub
-      continuous_const).aestronglyMeasurable.indicator hQ
-  -- The measure of the dilated cell is `R²`.
-  have hvol : volume Q = ENNReal.ofReal (R ^ 2) := by
-    have h := setLIntegral_dilatedCell (fun _ => (1 : ℝ≥0∞)) hR
-    simp only [lintegral_const, Measure.restrict_apply_univ, one_mul] at h
-    rw [h, volume_pi, Measure.pi_univ]
+  have hμ : (volume : Measure (UnitAddTorus (Fin 2))) Set.univ = 1 := by
+    rw [volume_pi, Measure.pi_univ]
     simp
-  have hf : eLpNorm (Q.indicator fun y => ‖f y‖) (ENNReal.ofReal p) volume ≤
-      eLpNorm (f : ℂ → ℂ) (ENNReal.ofReal p) volume := by
-    refine eLpNorm_mono (f.continuous.norm.aestronglyMeasurable.indicator hQ) fun y => ?_
-    by_cases hy : y ∈ Q <;> simp [hy]
-  have hBnorm : eLpNorm (Q.indicator fun _ => B) (ENNReal.ofReal p) volume =
-      ENNReal.ofReal (B * R ^ (2 / p)) := by
-    rw [eLpNorm_indicator_const hQ.nullMeasurableSet (by simpa using hp0) ENNReal.ofReal_ne_top,
-      hvol, Real.enorm_eq_ofReal hB, ENNReal.toReal_ofReal hp0.le,
-      ENNReal.ofReal_rpow_of_nonneg (by positivity) (by positivity), ← ENNReal.ofReal_mul hB,
-      ← Real.rpow_natCast, ← Real.rpow_mul hR.le]
-    congr 3
-    push_cast
-    ring
-  calc eLpNorm (Q.indicator fun y => periodize R f (y / R) - c) (ENNReal.ofReal p) volume
-      ≤ eLpNorm ((Q.indicator fun y => ‖f y‖) + Q.indicator fun _ => B) (ENNReal.ofReal p)
-          volume := eLpNorm_mono_real hmeas hpt
-    _ ≤ eLpNorm (Q.indicator fun y => ‖f y‖) (ENNReal.ofReal p) volume +
-          eLpNorm (Q.indicator fun _ => B) (ENNReal.ofReal p) volume :=
-        eLpNorm_add_le (by simpa using hp)
-    _ ≤ _ := by rw [hBnorm]; gcongr
+  have hcn : eLpNorm (fun _ : UnitAddTorus (Fin 2) => c) (ENNReal.ofReal p) volume = ‖c‖ₑ := by
+    rw [eLpNorm_const _ (by simpa using hp0) (by intro h; simp [h] at hμ), hμ, ENNReal.one_rpow,
+      mul_one]
+  rw [hF]
+  calc ENNReal.ofReal (R ^ (2 / p)) * eLpNorm (G - fun _ => c) (ENNReal.ofReal p) volume
+      ≤ ENNReal.ofReal (R ^ (2 / p)) * (eLpNorm G (ENNReal.ofReal p) volume + ‖c‖ₑ) := by
+        rw [← hcn]
+        gcongr
+        exact eLpNorm_sub_le hP
+    _ ≤ (eLpNorm (f : ℂ → ℂ) (ENNReal.ofReal p) volume +
+          ENNReal.ofReal (K * (R ^ 3)⁻¹ * R ^ (2 / p))) + ENNReal.ofReal (R ^ (2 / p)) * ‖c‖ₑ := by
+        rw [mul_add]
+        gcongr
+        refine (hK R hR).1.trans ?_
+        gcongr
+        exact eLpNorm_indicator_le f (measurableSet_dilatedCell R).nullMeasurableSet
+    _ = _ := by
+        rw [hc, ← ENNReal.ofReal_mul (by positivity), add_assoc,
+          ← ENNReal.ofReal_add (by positivity) (by positivity)]
+        ring_nf
 
 /-- The `L^p (𝕋²)` norms of the periodisations, rescaled:
 `limsup_{R → ∞} R^{2/p} ‖Σ_n sampledCoeff R f (n) e_n‖_{L^p (𝕋²)} ≤ ‖f‖_{L^p (ℂ)}` for
