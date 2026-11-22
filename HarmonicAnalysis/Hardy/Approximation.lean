@@ -198,11 +198,6 @@ theorem memLp_mul_continuous [Fintype m] {f : UnitAddCircle → Matrix l m ℂ}
 
 /-! ### Fourier coefficients and Hardy classes -/
 
-/-- The matrix-valued Hardy class `H¹`: integrable entries, vanishing Fourier coefficients of
-negative order. -/
-def IsHardyOne (f : UnitAddCircle → Matrix m n ℂ) : Prop :=
-  (∀ i j, Integrable (fun t => f t i j) haarAddCircle) ∧ ∀ k : ℤ, k < 0 → matFourierCoeff f k = 0
-
 /-- `H² ⊆ H¹`. -/
 theorem IsHardyTwo.isHardyOne {f : UnitAddCircle → Matrix m n ℂ} (hf : IsHardyTwo f) :
     IsHardyOne f :=
@@ -362,10 +357,6 @@ theorem IsHardyTwo.matFourierCoeff_mul_zero [Fintype m] {g : UnitAddCircle → M
   simpa using matFourierCoeff_mul hg hh 0
 
 /-! ### Convergence in `L²` -/
-
-/-- Convergence in `L²` of matrix-valued functions, entry by entry. -/
-def TendstoLTwo (F : ℕ → UnitAddCircle → Matrix m n ℂ) (f : UnitAddCircle → Matrix m n ℂ) : Prop :=
-  ∀ i j, Tendsto (fun N => eLpNorm (fun t => F N t i j - f t i j) 2 haarAddCircle) atTop (𝓝 0)
 
 /-- Convergence in `L²` of a sequence of functions implies that of the Fourier coefficients of the
 products with a fixed function of `L²`. -/

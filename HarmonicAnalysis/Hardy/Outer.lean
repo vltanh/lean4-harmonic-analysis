@@ -700,14 +700,6 @@ theorem memLp_mul_one_add {A : UnitAddCircle → Matrix m n ℂ}
     MemLp (fun t => (A t * (1 + circPoly c t) : Matrix m n ℂ) i j) 2 haarAddCircle :=
   memLp_mul_continuous hA (continuous_const.add (continuous_circPoly_matrix c)) i j
 
-/-- Helson–Lowdenslager (1961), p. 203, (125)–(127): `A ∈ H²` is (right-)outer if the closure in
-`L²` of the functions `A (1 + P)`, where `P` is an analytic trigonometric polynomial without
-constant term, contains a constant function. "Evidently the constant matrix can only be the constant
-term of `A`", so that the definition takes `Â (0)` for it. -/
-def IsOuter (A : UnitAddCircle → Matrix m n ℂ) : Prop :=
-  IsHardyTwo A ∧ ∃ c : ℕ → ℤ →₀ Matrix n n ℂ, (∀ N, ∀ k ∈ (c N).support, 0 < k) ∧
-    TendstoLTwo (fun N t => A t * (1 + circPoly (c N) t)) fun _ => matFourierCoeff A 0
-
 /-- Helson–Lowdenslager (1961), §9, p. 202, and (1958), (49), (51), (52), (54), (63)–(67): the
 innovation `X` of the columns of `A`. The entries of `A` are in `L²`; `X` has at most as many
 columns as `A`, which are orthonormal at almost every point, and `Xᴴ A` is analytic; the functions

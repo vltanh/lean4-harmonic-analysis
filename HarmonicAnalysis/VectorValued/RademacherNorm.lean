@@ -8,6 +8,7 @@ module
 public import BanachProbability.SignCube.Bridge
 public import BanachProbability.RandomSums.Contraction
 public import HarmonicAnalysis.FourierMultiplier.Density
+public import HarmonicAnalysis.VectorValued.Defs
 import Mathlib.MeasureTheory.Integral.Prod
 
 /-!
@@ -48,10 +49,11 @@ namespace HarmonicAnalysis
 variable {α : Type*} [MeasurableSpace α] {μ : Measure α} {K : ℕ}
   {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
-/-- The `L^p` norm of the Rademacher sum `Σ_k ε_k f_k` over `α × {±1}^K`. -/
-noncomputable def eLpNormRad (f : Fin K → α → E) (p : ℝ) (μ : Measure α) : ℝ≥0∞ :=
-  eLpNorm (fun z : α × (Fin K → Bool) => ∑ k, coin (z.2 k) • f k z.1) (ENNReal.ofReal p)
-    (μ.prod (ProbabilityTheory.uniformOn Set.univ))
+/-- `eLpNormRad` with the signs `SignCube.coin` of BanachProbability. -/
+theorem eLpNormRad_eq (f : Fin K → α → E) (p : ℝ) (μ : Measure α) :
+    eLpNormRad f p μ =
+      eLpNorm (fun z : α × (Fin K → Bool) => ∑ k, coin (z.2 k) • f k z.1) (ENNReal.ofReal p)
+        (μ.prod (ProbabilityTheory.uniformOn Set.univ)) := rfl
 
 /-! ### Averages over the signs -/
 
@@ -95,7 +97,8 @@ theorem eLpNormRad_rpow {p : ℝ} (hp : 0 < p) {f : Fin K → α → E}
     eLpNormRad f p μ ^ p = ((2 : ℝ≥0∞) ^ K)⁻¹ * ∑ ε : Fin K → Bool,
       eLpNorm (fun x => ∑ k, coin (ε k) • f k x) (ENNReal.ofReal p) μ ^ p := by
   have hm := rad_aestronglyMeasurable hf (ProbabilityTheory.uniformOn Set.univ)
-  rw [eLpNormRad, eLpNorm_ofReal_rpow_eq_lintegral hp hm, lintegral_prod _ (hm.enorm.pow_const p)]
+  rw [eLpNormRad_eq, eLpNorm_ofReal_rpow_eq_lintegral hp hm,
+    lintegral_prod _ (hm.enorm.pow_const p)]
   simp only [rad_lintegral_uniformOn]
   rw [lintegral_const_mul' _ _ (by simp), lintegral_finsetSum' _ fun ε _ =>
     (rad_aestronglyMeasurable_sum hf ε).enorm.pow_const p]
@@ -109,7 +112,8 @@ theorem eLpNormRad_rpow_eq_lintegral {p : ℝ} (hp : 0 < p) {f : Fin K → α �
     eLpNormRad f p μ ^ p = ∫⁻ x, ENNReal.ofReal (SignCube.lpNorm (fun y => ‖y‖) p
       (fun ε : Fin K → Bool => ∑ k, coin (ε k) • f k x) ^ p) ∂μ := by
   have hm := rad_aestronglyMeasurable hf (ProbabilityTheory.uniformOn Set.univ)
-  rw [eLpNormRad, eLpNorm_ofReal_rpow_eq_lintegral hp hm, lintegral_prod _ (hm.enorm.pow_const p)]
+  rw [eLpNormRad_eq, eLpNorm_ofReal_rpow_eq_lintegral hp hm,
+    lintegral_prod _ (hm.enorm.pow_const p)]
   refine lintegral_congr fun x => ?_
   rw [rad_lintegral_uniformOn, lpNorm_rpow (fun _ => norm_nonneg _) hp,
     rad_ofReal_avg fun _ => Real.rpow_nonneg (norm_nonneg _) _]
@@ -142,7 +146,7 @@ theorem eLpNormRad_congr_ae {p : ℝ} {f g : Fin K → α → E} (h : ∀ k, f k
 theorem eLpNormRad_add_le {p : ℝ} (hp : 1 ≤ p) {f g : Fin K → α → E}
     (_hf : ∀ k, AEStronglyMeasurable (f k) μ) (_hg : ∀ k, AEStronglyMeasurable (g k) μ) :
     eLpNormRad (fun k x => f k x + g k x) p μ ≤ eLpNormRad f p μ + eLpNormRad g p μ := by
-  unfold eLpNormRad
+  simp only [eLpNormRad_eq]
   simp only [smul_add, Finset.sum_add_distrib]
   exact eLpNorm_add_le (ENNReal.one_le_ofReal.2 hp)
 
@@ -150,7 +154,7 @@ theorem eLpNormRad_add_le {p : ℝ} (hp : 1 ≤ p) {f g : Fin K → α → E}
 theorem eLpNormRad_fun_const_smul {𝕜 : Type*} [NormedDivisionRing 𝕜] [Module 𝕜 E]
     [NormSMulClass 𝕜 E] [SMulCommClass ℝ 𝕜 E] (c : 𝕜) (f : Fin K → α → E) (p : ℝ) :
     eLpNormRad (fun k x => c • f k x) p μ = ‖c‖ₑ * eLpNormRad f p μ := by
-  rw [eLpNormRad, eLpNormRad, ← eLpNorm_const_smul]
+  rw [eLpNormRad_eq, eLpNormRad_eq, ← eLpNorm_const_smul]
   congr 1
   funext z
   simp only [Pi.smul_apply, Finset.smul_sum]
@@ -386,9 +390,10 @@ theorem eLpNormRad_integral_le [SFinite μ] {S : Type*} [MeasurableSpace S] {ν 
   have hr : ∀ s, eLpNormRad (fun k => F k s) p μ = (∫⁻ z, h z s ^ p ∂P) ^ (1 / p) := fun s => by
     have e := eLpNorm_ofReal_rpow_eq_lintegral hp0 (rad_aestronglyMeasurable (μ := μ)
       (fun k => (hFs k s).aestronglyMeasurable) (ProbabilityTheory.uniformOn Set.univ))
-    rw [hh, hP, ← e, ← ENNReal.rpow_mul, mul_one_div_cancel hp0.ne', ENNReal.rpow_one, eLpNormRad]
+    rw [hh, hP, ← e, ← ENNReal.rpow_mul, mul_one_div_cancel hp0.ne', ENNReal.rpow_one,
+      eLpNormRad_eq]
   simp only [hr]
-  rw [← ENNReal.rpow_le_rpow_iff hp0, eLpNormRad, eLpNorm_ofReal_rpow_eq_lintegral hp0
+  rw [← ENNReal.rpow_le_rpow_iff hp0, eLpNormRad_eq, eLpNorm_ofReal_rpow_eq_lintegral hp0
     (rad_aestronglyMeasurable (fun k => (hLm k).aestronglyMeasurable) _)]
   exact (lintegral_mono_ae (hpt.mono fun z hz => ENNReal.rpow_le_rpow hz hp0.le)).trans
     (rad_lintegral_rpow_lintegral_le hhm hp)

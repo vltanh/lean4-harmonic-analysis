@@ -11,16 +11,17 @@ import BanachProbability.Noncommutative.ComplexSchattenUMD
 /-!
 # Paley's inequality in the Schatten classes
 
-**Theorem** (`paley_schatten`; F. Lust-Piquard and G. Pisier, *Non commutative Khintchine and Paley
-inequalities*, Ark. Mat. 29 (1991), Theorem III.1 (i), p. 252, for the Paley projection and
-`C_E = C_p`; for `p = 1`, Theorem II.1 a) (i), p. 248, without its constant). There is an absolute
-constant `M` such that for `1 ≤ p ≤ 2`, in every size `n`, every analytic polynomial
-`f = Σ_{k ≥ 0} c_k e_k` with coefficients `c_k ∈ M_n (ℂ)` and every `K`,
+**Theorem** (`paley_schatten_of_isHardyOne`; F. Lust-Piquard and G. Pisier, *Non commutative
+Khintchine and Paley inequalities*, Ark. Mat. 29 (1991), Theorem III.1 (i), p. 252, for the Paley
+projection and `C_E = C_p`; for `p = 1`, Theorem II.1 a) (i), p. 248, without its constant). There
+is an absolute constant `M` such that for `1 ≤ p ≤ 2`, in every size `n`, every function `f` of `H¹`
+with values in `M_n (ℂ)` and every `K`,
 
-`‖(c_{2^k})_{k < K}‖_{C_p (ℓ²_R) + C_p (ℓ²_L)} ≤ M ∫_𝕋 ‖f (t)‖_{S_p} dt`,
+`‖(f̂ (2^k))_{k < K}‖_{C_p (ℓ²_R) + C_p (ℓ²_L)} ≤ M ∫_𝕋 ‖f (t)‖_{S_p} dt`,
 
-that is, `c_{2^k} = a_k + b_k` with
-`‖(Σ a_k a_kᴴ)^{1/2}‖_{S_p} + ‖(Σ b_kᴴ b_k)^{1/2}‖_{S_p} ≤ M ∫ ‖f‖_{S_p}`.
+that is, `f̂ (2^k) = a_k + b_k` with
+`‖(Σ a_k a_kᴴ)^{1/2}‖_{S_p} + ‖(Σ b_kᴴ b_k)^{1/2}‖_{S_p} ≤ M ∫ ‖f‖_{S_p}`; in particular for
+analytic polynomials `f = Σ_{k ≥ 0} c_k e_k` with coefficients `c_k ∈ M_n (ℂ)` (`paley_schatten`).
 
 The square functions are written as norms of block rows and block columns
 (`BanachProbability.Schatten.Block`; (I.2), p. 245):
@@ -779,25 +780,25 @@ theorem exists_mul_eq_integral_complexSchattenNorm_eq {p : ℝ} (hp : 0 < p)
     Real.mul_self_sqrt (integral_nonneg fun t => complexSchattenNorm_nonneg _ _)]
 
 /-- **Paley's inequality in the Schatten classes** (Lust-Piquard–Pisier (1991), Theorem III.1 (i)
-for the Paley projection and `C_p`), with a constant independent of `1 ≤ p ≤ 2` and of the size. -/
-theorem paley_schatten : ∃ M : ℝ, 0 < M ∧ ∀ (n : Type) [Fintype n] [DecidableEq n] (p : ℝ), 1 ≤ p →
-    p ≤ 2 → ∀ (c : ℤ →₀ Matrix n n ℂ), (∀ k ∈ c.support, 0 ≤ k) → ∀ K : ℕ,
-    ∃ a b : Fin K → Matrix n n ℂ, (∀ k : Fin K, c (2 ^ (k : ℕ)) = a k + b k) ∧
+for the Paley projection and `C_p`), for functions of `H¹`, with a constant independent of
+`1 ≤ p ≤ 2` and of the size. -/
+theorem paley_schatten_of_isHardyOne : ∃ M : ℝ, 0 < M ∧ ∀ (n : Type) [Fintype n] [DecidableEq n]
+    (p : ℝ), 1 ≤ p → p ≤ 2 → ∀ f : UnitAddCircle → Matrix n n ℂ, IsHardyOne f → ∀ K : ℕ,
+    ∃ a b : Fin K → Matrix n n ℂ, (∀ k : Fin K, matFourierCoeff f (2 ^ (k : ℕ)) = a k + b k) ∧
       complexSchattenNorm (ENNReal.ofReal p) (blockRow a) +
         complexSchattenNorm (ENNReal.ofReal p) (blockCol b) ≤
-      M * ∫ t, complexSchattenNorm (ENNReal.ofReal p) (circPoly c t) ∂haarAddCircle := by
+      M * ∫ t, complexSchattenNorm (ENNReal.ofReal p) (f t) ∂haarAddCircle := by
   obtain ⟨C₁, hC₁, hclosed⟩ := exists_avg_integral_paleyBlockClosed_le
   obtain ⟨C₂, hC₂, hopen⟩ := exists_avg_integral_paleyBlockOpen_le
   refine ⟨√C₁ + √C₂, by positivity, ?_⟩
-  intro n _ _ p hp1 hp2 c hc K
+  intro n _ _ p hp1 hp2 f hf K
   -- `f = g h`, (α) and (β)
   obtain ⟨g, h, hg, hh, hfac, hβ⟩ := exists_mul_eq_integral_complexSchattenNorm_eq
-    (one_pos.trans_le hp1) (isHardyTwo_circPoly hc).isHardyOne
+    (one_pos.trans_le hp1) hf
   refine ⟨fun k => matFourierCoeff (fun t => g t * paleyBlockClosed h k t) (2 ^ (k : ℕ)),
     fun k => matFourierCoeff (fun t => paleyBlockOpen g k t * h t) (2 ^ (k : ℕ)), fun k => ?_, ?_⟩
   · -- `f̂ (2^k) = A_k + B_k`
-    rw [← matFourierCoeff_mul_two_pow hg hh, ← matFourierCoeff_congr_ae hfac,
-      matFourierCoeff_circPoly]
+    rw [← matFourierCoeff_mul_two_pow hg hh, ← matFourierCoeff_congr_ae hfac]
   rw [add_mul, hβ]
   refine add_le_add ?_ ?_
   · -- the `A_k`: (γ) for the norms of Theorem III.1
@@ -812,5 +813,18 @@ theorem paley_schatten : ∃ M : ℝ, 0 < M ∧ ∀ (n : Type) [Fintype n] [Deci
     refine hB.trans ((mul_le_mul_of_nonneg_right
       (Real.sqrt_le_sqrt (hopen n p hp1 hp2 g hg K)) (Real.sqrt_nonneg _)).trans_eq ?_)
     rw [Real.sqrt_mul hC₂.le, mul_assoc]
+
+/-- Paley's inequality in the Schatten classes (`paley_schatten_of_isHardyOne`) for analytic
+polynomials. -/
+theorem paley_schatten : ∃ M : ℝ, 0 < M ∧ ∀ (n : Type) [Fintype n] [DecidableEq n] (p : ℝ), 1 ≤ p →
+    p ≤ 2 → ∀ (c : ℤ →₀ Matrix n n ℂ), (∀ k ∈ c.support, 0 ≤ k) → ∀ K : ℕ,
+    ∃ a b : Fin K → Matrix n n ℂ, (∀ k : Fin K, c (2 ^ (k : ℕ)) = a k + b k) ∧
+      complexSchattenNorm (ENNReal.ofReal p) (blockRow a) +
+        complexSchattenNorm (ENNReal.ofReal p) (blockCol b) ≤
+      M * ∫ t, complexSchattenNorm (ENNReal.ofReal p) (circPoly c t) ∂haarAddCircle := by
+  obtain ⟨M, hM, h⟩ := paley_schatten_of_isHardyOne
+  refine ⟨M, hM, fun n _ _ p hp1 hp2 c hc K => ?_⟩
+  simpa only [matFourierCoeff_circPoly] using
+    h n p hp1 hp2 _ (isHardyTwo_circPoly hc).isHardyOne K
 
 end HarmonicAnalysis

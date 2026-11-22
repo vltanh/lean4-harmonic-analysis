@@ -5,6 +5,7 @@ Authors: The-Anh Vu-Le
 -/
 module
 
+public import HarmonicAnalysis.Hardy.Defs
 public import HarmonicAnalysis.VectorValued.LittlewoodPaley.Circle
 public import BanachProbability.Schatten.Block
 import Mathlib.MeasureTheory.Measure.HasOuterApproxClosed
@@ -40,15 +41,6 @@ open scoped ENNReal Matrix ComplexConjugate
 namespace HarmonicAnalysis
 
 variable {l m n : Type*}
-
-/-- The `k`-th Fourier coefficient of a matrix-valued function, entry by entry. -/
-noncomputable def matFourierCoeff (f : UnitAddCircle → Matrix m n ℂ) (k : ℤ) : Matrix m n ℂ :=
-  Matrix.of fun i j => fourierCoeff (fun t => f t i j) k
-
-/-- The matrix-valued Hardy class `H²`: entries in `L²`, vanishing Fourier coefficients of negative
-order. -/
-def IsHardyTwo (f : UnitAddCircle → Matrix m n ℂ) : Prop :=
-  (∀ i j, MemLp (fun t => f t i j) 2 haarAddCircle) ∧ ∀ k : ℤ, k < 0 → matFourierCoeff f k = 0
 
 /-! ### Constants and continuous functions -/
 

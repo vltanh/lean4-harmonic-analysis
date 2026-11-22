@@ -27,6 +27,7 @@ import all HarmonicAnalysis.FourierMultiplier.Extension
 import all HarmonicAnalysis.FourierMultiplier.Norming
 import all HarmonicAnalysis.Hardy.Approximation
 import all HarmonicAnalysis.Hardy.Basic
+import all HarmonicAnalysis.Hardy.Defs
 import all HarmonicAnalysis.Hardy.FunctionalCalculus
 import all HarmonicAnalysis.Hardy.GeometricMean
 import all HarmonicAnalysis.Hardy.Jensen
@@ -47,6 +48,7 @@ import all HarmonicAnalysis.Transference.ContinuousSymbol
 import all HarmonicAnalysis.Transference.Homogeneous
 import all HarmonicAnalysis.Transference.RiemannSum
 import all HarmonicAnalysis.VectorValued.CircPoly
+import all HarmonicAnalysis.VectorValued.Defs
 import all HarmonicAnalysis.VectorValued.Dyadic.Average
 import all HarmonicAnalysis.VectorValued.Dyadic.Martingale
 import all HarmonicAnalysis.VectorValued.Dyadic.Shift
@@ -121,8 +123,10 @@ meta def mainResults : List Name :=
    ``HarmonicAnalysis.eLpNormRad_dyadicShift_le,
    ``HarmonicAnalysis.eLpNorm_sum_dilateConv_le,
    ``HarmonicAnalysis.eLpNorm_truncatedHilbert_le,
+   ``HarmonicAnalysis.eLpNorm_fourierInv_neg_I_sign_le,
    ``HarmonicAnalysis.eLpNorm_fourierInv_sign_le,
    ``HarmonicAnalysis.eLpNormRad_lineBlock_le,
+   ``HarmonicAnalysis.eLpNormRad_lineBlock_dilate_le,
    ``HarmonicAnalysis.eLpNorm_circPoly_multiplier_le,
    ``HarmonicAnalysis.eLpNormRad_dyadicBlock_le,
    ``HarmonicAnalysis.log_norm_fourierCoeff_zero_le_integral_log_norm,
@@ -138,6 +142,7 @@ meta def mainResults : List Name :=
    ``HarmonicAnalysis.exists_mul_conjTranspose_eq_iff,
    ``HarmonicAnalysis.isFactorable_iff,
    ``HarmonicAnalysis.exists_mul_eq_of_isHardyOne,
+   ``HarmonicAnalysis.paley_schatten_of_isHardyOne,
    ``HarmonicAnalysis.paley_schatten,
    ``HarmonicAnalysis.rademacher_schatten_le,
    ``HarmonicAnalysis.ncKhintchine,

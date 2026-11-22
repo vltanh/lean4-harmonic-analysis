@@ -122,7 +122,7 @@ private theorem eLpNormRad_haar_unit_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞}
   have hL : eLpNormRad (fun j : Fin n => dyadicShift haar j f) p (unitMeasure m) =
       eLpNorm (randomisedSum ((fun j => dyadicAvg j f) - fun _ => dyadicAvg 0 f) n)
         (ENNReal.ofReal p) ((unitMeasure m).prod (ProbabilityTheory.uniformOn Set.univ)) := by
-    rw [eLpNormRad]
+    rw [eLpNormRad_eq]
     congr 1
     funext z
     rw [randomisedSum]
@@ -254,7 +254,7 @@ private theorem eLpNorm_sum_unit_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (h�
       β * eLpNormRad (fun j : Fin n => dyadicShift haarSplit j f) p (unitMeasure m) := by
   refine (hβ.isLowerRandomisedUMDBound (by linarith) ℝ _ (unitMeasure m) shiftedFiltration _
     (martingale_haarSplit hf m) (fun x => by simp) n).trans (le_of_eq ?_)
-  rw [eLpNormRad]
+  rw [eLpNormRad_eq]
   congr 2
   funext z
   simp only [randomisedSum, Finset.sum_range_succ, add_sub_cancel_left]

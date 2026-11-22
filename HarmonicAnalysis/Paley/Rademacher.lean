@@ -13,10 +13,11 @@ import BanachProbability.RandomSums.Contraction
 
 **Theorem** (`rademacher_schatten_le`; F. Lust-Piquard and G. Pisier, *Non commutative Khintchine
 and Paley inequalities*, Ark. Mat. 29 (1991), Corollary III.4, p. 254, left-hand inequality, with
-signs, `1 < p < 2`; for `p = 1`, Theorem 0.1, p. 242, the right-hand inequality of (0.5); G. Pisier,
-*Non-commutative vector valued `L_p`-spaces and completely `p`-summing maps*, Astérisque 247 (1998),
-(8.4.4), left-hand inequality, p. 105). There is an absolute constant `M` such that for
-`1 ≤ p ≤ 2`, in every size, all `A_1, …, A_K ∈ M_n (ℂ)` are `A_k = a_k + b_k` with
+signs (stated for `C_p`, `1 < p < 2`, and in a general form that covers `1 ≤ p ≤ 2`); for `p = 1`,
+Theorem 0.1, p. 242, the right-hand inequality of (0.5); G. Pisier, *Non-commutative vector valued
+`L_p`-spaces and completely `p`-summing maps*, Astérisque 247 (1998), (8.4.4), left-hand inequality,
+p. 105). There is an absolute constant `M` such that for `1 ≤ p ≤ 2`, in every size, all
+`A_1, …, A_K ∈ M_n (ℂ)` are `A_k = a_k + b_k` with
 
 `‖(Σ a_k a_kᴴ)^{1/2}‖_{S_p} + ‖(Σ b_kᴴ b_k)^{1/2}‖_{S_p} ≤ M E ‖Σ ε_k A_k‖_{S_p}`.
 

@@ -6,6 +6,7 @@ Authors: The-Anh Vu-Le
 module
 
 public import HarmonicAnalysis.Defs
+public import HarmonicAnalysis.VectorValued.Defs
 public import Mathlib.Analysis.Fourier.AddCircle
 
 /-!
@@ -26,11 +27,6 @@ namespace HarmonicAnalysis
 section Algebra
 
 variable {V V' : Type*} [AddCommMonoid V] [Module ℂ V] [AddCommMonoid V'] [Module ℂ V']
-
-/-- The trigonometric polynomial `Σ_n c_n e_n` on `𝕋 = ℝ / ℤ`, with coefficients in a complex vector
-space. -/
-noncomputable def circPoly (c : ℤ →₀ V) (t : UnitAddCircle) : V :=
-  c.sum fun n x => fourier n t • x
 
 /-- The trigonometric polynomial whose coefficients are zero. -/
 theorem circPoly_zero (t : UnitAddCircle) : circPoly (0 : ℤ →₀ V) t = 0 :=

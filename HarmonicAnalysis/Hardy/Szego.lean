@@ -117,29 +117,34 @@ private theorem integrable_add_smul_one {W : UnitAddCircle → Matrix n n ℂ}
 
 /-! ### The infimum, and (76) -/
 
-/-- The infimum of `∫ (1/n) tr (Qᴴ W Q)` over the analytic trigonometric polynomials `Q` whose
-constant coefficient has determinant `1`. -/
-noncomputable def szegoInf (W : UnitAddCircle → Matrix n n ℂ) : ℝ :=
-  ⨅ c : {c : ℤ →₀ Matrix n n ℂ // (∀ k ∈ c.support, 0 ≤ k) ∧ (c 0).det = 1},
-    (∫ t, ((circPoly c.1 t)ᴴ * W t * circPoly c.1 t).trace.re ∂haarAddCircle) / Fintype.card n
-
 /-- The constant polynomial `1` belongs to the set over which the infimum is taken. -/
 private theorem nonempty_szego :
     Nonempty {c : ℤ →₀ Matrix n n ℂ // (∀ k ∈ c.support, 0 ≤ k) ∧ (c 0).det = 1} :=
   ⟨Finsupp.single 0 1, fun k hk => by
     rw [(Finsupp.mem_support_single k 0 _).1 hk |>.1], by simp⟩
 
+omit [DecidableEq n] in
+/-- The numbers of which `szegoInf W` is the infimum are nonnegative. -/
+private theorem integral_trace_div_nonneg {W : UnitAddCircle → Matrix n n ℂ}
+    (hW : ∀ᵐ t ∂haarAddCircle, (W t).PosSemidef) (c : ℤ →₀ Matrix n n ℂ) :
+    0 ≤ (∫ t, ((circPoly c t)ᴴ * W t * circPoly c t).trace.re ∂haarAddCircle) /
+      Fintype.card n :=
+  div_nonneg (integral_nonneg_of_ae (hW.mono fun _ ht => trace_conjTranspose_mul_mul_nonneg ht _))
+    (Nat.cast_nonneg _)
+
+/-- The infimum is nonnegative. -/
+theorem szegoInf_nonneg {W : UnitAddCircle → Matrix n n ℂ}
+    (hW : ∀ᵐ t ∂haarAddCircle, (W t).PosSemidef) : 0 ≤ szegoInf W :=
+  Real.iInf_nonneg fun c => integral_trace_div_nonneg hW c.1
+
 /-- The infimum is at most its value at any polynomial. -/
 private theorem szegoInf_le {W : UnitAddCircle → Matrix n n ℂ}
     (hW : ∀ᵐ t ∂haarAddCircle, (W t).PosSemidef) {c : ℤ →₀ Matrix n n ℂ}
     (hc : ∀ k ∈ c.support, 0 ≤ k) (h1 : (c 0).det = 1) :
     szegoInf W ≤ (∫ t, ((circPoly c t)ᴴ * W t * circPoly c t).trace.re ∂haarAddCircle) /
-      Fintype.card n := by
-  refine ciInf_le ⟨0, ?_⟩ (⟨c, hc, h1⟩ :
+      Fintype.card n :=
+  ciInf_le ⟨0, by rintro _ ⟨d, rfl⟩; exact integral_trace_div_nonneg hW d.1⟩ (⟨c, hc, h1⟩ :
     {c : ℤ →₀ Matrix n n ℂ // (∀ k ∈ c.support, 0 ≤ k) ∧ (c 0).det = 1})
-  rintro _ ⟨d, rfl⟩
-  refine div_nonneg (integral_nonneg_of_ae ?_) (Nat.cast_nonneg _)
-  exact hW.mono fun t ht => trace_conjTranspose_mul_mul_nonneg ht _
 
 /-- If `tr (Qᴴ W Q) ≤ K tr (Qᴴ V Q)` for all `Q`, the infimum for `W` is at most `K` times the
 infimum for `V`. -/

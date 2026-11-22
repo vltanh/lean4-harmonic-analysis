@@ -16,6 +16,9 @@ D. Sarason, *Generalized interpolation in H^∞*, Trans. Amer. Math. Soc. 127 (1
 `‖A₁‖_{S_{2p}}² = ‖A₂‖_{S_{2p}}² = ‖A‖_{S_p}` for every `0 < p < ∞`
 (`complexSchattenNorm_sq_of_factorization`). Sarason considers functions whose values are operators
 on one separable Hilbert space; here the values are matrices, and rectangular matrices are allowed.
+(For square matrices and a non-singular constant coefficient, that `A` is a product of two functions
+of `H²` is Theorem 10 of H. Helson and D. Lowdenslager, Acta Math. 99 (1958), p. 195, who do not
+know whether the condition can be dropped, p. 196.)
 
 * `IsFactorable.exists_isOuter` (Lemma 10.3): a factorable function is `Bᴴ B` with `B` outer.
 * `isFactorable_cfc_sqrt` (Lemma 10.4): `(Aᴴ A)^{1/2}` is factorable if `A ∈ H¹`.
