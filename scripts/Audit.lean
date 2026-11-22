@@ -34,7 +34,7 @@ open Lean Elab Command
 namespace Audit
 
 /-- Whether declarations may still depend on `sorryAx`. -/
-meta def allowSorry : Bool := true
+meta def allowSorry : Bool := false
 
 /-- Lean's standard axioms. -/
 meta def standardAxioms : List Name := [``propext, ``Classical.choice, ``Quot.sound]
