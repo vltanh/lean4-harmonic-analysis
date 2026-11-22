@@ -23,10 +23,18 @@ public import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
   `e_n (y) = e^{2πi ⟨n₀ + i n₁, y⟩}` (`HarmonicAnalysis.mFourier_ofComplex`), and integrals over
   `𝕋²` as integrals over the centred cell `(−½, ½]²` of `ℂ`
   (`HarmonicAnalysis.lintegral_torus_eq_centredCell`).
+* The dilated cell `R · (−½, ½]² = {y : y / R ∈ (−½, ½]²}`, `R > 0`
+  (`HarmonicAnalysis.div_mem_centredCell_iff`, `HarmonicAnalysis.measurableSet_dilatedCell`):
+  `∫_{R · (−½, ½]²} f (y / R) dy = R² ∫_{𝕋²} f` (`HarmonicAnalysis.setLIntegral_dilatedCell`,
+  `HarmonicAnalysis.lintegral_torus_eq_dilatedCell`), for every `f : 𝕋² → [0, ∞]`;
+  `R^{2/p} ‖F‖_{L^p (𝕋²)} = ‖F (· / R) 1_{R · (−½, ½]²}‖_{L^p (ℂ)}` for `0 < p` and every `F`
+  (`HarmonicAnalysis.ofReal_rpow_mul_eLpNorm_torus_eq_dilatedCell`); these cells exhaust `ℂ` as
+  `R → ∞` (`HarmonicAnalysis.eventually_div_mem_centredCell`,
+  `HarmonicAnalysis.eventually_div_natCast_mem_centredCell`).
 
 The first two items normalise the measure on `ℝ / ℤ` as `Mathlib.Analysis.Fourier.AddCircleMulti`
-does, with its local instances; the last item uses Mathlib's global measure on `ℝ / ℤ`, which is
-the same measure of total mass one.
+does, with its local instances; the last two items use Mathlib's global measure on `ℝ / ℤ`, which
+is the same measure of total mass one.
 -/
 
 @[expose] public section
@@ -209,6 +217,18 @@ def ofComplex (y : ℂ) : UnitAddTorus (Fin 2) := ofPi ![y.re, y.im]
 /-- The centred cell `{y : Re y, Im y ∈ (−½, ½]}` of the lattice `ℤ² = ℤ + iℤ ⊂ ℂ`. -/
 def centredCell : Set ℂ := {y | y.re ∈ Ioc (-2⁻¹ : ℝ) 2⁻¹ ∧ y.im ∈ Ioc (-2⁻¹ : ℝ) 2⁻¹}
 
+/-- The projection `ℂ → 𝕋²` is continuous. -/
+theorem continuous_ofComplex : Continuous ofComplex :=
+  continuous_ofPi.comp (continuous_pi fun i => by fin_cases i <;> simpa using by fun_prop)
+
+/-- The projection `ℂ → 𝕋²` is measurable. -/
+theorem measurable_ofComplex : Measurable ofComplex :=
+  continuous_ofComplex.measurable
+
+/-- The centred cell `(−½, ½]²` is measurable. -/
+theorem measurableSet_centredCell : MeasurableSet centredCell :=
+  (measurable_re measurableSet_Ioc).inter (measurable_im measurableSet_Ioc)
+
 /-- The monomial `e_n` on `ℂ`: `e_n (y) = e^{2πi ⟨n₀ + i n₁, y⟩}`. -/
 theorem mFourier_ofComplex (n : Fin 2 → ℤ) (y : ℂ) :
     mFourier n (ofComplex y) =
@@ -222,6 +242,170 @@ theorem mFourier_ofComplex (n : Fin 2 → ℤ) (y : ℂ) :
 cell of `ℂ`. -/
 theorem lintegral_torus_eq_centredCell (f : UnitAddTorus (Fin 2) → ℝ≥0∞) :
     ∫⁻ x, f x = ∫⁻ y in centredCell, f (ofComplex y) := by
-  sorry
+  -- The global measure on `𝕋²` is the product of the Haar probability measures on `ℝ / ℤ`.
+  have hvol : (volume : Measure (UnitAddTorus (Fin 2))) =
+      @volume _ (@MeasureSpace.pi (Fin 2) _ (fun _ => UnitAddCircle)
+        (fun _ => instMeasureSpaceUnitAddCircle)) := by
+    simp only [volume_pi]
+    congr 1
+    funext i
+    rw [AddCircle.volume_eq_smul_haarAddCircle, ENNReal.ofReal_one, one_smul]
+    rfl
+  rw [hvol, UnitAddTorus.lintegral_preimage f (fun _ => -2⁻¹),
+    ← Complex.volume_preserving_equiv_pi.setLIntegral_comp_preimage_emb
+      Complex.measurableEquivPi.measurableEmbedding]
+  congr 2
+  ext y
+  simp only [mem_preimage, mem_ofPred_eq, Fin.forall_fin_two, measurableEquivPi_apply,
+    Matrix.cons_val_zero, Matrix.cons_val_one, centredCell]
+  norm_num
+
+/-! ### Dilated cells
+
+For `R > 0`, the dilated cell `R · (−½, ½]² = {y : y / R ∈ (−½, ½]²}` of `ℂ`: integrals and `L^p`
+norms over `𝕋²` as integrals and `L^p` norms over it, after the change of variables `y ↦ y / R`. -/
+
+/-- `y ∈ R · (−½, ½]²` if and only if `Re y, Im y ∈ (−R/2, R/2]`. -/
+theorem div_mem_centredCell_iff {R : ℝ} (hR : 0 < R) {y : ℂ} :
+    y / R ∈ centredCell ↔ y.re ∈ Ioc (-(R / 2)) (R / 2) ∧ y.im ∈ Ioc (-(R / 2)) (R / 2) := by
+  simp only [centredCell, mem_ofPred_eq, div_ofReal_re, div_ofReal_im, mem_Ioc,
+    lt_div_iff₀ hR, div_le_iff₀ hR]
+  constructor <;> rintro ⟨⟨h1, h2⟩, h3, h4⟩ <;> refine ⟨⟨?_, ?_⟩, ?_, ?_⟩ <;> linarith
+
+/-- The dilated cell `R · (−½, ½]²` is measurable. -/
+theorem measurableSet_dilatedCell (R : ℝ) : MeasurableSet {y : ℂ | y / R ∈ centredCell} :=
+  measurableSet_centredCell.preimage (measurable_id.div_const _)
+
+/-- Integrals over `𝕋²` (with Mathlib's measure, of total mass one) are, up to the factor `R²`,
+integrals over the dilated cell `R · (−½, ½]²`: for `R > 0`,
+`∫_{R · (−½, ½]²} f (y / R) dy = R² ∫_{𝕋²} f`. -/
+theorem setLIntegral_dilatedCell (f : UnitAddTorus (Fin 2) → ℝ≥0∞) {R : ℝ} (hR : 0 < R) :
+    ∫⁻ y in {y : ℂ | y / R ∈ centredCell}, f (ofComplex (y / R)) =
+      ENNReal.ofReal (R ^ 2) * ∫⁻ x, f x := by
+  have hR' : R⁻¹ ≠ 0 := inv_ne_zero hR.ne'
+  let e : ℂ ≃ᵐ ℂ := MeasurableEquiv.smul₀ R⁻¹ hR'
+  have he : ∀ y : ℂ, e y = y / R := fun y => by
+    simp [e, Complex.real_smul, div_eq_inv_mul]
+  have hmap : Measure.map e volume = ENNReal.ofReal (R ^ 2) • (volume : Measure ℂ) := by
+    rw [MeasurableEquiv.coe_smul₀, Measure.map_addHaar_smul volume hR',
+      Module.finrank_eq_card_basis Complex.basisOneI, Fintype.card_fin, inv_pow, inv_inv,
+      abs_of_nonneg (sq_nonneg R)]
+  have hset : {y : ℂ | y / R ∈ centredCell} = e ⁻¹' centredCell := by
+    ext y
+    simp [he]
+  rw [lintegral_torus_eq_centredCell, hset]
+  simp_rw [← he]
+  calc ∫⁻ y in e ⁻¹' centredCell, f (ofComplex (e y))
+      = ∫⁻ y in centredCell, f (ofComplex y) ∂(Measure.map e volume) := by
+        rw [MeasurableEquiv.restrict_map, lintegral_map_equiv]
+    _ = _ := by rw [hmap, Measure.restrict_smul, lintegral_smul_measure, smul_eq_mul]
+
+/-- Integrals over `𝕋²` (with Mathlib's measure, of total mass one) as integrals over the dilated
+cell `R · (−½, ½]²`: for `R > 0`, `∫_{𝕋²} f = R⁻² ∫_{R · (−½, ½]²} f (y / R) dy`. -/
+theorem lintegral_torus_eq_dilatedCell (f : UnitAddTorus (Fin 2) → ℝ≥0∞) {R : ℝ} (hR : 0 < R) :
+    ∫⁻ x, f x =
+      ENNReal.ofReal (R ^ 2)⁻¹ * ∫⁻ y in {y : ℂ | y / R ∈ centredCell}, f (ofComplex (y / R)) := by
+  rw [setLIntegral_dilatedCell f hR, ← mul_assoc, ← ENNReal.ofReal_mul (by positivity),
+    inv_mul_cancel₀ (by positivity), ENNReal.ofReal_one, one_mul]
+
+/-- A measurable section of `ofComplex` with values in the centred cell, inverse to `ofComplex` on
+the cell. -/
+private theorem exists_section_ofComplex : ∃ g : UnitAddTorus (Fin 2) → ℂ, Measurable g ∧
+    (∀ z, ofComplex (g z) = z) ∧ (∀ z, g z ∈ centredCell) ∧
+    ∀ y ∈ centredCell, g (ofComplex y) = y := by
+  let e := measurableEquivPiIoc (fun _ : Fin 2 => (-2⁻¹ : ℝ))
+  refine ⟨fun z => measurableEquivPi.symm (e z).1, ?_, fun z => ?_, fun z => ?_, fun y hy => ?_⟩
+  · exact measurableEquivPi.symm.measurable.comp (measurable_subtype_coe.comp e.measurable)
+  · funext i
+    fin_cases i <;> simp [ofComplex, ofPi, e]
+  · have h := (e z).2
+    simp only [Fin.forall_fin_two] at h
+    norm_num at h
+    simpa [centredCell] using h
+  · have h1 : y.re ∈ Ioc (-2⁻¹ : ℝ) (-2⁻¹ + 1) := by convert hy.1 using 2; norm_num
+    have h2 : y.im ∈ Ioc (-2⁻¹ : ℝ) (-2⁻¹ + 1) := by convert hy.2 using 2; norm_num
+    apply Complex.ext <;> simp [e, ofComplex, ofPi, AddCircle.equivIoc_coe_of_mem h1,
+      AddCircle.equivIoc_coe_of_mem h2]
+
+/-- `L^p` norms over `𝕋²` (with Mathlib's measure, of total mass one) as `L^p` norms over the
+dilated cell `R · (−½, ½]²`: for `0 < p` and `R > 0`,
+`R^{2/p} ‖F‖_{L^p (𝕋²)} = ‖F (· / R) 1_{R · (−½, ½]²}‖_{L^p (ℂ)}`. No measurability of `F` is
+assumed. -/
+theorem ofReal_rpow_mul_eLpNorm_torus_eq_dilatedCell (F : UnitAddTorus (Fin 2) → ℂ) {p : ℝ}
+    (hp : 0 < p) {R : ℝ} (hR : 0 < R) :
+    ENNReal.ofReal (R ^ (2 / p)) * eLpNorm F (ENNReal.ofReal p) volume =
+      eLpNorm ({y : ℂ | y / R ∈ centredCell}.indicator fun y => F (ofComplex (y / R)))
+        (ENNReal.ofReal p) volume := by
+  obtain ⟨g, hgm, hg1, hg2, hg3⟩ := exists_section_ofComplex
+  set S := {y : ℂ | y / R ∈ centredCell}
+  have hS : MeasurableSet S := measurableSet_dilatedCell R
+  have hR0 : (R : ℂ) ≠ 0 := ofReal_ne_zero.2 hR.ne'
+  -- `ψ z = R g (z)` is a measurable embedding of `𝕋²` onto the dilated cell, inverse to
+  -- `y ↦ ofComplex (y / R)` there.
+  let ψ : UnitAddTorus (Fin 2) → ℂ := fun z => R * g z
+  have hψφ : ∀ y ∈ S, ψ (ofComplex (y / R)) = y := fun y hy => by
+    simp only [ψ, hg3 _ hy]
+    field_simp
+  have hφψ : ∀ z, ofComplex (ψ z / R) = z := fun z => by
+    simp only [ψ]
+    rw [mul_div_cancel_left₀ _ hR0]
+    exact hg1 z
+  have hψS : ∀ z, ψ z ∈ S := fun z => by
+    change ψ z / R ∈ centredCell
+    simp only [ψ]
+    rw [mul_div_cancel_left₀ _ hR0]
+    exact hg2 z
+  have hψm : Measurable ψ := measurable_const.mul hgm
+  have hφm : Measurable fun y : ℂ => ofComplex (y / R) :=
+    measurable_ofComplex.comp (measurable_id.div_const _)
+  have hemb : MeasurableEmbedding ψ := by
+    refine ⟨fun z w h => by rw [← hφψ z, ← hφψ w, h], hψm, fun s hs => ?_⟩
+    have : ψ '' s = S ∩ (fun y : ℂ => ofComplex (y / R)) ⁻¹' s := by
+      ext y
+      constructor
+      · rintro ⟨z, hz, rfl⟩
+        exact ⟨hψS z, by simp only [mem_preimage, hφψ z, hz]⟩
+      · rintro ⟨hy, hys⟩
+        exact ⟨_, hys, hψφ y hy⟩
+    rw [this]
+    exact hS.inter (hφm hs)
+  have hmap : Measure.map ψ (ENNReal.ofReal (R ^ 2) • volume) = volume.restrict S := by
+    ext s hs
+    rw [Measure.map_apply hψm hs, Measure.smul_apply, smul_eq_mul,
+      ← lintegral_indicator_one (hψm hs), ← setLIntegral_dilatedCell _ hR,
+      ← lintegral_indicator_one hs]
+    refine setLIntegral_congr_fun hS fun y hy => ?_
+    have h : ofComplex (y / R) ∈ ψ ⁻¹' s ↔ y ∈ s := by rw [mem_preimage, hψφ y hy]
+    by_cases hys : y ∈ s
+    · rw [indicator_of_mem hys, indicator_of_mem (h.2 hys)]
+      rfl
+    · rw [indicator_of_notMem hys, indicator_of_notMem (mt h.1 hys)]
+  have h1 : eLpNorm F (ENNReal.ofReal p) (ENNReal.ofReal (R ^ 2) • volume) =
+      eLpNorm (S.indicator fun y => F (ofComplex (y / R))) (ENNReal.ofReal p) volume := by
+    rw [eLpNorm_indicator_eq_eLpNorm_restrict hS.nullMeasurableSet, ← hmap,
+      hemb.eLpNorm_map_measure]
+    congr 1
+    funext z
+    simp only [Function.comp_apply, hφψ z]
+  rw [← h1, eLpNorm_smul_measure_of_ne_zero_of_ne_top (ENNReal.ofReal_pos.2 hp).ne'
+    ENNReal.ofReal_ne_top, smul_eq_mul]
+  congr 1
+  rw [ENNReal.ofReal_rpow_of_nonneg (by positivity) (by positivity), one_div, ENNReal.toReal_inv,
+    ENNReal.toReal_ofReal hp.le, ← Real.rpow_natCast, ← Real.rpow_mul hR.le, Nat.cast_ofNat,
+    div_eq_mul_inv]
+
+/-- The dilated cells `R · (−½, ½]²` exhaust `ℂ` as `R → ∞`. -/
+theorem eventually_div_mem_centredCell (y : ℂ) : ∀ᶠ R : ℝ in atTop, y / R ∈ centredCell := by
+  filter_upwards [eventually_gt_atTop (2 * ‖y‖)] with R hR
+  rw [div_mem_centredCell_iff (lt_of_le_of_lt (by positivity) hR)]
+  have h1 := abs_re_le_norm y
+  have h2 := abs_im_le_norm y
+  refine ⟨⟨?_, ?_⟩, ?_, ?_⟩ <;>
+    linarith [neg_abs_le y.re, le_abs_self y.re, neg_abs_le y.im, le_abs_self y.im]
+
+/-- The dilated cells `R · (−½, ½]²`, `R ∈ ℕ`, exhaust `ℂ` as `R → ∞`. -/
+theorem eventually_div_natCast_mem_centredCell (y : ℂ) :
+    ∀ᶠ R : ℕ in atTop, y / ((R : ℝ) : ℂ) ∈ centredCell :=
+  tendsto_natCast_atTop_atTop.eventually (eventually_div_mem_centredCell y)
 
 end HarmonicAnalysis
