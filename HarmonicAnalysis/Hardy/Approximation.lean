@@ -13,8 +13,8 @@ import Mathlib.LinearAlgebra.Matrix.Bilinear
 
 Tools for the matrix-valued Hardy classes `H¹` and `H²` of the circle.
 
-* `circPoly_add`, `circPoly_mapRange`, `exists_circPoly_mul`: sums and images under linear maps of
-  trigonometric polynomials, products of analytic polynomials.
+* `exists_circPoly_mul`, `exists_circPoly_fourier_smul`, `exists_circPoly_eq_one_add_mul`: products
+  of analytic polynomials (sums and images under linear maps are in `VectorValued.CircPoly`).
 * `IsHardyOne`: the Hardy class `H¹`, the matrix-valued functions with integrable entries whose
   Fourier coefficients of negative order vanish.
 * `ae_eq_zero_of_matFourierCoeff_eq_zero`: a function with integrable entries is zero almost

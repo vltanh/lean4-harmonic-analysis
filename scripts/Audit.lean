@@ -117,7 +117,31 @@ meta def mainResults : List Name :=
    ``UnitAddTorus.cubeFourierCoeff_periodicMultiplier,
    ``UnitAddTorus.exists_dzbarPi_eq,
    ``HarmonicAnalysis.periodicMultiplier_beurlingSymbol_dzbarPi,
-   ``HarmonicAnalysis.periodicMultiplier_trigPoly]
+   ``HarmonicAnalysis.periodicMultiplier_trigPoly,
+   ``HarmonicAnalysis.eLpNormRad_dyadicShift_le,
+   ``HarmonicAnalysis.eLpNorm_sum_dilateConv_le,
+   ``HarmonicAnalysis.eLpNorm_truncatedHilbert_le,
+   ``HarmonicAnalysis.eLpNorm_fourierInv_sign_le,
+   ``HarmonicAnalysis.eLpNormRad_lineBlock_le,
+   ``HarmonicAnalysis.eLpNorm_circPoly_multiplier_le,
+   ``HarmonicAnalysis.eLpNormRad_dyadicBlock_le,
+   ``HarmonicAnalysis.log_norm_fourierCoeff_zero_le_integral_log_norm,
+   ``HarmonicAnalysis.exists_isOuter,
+   ``HarmonicAnalysis.IsOuter.range_eq,
+   ``HarmonicAnalysis.IsOuter.exists_tendsto_iff,
+   ``HarmonicAnalysis.szegoInf_eq,
+   ``HarmonicAnalysis.posDef_of_szegoInf_pos,
+   ``HarmonicAnalysis.exists_isOuter_of_integrable_log_det,
+   ``HarmonicAnalysis.integrable_log_det_of_isHardyTwo,
+   ``HarmonicAnalysis.isOuter_iff_integral_log_norm_det,
+   ``HarmonicAnalysis.IsAnalyticRange.exists_isometry,
+   ``HarmonicAnalysis.exists_mul_conjTranspose_eq_iff,
+   ``HarmonicAnalysis.isFactorable_iff,
+   ``HarmonicAnalysis.exists_mul_eq_of_isHardyOne,
+   ``HarmonicAnalysis.paley_schatten,
+   ``HarmonicAnalysis.rademacher_schatten_le,
+   ``HarmonicAnalysis.ncKhintchine,
+   ``HarmonicAnalysis.ncKhintchine_of_normal]
 
 /-- The theorems of the Palomar entries. -/
 meta def palomarTheorems : List Name :=

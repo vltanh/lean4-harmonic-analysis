@@ -4,10 +4,10 @@
 usage: snapshot_check.py take SNAPDIR [--force]
        snapshot_check.py check SNAPDIR FILE.lean [--emit]
 
-Run from the project root. When several agents work in one checkout, a `lake build` started by one
-of them rebuilds, and meanwhile deletes, the `.olean` files that the others import ("object file …
-does not exist"), and a module rebuilt from a half-edited file breaks everyone downstream. Each
-agent can work against its own copy of the build outputs instead:
+Run from the project root. When several processes work in one checkout, a `lake build` started by
+one of them rebuilds, and meanwhile deletes, the `.olean` files that the others import ("object file …
+does not exist"), and a module rebuilt from a half-edited file breaks everything downstream. Each
+can work against its own copy of the build outputs instead:
 
 - `take` copies `.lake/build/lib/lean` to SNAPDIR, which must be new, empty, or an earlier
   snapshot. It refuses when `lake build --no-build` says the build is out of date, because the copy
@@ -16,11 +16,11 @@ agent can work against its own copy of the build outputs instead:
   makes of it (a file in a library's `srcDir`, such as `palomar/PaperName/Solution.lean`, is
   `PaperName.Solution`). The snapshot replaces the project's own build directory; Mathlib and the
   other packages come from `.lake/packages`.
-- `--emit` also writes the file's `.olean` and `.ilean` into the snapshot, so that the agent's
+- `--emit` also writes the file's `.olean` and `.ilean` into the snapshot, so that
   later files can import its new version.
 
-Nothing in the project's `.lake` changes. Take a fresh snapshot when upstream modules that the
-agent uses have changed their statements.
+Nothing in the project's `.lake` changes. Take a fresh snapshot when the statements of the
+upstream modules in use have changed.
 """
 import argparse
 import os

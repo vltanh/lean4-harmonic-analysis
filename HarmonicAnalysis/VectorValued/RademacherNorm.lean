@@ -32,9 +32,9 @@ Sources: Hytönen–van Neerven–Veraar–Weis (HNVW), *Analysis in Banach spac
 of volume II, p. 9; Minkowski's integral inequality is Proposition 1.2.22 of volume I, p. 24, with
 the exponents `1` and `p`.
 
-The signs are real throughout the package, also in complex spaces, where the book uses complex
-Rademacher variables. This costs a factor in the contraction principle for complex scalars: the best
-constant is `1` for complex Rademacher variables and `π / 2` for real signs; here the
+The signs are real throughout the vector-valued part, also in complex spaces, where the book uses
+complex Rademacher variables. This costs a factor in the contraction principle for complex scalars:
+the best constant is `1` for complex Rademacher variables and `π / 2` for real signs; here the
 constant `2 ≥ π / 2` is used.
 -/
 

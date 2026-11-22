@@ -26,8 +26,8 @@ pp. 384–387: with `φ = haarCorrelation haarSplit`, `Φ (x) = ∫_0^x φ` and
 `∫_ε^R φ_t * f dt/t = ψ_ε * f − ψ_R * f − (π/8) H_{ε,R} f` (`integral_dilateConv_eq`; the
 display before (5.23), p. 385),
 
-where the left-hand side is, for `R = 2^n ε`, an average of the shifts of `Dyadic.Average` over the
-dilations `t`.
+where the left-hand side is, for `R = 2^n ε`, an average of the shifts of
+`VectorValued.Dyadic.Average` over the dilations `t`.
 
 Departure from the source: the book lets `ε → 0` and `R → ∞` in this identity. The averaged shifts
 converge in `L^p` and almost everywhere (Lemma 5.1.8), the error terms, which are `ψ_ε * f`,
@@ -36,10 +36,11 @@ converge in `L^p` and almost everywhere (Lemma 5.1.8), the error terms, which ar
 only the truncations with `R = 2^n ε` are bounded, uniformly in `ε` and `n`. For them the integral
 over `[ε, R]` itself is an average of dyadic shifts, and the remaining integrals of (5.23) do not
 occur; the terms `ψ_ε * f`, `ψ_R * f` are bounded by Young's inequality, `‖ψ‖_1 ‖f‖_p ≤ 2 ‖f‖_p`.
-The limit is taken on the Fourier side, with Fatou's lemma, in `HilbertTransform.Fourier`. In the
-bound only the constant is affected: `(8/π) (2 log 2 · β² + 4) ≤ 4 β² + 11` instead of the book's
-`(8/π) log 2 · β⁺ β⁻` (the factor `2` of `2 log 2` comes from the finitely many generations, see
-`Dyadic.Shift`); the convergence of the truncations in `L^p` and almost everywhere is not proved.
+The limit is taken on the Fourier side, with Fatou's lemma, in
+`VectorValued.HilbertTransform.Fourier`. In the bound only the constant is affected:
+`(8/π) (2 log 2 · β² + 4) ≤ 4 β² + 11` instead of the book's `(8/π) log 2 · β⁺ β⁻` (the factor `2`
+of `2 log 2` comes from the finitely many generations, see `VectorValued.Dyadic.Shift`); the
+convergence of the truncations in `L^p` and almost everywhere is not proved.
 -/
 
 @[expose] public section

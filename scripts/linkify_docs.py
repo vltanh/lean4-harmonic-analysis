@@ -32,12 +32,13 @@ from pathlib import Path
 
 # ---- configuration -------------------------------------------------------------------------
 # The Markdown documents to process.
-DOCS = ['README.md']
+DOCS = ['README.md', 'docs/SHORTER_PROOFS.md', 'docs/REFERENCES.md']
 # Namespaces in which the documents name declarations without their prefix: the first one that declares
 # a name wins.
 NAMESPACES = []
-NAMESPACES_BY_DIR = {'': ['HarmonicAnalysis', 'HarmonicAnalysis.BeurlingAhlfors', 'UnitAddTorus',
-                          'FourierMultipliersChallenge']}
+_NAMESPACES = ['HarmonicAnalysis', 'HarmonicAnalysis.BeurlingAhlfors', 'UnitAddTorus',
+               'FourierMultipliersChallenge']
+NAMESPACES_BY_DIR = {'': _NAMESPACES, 'docs': _NAMESPACES}
 # Top-level module names: the library's and the Palomar entry's.
 MODULE_ROOTS = ('HarmonicAnalysis', 'FourierMultipliers')
 # The modules whose declarations win when a name is declared in several: the entry's Challenge repeats
@@ -45,8 +46,10 @@ MODULE_ROOTS = ('HarmonicAnalysis', 'FourierMultipliers')
 PREFERRED_MODULE = ('HarmonicAnalysis.Defs', 'FourierMultipliers.Challenge')
 # The source directory of each module root whose `lean_lib` has a `srcDir`.
 SOURCE_DIRS = {'FourierMultipliers': 'palomar'}
-# Directories, besides the repository root, against which paths in the documents are resolved.
-PATH_BASES = {'': ['.github/workflows', 'palomar/FourierMultipliers', 'scripts', 'HarmonicAnalysis']}
+# Directories, besides the document's own and the repository root, against which the paths in the
+# documents of a given directory are resolved.
+PATH_BASES = {'': ['.github/workflows', 'palomar/FourierMultipliers', 'scripts', 'HarmonicAnalysis', 'docs'],
+              'docs': ['HarmonicAnalysis']}
 # Paths that are never linked, whether or not git ignores them.
 PRIVATE = ('NEXT.md', 'notes')
 # ---------------------------------------------------------------------------------------------
@@ -118,7 +121,7 @@ def mathlib_page(module):
 
 def load_locations():
     """Each declaration's module and the line of its name, read from the `.ilean` files."""
-    locations, preferred = {}, {}
+    locations, preferred, rank = {}, {}, {}
     for ilean in sorted(BUILD.rglob('*.ilean')):
         data = json.loads(ilean.read_text(encoding='utf-8'))
         # A restored build cache keeps the outputs of deleted modules; skip them.
@@ -127,10 +130,16 @@ def load_locations():
         # The preferred module's declarations win over restatements elsewhere.
         preferred_modules = ((PREFERRED_MODULE,) if isinstance(PREFERRED_MODULE, str)
                              else tuple(PREFERRED_MODULE))
-        target = preferred if data['module'] in preferred_modules else locations
         for name, ranges in data.get('decls', {}).items():
             # `ranges` holds the declaration's range, then its name's; lines count from 0.
-            target[name] = (data['module'], ranges[4] + 1)
+            location = (data['module'], ranges[4] + 1)
+            if data['module'] not in preferred_modules:
+                locations[name] = location
+                continue
+            # Among the preferred modules, the first one that declares the name wins.
+            index = preferred_modules.index(data['module'])
+            if index <= rank.get(name, index):
+                preferred[name], rank[name] = location, index
     locations.update(preferred)
     if not locations:
         sys.exit('no .ilean files under %s; run `lake build` first' % BUILD)

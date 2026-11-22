@@ -82,8 +82,8 @@ In alphabetical order. Entries that the [README](../README.md) cites by a key be
 - U. Haagerup, M. Musat, *On the best constants in noncommutative Khintchine-type inequalities*, J. Funct.
   Anal. 250 (2007), 588–624, [doi:10.1016/j.jfa.2007.05.014](https://doi.org/10.1016/j.jfa.2007.05.014).
 - [HL1] H. Helson, D. Lowdenslager, *Prediction theory and Fourier series in several variables*, Acta Math.
-  99 (1958), 165–202, [doi:10.1007/bf02392425](https://doi.org/10.1007/bf02392425): Theorem 2, Lemmas 4–6,
-  Theorems 8 and 9.
+  99 (1958), 165–202, [doi:10.1007/bf02392425](https://doi.org/10.1007/bf02392425): Theorem 2, (58), (59),
+  Lemmas 5 and 6, (68), Theorems 8 and 9.
 - [HL2] H. Helson, D. Lowdenslager, *Prediction theory and Fourier series in several variables. II*, Acta
   Math. 106 (1961), 175–213, [doi:10.1007/BF02545786](https://doi.org/10.1007/BF02545786): §§9–11,
   Theorems 8–10, 12 and 13.
@@ -94,7 +94,7 @@ In alphabetical order. Entries that the [README](../README.md) cites by a key be
   [doi:10.1007/978-3-319-48520-1](https://doi.org/10.1007/978-3-319-48520-1): for the scalar part, Lemma
   1.2.30, Proposition 1.2.32, Lemma 2.4.8, Proposition 2.4.23, Definitions 5.3.1 and 5.3.3, Propositions
   5.3.7, 5.7.1 and 5.7.4, Lemma 5.7.5, Corollary 5.7.6; for the vector-valued part, Sections 5.1–5.3 and
-  5.7, Propositions 1.2.22, 1.3.1, 3.2.10, Lemma 2.4.8, Appendix D.
+  5.7, Propositions 1.2.22, 1.3.1, 3.2.10, Lemma 2.4.8.
 - [HNVW II] T. Hytönen, J. van Neerven, M. Veraar, L. Weis, *Analysis in Banach Spaces, Volume II*,
   Ergebnisse der Mathematik 67, Springer, 2017,
   [doi:10.1007/978-3-319-69808-3](https://doi.org/10.1007/978-3-319-69808-3): Theorem 6.1.13.
@@ -109,11 +109,11 @@ In alphabetical order. Entries that the [README](../README.md) cites by a key be
 - [K] Y. Katznelson, *An Introduction to Harmonic Analysis*, 3rd ed., Cambridge University Press,
   2004, [doi:10.1017/CBO9781139165372](https://doi.org/10.1017/CBO9781139165372): Chapter I (Fourier
   series on `𝕋`). Not consulted, as for [G].
+- [dL] K. de Leeuw, *On `L_p` multipliers*, Ann. of Math. (2) 81 (1965), 364–379,
+  [doi:10.2307/1970621](https://doi.org/10.2307/1970621).
 - [Le] O. Lehto, *Remarks on the integrability of the derivatives of quasiconformal mappings*, Ann.
   Acad. Sci. Fenn. A I 371 (1965), 1–8,
   [doi:10.5186/aasfm.1966.371](https://doi.org/10.5186/aasfm.1966.371).
-- [dL] K. de Leeuw, *On `L_p` multipliers*, Ann. of Math. (2) 81 (1965), 364–379,
-  [doi:10.2307/1970621](https://doi.org/10.2307/1970621).
 - J. E. Littlewood, R. E. A. C. Paley, *Theorems on Fourier series and power series*, J. London Math. Soc. 6
   (1931), 230–233, [doi:10.1112/jlms/s1-6.3.230](https://doi.org/10.1112/jlms/s1-6.3.230); *II*, Proc.
   London Math. Soc. 42 (1936), 52–89, [doi:10.1112/plms/s2-42.1.52](https://doi.org/10.1112/plms/s2-42.1.52).
@@ -122,8 +122,8 @@ In alphabetical order. Entries that the [README](../README.md) cites by a key be
 - F. Lust-Piquard, *Inégalités de Khintchine dans `C_p` (`1 < p < ∞`)*, C. R. Acad. Sci. Paris 303
   (1986), 289–292, [Zbl 0592.47038](https://zbmath.org/?q=an:0592.47038). Not consulted.
 - [LPP] F. Lust-Piquard, G. Pisier, *Non commutative Khintchine and Paley inequalities*, Ark. Mat. 29
-  (1991), 241–260, [doi:10.1007/BF02384340](https://doi.org/10.1007/BF02384340): Theorem III.1 (i),
-  Corollary III.4, pp. 243, 246–248 and 254–255.
+  (1991), 241–260, [doi:10.1007/BF02384340](https://doi.org/10.1007/BF02384340): Theorems 0.1,
+  II.1 a) (i) and III.1 (i), Corollary III.4, Remark III.5, pp. 242–243, 245–255.
 - L. Mackey, M. I. Jordan, R. Y. Chen, B. Farrell, J. A. Tropp, *Matrix concentration inequalities via
   the method of exchangeable pairs*, Ann. Probab. 42 (2014), 906–945,
   [doi:10.1214/13-AOP892](https://doi.org/10.1214/13-AOP892),

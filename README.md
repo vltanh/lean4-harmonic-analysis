@@ -1,8 +1,8 @@
-# Harmonic analysis in Lean: Fourier multipliers, transference, the Beurling–Ahlfors transform
+# Harmonic analysis in Lean: Fourier multipliers, the Beurling–Ahlfors transform, vector-valued harmonic analysis
 
 [![Lean Action CI](https://github.com/vltanh/lean4-harmonic-analysis/actions/workflows/lean_action_ci.yml/badge.svg)](https://github.com/vltanh/lean4-harmonic-analysis/actions/workflows/lean_action_ci.yml)
 
-Lean 4 with Mathlib `v4.36.0-rc2`, on `ℂ ≅ ℝ²`, the torus `𝕋² = (ℝ/ℤ)²` and the tori `𝕋^ι`:
+Lean 4 with Mathlib `v4.36.0-rc2`. For scalar functions, on `ℂ ≅ ℝ²`, the torus `𝕋² = (ℝ/ℤ)²` and the tori `𝕋^ι`:
 
 - **Fourier multipliers** `T_m f = 𝓕⁻¹(m · 𝓕f)` and their norms on `L^p`, computed on Schwartz
   functions, which also bound `T_m` on the `L^p`-closure of its graph (density); on the torus, on
@@ -25,12 +25,30 @@ Lean 4 with Mathlib `v4.36.0-rc2`, on `ℂ ≅ ℝ²`, the torus `𝕋² = (ℝ/
   symbols, which preserve smooth periodic functions; on `ℝ² ≅ ℂ`, the inverse of `∂̄` on mean-zero
   smooth periodic functions and `𝓑(∂̄g) = ∂g` for smooth periodic `g`.
 
-**Status: complete.** Every statement is proved. The [audit](scripts/Audit.lean) checks that every
+For functions with values in Banach spaces, on `ℝ` and the circle `𝕋 = ℝ/ℤ`:
+
+- **UMD spaces**: dyadic shifts, the Hilbert transform, the (right-hand) Littlewood–Paley inequality on the
+  line and on the circle, with random signs and sharp cut-offs, and the transference of Fourier
+  multipliers with operator-valued symbols from the line to the circle [HNVW, Sections 5.1–5.3, 5.7].
+- **Matrix-valued Hardy functions**: Jensen's inequality, outer functions, Szegő's theorem and the
+  factorization `W = BᴴB` for matrix-valued functions, analytic range functions [HL1, HL2], and
+  **Sarason's factorization** of `H¹`: `A = A₁A₂` with `A₂ᴴA₂ = (AᴴA)^{1/2}`, `A₁ᴴA₁ = A₂A₂ᴴ` [S].
+- **Paley's inequality in the Schatten classes** `S_p`, `1 ≤ p ≤ 2`, and the **noncommutative Khintchine
+  inequality**, along the route of Lust-Piquard and Pisier [LPP, Pi], with constants `1` and `C √q`.
+
+**Status: complete.** Every statement is proved, and no theorem takes an unproved result as a hypothesis.
+The [audit](scripts/Audit.lean) checks that every
 declaration of the library depends only on Lean's standard axioms ([`propext`](https://leanprover-community.github.io/mathlib4_docs/Init/Core.html#propext), [`Classical.choice`](https://leanprover-community.github.io/mathlib4_docs/Init/Prelude.html#Classical.choice),
 [`Quot.sound`](https://leanprover-community.github.io/mathlib4_docs/Init/Prelude.html#Quot.sound)): no `sorry`, no `axiom`, no `native_decide`. (The Challenge of the
 [Palomar entry](#palomar) states its theorems with `sorry`, by design; its Solution proves them.)
+The vector-valued part uses [BanachProbability](https://github.com/vltanh/lean4-banach-probability) (UMD
+constants; Schatten norms of real and complex matrices; type 2 of `S_q` and K-convexity; the
+contraction principle). Keys in brackets refer to
+[docs/REFERENCES.md](docs/REFERENCES.md).
 
 ## Main statements
+
+### Fourier multipliers, transference, the Beurling–Ahlfors transform
 
 `p' = p/(p−1)`. The `L^p` norms are `MeasureTheory.eLpNorm` with exponent `ENNReal.ofReal p`, and
 the operator norms are suprema in `ℝ≥0∞`.
@@ -52,8 +70,8 @@ the operator norms are suprema in `ℝ≥0∞`.
 | `Σ_j f(R(y+j)) = Σ_n R⁻² 𝓕f(n/R) e^{2πi⟨n,y⟩}` on `ℤ²`, for Schwartz `f` | [`hasSum_periodize`](HarmonicAnalysis/Torus/Poisson.lean#L270) | Poisson summation |
 | `R^{2/p} ‖Σ_n R⁻² 𝓕f(n/R) e_n‖_{L^p(𝕋²)} → ‖f‖_{L^p(ℝ²)}` as `R → ∞`, for Schwartz `f` (`1 ≤ p`) | [`tendsto_eLpNorm_tsum_fourier_mul_mFourier`](HarmonicAnalysis/Torus/Poisson.lean#L430) | [HNVW, Lemma 5.7.5] |
 | `Σ_n R⁻² φ(n/R) → ∫ φ` for `φ` continuous off `0`, `\|φ\| ≤ C(1+\|ξ\|)^{−3}` | [`tendsto_riemannSum_real`](HarmonicAnalysis/Transference/RiemannSum.lean#L94) | |
-| `‖T_m‖_{L^p(ℝ²)} ≤ liminf_j ‖T_{m(·/R_j)}‖_{L^p_0(𝕋²)}`, `R_j → ∞`, `m` continuous off `0` (`1 < p`) | [`multiplierNorm_le_liminf_torusMultiplierNorm`](HarmonicAnalysis/Transference/ContinuousSymbol.lean#L399) | [HNVW, Prop. 5.7.4] |
-| `m` is bounded if that `liminf` is finite | [`exists_norm_le_of_liminf_torusMultiplierNorm_ne_top`](HarmonicAnalysis/Transference/ContinuousSymbol.lean#L427) | |
+| `‖T_m‖_{L^p(ℝ²)} ≤ liminf_j ‖T_{m(·/R_j)}‖_{L^p_0(𝕋²)}`, `R_j → ∞`, `m` continuous off `0` (`1 < p`) | [`multiplierNorm_le_liminf_torusMultiplierNorm`](HarmonicAnalysis/Transference/ContinuousSymbol.lean#L402) | [HNVW, Prop. 5.7.4] |
+| `m` is bounded if that `liminf` is finite | [`exists_norm_le_of_liminf_torusMultiplierNorm_ne_top`](HarmonicAnalysis/Transference/ContinuousSymbol.lean#L430) | |
 | `‖T_m‖_{L^p(ℝ²)} ≤ ‖T_m‖_{L^p_0(𝕋²)}`, `m` homogeneous of degree `0`, continuous off `0` (`1 < p`) | [`multiplierNorm_le_torusMultiplierNorm`](HarmonicAnalysis/Transference/Homogeneous.lean#L53) | [HNVW, Cor. 5.7.6] (`I ≤ II`) |
 | `𝓑^k(∂̄^k F) = ∂^k F` for Schwartz `F`; the same for the `k`-fold iterate of `𝓑` | [`beurlingPow_dzbarCLM_pow`](HarmonicAnalysis/BeurlingAhlfors/Basic.lean#L91), [`beurlingPow_dzbar_iterate`](HarmonicAnalysis/BeurlingAhlfors/Basic.lean#L109), [`iterate_beurlingPow_one_dzbar_iterate`](HarmonicAnalysis/BeurlingAhlfors/Basic.lean#L116) | [D, p. 465]; [D-LN, §4.1, and Ex. 2.19 for `k = 1`] |
 | `‖v‖_p / ‖u‖_p ≤ ‖𝓑^k‖_p` if Schwartz `∂̄^k φ_j → u`, `∂^k φ_j → v` in `L^p` | [`div_le_beurlingPowNorm_of_tendsto`](HarmonicAnalysis/BeurlingAhlfors/Basic.lean#L132) | density; [D, p. 465]; [D-LN, Ex. 2.19, §4.1] |
@@ -71,8 +89,7 @@ the operator norms are suprema in `ℝ≥0∞`.
 | `h = ∂̄u`, `u` smooth periodic of mean zero, for smooth `ℤ²`-periodic `h` of mean zero | [`UnitAddTorus.exists_dzbarPi_eq`](HarmonicAnalysis/Torus/Smooth.lean#L866) | the symbol `(πiν)⁻¹` |
 | `𝓑(∂̄g) = ∂g` for smooth `ℤ²`-periodic `g` | [`periodicMultiplier_beurlingSymbol_dzbarPi`](HarmonicAnalysis/BeurlingAhlfors/Periodic.lean#L47) | comparison of coefficients |
 
-All names are in the namespace [`HarmonicAnalysis`](HarmonicAnalysis), except those prefixed by `UnitAddTorus`. Two of
-them in Lean:
+Two of them in Lean:
 
 ```lean
 theorem HarmonicAnalysis.multiplierNorm_le_torusMultiplierNorm {m : ℂ → ℂ}
@@ -86,10 +103,45 @@ theorem HarmonicAnalysis.beurlingKappa_two_le_beurlingPowNorm_two {p : ℝ} (hp 
 Here `beurlingKappa n p = (1/q)_n / (1/p)_n`, `1/q = 1 − 1/p`, with the Pochhammer symbol
 `(a)_n = a(a+1)⋯(a+n−1)`; `κ₂(p) = (p−1)(2p−1)/(p+1)`.
 
+### Vector-valued harmonic analysis
+
+`X` is a complex Banach space and `β` a `UMD_p` constant of `X` for real signs
+(`BanachProbability.IsUMDBound X p β`), `1 < p < ∞`; `ε_k` are independent fair signs; `e_n (t) = e^{2πi n t}`;
+[`eLpNormRad`](HarmonicAnalysis/VectorValued/RademacherNorm.lean#L52) is the norm of a Rademacher sum `Σ_k ε_k f_k` in `L^p` of the product with the signs; `circPoly c`
+is the trigonometric polynomial `Σ c_n e_n` with coefficients in a vector space ([`circPoly_eq_trigPoly`](HarmonicAnalysis/VectorValued/CircPoly.lean#L69): the
+scalar [`trigPoly`](HarmonicAnalysis/Defs.lean#L77), in dimension `1`); `C_p = S_p` are the Schatten classes of complex matrices, of every size.
+Matrices are finite; `H¹`, `H²` are the classes of matrix-valued functions on `𝕋` with entries in `L¹`, `L²` and
+vanishing Fourier coefficients of negative order. Equalities of functions on `𝕋` hold almost everywhere; an
+analytic polynomial has frequencies `≥ 0`. `A ∈ H²` is outer if the closure in `L²` of the functions
+`A (1 + P)`, `P` an analytic polynomial without constant term, contains a constant; left-outer if its transpose
+is outer. `Δ W` is the determinant of `W` on its range, and "`∫ log Δ W > −∞`" means that `log Δ W` is
+integrable.
+
+| Theorem | Lean | Source | Module |
+| --- | --- | --- | --- |
+| Dyadic averages on the line form a martingale on each unit interval; the parts `S_j`, `0 ≤ j < n`, of the dyadic shift with the kernel `h` or (5.19): `‖Σ_j ε_j S_j f‖_p ≤ 2β ‖f‖_p`, and `‖Σ_j S_j f‖_p ≤ 2β² ‖f‖_p` for (5.19) | [`martingale_dyadicAvg`](HarmonicAnalysis/VectorValued/Dyadic/Martingale.lean#L190), [`eLpNormRad_dyadicShift_le`](HarmonicAnalysis/VectorValued/Dyadic/Shift.lean#L181), [`eLpNorm_sum_dyadicShift_le`](HarmonicAnalysis/VectorValued/Dyadic/Shift.lean#L263) | [HNVW, Props 5.1.4, 5.1.5] | `VectorValued/Dyadic/Martingale`, `VectorValued/Dyadic/Shift` |
+| Averaging over translates gives a convolution: `∫_0^1 S_j (f (· + u)) (· − u) du = φ_{2^{−j}} * f`, `φ (x) = ∫ k (x + u) h (u) du` for a kernel `k`; hence `‖Σ_j ε_j φ_{2^{−j}} * f‖_p ≤ 2β ‖f‖_p` for `k = h`, and `‖Σ_j φ_{t 2^{−j}} * f‖_p ≤ 2β² ‖f‖_p` for `k` of (5.19) and `t > 0` | [`intervalIntegral_dyadicShift_translate`](HarmonicAnalysis/VectorValued/Dyadic/Average.lean#L344), [`eLpNormRad_dilateConv_le`](HarmonicAnalysis/VectorValued/Dyadic/Average.lean#L407), [`eLpNorm_sum_dilateConv_le`](HarmonicAnalysis/VectorValued/Dyadic/Average.lean#L477) | [HNVW, Lemma 5.1.9, Prop 5.1.10] | `VectorValued/Dyadic/Average` |
+| Hilbert transform: the truncations `H_{ε, 2^n ε}` are bounded on `L^p (ℝ; X)` by `4β² + 11`; their symbols are `−i sgn (ξ) m_{ε,R} (ξ)` with `\|m_{ε,R}\| ≤ 2`, `m_{ε,R} → 1`; hence `‖𝓕⁻ (sgn · G)‖_p ≤ (4β² + 11) ‖𝓕⁻ G‖_p` for `G ∈ L¹` | [`eLpNorm_truncatedHilbert_le`](HarmonicAnalysis/VectorValued/HilbertTransform/Truncated.lean#L606), [`truncatedHilbert_fourierInv`](HarmonicAnalysis/VectorValued/HilbertTransform/Fourier.lean#L415), [`abs_hilbertSymbol_le`](HarmonicAnalysis/VectorValued/HilbertTransform/Fourier.lean#L214), [`tendsto_hilbertSymbol`](HarmonicAnalysis/VectorValued/HilbertTransform/Fourier.lean#L242), [`eLpNorm_fourierInv_sign_le`](HarmonicAnalysis/VectorValued/HilbertTransform/Fourier.lean#L560) | [HNVW, Thm 5.1.13, Lemma 5.2.1, Prop 5.2.2] | `VectorValued/HilbertTransform/Truncated`, `VectorValued/HilbertTransform/Fourier` |
+| Littlewood–Paley on the line, for the intervals `(2^{k−1}, 2^k)`, `−(2^{k−1}, 2^k)`, `(−1, 1)`, `0 < k ≤ K`, and `f = 𝓕⁻ G`, `G ∈ L¹`: `‖Σ ε_k Δ_k f‖_p ≤ C_β ‖f‖_p` | [`eLpNormRad_fourierInv_indicator_le`](HarmonicAnalysis/VectorValued/LittlewoodPaley/Line.lean#L827), [`eLpNormRad_lineBlock_le`](HarmonicAnalysis/VectorValued/LittlewoodPaley/Line.lean#L1101) | [HNVW, Thm 5.3.24 and Cor 5.3.25, right-hand inequalities] | `VectorValued/LittlewoodPaley/Line` |
+| Transference (`X`, `Y` complex Banach spaces): let `m` be a bounded operator-valued symbol such that each `m (·) x` is strongly measurable and continuous at the integers; if `‖T_m h‖_p ≤ C ‖h‖_p` for Schwartz `h : ℝ → X`, then `‖Σ m (k) a_k e_k‖_{L^p (𝕋; Y)} ≤ C ‖Σ a_k e_k‖_{L^p (𝕋; X)}` for trigonometric polynomials | [`eLpNorm_circPoly_multiplier_le`](HarmonicAnalysis/VectorValued/Transference.lean#L1032); Lemmas 5.7.2, 5.7.3: [`tendsto_integral_dilate_multiplier`](HarmonicAnalysis/VectorValued/Transference.lean#L526), [`tendsto_eLpNorm_dilate_smul`](HarmonicAnalysis/VectorValued/Transference.lean#L288) | [HNVW, Prop 5.7.1 (`d = 1`)] | `VectorValued/Transference` |
+| Littlewood–Paley on the circle, for the dyadic blocks `Ĩ_k ⊂ ℤ`, `\|k\| ≤ K`, and trigonometric polynomials: `‖Σ ε_k Δ̃_k f‖_{L^p (Ω × 𝕋; X)} ≤ C_β ‖f‖_{L^p (𝕋; X)}` | [`eLpNormRad_dyadicBlock_le`](HarmonicAnalysis/VectorValued/LittlewoodPaley/Circle.lean#L388), [`eLpNormRad_dyadicBlock_succ_le`](HarmonicAnalysis/VectorValued/LittlewoodPaley/Circle.lean#L376) | [HNVW, Thm 5.7.10 (2), right-hand inequality] | `VectorValued/LittlewoodPaley/Circle` |
+| Jensen's inequality: `f ∈ L¹ (𝕋)` with `f̂ (k) = 0` for `k < 0` and `f̂ (0) ≠ 0` has `∫ log \|f\| ≥ log \|f̂ (0)\|`, and `log \|f\|` is integrable | [`log_norm_fourierCoeff_zero_le_integral_log_norm`](HarmonicAnalysis/Hardy/Jensen.lean#L471) | [HL1, Thm 2] (`𝕋`) | `Hardy/Jensen` |
+| For `A` with entries in `L²`, the innovation of the columns of `A`: `X` with `Xᴴ X = 1` and `Xᴴ A ∈ H²`; if `A ∈ H²`, `A = X (Xᴴ A)` and `Aᴴ A = Bᴴ B` with `B` outer and `B̂ (0)` surjective. The range of an outer `B` is a.e. that of `B̂ (0)`; the closure of `{B Q}` is the set of the functions of `H²` with range in it | [`exists_innovation`](HarmonicAnalysis/Hardy/Outer.lean#L725), [`exists_isOuter`](HarmonicAnalysis/Hardy/Outer.lean#L829), [`IsOuter.range_eq`](HarmonicAnalysis/Hardy/Outer.lean#L890), [`IsOuter.exists_tendsto_iff`](HarmonicAnalysis/Hardy/Outer.lean#L930) | [HL2, §9, Thms 9, 10] | `Hardy/Outer` |
+| For `W` positive definite a.e., with integrable entries and integrable `log det W`: `exp ((1/n) ∫ log det W) = inf ∫ (1/n) tr (e^Ψ W)` over the Hermitian trigonometric polynomials with `∫ tr Ψ = 0` | [`exp_integral_log_det_le_integral_exp`](HarmonicAnalysis/Hardy/GeometricMean.lean#L139), [`exists_integral_exp_circPoly_le`](HarmonicAnalysis/Hardy/GeometricMean.lean#L598) | [HL1, (59), Lemma 5] | `Hardy/GeometricMean` |
+| **Szegő's theorem** for a positive semidefinite `W` with integrable entries: `exp ((1/n) ∫ log det W)` is the infimum of `∫ (1/n) tr (Qᴴ W Q)`, `Q` an analytic polynomial, `det Q̂ (0) = 1` (zero unless `W` is positive definite a.e. with `log det W` integrable) | [`szegoInf_eq`](HarmonicAnalysis/Hardy/Szego.lean#L609), [`posDef_of_szegoInf_pos`](HarmonicAnalysis/Hardy/Szego.lean#L668) | [HL1, Thm 8] (absolutely continuous measures) | `Hardy/Szego` |
+| For such a `W`: it is positive definite a.e. with integrable `log det W` iff `W = Bᴴ B`, `B ∈ H²`, `det B̂ (0) ≠ 0`; then `B` can be chosen outer, with `∫ log \|det B\| = log \|det B̂ (0)\|` | [`exists_isOuter_of_integrable_log_det`](HarmonicAnalysis/Hardy/Szego.lean#L737), [`integrable_log_det_of_isHardyTwo`](HarmonicAnalysis/Hardy/Szego.lean#L764) | [HL1, Thm 9] | `Hardy/Szego` |
+| `A ∈ H²` square, `det Â (0) ≠ 0`, is outer iff `∫ log \|det A\| = log \|det Â (0)\|`; every analytic range function is the range of a left-outer function with isometric values; `W = A Aᴴ`, `A ∈ H²`, iff the range of `W` is analytic and `∫ log Δ W > −∞` (any rank) | [`isOuter_iff_integral_log_norm_det`](HarmonicAnalysis/Hardy/RangeFunction.lean#L312), [`IsAnalyticRange.exists_isometry`](HarmonicAnalysis/Hardy/RangeFunction.lean#L454), [`exists_mul_conjTranspose_eq_iff`](HarmonicAnalysis/Hardy/RangeFunction.lean#L638), [`isFactorable_iff`](HarmonicAnalysis/Hardy/RangeFunction.lean#L705) | [HL2, Thms 8, 12, 13]; [S, Lemma 10.1] | `Hardy/RangeFunction` |
+| **Riesz factorization**: every `A ∈ H¹` with values in the `m × n` matrices is `A₁ A₂` a.e., `A₁, A₂ ∈ H²`, `A₂ᴴ A₂ = (Aᴴ A)^{1/2}`, `A₁ᴴ A₁ = A₂ A₂ᴴ`; so `‖A₁‖²_{S_{2p}} = ‖A₂‖²_{S_{2p}} = ‖A‖_{S_p}` a.e., `0 < p < ∞` | [`exists_mul_eq_of_isHardyOne`](HarmonicAnalysis/Hardy/RieszFactorization.lean#L421), [`complexSchattenNorm_sq_of_factorization`](HarmonicAnalysis/Hardy/RieszFactorization.lean#L461) | [S, Thm 4] (finite dimension) | `Hardy/RieszFactorization` |
+| Paley's inequality: for `1 ≤ p ≤ 2` and every analytic polynomial `f = Σ c_k e_k` with `c_k ∈ M_n (ℂ)`, `c_{2^k} = a_k + b_k` with `‖(Σ a_k a_kᴴ)^{1/2}‖_{S_p} + ‖(Σ b_kᴴ b_k)^{1/2}‖_{S_p} ≤ M ∫ ‖f‖_{S_p}`, `M` absolute | [`paley_schatten`](HarmonicAnalysis/Paley/Schatten.lean#L781); (α), (β): [`exists_mul_eq_integral_complexSchattenNorm_eq`](HarmonicAnalysis/Paley/Schatten.lean#L766) | [LPP, Thm III.1 (i)] for the Paley projection, and [LPP, Thm II.1 a) (i)] without its constant | `Paley/Schatten` |
+| The lower Khintchine inequality, `1 ≤ p ≤ 2`: `A_k = a_k + b_k` with `‖(Σ a_k a_kᴴ)^{1/2}‖_{S_p} + ‖(Σ b_kᴴ b_k)^{1/2}‖_{S_p} ≤ M E ‖Σ ε_k A_k‖_{S_p}`, `M` absolute | [`rademacher_schatten_le`](HarmonicAnalysis/Paley/Rademacher.lean#L101) | [LPP, Cor III.4] (`1 < p < 2`) and [LPP, Thm 0.1] (`p = 1`), with signs; [Pi, (8.4.4)] | `Paley/Rademacher` |
+| **Noncommutative Khintchine inequality**: an absolute `C` such that for all `2 ≤ q < ∞` and real matrices `x_k` of any size, with `m = max (‖(Σ x_kᵀ x_k)^{1/2}‖_{S_q}, ‖(Σ x_k x_kᵀ)^{1/2}‖_{S_q})`, `m ≤ ‖Σ ε_k x_k‖_{L_q (Ω; S_q)} ≤ C √q m`; for normal `x_k` with the one square function | [`ncKhintchine`](HarmonicAnalysis/NoncommutativeKhintchine.lean#L251), [`ncKhintchine_of_normal`](HarmonicAnalysis/NoncommutativeKhintchine.lean#L267) | Lust-Piquard (1986); [LPP]; [Pi, Thm 8.4.1 (i), (8.4.5)] | `NoncommutativeKhintchine` |
+
+All names are in the namespace [`HarmonicAnalysis`](HarmonicAnalysis), except those prefixed by `UnitAddTorus`.
+
 ## Palomar
 
 The entry [`palomar/FourierMultipliers/`](palomar/FourierMultipliers) states the headline theorems for
-the [Palomar registry](https://palomar-registry.org). It is not submitted yet.
+the [Palomar registry](https://palomar-registry.org), for the scalar part. It is not submitted yet.
 
 | File | Content |
 | --- | --- |
@@ -105,6 +157,10 @@ for the `k`-fold iterate of `𝓑`;
 bound with `p*`, and `‖𝓑²‖_p > p* − 1`.
 
 ## Method
+
+The proofs follow the sources; the module docstrings say where they depart.
+
+### Fourier multipliers, transference, the Beurling–Ahlfors transform
 
 - **Dragičević's lower bound** follows his proof [D, pp. 466–467], which [D-LN, Prop. 4.2] repeats,
   with his test functions `f_{2,α}(z) = z² |z|^{−2α} g₂(|z|)` (here `0 < α < 1/p`, and his example of a
@@ -145,24 +201,89 @@ bound with `p*`, and `‖𝓑²‖_p > p* − 1`.
   identities (`T_m T_{m'} = T_{mm'}`, `T_m ∂_v`, `∂̄ T_{(πiν)⁻¹} h = h`, `𝓑(∂̄g) = ∂g`) from
   comparing coefficients.
 
+### Vector-valued harmonic analysis
+
+1. *Dyadic shifts and the Hilbert transform* [HNVW, Section 5.1]. The UMD property bounds the Haar
+   projections with random signs, hence the dyadic shifts; averages over translates and dilates of the
+   dyadic system are convolutions, and `∫_ε^R φ_t * f dt/t` is a truncated Hilbert transform up to two
+   error terms; its Fourier symbol is computed by Cauchy's theorem (Lemma 5.2.1).
+2. *Littlewood–Paley on the line and on the circle* [HNVW, Sections 5.3, 5.7]. Intervals from the
+   Hilbert transform, a randomised multiplier bound for `1_I / φ̂_I` (Lemmas 5.3.21–5.3.23), the bounds of
+   step 1; transference by duality (Proposition 5.7.1, the direction from `ℝ` to `𝕋`), with the book's dilation
+   that moves the dyadic points off the integers.
+3. *Outer functions* [HL2, §§9–10]. For a matrix-valued function `A` with entries in `L²`, the closed span
+   `M_k` of the columns of `A e_j`, `j ≥ k`; an orthonormal basis of the innovation `M_0 ⊖ M_1` is a function
+   `X` with `Xᴴ X = 1`, because the Fourier coefficients of `Xᴴ X` of order `≠ 0` vanish, and `B = Xᴴ A` is
+   analytic. For `A ∈ H²` there is no remote past, `A = X B`, and the functions `B Q` are dense in `H²`.
+4. *Szegő's theorem* [HL1]. Jensen's inequality from the scalar case of the infimum (Theorem 2);
+   `exp ((1/n) ∫ log det W)` as an infimum over Hermitian trigonometric polynomials (Lemma 5); `e^Ψ = Q Qᴴ`
+   with `Q` bounded and analytic, by step 3 and Jensen's inequality for `det Q` and `det Q⁻¹` ((68)); then Fejér
+   means. Theorem 9: if `log det W` is integrable, the infimum is positive, the innovation of `W^{1/2}` has full
+   rank, and `W = Bᴴ B`.
+5. *Range functions and Sarason's factorization* [HL2, §§10–11; S, §10]. An analytic range function is the
+   range of an analytic isometry `V` (Theorem 12); `W = V (Vᴴ W V) Vᴴ` reduces the factorization of `W` to
+   full rank (Theorem 13). If `A ∈ H¹` is bounded, `Aᴴ A` satisfies the conditions of Theorem 13, hence so does
+   `(Aᴴ A)^{1/2}`, which is `A₂ᴴ A₂` with `A₂` outer; `A₁ = J A₂ᴴ`, with the partial isometry `J` of the
+   polar decomposition, is analytic because `A₂` is outer. The general case by a scalar outer function.
+6. *Paley* [LPP, pp. 249–253]. `f = g h` with `‖f‖_{L¹ (C_p)} = ‖g‖_{L² (C_{2p})} ‖h‖_{L² (C_{2p})}`; the coefficient of
+   order `2^k` is split at `2^{k−1}`; Jensen's inequality in `C_p (ℓ²_R)` and `C_p (ℓ²_L)`, Hölder's inequality, (I.7)
+   and step 2 for the UMD space `C_{2p}`.
+7. *Khintchine* [LPP, pp. 243, 246–248, 254–255; Pi, p. 106]. The lower bound is (I.7). For the upper bound:
+   averaging over signs, duality of rows and columns, and the Rademacher projection on
+   `L_{q'} (S_{q'})`, bounded by a multiple of `√q` because `S_q` has type 2 with constant at most `√(q + 1)`
+   (BanachProbability, after Tomczak-Jaegermann and [HNVW II]).
+
+| Source | Used for | Departures and completions |
+| --- | --- | --- |
+| [HNVW], [HNVW II] | I, Sections 5.1–5.3, 5.7; Props 1.2.22, 1.3.1, 3.2.10, Lemma 2.4.8; II, Thm 6.1.13 | finitely many generations; the bounds are uniform in the truncation and the limit is taken on the Fourier side by Fatou's lemma, instead of the convergence of the averaged shifts in `L^p` (Lemmas 5.1.8, 5.1.12); the random dyadic systems are translates of the standard one; the randomised UMD property is used directly on unit intervals instead of Theorem 4.2.13; for the left half of Prop 5.1.5, the martingale of the shifts; real signs, so the contraction principle costs a factor; Lemma 5.3.21 only for scalar weights equal up to dilation, with the `L¹` norm of the derivative; in Cor 5.3.25 the signs `±` are split first, by reflection; continuity at the integers instead of Lebesgue points in Prop 5.7.1; Minkowski's inequality by a weighted Jensen inequality |
+| [HL1] | Theorem 2, (58), (59), Lemma 5, Lemma 6, (68), Theorem 8 for absolutely continuous measures, Theorem 9 | columns instead of rows and the usual trace; the space `L²_W` is realized in `L²` by `W^{1/2}`; the limiting process for `∫ log det W = −∞` is carried out once, for the infimum of Theorem 8 (in Theorem 2, for the inequality itself); in Lemma 5 the one of the truncations `min (u, n)`, `min (v, n)` with the larger integral is scaled, since for these the source's "there is an `m`" fails when the positive part is bounded and the negative part is not; Fejér means along a subsequence that converges almost everywhere; in (23) bounded instead of continuous analytic functions; `B` is determined up to a constant unitary factor, so `det Q̂ (0) = 1` by a constant of modulus `1` |
+| [HL2] | §9, Theorems 8, 9, 10, 12, 13 | columns instead of rows, transposition instead of `Ã (e^{ix}) = A (e^{−ix})*`; that `B` has full rank from the density of the functions `B Q` (the source, p. 207, by contradiction); in Theorem 8 the infimum (44) is computed from the limit `A₀`, not from the element of smallest norm; Theorem 12 with isometries (partial isometries in the statement); in the necessity of Theorem 13, `V` is an isometry, not shown to be left-outer (the source says this is true but not easy to prove, p. 208), and the integrability is that of [HL1, Thm 9], not Theorem 8; (131) lacks two logarithms |
+| [S] | §10: Theorem 4, Lemmas 10.1, 10.3, 10.4 | finite dimension (Lemmas 10.2 and 10.5 are not included); Lemma 10.3, quoted from Helson's book in the source, from [HL2, §§9–10]; "conjugate analytic", not defined there, is defined; the partial isometry `J` by an explicit formula, which makes it measurable; Szegő's theorem and the quotient by an outer function, quoted from Hoffman's book in the source, from [HL1, Thm 9] and the argument of Theorem 4; the norm of `A (z)` in the weight is the sum of the `\|a_{ij}\|` |
+| [LPP] | Theorem III.1 (i), Corollary III.4, pp. 254–255, (I.1)–(I.3) (trace form), (I.5), (I.7), the dualities of p. 246, (I.12), first half | (III.3) on average over the signs, from [HNVW, Thm 5.7.10], instead of Bourgain's theorem for every choice of signs; [LPP] recall that `C_{2p}` is UMD, with Cotlar's trick as a known argument: the fact is proved in BanachProbability by Randrianantoanina's theorem; `H²` is defined by the vanishing of the Fourier coefficients; `p = 1` by the proof of Theorem III.1; the maximum of the two norms in place of the norm of `C_q (ℓ²_S)`; real matrices in the final theorem |
+| [Pi] | pp. 105–106, `√q` | the type 2 constant for all `q ≥ 2` (the source has even `q`) |
+
+Not consulted: Hoffman's *Banach spaces of analytic functions* and Helson's *Lectures on invariant
+subspaces* (cited in [S]), Wiener (1955), Lust-Piquard (1986), Bourgain (1986).
+
 ## Planned extensions
 
 - Dragičević's bound for every `n`: `‖𝓑^n‖_p ≥ κ_n(p)` (`n = 1` is Lehto's `‖𝓑‖_p ≥ p* − 1`).
-- General dimension: `EuclideanSpace ℝ (Fin d)` and `UnitAddTorus (Fin d)`.
+- General dimension: `EuclideanSpace ℝ (Fin d)` and `UnitAddTorus (Fin d)`; also for the vector-valued part.
 - The other inequalities of [HNVW, Cor. 5.7.6]: `‖T_m‖_{L^p_0(𝕋²)} ≤ ‖T_m‖_{L^p(𝕋²)} ≤ ‖T_m‖_{L^p(ℝ²)}`.
+- From [HNVW], vector-valued: the dyadic shifts for all generations and all admissible kernels, and their
+  convergence; the Hilbert transform as a limit in `L^p`; the extension of the inequalities on the line from
+  `𝓕⁻ L¹ ∩ L^p` to `L^p (ℝ; X)`, and from finite to infinite Littlewood–Paley sums (with the intervals inside
+  `(−1, 1)`); the left-hand Littlewood–Paley inequalities and the operator-valued statement of Theorem
+  5.7.10 (1); Mihlin's theorem (5.3.18) and the Marcinkiewicz theorem; complex Rademacher variables.
+- From [HL1], [HL2] and [S]: the singular part of a matrix-valued measure in [HL1, Thm 8]; [HL2, corollary of
+  Thm 10, Thms 11, 14–17]; Lemmas 10.2 and 10.5 of [S] (infinite dimension).
+- From [LPP]: the easy inequality (I.14) in Corollary III.4, the constant `1 + √2` and the other parts of
+  Theorem II.1, Corollaries 0.2 and 0.4, general `H¹–ℓ²` multipliers, Theorem III.1 (ii)–(iii), III.5–III.7,
+  the appendix, general `C_E`, infinite dimension; complex and rectangular matrices in the Khintchine
+  inequality.
 
 ## Shorter proofs
 
-Arguments shorter than the sources' that the proofs here do not use:
+Shorter arguments than the sources' are in [docs/SHORTER_PROOFS.md](docs/SHORTER_PROOFS.md), with their
+scope and status. The main ones:
 
-- [HNVW, Cor. 5.7.6], `I ≤ II`: the torus series with coefficients `R⁻² m(n) 𝓕f(n/R)`, `n ≠ 0`, at `x/R` are, up to the term `n = 0`, Riemann sums of `T_m f(x)`, and Fatou's lemma concludes, with no second test function, duality or density on `ℝ²`; the torus bound is extended to absolutely summable coefficients instead. This is Igari's proof of his Theorem 2 [I], there for `f ∈ C_c^∞(ℝ)` and the full norm on `𝕋`; here for Schwartz `f` and mean-zero polynomials (the library's proof at commit `bf215c5`, replaced since).
-- [HNVW, Prop. 5.7.4]: `g` can be any Schwartz function, since `m 𝓕f 𝓕⁻¹g` is already continuous with compact support and the mean of the (then infinite, absolutely convergent) sum `Σ_n 𝓕g(n/R) e_n` plays no role; this removes the density step for `g` and the correction on norming (on paper).
-- [HNVW, Prop. 2.4.23 (ii)]: `‖h‖_p ≤ ‖h‖_1^{1/p} ‖h‖_∞^{1−1/p}` gives the `L^p` limits from `‖𝓕f_j − 𝓕f‖_1 → 0` and `‖ϕ_t ∗ f‖_1 ≤ ‖ϕ‖_1 ‖f‖_1` (on paper).
+| Result | Shorter proof | Status |
+| --- | --- | --- |
+| transference `𝕋² → ℝ²` [HNVW, Cor. 5.7.6] | Riemann sums and Fatou's lemma (Igari) | Lean, in the history at `bf215c5` |
+| Littlewood–Paley on `𝕋` [HNVW, Thm 5.7.10], transference | a cut-off with compactly supported Fourier transform (the argument of [HNVW, Prop. 5.2.5]), exact for multipliers locally constant at the frequencies | Lean, in the history at `d0d081b` |
+| the factorization `f = g h` in Paley's inequality | [BX, Thms 3.1, 3.4] for analytic polynomials, with `‖h‖²_{S_{2p}} ≤ ‖f‖_{S_p} + δ`: 762 lines in place of about 5 600 | Lean, in the history at `3ecee00` |
+| [HL1, Thms 8, 9] | Jensen's inequality for the determinants of the Fejér means, without Lemmas 4–5 and (68) | on paper |
+| [LPP, (III.3)] | the UMD inequality itself, on `𝕋ⁿ` with independent unimodular variables in place of `e^{i 2^k t}` | on paper |
+| noncommutative Khintchine, upper bound | exchangeable pairs (Mackey–Jordan–Chen–Farrell–Tropp), constant `√(2 (q − 1))` | Lean, `BanachProbability.ncKhintchine_upper` |
+| Paley and the lower Khintchine inequality for `p = 1` | any factorization in `L² (S_2)` and nested orthogonal projections (Fournier) | on paper |
 
 ## Literature
 
-As of 22 November 2026; preprints are reported as claimed. Keys in brackets are in the
-[References](#references).
+As of 22 November 2026; preprints are reported as claimed. Keys in brackets are in
+[docs/REFERENCES.md](docs/REFERENCES.md), as are the full references of the articles linked in the table
+of the vector-valued part.
+
+### Fourier multipliers and the Beurling–Ahlfors transform
 
 - **Transference.** Restriction from `ℝ` to `𝕋` is de Leeuw's [dL, Prop. 3.3]. The converse used
   here, `‖m‖_{M_p(ℝ)} ≤ lim_{λ→0} ‖(m(λn))_n‖_{M_p(ℤ)}`, is Igari's ([I, Thm 2], for `1 ≤ p ≤ 2`, by
@@ -197,11 +318,54 @@ As of 22 November 2026; preprints are reported as claimed. Keys in brackets are 
   MathComp-Analysis and HOL Light have no multiplier theory that we found.
 - **Transference elsewhere in Lean.** Magyar–Stein–Wainger's transference from `ℝ` to `ℤ`, for
   variation norms, is in
-  [PALOMAR-2026-11-17-000007](https://palomar-registry.org/entry?id=PALOMAR-2026-11-17-000007&version=1).
+  [PALOMAR-2026-11-17-000007](https://palomar-registry.org/entry?id=PALOMAR-2026-11-17-000007&version=1);
+  `L^p` transference from `ℝ^d` to `𝕋^d` for scalar symbols, up to a constant (18 November 2026), in
+  [matthewrosenzweigwork-max/Riesz-Gases](https://github.com/matthewrosenzweigwork-max/Riesz-Gases).
 - **New here, as far as we found:** `L^p` transference of Fourier multipliers from the torus to `ℝ²`;
   lower bounds for `‖𝓑²‖_p`; the isometric duality `‖T_m‖_p = ‖T_m‖_{p'}`; the `L^p` asymptotics of
   periodisations [HNVW, Lemma 5.7.5] and the density of the Schwartz functions with Fourier transform
   in `C_c^∞(ℝ^d∖{0})` [HNVW, Prop. 2.4.23 (ii)]; the corrections to HNVW listed under Method.
+
+### Vector-valued harmonic analysis
+
+`β` is the UMD constant of `X` (real signs), `ħ` the norm of the Hilbert transform on `L^p (ℝ; X)`.
+
+| Result | Origin | Later; state of the question |
+| --- | --- | --- |
+| Hilbert transform, UMD spaces | scalar: [M. Riesz (1928)](https://doi.org/10.1007/BF01171098); UMD ⇒ bounded, `ħ ≤ β²`: [Burkholder (1983)](https://doi.org/10.1007/978-1-4419-7245-3_26); bounded ⇒ UMD, `β ≤ ħ²`: [Bourgain (1983)](https://doi.org/10.1007/BF02384306); by transformations of the Haar system: [Figiel (1991)](https://doi.org/10.1017/cbo9780511662317.010), [Petermichl (2000)](https://doi.org/10.1016/s0764-4442%2800%2900162-2), [Petermichl–Pott (2003)](https://doi.org/10.1090/s0002-9939-03-06925-9), [Hytönen (2008)](https://doi.org/10.1016/j.crma.2008.09.021) | both quadratic bounds are sharp up to constants, according to [Lorist–van Neerven (2026)](https://arxiv.org/abs/2609.10444), preprint; linear comparison with a dyadic operator: Domelevo–Petermichl ([2022](https://arxiv.org/abs/2212.00090), [2023](https://arxiv.org/abs/2303.12480), [2026](https://arxiv.org/abs/2604.11273)), preprints |
+| Littlewood–Paley, UMD spaces | scalar, on the circle: Littlewood–Paley ([1931](https://doi.org/10.1112/jlms/s1-6.3.230), [1936](https://doi.org/10.1112/plms/s2-42.1.52)); UMD: [McConnell (1984)](https://doi.org/10.1090/s0002-9947-1984-0752501-x), [Bourgain (1986)](https://zbmath.org/?q=an:0602.42015) | operator-valued symbols: [Weis (2001)](https://doi.org/10.1007/PL00004457); on the circle: [Arendt–Bu (2002)](https://doi.org/10.1007/s002090100384); monograph: [HNVW I (2016)](https://doi.org/10.1007/978-3-319-48520-1) |
+| Transference `ℝ → 𝕋` | [de Leeuw (1965)](https://doi.org/10.2307/1970621) | operator-valued symbols: see [HNVW I (2016)](https://doi.org/10.1007/978-3-319-48520-1), Prop 5.7.1 |
+| Szegő and Riesz factorization | scalar: [Szegő (1921)](https://doi.org/10.1007/bf01459407), [F. Riesz (1923)](https://doi.org/10.1007/bf01192397); matrices: [Wiener (1955)](https://doi.org/10.1007/bf02564273), [Wiener–Masani (1957)](https://doi.org/10.1007/BF02404472), Helson–Lowdenslager ([1958](https://doi.org/10.1007/bf02392425), [1961](https://doi.org/10.1007/BF02545786)); operators: [Devinatz (1961)](https://doi.org/10.2307/1970313), [Sarason (1967)](https://doi.org/10.1090/s0002-9947-1967-0208383-8) | subdiagonal algebras: [Arveson (1967)](https://doi.org/10.2307/2373237), [Marsalli–West (1998)](https://zbmath.org/?q=an:1001.46041); outer factorization for `log \|f\|` integrable: [Blecher–Labuschagne (2008)](https://doi.org/10.1090/S0002-9947-08-04506-6); all `0 < p ≤ ∞`: [Bekjan–Xu (2009)](https://arxiv.org/abs/0705.1947) |
+| Paley's inequality | [Paley (1933)](https://doi.org/10.2307/1968183); vector-valued, including `S_1`: [Blasco–Pełczyński (1991)](https://doi.org/10.1090/s0002-9947-1991-0979957-5); with the row-plus-column norm in `S_p`: [LPP (1991)](https://doi.org/10.1007/BF02384340) | `p = 1` without analytic factorization: [Fournier (2014)](https://arxiv.org/abs/1407.2578), preprint; discrete groups: [Chuah–Han–Liu–Mei (2022)](https://doi.org/10.1007/s00041-022-09971-1) |
+| Noncommutative Khintchine | `1 < p < ∞`: [Lust-Piquard (1986)](https://zbmath.org/?q=an:0592.47038); `p = 1`: [LPP (1991)](https://doi.org/10.1007/BF02384340); order `√q`: implicit in LPP, explicit in [Pisier (1998)](https://www.numdam.org/item/AST_1998__247__R1_0/) and, independently, [Junge (1996)](docs/REFERENCES.md); best possible: [Pisier–Xu (2003)](https://doi.org/10.1016/s1874-5849%2803%2980041-4) | best constants at even `q`: Buchholz ([2001](https://doi.org/10.1007/PL00004425), [2005](https://doi.org/10.4064/ba53-3-9)); `√(q − 1)` for Hermitian matrices, `q = 2` or `q ≥ 3`: [Mackey et al. (2014)](https://doi.org/10.1214/13-AOP892); `p = 1`, best constant for `e^{i 2^n t}`: [Haagerup–Musat (2007)](https://doi.org/10.1016/j.jfa.2007.05.014), for signs claimed by [Chuah–Liu–Mei (2026)](https://arxiv.org/abs/2503.03187v4), preprint; `p < 1`: [Pisier–Ricard (2017)](https://doi.org/10.1017/s1474748015000353); interpolation spaces: [Cadilhac (2019)](https://doi.org/10.1016/j.aim.2019.06.002) |
+| Type 2 of `S_q`, K-convexity (from BanachProbability) | [Tomczak-Jaegermann (1974)](https://zbmath.org/?q=an:0282.46016); [Maurey–Pisier (1976)](https://doi.org/10.4064/sm-58-1-45-90) | optimal 2-uniform smoothness: [Ball–Carlen–Lieb (1994)](https://doi.org/10.1007/BF01231769); K-convex ⇔ non-trivial type: [Pisier (1982)](https://doi.org/10.2307/1971396) |
+
+### Related formalizations of the vector-valued part
+
+Searched on 22 November 2026: GitHub repository and code search (Lean, Isabelle, Rocq, HOL Light, HOL4), the
+Mathlib source, the Palomar registry, the Archive of Formal Proofs, the Lean Zulip archive, arXiv. Third-party
+code was read as text (documentation and statements); none of it was built or audited. The projects are in
+Lean 4 unless said otherwise.
+
+| Project | Overlap | Not seen there |
+| --- | --- | --- |
+| [TauCetiProject/TauCeti](https://github.com/TauCetiProject/TauCeti) | for values in complex Hilbert spaces: Mihlin–Hörmander (operator-valued symbols in finite dimension), Riesz and Hilbert transforms on `L^p`, both Littlewood–Paley inequalities with smooth cut-offs; `H²` of `ℂ^r`-valued functions, block Toeplitz operators; type and cotype of Hilbert spaces; `p* − 1` for signed scalar Haar sums | UMD spaces, sharp cut-offs, transference, factorization, Khintchine in `S_q` (a target with `sorry` in [TauCetiRoadmap](https://github.com/TauCetiProject/TauCetiRoadmap)) |
+| [elorist/UMD_Hilberttransform](https://github.com/elorist/UMD_Hilberttransform) | Hilbert and UMD constants of explicit `2^n`-dimensional spaces, `p = 2`; dyadic reduction of the UMD constant at `p = 2`; scalar Hilbert transform on `L^{3/2}`, `L³`, `L⁴` | the Hilbert transform on a general UMD space; the comparison for `p ≠ 2` |
+| [tchen-research/NLAlib](https://github.com/tchen-research/NLAlib) | Khintchine's upper bound in `S_{2p}`, `p ∈ ℕ`, with `√(2p − 1)`, for complex Hermitian matrices, signs or Gaussians; 2-uniform smoothness of `S_{2r}` | other exponents, non-Hermitian matrices, the lower bound, `p < 2` |
+| [xf-shi/Tensor_Norm](https://github.com/xf-shi/Tensor_Norm), [BuxinSu/LearningTheoryFormalizations](https://github.com/BuxinSu/LearningTheoryFormalizations) | an `L¹` Khintchine inequality for Haar unitary coefficients, with the row-plus-column norm; matrix Khintchine in operator norm with `√log` of the dimension | signs (first); dimension-free constants (second) |
+| [openai/math](https://github.com/openai/math) | type `p > 1` ⇒ K-convex (Pisier's theorem); scalar Littlewood–Paley estimates | the constant from type 2 |
+| [SHW715/HardySpace_formalization](https://github.com/SHW715/HardySpace_formalization), [michael-haufschild-gib/hgt](https://github.com/michael-haufschild-gib/hgt), [bjbraams/lean-CA](https://github.com/bjbraams/lean-CA) | Hardy spaces of the disc; canonical, inner–outer and Riesz factorization of scalar functions | matrix-valued factorization |
+| [matthewrosenzweigwork-max/Riesz-Gases](https://github.com/matthewrosenzweigwork-max/Riesz-Gases) | `L^p` transference from `ℝ^d` to `𝕋^d` for scalar symbols, up to a constant | operator-valued symbols, the same norm |
+| [roos-j/lean-variationalsw](https://github.com/roos-j/lean-variationalsw), [LeanPool/lean-pool](https://github.com/LeanPool/lean-pool), [fpvandoorn/carleson](https://github.com/fpvandoorn/carleson), [janbernloehr/diss-lean](https://github.com/janbernloehr/diss-lean) | Littlewood–Paley, scalar and `ℓ²`-valued (lean-variationalsw); scalar Hilbert transform (`L²`, weak type `(1, 1)`); discrete Hilbert transform on `ℓ^p` | values in general Banach or UMD spaces, random signs, sharp cut-offs |
+| Mathlib | Fourier multipliers on Schwartz functions and tempered distributions, singular values | Hilbert transforms, UMD spaces, Hardy spaces, Schatten norms, Khintchine's inequality, Littlewood–Paley theory |
+| [Archive of Formal Proofs](https://www.isa-afp.org) (Isabelle), [MathComp-Analysis](https://github.com/math-comp/analysis) (Rocq), [HOL Light](https://github.com/jrh13/hol-light), [HOL4](https://github.com/HOL-Theorem-Prover/HOL) | Fourier series, martingales, the Hardy–Littlewood maximal function | all the results above |
+
+Not found elsewhere in these searches: the Hilbert transform and the (right-hand) Littlewood–Paley inequality for
+general UMD spaces; dyadic shifts on UMD spaces; transference of operator-valued multipliers with the same norm;
+Szegő's theorem and the Szegő and Riesz factorization of matrix-valued functions; Paley's inequality, scalar or in the
+Schatten classes; the lower Khintchine inequality in `S_p` for signs and `1 ≤ p ≤ 2`; the two-sided inequality for
+all real `q ≥ 2` and real matrices that need not be symmetric (also in BanachProbability, with another proof of the
+upper bound).
 
 ## Using it from another Lake project
 
@@ -213,8 +377,10 @@ rev = "<commit>"
 ```
 
 Then import the modules you need, for instance `public import HarmonicAnalysis.BeurlingAhlfors.LowerBound`,
-or `import HarmonicAnalysis` for everything. The package requires Lean and Mathlib `v4.36.0-rc2`;
-your project should use the same Mathlib version.
+or `import HarmonicAnalysis` for everything. The package requires Lean and Mathlib `v4.36.0-rc2`
+(your project should use the same Mathlib version) and
+[BanachProbability](https://github.com/vltanh/lean4-banach-probability), at the commit in the
+[lakefile](lakefile.toml), which only the vector-valued modules import.
 
 ## Building
 
@@ -235,66 +401,18 @@ lake env lake comparator --config=palomar/FourierMultipliers/comparator.json
 | [`HarmonicAnalysis/FourierMultiplier/`](HarmonicAnalysis/FourierMultiplier) | `Basic` ([`fourierMultiplier`](HarmonicAnalysis/Defs.lean#L56), [`multiplierNorm`](HarmonicAnalysis/Defs.lean#L61), density), `Density` (mollifiers, the Schwartz functions with Fourier transform supported off `0`), `Norming` (`L^p` norms by Schwartz test functions), `Duality`, `Extension` (`T_m` as an operator on `L^p`) |
 | [`HarmonicAnalysis/Torus/`](HarmonicAnalysis/Torus) | `Cube` (periodic functions, the unit cube, `𝕋² ↔ ℂ`), `Lattice` (the lattice `ℤ + iℤ`, the tiling of `ℂ` by cells, periodic functions on `𝕋²`), `TrigPoly` (trigonometric polynomials, [`torusMultiplierNorm`](HarmonicAnalysis/Defs.lean#L88), orthogonality), `Poisson` (periodisation, Poisson summation on `ℤ²`, the `L^p` norms of the periodisations), `Lipschitz` (Fourier coefficients over the unit cube, Parseval, derivatives of Lipschitz periodic functions), `Smooth` (smooth periodic functions: rapid decay, Fourier series, multipliers `T_m`, Wirtinger derivatives, `∂̄⁻¹`) |
 | [`HarmonicAnalysis/Transference/`](HarmonicAnalysis/Transference) | `RiemannSum`, `ContinuousSymbol` (symbols continuous off `0`), `Homogeneous` (symbols homogeneous of degree `0`) |
-| [`HarmonicAnalysis/BeurlingAhlfors/`](HarmonicAnalysis/BeurlingAhlfors) | `Basic` (symbol, `𝓑^k`, `𝓑^k ∂̄^k = ∂^k`, density), `Duality`, `TestFunctions` (Dragičević's `f_{2,α}`; with `TestFunctions/Profile`, one-variable calculus, and `TestFunctions/Approx`, its Schwartz approximations), `LowerBound` (Dragičević, `n = 2`), [`Transference`](HarmonicAnalysis/Transference) (`𝓑^k` on `𝕋²`), `Periodic` (`𝓑` on smooth periodic functions) |
+| [`HarmonicAnalysis/VectorValued/`](HarmonicAnalysis/VectorValued) | `CircPoly` (trigonometric polynomials on the circle), `RademacherNorm`, `Dyadic/` (martingales, shifts, averages), `HilbertTransform/` (truncations, the symbol), [`Transference`](HarmonicAnalysis/VectorValued/Transference.lean) (`ℝ → 𝕋`), `LittlewoodPaley/` (line, circle) |
+| [`HarmonicAnalysis/Hardy/`](HarmonicAnalysis/Hardy) | `Basic` (`H²`, Fourier coefficients), `Approximation` (`H¹`, Fejér means, products), `FunctionalCalculus` (functions of Hermitian functions), `GeometricMean`, `Jensen`, `Outer`, `Szego`, `RangeFunction`, `RieszFactorization` |
+| [`HarmonicAnalysis/Paley/`](HarmonicAnalysis/Paley), [`HarmonicAnalysis/NoncommutativeKhintchine.lean`](HarmonicAnalysis/NoncommutativeKhintchine.lean) | Paley's inequality in the Schatten classes, its form for signs, the noncommutative Khintchine inequality |
+| [`HarmonicAnalysis/BeurlingAhlfors/`](HarmonicAnalysis/BeurlingAhlfors) | `Basic` (symbol, `𝓑^k`, `𝓑^k ∂̄^k = ∂^k`, density), `Duality`, `TestFunctions` (Dragičević's `f_{2,α}`; with `TestFunctions/Profile`, one-variable calculus, and `TestFunctions/Approx`, its Schwartz approximations), `LowerBound` (Dragičević, `n = 2`), [`Transference`](HarmonicAnalysis/BeurlingAhlfors/Transference.lean) (`𝓑^k` on `𝕋²`), `Periodic` (`𝓑` on smooth periodic functions) |
 | [`palomar/FourierMultipliers/`](palomar/FourierMultipliers) | the Palomar entry |
+| [`docs/`](docs) | references, shorter proofs |
 | [`scripts/`](scripts) | [`Audit.lean`](scripts/Audit.lean) (the axiom audit), [`sync_challenge_defs.py`](scripts/sync_challenge_defs.py) (the Challenge's copy of the definitions), [`check_md_tables.py`](scripts/check_md_tables.py), and tools for checking files and statements |
-| [`.github/workflows/`](.github/workflows) | CI: build, audit, import list of the audit, the Challenge's copy of the definitions, Markdown tables, line lengths; Palomar's preflight, run by hand |
+| [`.github/workflows/`](.github/workflows) | CI: build, audit, import list of the audit, the Challenge's copy of the definitions, the links of the documents, Markdown tables, line lengths; Palomar's preflight, run by hand |
 
 ## References
 
-- [HNVW] T. Hytönen, J. van Neerven, M. Veraar, L. Weis, *Analysis in Banach Spaces, Volume I*,
-  Ergebnisse der Mathematik 63, Springer, 2016,
-  [doi:10.1007/978-3-319-48520-1](https://doi.org/10.1007/978-3-319-48520-1): Lemma 1.2.30,
-  Proposition 1.2.32, Lemma 2.4.8, Proposition 2.4.23, Definitions 5.3.1 and 5.3.3, Propositions
-  5.3.7, 5.7.1 and 5.7.4, Lemma 5.7.5, Corollary 5.7.6.
-- [D] O. Dragičević, *Some remarks on the `L^p` estimates for powers of the Ahlfors–Beurling
-  operator*, Arch. Math. 96 (2011), 463–471,
-  [doi:10.1007/s00013-011-0246-1](https://doi.org/10.1007/s00013-011-0246-1): Theorem 1.1 (`p > 2`).
-- [D-LN] O. Dragičević, *Analysis of the Ahlfors–Beurling transform*, lecture notes (Seville,
-  2013), [arXiv:2109.04555](https://arxiv.org/abs/2109.04555): §4.1, Proposition 4.2
-  (= [D, Thm 1.1]), Corollary 4.8, Exercises 1.16, 2.19 and 4.1.
-- [CDK] A. Carbonaro, O. Dragičević, V. Kovač, *Sharp `L^p` estimates of powers of the complex
-  Riesz transform*, Math. Ann. 386 (2023), 1081–1125,
-  [doi:10.1007/s00208-022-02419-3](https://doi.org/10.1007/s00208-022-02419-3),
-  [arXiv:2109.08369](https://arxiv.org/abs/2109.08369): §1.3.1 (duality), §2.1.
-- [G] L. Grafakos, *Classical Fourier Analysis*, 3rd ed., Graduate Texts in Mathematics 249,
-  Springer, 2014, [doi:10.1007/978-1-4939-1194-3](https://doi.org/10.1007/978-1-4939-1194-3):
-  Chapter 3 (Fourier series on `𝕋^n`). Not consulted: the arguments for smooth periodic functions
-  (decay of the coefficients, absolute convergence and uniqueness of the Fourier series) are the
-  standard ones.
-- [K] Y. Katznelson, *An Introduction to Harmonic Analysis*, 3rd ed., Cambridge University Press,
-  2004, [doi:10.1017/CBO9781139165372](https://doi.org/10.1017/CBO9781139165372): Chapter I (Fourier
-  series on `𝕋`). Not consulted, as for [G].
-
-Cited in the section on the literature, and for the first of the shorter proofs, only:
-
-- [BJ] R. Bañuelos, P. Janakiraman, *`L^p`-bounds for the Beurling–Ahlfors transform*, Trans. Amer.
-  Math. Soc. 360 (2008), 3603–3613,
-  [doi:10.1090/S0002-9947-08-04537-6](https://doi.org/10.1090/S0002-9947-08-04537-6).
-- [BW] R. Bañuelos, G. Wang, *Sharp inequalities for martingales with applications to the
-  Beurling–Ahlfors and Riesz transforms*, Duke Math. J. 80 (1995), 575–600,
-  [doi:10.1215/S0012-7094-95-08020-X](https://doi.org/10.1215/S0012-7094-95-08020-X).
-- [dL] K. de Leeuw, *On `L_p` multipliers*, Ann. of Math. (2) 81 (1965), 364–379,
-  [doi:10.2307/1970621](https://doi.org/10.2307/1970621).
-- [DPV] O. Dragičević, S. Petermichl, A. Volberg, *A rotation method which gives linear `L^p`
-  estimates for powers of the Ahlfors–Beurling operator*, J. Math. Pures Appl. 86 (2006), 492–509,
-  [doi:10.1016/j.matpur.2006.10.005](https://doi.org/10.1016/j.matpur.2006.10.005).
-- [GMS] S. Geiss, S. Montgomery-Smith, E. Saksman, *On singular integral and martingale transforms*,
-  Trans. Amer. Math. Soc. 362 (2010), 553–575,
-  [doi:10.1090/S0002-9947-09-04953-8](https://doi.org/10.1090/S0002-9947-09-04953-8),
-  [arXiv:math/0701516](https://arxiv.org/abs/math/0701516).
-- [I] S. Igari, *Functions of `L^p`-multipliers*, Tôhoku Math. J. (2) 21 (1969), 304–320,
-  [doi:10.2748/tmj/1178242999](https://doi.org/10.2748/tmj/1178242999).
-- [Iw] T. Iwaniec, *Extremal inequalities in Sobolev spaces and quasiconformal mappings*, Z. Anal.
-  Anwend. 1 (1982), no. 6, 1–16, [doi:10.4171/ZAA/37](https://doi.org/10.4171/ZAA/37).
-- [J] M. Jodeit, Jr., *Restrictions and extensions of Fourier multipliers*, Studia Math. 34 (1970),
-  215–226, [doi:10.4064/sm-34-2-215-226](https://doi.org/10.4064/sm-34-2-215-226).
-- [Le] O. Lehto, *Remarks on the integrability of the derivatives of quasiconformal mappings*, Ann.
-  Acad. Sci. Fenn. A I 371 (1965), 1–8,
-  [doi:10.5186/aasfm.1966.371](https://doi.org/10.5186/aasfm.1966.371).
-- [NV] F. Nazarov, A. Volberg, *Heating of the Ahlfors–Beurling operator, and estimates of its norm*,
-  St. Petersburg Math. J. 15 (2004), 563–573,
-  [doi:10.1090/S1061-0022-04-00822-2](https://doi.org/10.1090/S1061-0022-04-00822-2).
+In [docs/REFERENCES.md](docs/REFERENCES.md).
 
 ## Credits
 
