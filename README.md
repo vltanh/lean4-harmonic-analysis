@@ -5,7 +5,8 @@
 Lean 4 with Mathlib `v4.36.0-rc2`, on `ℂ ≅ ℝ²` and the torus `𝕋² = (ℝ/ℤ)²`:
 
 - **Fourier multipliers** `T_m f = 𝓕⁻¹(m · 𝓕f)` and their norms on `L^p`, computed on Schwartz
-  functions; on the torus, on mean-zero trigonometric polynomials. Duality:
+  functions, which also bound `T_m` on the `L^p`-closure of its graph (density); on the torus, on
+  mean-zero trigonometric polynomials. Duality for bounded measurable `m`:
   `‖T_m‖_p = ‖T_{m̄}‖_{p'}` and `‖T_{m̄(−·)}‖_p = ‖T_m‖_p`.
 - **de Leeuw's transference** from `𝕋²` to `ℝ²` for symbols homogeneous of degree `0`:
   `‖T_m‖_{L^p(ℝ²)} ≤ ‖T_m‖_{L^p_0(𝕋²)}`, through Poisson summation on `ℤ²` and lattice Riemann
@@ -27,25 +28,27 @@ the operator norms are suprema in `ℝ≥0∞`.
 | Statement | Lean | Source |
 | --- | --- | --- |
 | `𝓕(∂̄f)(ξ) = πiξ 𝓕f(ξ)`, `𝓕(∂f)(ξ) = πiξ̄ 𝓕f(ξ)` | `fourier_dzbarCLM`, `fourier_dzCLM` | |
-| `‖T_m‖_p = ‖T_{m̄}‖_{p'}` (`m` bounded measurable, `1 < p`) | `multiplierNorm_conj_conjExponent` | [CDK, §1.3.1] |
-| `‖T_{m̄(−·)}‖_p = ‖T_m‖_p` | `multiplierNorm_conj_comp_neg` | [CDK, §1.3.1] |
+| `‖v‖_p / ‖u‖_p ≤ ‖T_m‖_p` if Schwartz `φ_k → u`, `T_m φ_k → v` in `L^p` | `div_le_multiplierNorm_of_tendsto` | density |
+| `‖T_m‖_p = ‖T_{m̄}‖_{p'}` (`m` bounded measurable, `1 < p`) | `multiplierNorm_conj_conjExponent` | duality; [CDK, §1.3.1] for `R^k` |
+| `‖T_{m̄(−·)}‖_p = ‖T_m‖_p` | `multiplierNorm_conj_comp_neg` | conjugation; [CDK, §1.3.1] for `R^k` |
 | `Σ_j f(R(y+j)) = Σ_n R⁻² 𝓕f(n/R) e^{2πi⟨n,y⟩}` on `ℤ²` | `hasSum_periodize` | Poisson summation |
 | `Σ_n R⁻² φ(n/R) → ∫ φ` for `φ` continuous off `0`, `|φ| ≤ C(1+|ξ|)^{−3}` | `tendsto_riemannSum` | |
 | `‖T_m‖_{L^p(ℝ²)} ≤ ‖T_m‖_{L^p_0(𝕋²)}`, `m` homogeneous of degree `0`, continuous off `0` | `multiplierNorm_le_torusMultiplierNorm` | [dL] |
-| `𝓑^k(∂̄^k F) = ∂^k F` | `beurlingPow_dzbarCLM_pow` | [D-LN, Ex. 2.19] |
+| `𝓑^k(∂̄^k F) = ∂^k F` for Schwartz `F` | `beurlingPow_dzbarCLM_pow` | [D-LN, Ex. 2.19] for `k = 1`; §4.1 |
+| `‖v‖_p / ‖u‖_p ≤ ‖𝓑^k‖_p` if Schwartz `∂̄^k φ_j → u`, `∂^k φ_j → v` in `L^p` | `div_le_beurlingPowNorm_of_tendsto` | density; [D-LN, Ex. 2.19, §4.1] |
 | `‖𝓑^k‖_p = ‖𝓑^k‖_{p'}` | `beurlingPowNorm_conjExponent` | [CDK, §1.3.1] |
 | `‖𝓑^k‖_{L^p(ℝ²)} ≤ ‖𝓑^k‖_{L^p_0(𝕋²)}` | `beurlingPowNorm_le_torusBeurlingPowNorm` | [dL] |
-| `‖∂²F_ε‖_p / ‖∂̄²F_ε‖_p → κ₂(p)` | `tendsto_eLpNorm_div_testFunction` | [D, Thm 1.1], [D-LN, Prop. 4.2] |
+| `f_{2,α} ∈ W^{2,p}`: Schwartz `φ_k` with `∂̄²φ_k → ∂̄²f_{2,α}`, `∂²φ_k → ∂²f_{2,α}` (`1 ≤ p`) | `BeurlingAhlfors.exists_schwartz_tendsto_testFun` | [D-LN, Ex. 4.1] (for `p > 2`) |
+| `‖∂²f_{2,α}‖_p / ‖∂̄²f_{2,α}‖_p → κ₂(p)` as `α → 1/p⁻` | `tendsto_eLpNorm_div_testFun` | [D, Thm 1.1], [D-LN, Prop. 4.2] |
 | `κ₂(p) ≤ ‖𝓑²‖_p` for `1 < p` | `beurlingKappa_two_le_beurlingPowNorm_two` | [D, Thm 1.1], [D-LN, Prop. 4.2] |
-| `κ₂(p*) ≤ ‖𝓑²‖_p` for `1 < p` | `beurlingKappa_two_pStar_le_beurlingPowNorm_two` | with [CDK, §1.3.1] |
+| `κ₂(p*) ≤ ‖𝓑²‖_p` for `1 < p` | `beurlingKappa_two_pStar_le_beurlingPowNorm_two` | [D-LN, Cor. 4.8]; [CDK, §1.3.1] |
 | `p* − 1 < ‖𝓑²‖_p` for `p ≠ 2`; `21/5 ≤ ‖𝓑²‖₄` | `pStar_sub_one_lt_beurlingPowNorm_two`, `twentyOne_div_five_le_beurlingPowNorm_two_four` | |
 
 All names are in the namespace `HarmonicAnalysis`. Two of them in Lean:
 
 ```lean
-theorem HarmonicAnalysis.multiplierNorm_le_torusMultiplierNorm {m : ℂ → ℂ} (hm : Measurable m)
-    (hmb : ∃ C, ∀ ξ, ‖m ξ‖ ≤ C) (hmc : ∀ ξ ≠ 0, ContinuousAt m ξ)
-    (hmh : ∀ t : ℝ, 0 < t → ∀ ξ, m (t * ξ) = m ξ) {p : ℝ} (hp : 1 < p) :
+theorem HarmonicAnalysis.multiplierNorm_le_torusMultiplierNorm {m : ℂ → ℂ}
+    (hmc : ∀ ξ ≠ 0, ContinuousAt m ξ) (hmh : ∀ t : ℝ, 0 < t → ∀ ξ, m (t * ξ) = m ξ) {p : ℝ} (hp : 1 < p) :
     multiplierNorm m p ≤ torusMultiplierNorm (fun n => m (latticePoint n)) p
 
 theorem HarmonicAnalysis.beurlingKappa_two_le_beurlingPowNorm_two {p : ℝ} (hp : 1 < p) :
@@ -57,14 +60,18 @@ Here `beurlingKappa n p = (1/q)_n / (1/p)_n`, `1/q = 1 − 1/p`, with the Pochha
 
 ## Method
 
-- **Dragičević's lower bound** follows his proof [D-LN, Prop. 4.2]: the test functions
-  `z² |z|^{−2α}` on the disc, the identity `𝓑²(∂̄²F) = ∂²F`, explicit radial integrals over the
-  disc and a bounded contribution outside it. Departure from the source: its test functions are not
-  Schwartz functions, and the norms here are suprema over Schwartz functions, so the proof uses
-  `F_ε(z) = z² (|z|² + ε²)^{−1/p} σ(|z|²)` with a smooth cutoff `σ` (at the critical exponent
-  `α = 1/p`, with `ε → 0` in place of `α → 1/p`). The source states the bound for `p > 2`; for
-  `p < 2` it uses `‖𝓑^n‖_p = ‖𝓑^n‖_{p'}`, from `𝓑^{−n} = (𝓑^n)^*` and
-  `𝓑^{−n} f = conj(𝓑^n(conj f))` [CDK, §1.3.1], as here.
+- **Dragičević's lower bound** follows his proof [D-LN, Prop. 4.2], with his test functions
+  `f_{2,α}(z) = z² |z|^{−2α} g₂(|z|)`, `g₂ = 1` on `[0, 1]`, `g₂(x) = exp(−(x−1)²)` for `x > 1`,
+  `0 < α < 1/p`: `𝓑²(∂̄²f) = ∂²f` [D-LN, §4.1], explicit integrals over the disc, of order
+  `(1 − αp)⁻¹`, a
+  bounded contribution outside it, and `α → 1/p`. The norms here are suprema over Schwartz
+  functions, which `f_{2,α}` is not; `f_{2,α} ∈ W^{2,p}` [D-LN, Ex. 4.1] is approximated by
+  Schwartz functions, and the density statements carry the bound over, as the hint of
+  [D-LN, Ex. 2.19] does ("first consider smooth `h` and then approximate"). The source states the
+  bound for `p > 2`, and with `p*` for all `p` [D-LN, Cor. 4.8]; the case `p < 2` comes from
+  `‖𝓑^n‖_p = ‖𝓑^n‖_{p'}`, by `𝓑^{−n} = (𝓑^n)^*` and `𝓑^{−n} f = conj(𝓑^n(conj f))`
+  [CDK, §1.3.1, for `R^k`, `𝓑 = R²`], as here (for bounded multipliers, by the standard duality
+  argument).
 - **Transference** follows de Leeuw [dL]: sample `𝓕f` on `R⁻¹ℤ²` with the mean removed; the
   periodisation and Poisson summation bound the torus norms (`limsup R^{2/p} ‖·‖_{L^p(𝕋²)} ≤ ‖f‖_p`);
   by homogeneity the multiplied series are lattice Riemann sums of `T_m f`, and Fatou's lemma
@@ -103,11 +110,11 @@ lake env lean scripts/Audit.lean   # axioms; lists the `sorry`s while proofs are
 
 | Path | Content |
 | --- | --- |
-| [`HarmonicAnalysis/Complex/`](HarmonicAnalysis/Complex) | `Wirtinger` (`∂`, `∂̄` on functions and on `𝓢(ℂ, F)`, symbols, conjugation), `WirtingerRadial` (`∂`, `∂̄` of `z^a z̄^b K(|z|²)`), `RadialIntegral` (radial integrals, logarithmic averages) |
-| [`HarmonicAnalysis/FourierMultiplier/`](HarmonicAnalysis/FourierMultiplier) | `Basic` (`fourierMultiplier`, `multiplierNorm`), `Duality` |
+| [`HarmonicAnalysis/Complex/`](HarmonicAnalysis/Complex) | `Wirtinger` (`∂`, `∂̄` on functions and on `𝓢(ℂ, F)`, symbols, conjugation), `WirtingerRadial` (`∂`, `∂̄` of `z^a z̄^b K(|z|²)`), `RadialIntegral` (radial integrals) |
+| [`HarmonicAnalysis/FourierMultiplier/`](HarmonicAnalysis/FourierMultiplier) | `Basic` (`fourierMultiplier`, `multiplierNorm`, density), `Duality` |
 | [`HarmonicAnalysis/Torus/`](HarmonicAnalysis/Torus) | `Cube` (periodic functions, the unit cube, `𝕋² ↔ ℂ`), `TrigPoly` (trigonometric polynomials, `torusMultiplierNorm`, the `ℓ¹` extension), `Poisson` (periodisation, Poisson summation on `ℤ²`) |
 | [`HarmonicAnalysis/Transference/`](HarmonicAnalysis/Transference) | `RiemannSum`, `Homogeneous` (de Leeuw) |
-| [`HarmonicAnalysis/BeurlingAhlfors/`](HarmonicAnalysis/BeurlingAhlfors) | `Basic` (symbol, `𝓑^k`, `𝓑^k ∂̄^k = ∂^k`), `Duality`, `TestFunctions`, `LowerBound` (Dragičević, `n = 2`), `Transference` (`𝓑^k` on `𝕋²`) |
+| [`HarmonicAnalysis/BeurlingAhlfors/`](HarmonicAnalysis/BeurlingAhlfors) | `Basic` (symbol, `𝓑^k`, `𝓑^k ∂̄^k = ∂^k`, density), `Duality`, `TestFunctions` (Dragičević's `f_{2,α}`), `LowerBound` (Dragičević, `n = 2`), `Transference` (`𝓑^k` on `𝕋²`) |
 | [`scripts/Audit.lean`](scripts/Audit.lean) | the axiom audit |
 | [`.github/workflows/`](.github/workflows) | CI: build, audit, import list of the audit, line lengths |
 
@@ -117,8 +124,8 @@ lake env lean scripts/Audit.lean   # axioms; lists the `sorry`s while proofs are
   operator*, Arch. Math. 96 (2011), 463–471, Theorem 1.1. Not consulted: its statement and proof
   are taken from [D-LN] and [CDK].
 - [D-LN] O. Dragičević, *Analysis of the Ahlfors–Beurling transform*, lecture notes (Seville,
-  2013), [arXiv:2109.04555](https://arxiv.org/abs/2109.04555): Proposition 4.2 (= [D, Thm 1.1]),
-  Exercises 1.16 and 2.19.
+  2013), [arXiv:2109.04555](https://arxiv.org/abs/2109.04555): §4.1, Proposition 4.2
+  (= [D, Thm 1.1]), Corollary 4.8, Exercises 1.16, 2.19 and 4.1.
 - [CDK] A. Carbonaro, O. Dragičević, V. Kovač, *Sharp `L^p` estimates of powers of the complex
   Riesz transform*, Math. Ann. 386 (2023), 1081–1125,
   [arXiv:2109.08369](https://arxiv.org/abs/2109.08369): §1.3.1 (duality), §2.1.

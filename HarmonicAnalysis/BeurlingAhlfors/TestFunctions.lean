@@ -6,108 +6,103 @@ Authors: The-Anh Vu-Le
 module
 
 public import HarmonicAnalysis.Complex.WirtingerRadial
-public import Mathlib.Analysis.SpecialFunctions.SmoothTransition
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
+public import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
 
 /-!
-# The test functions for the lower bound of `‖𝓑²‖_p`
+# Dragičević's test functions
 
-For `p > 1` and `ε ≠ 0`, with `t = |z|²`:
+For `n ∈ ℕ` and `α ∈ ℝ`, Dragičević's test functions (lecture notes, §4.1) are
+`f_{n,α} (z) = z^n |z|^{−2α} g_n (|z|)` (`HarmonicAnalysis.BeurlingAhlfors.testFun`), where
+`g_n (x) = 1` for `x ≤ 1` and `g_n (x) = exp (−(x − 1)^n)` for `x > 1`
+(`HarmonicAnalysis.BeurlingAhlfors.testCutoff`; the source's example of a sufficiently smooth,
+rapidly decaying `g_n` equal to `1` on `[0, 1]`). Only `n = 2` is used below. The derivatives are
+the pointwise Wirtinger derivatives `HarmonicAnalysis.dz`, `HarmonicAnalysis.dzbar`. For `α < 1`
+they agree almost everywhere with the weak ones: `f_{2,α}` is `C¹` off `0` (`g₂` is `C¹` at `1`)
+and `C²` off `0` and the unit circle, and near `0`, `f = O (|z|^{2−2α})`,
+`∇f = O (|z|^{1−2α})`. (For `α = 1`, `f = z / z̄` and the distribution `∂²f` has a Dirac mass at
+`0`.) The source takes `p > 2`; the statements below hold for every `p` in the range given.
 
-* `HarmonicAnalysis.BeurlingAhlfors.cutoff t = σ (t)`, a smooth cutoff, `σ = 1` for `t ≤ 1` and
-  `σ = 0` for `t ≥ 2` (`σ (t) = Real.smoothTransition (2 − t)`);
-* `HarmonicAnalysis.BeurlingAhlfors.profile p ε t = H (t) = (t + ε²)^{−1/p} σ (t)`;
-* `HarmonicAnalysis.BeurlingAhlfors.testFun p ε z = F (z) = z² H (|z|²)`, smooth with compact
-  support, and the Schwartz function `HarmonicAnalysis.BeurlingAhlfors.testFunction p k` at
-  `ε = 1/(k + 1)`.
+## Main results, for `n = 2`
 
-These are the functions `f_{2,α} (z) = z² |z|^{−2α} g (|z|)` of Dragičević's proof (`n = 2`), taken
-at the critical exponent `α = 1/p` and smoothed at `0` (by `ε`) and at `|z| = 1` (by `σ`), so that
-they are Schwartz functions; the limit `α → 1/p` of the source becomes the limit `ε → 0`.
-
-## Main results
-
-* `∂̄²F = z⁴ H'' (t)` and `∂²F = 2H + 4t H' + t² H''` everywhere
-  (`dzbar_dzbar_testFun`, `dz_dz_testFun`);
-* on the open unit disc, with `α = 1/p` and `s = t / (t + ε²)`,
-  `∂̄²F = z⁴ α (α + 1) (t + ε²)^{−α−2}` and `∂²F = (t + ε²)^{−α} (2 − 4αs + α (α + 1) s²)`
-  (`dzbar_dzbar_testFun_of_normSq_lt_one`, `dz_dz_testFun_of_normSq_lt_one`);
-* on `|z| ≥ 1` both are bounded uniformly in `ε ∈ (0, 1]` (`exists_bound_testFun`); they vanish
-  for `|z|² ≥ 2`.
+* On the punctured unit disc (lecture notes, proof of Proposition 4.2):
+  `∂²f = (2 − α)(1 − α) |z|^{−2α}` and `∂̄²f = (−α)(−α − 1) (z / z̄)² |z|^{−2α}`
+  (`dz_dz_testFun_of_norm_lt_one`, `dzbar_dzbar_testFun_of_norm_lt_one`), so that, for
+  `0 < α < 1/p`, `∫_Δ |∂²f|^p = π / (1 − αp) ((2 − α)(1 − α))^p` and
+  `∫_Δ |∂̄²f|^p = π / (1 − αp) (α (α + 1))^p` (`lintegral_dz_dz_testFun_ball`,
+  `lintegral_dzbar_dzbar_testFun_ball`).
+* Outside the disc, the integrals of `|∂²f|^p` and `|∂̄²f|^p` stay bounded for `α ∈ [0, 1]`
+  (`exists_bound_testFun_compl_ball`; the source: `|Dⁿ f (z)| ≤ P (n, α) |z|^M e^{−(|z| − 1)^n}`).
+* `f_{2,α} ∈ W^{2,p}` for `1 ≤ p`, `0 < α < 1/p` (lecture notes, Exercise 4.1, for `p > 2`), in
+  the form used: Schwartz
+  functions `φ_k` with `∂̄²φ_k → ∂̄²f` and `∂²φ_k → ∂²f` in `L^p`
+  (`exists_schwartz_tendsto_testFun`).
 
 ## References
 
 * O. Dragičević, *Analysis of the Ahlfors–Beurling transform*, lecture notes,
-  [arXiv:2109.04555](https://arxiv.org/abs/2109.04555), §4.1.
+  [arXiv:2109.04555](https://arxiv.org/abs/2109.04555), §4.1 (Exercise 4.1, Proposition 4.2).
 -/
 
 @[expose] public section
 
 noncomputable section
 
-open scoped SchwartzMap ContDiff
+open MeasureTheory Filter Topology
+open scoped SchwartzMap ENNReal Real ComplexConjugate
 
 namespace HarmonicAnalysis.BeurlingAhlfors
 
-/-- The cutoff `σ (t) = Real.smoothTransition (2 − t)`: `1` for `t ≤ 1`, `0` for `t ≥ 2`. -/
-def cutoff (t : ℝ) : ℝ := Real.smoothTransition (2 - t)
+/-- Dragičević's cutoff `g_n (x) = 1` for `x ≤ 1`, `exp (−(x − 1)^n)` for `x > 1`. -/
+def testCutoff (n : ℕ) (x : ℝ) : ℝ := if x ≤ 1 then 1 else Real.exp (-(x - 1) ^ n)
 
-/-- The radial profile `H (t) = (t + ε²)^{−1/p} σ (t)`. -/
-def profile (p ε t : ℝ) : ℝ := (t + ε ^ 2) ^ (-p⁻¹) * cutoff t
+/-- Dragičević's test function `f_{n,α} (z) = z^n |z|^{−2α} g_n (|z|)`. -/
+def testFun (n : ℕ) (α : ℝ) (z : ℂ) : ℂ :=
+  z ^ n * ((‖z‖ ^ (-2 * α) * testCutoff n ‖z‖ : ℝ) : ℂ)
 
-/-- The test function `F (z) = z² H (|z|²) = z² (|z|² + ε²)^{−1/p} σ (|z|²)`. -/
-def testFun (p ε : ℝ) (z : ℂ) : ℂ := z ^ 2 * (profile p ε (Complex.normSq z) : ℂ)
-
-theorem contDiff_testFun (p : ℝ) {ε : ℝ} (hε : ε ≠ 0) : ContDiff ℝ ∞ (testFun p ε) := by
+/-- On the punctured unit disc, `∂²f_{2,α} (z) = (2 − α)(1 − α) |z|^{−2α}`. -/
+theorem dz_dz_testFun_of_norm_lt_one (α : ℝ) {z : ℂ} (hz0 : z ≠ 0) (hz : ‖z‖ < 1) :
+    dz (dz (testFun 2 α)) z = (((2 - α) * (1 - α) * ‖z‖ ^ (-2 * α) : ℝ) : ℂ) := by
   sorry
 
-theorem hasCompactSupport_testFun (p ε : ℝ) : HasCompactSupport (testFun p ε) := by
+/-- On the punctured unit disc, `∂̄²f_{2,α} (z) = (−α)(−α − 1) (z / z̄)² |z|^{−2α}`. -/
+theorem dzbar_dzbar_testFun_of_norm_lt_one (α : ℝ) {z : ℂ} (hz0 : z ≠ 0) (hz : ‖z‖ < 1) :
+    dzbar (dzbar (testFun 2 α)) z =
+      (((-α) * (-α - 1) : ℝ) : ℂ) * (z / conj z) ^ 2 * ((‖z‖ ^ (-2 * α) : ℝ) : ℂ) := by
   sorry
 
-/-- The Schwartz function `F` at `ε = 1/(k + 1)`. -/
-def testFunction (p : ℝ) (k : ℕ) : 𝓢(ℂ, ℂ) :=
-  (hasCompactSupport_testFun p ((k : ℝ) + 1)⁻¹).toSchwartzMap
-    (contDiff_testFun p (inv_ne_zero (Nat.cast_add_one_ne_zero k)))
-
-theorem testFunction_apply (p : ℝ) (k : ℕ) (z : ℂ) :
-    testFunction p k z = testFun p ((k : ℝ) + 1)⁻¹ z :=
-  rfl
-
-/-- `∂̄²F (z) = z⁴ H'' (|z|²)`. -/
-theorem dzbar_dzbar_testFun (p : ℝ) {ε : ℝ} (hε : ε ≠ 0) (z : ℂ) :
-    dzbar (dzbar (testFun p ε)) z =
-      z ^ 4 * ((deriv (deriv (profile p ε)) (Complex.normSq z) : ℝ) : ℂ) := by
+/-- `∫_Δ |∂²f_{2,α}|^p = π / (1 − αp) ((2 − α)(1 − α))^p` for `0 < α < 1/p`. -/
+theorem lintegral_dz_dz_testFun_ball {p α : ℝ} (hp : 1 < p) (hα0 : 0 < α) (hα : α * p < 1) :
+    ∫⁻ z in Metric.ball (0 : ℂ) 1, ‖dz (dz (testFun 2 α)) z‖ₑ ^ p =
+      ENNReal.ofReal (π / (1 - α * p) * ((2 - α) * (1 - α)) ^ p) := by
   sorry
 
-/-- `∂²F (z) = 2 H (t) + 4 t H' (t) + t² H'' (t)`, `t = |z|²`. -/
-theorem dz_dz_testFun (p : ℝ) {ε : ℝ} (hε : ε ≠ 0) (z : ℂ) :
-    dz (dz (testFun p ε)) z =
-      ((2 * profile p ε (Complex.normSq z) +
-        4 * Complex.normSq z * deriv (profile p ε) (Complex.normSq z) +
-        Complex.normSq z ^ 2 * deriv (deriv (profile p ε)) (Complex.normSq z) : ℝ) : ℂ) := by
+/-- `∫_Δ |∂̄²f_{2,α}|^p = π / (1 − αp) (α (α + 1))^p` for `0 < α < 1/p`. -/
+theorem lintegral_dzbar_dzbar_testFun_ball {p α : ℝ} (hp : 1 < p) (hα0 : 0 < α)
+    (hα : α * p < 1) :
+    ∫⁻ z in Metric.ball (0 : ℂ) 1, ‖dzbar (dzbar (testFun 2 α)) z‖ₑ ^ p =
+      ENNReal.ofReal (π / (1 - α * p) * (α * (α + 1)) ^ p) := by
   sorry
 
-/-- On the open unit disc, `∂̄²F (z) = z⁴ α (α + 1) (|z|² + ε²)^{−α−2}`, `α = 1/p`. -/
-theorem dzbar_dzbar_testFun_of_normSq_lt_one (p : ℝ) {ε : ℝ} (hε : ε ≠ 0) {z : ℂ}
-    (hz : Complex.normSq z < 1) :
-    dzbar (dzbar (testFun p ε)) z =
-      z ^ 4 * ((p⁻¹ * (p⁻¹ + 1) * (Complex.normSq z + ε ^ 2) ^ (-p⁻¹ - 2) : ℝ) : ℂ) := by
+/-- Outside the unit disc, `∫ |∂²f_{2,α}|^p` and `∫ |∂̄²f_{2,α}|^p` are bounded uniformly in
+`α ∈ [0, 1]`. -/
+theorem exists_bound_testFun_compl_ball {p : ℝ} (hp : 0 < p) :
+    ∃ C : ℝ, ∀ α ∈ Set.Icc (0 : ℝ) 1,
+      ∫⁻ z in (Metric.ball (0 : ℂ) 1)ᶜ, ‖dz (dz (testFun 2 α)) z‖ₑ ^ p ≤ ENNReal.ofReal C ∧
+        ∫⁻ z in (Metric.ball (0 : ℂ) 1)ᶜ, ‖dzbar (dzbar (testFun 2 α)) z‖ₑ ^ p ≤
+          ENNReal.ofReal C := by
   sorry
 
-/-- On the open unit disc, `∂²F (z) = (t + ε²)^{−α} (2 − 4αs + α (α + 1) s²)`, `t = |z|²`,
-`s = t / (t + ε²)`, `α = 1/p`. -/
-theorem dz_dz_testFun_of_normSq_lt_one (p : ℝ) {ε : ℝ} (hε : ε ≠ 0) {z : ℂ}
-    (hz : Complex.normSq z < 1) :
-    dz (dz (testFun p ε)) z =
-      (((Complex.normSq z + ε ^ 2) ^ (-p⁻¹) *
-        (2 - 4 * p⁻¹ * (Complex.normSq z / (Complex.normSq z + ε ^ 2)) +
-          p⁻¹ * (p⁻¹ + 1) * (Complex.normSq z / (Complex.normSq z + ε ^ 2)) ^ 2) : ℝ) : ℂ) := by
-  sorry
-
-/-- Off the open unit disc, `∂̄²F` and `∂²F` are bounded uniformly in `ε ∈ (0, 1]`. -/
-theorem exists_bound_testFun (p : ℝ) :
-    ∃ C : ℝ, ∀ ε : ℝ, 0 < ε → ε ≤ 1 → ∀ z : ℂ, 1 ≤ Complex.normSq z →
-      ‖dzbar (dzbar (testFun p ε)) z‖ ≤ C ∧ ‖dz (dz (testFun p ε)) z‖ ≤ C := by
+/-- `f_{2,α} ∈ W^{2,p}` for `1 ≤ p < ∞`, `0 < α < 1/p` (lecture notes, Exercise 4.1, where
+`p > 2`), in the form used: there are Schwartz functions `φ_k` with `∂̄²φ_k → ∂̄²f_{2,α}` and
+`∂²φ_k → ∂²f_{2,α}` in `L^p`. -/
+theorem exists_schwartz_tendsto_testFun {p α : ℝ} (hp : 1 ≤ p) (hα0 : 0 < α) (hα : α * p < 1) :
+    ∃ φ : ℕ → 𝓢(ℂ, ℂ),
+      Tendsto (fun k => eLpNorm (fun z => (dzbarCLM ^ 2) (φ k) z - dzbar (dzbar (testFun 2 α)) z)
+        (ENNReal.ofReal p) volume) atTop (𝓝 0) ∧
+      Tendsto (fun k => eLpNorm (fun z => (dzCLM ^ 2) (φ k) z - dz (dz (testFun 2 α)) z)
+        (ENNReal.ofReal p) volume) atTop (𝓝 0) := by
   sorry
 
 end HarmonicAnalysis.BeurlingAhlfors

@@ -14,8 +14,9 @@ public import HarmonicAnalysis.Transference.RiemannSum
 # Transference from the torus to the plane for homogeneous symbols
 
 `HarmonicAnalysis.multiplierNorm_le_torusMultiplierNorm` (de Leeuw's theorem, in the direction
-from `𝕋²` to `ℝ²`, for symbols homogeneous of degree `0`): let `m : ℂ → ℂ` be bounded and
-measurable, continuous at every `ξ ≠ 0`, with `m (t ξ) = m (ξ)` for `t > 0`. Then for
+from `𝕋²` to `ℝ²`, for symbols homogeneous of degree `0`): let `m : ℂ → ℂ` be continuous at
+every `ξ ≠ 0`, with `m (t ξ) = m (ξ)` for `t > 0` (such an `m` is bounded, by its values on the
+unit circle, and Borel measurable). Then for
 `1 < p < ∞`, `‖T_m‖_{L^p (ℝ²)} ≤ ‖T_m‖_{L^p_0 (𝕋²)}`, where on the torus `T_m` multiplies the
 `n`-th Fourier coefficient by `m (n₀ + i n₁)`.
 
@@ -39,11 +40,9 @@ noncomputable section
 
 namespace HarmonicAnalysis
 
-/-- de Leeuw's transference, from `𝕋²` to `ℝ²`, for a bounded measurable symbol `m` that is
-continuous off `0` and homogeneous of degree `0`: `‖T_m‖_{L^p (ℝ²)} ≤ ‖T_m‖_{L^p_0 (𝕋²)}` for
-`1 < p < ∞`. -/
-theorem multiplierNorm_le_torusMultiplierNorm {m : ℂ → ℂ} (hm : Measurable m)
-    (hmb : ∃ C, ∀ ξ, ‖m ξ‖ ≤ C) (hmc : ∀ ξ ≠ 0, ContinuousAt m ξ)
+/-- de Leeuw's transference, from `𝕋²` to `ℝ²`, for a symbol `m` that is continuous off `0` and
+homogeneous of degree `0`: `‖T_m‖_{L^p (ℝ²)} ≤ ‖T_m‖_{L^p_0 (𝕋²)}` for `1 < p < ∞`. -/
+theorem multiplierNorm_le_torusMultiplierNorm {m : ℂ → ℂ} (hmc : ∀ ξ ≠ 0, ContinuousAt m ξ)
     (hmh : ∀ t : ℝ, 0 < t → ∀ ξ, m (t * ξ) = m ξ) {p : ℝ} (hp : 1 < p) :
     multiplierNorm m p ≤ torusMultiplierNorm (fun n => m (latticePoint n)) p := by
   sorry

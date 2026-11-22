@@ -19,7 +19,7 @@ public import HarmonicAnalysis.Transference.Homogeneous
 
 `HarmonicAnalysis.beurlingPowNorm_le_torusBeurlingPowNorm`: `‖𝓑^k‖_{L^p (ℝ²)} ≤
 ‖𝓑^k‖_{L^p_0 (𝕋²)}` for `1 < p < ∞`, de Leeuw's transference for the symbol `m^k`, which is
-bounded, continuous off `0` and homogeneous of degree `0`.
+continuous off `0` and homogeneous of degree `0`.
 -/
 
 @[expose] public section
@@ -42,10 +42,7 @@ def torusBeurlingPowNorm (k : ℕ) (p : ℝ) : ℝ≥0∞ :=
 /-- Transference: `‖𝓑^k‖_{L^p (ℝ²)} ≤ ‖𝓑^k‖_{L^p_0 (𝕋²)}` for `1 < p < ∞`. -/
 theorem beurlingPowNorm_le_torusBeurlingPowNorm (k : ℕ) {p : ℝ} (hp : 1 < p) :
     beurlingPowNorm k p ≤ torusBeurlingPowNorm k p :=
-  multiplierNorm_le_torusMultiplierNorm (measurable_beurlingSymbol.pow_const k)
-    ⟨1, fun ξ => by
-      rw [norm_pow]
-      exact pow_le_one₀ (norm_nonneg _) (norm_beurlingSymbol_le ξ)⟩
+  multiplierNorm_le_torusMultiplierNorm (m := fun ξ => beurlingSymbol ξ ^ k)
     (fun ξ hξ => (continuousAt_beurlingSymbol hξ).pow k)
     (fun t ht ξ => by rw [beurlingSymbol_ofReal_mul ht.ne']) hp
 

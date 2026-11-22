@@ -23,9 +23,9 @@ On the torus `𝕋^ι = (ℝ / ℤ)^ι`, with Mathlib's measure (of total mass o
 
 ## Main results
 
-* `HarmonicAnalysis.eLpNorm_tsum_le_torusMultiplierNorm` (the `ℓ¹` extension): for a bounded
-  symbol, `‖Σ_n m (n) c_n e_n‖_p ≤ ‖T_m‖_{L^p_0} ‖Σ_n c_n e_n‖_p` for every summable `c` with
-  `c₀ = 0`, the series converging uniformly.
+* `HarmonicAnalysis.eLpNorm_tsum_le_torusMultiplierNorm` (the `ℓ¹` extension):
+  `‖Σ_n m (n) c_n e_n‖_p ≤ ‖T_m‖_{L^p_0} ‖Σ_n c_n e_n‖_p` for every summable `c` with `c₀ = 0`,
+  the series converging uniformly when `m c` is summable (otherwise the left side is `0`).
 -/
 
 @[expose] public section
@@ -57,10 +57,10 @@ def torusMultiplierNorm (m : (ι → ℤ) → ℂ) (p : ℝ) : ℝ≥0∞ :=
     eLpNorm (torusMultiplier m c) (ENNReal.ofReal p) volume /
       eLpNorm (trigPoly c) (ENNReal.ofReal p) volume
 
-/-- The `ℓ¹` extension: for a bounded symbol `m`, `1 ≤ p` and summable coefficients `c` with
-`c₀ = 0`, `‖Σ_n m (n) c_n e_n‖_p ≤ ‖T_m‖_{L^p_0} ‖Σ_n c_n e_n‖_p`. -/
-theorem eLpNorm_tsum_le_torusMultiplierNorm {m : (ι → ℤ) → ℂ} (hm : ∃ C, ∀ n, ‖m n‖ ≤ C)
-    {p : ℝ} (hp : 1 ≤ p) {c : (ι → ℤ) → ℂ} (hc : Summable c) (hc0 : c 0 = 0) :
+/-- The `ℓ¹` extension: for `1 ≤ p` and summable coefficients `c` with `c₀ = 0`,
+`‖Σ_n m (n) c_n e_n‖_p ≤ ‖T_m‖_{L^p_0} ‖Σ_n c_n e_n‖_p`. -/
+theorem eLpNorm_tsum_le_torusMultiplierNorm (m : (ι → ℤ) → ℂ) {p : ℝ} (hp : 1 ≤ p)
+    {c : (ι → ℤ) → ℂ} (hc : Summable c) (hc0 : c 0 = 0) :
     eLpNorm (fun x => ∑' n, m n * c n * mFourier n x) (ENNReal.ofReal p) volume ≤
       torusMultiplierNorm m p *
         eLpNorm (fun x => ∑' n, c n * mFourier n x) (ENNReal.ofReal p) volume := by

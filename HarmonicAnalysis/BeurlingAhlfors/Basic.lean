@@ -25,20 +25,25 @@ With `ℂ ≅ ℝ²` by `x + iy ↦ (x, y)` and Mathlib's Fourier transform
 * `HarmonicAnalysis.beurlingPow_dzbarCLM_pow`: `𝓑^k (∂̄^k F) = ∂^k F` for every Schwartz `F`
   (on the Fourier side, `m^k (π i ξ)^k = (π i ξ̄)^k`). For `k = 1` this is the characterisation
   `𝓑 (∂̄h) = ∂h` of the Beurling–Ahlfors transform.
+* `HarmonicAnalysis.div_le_beurlingPowNorm_of_tendsto` (density): if Schwartz functions `φ_k`
+  satisfy `∂̄^k φ_k → u` and `∂^k φ_k → v` in `L^p`, then `‖v‖_p / ‖u‖_p ≤ ‖𝓑^k‖_p`. For
+  `f ∈ W^{k,p}` with `u = ∂̄^k f`, `v = ∂^k f`, this is `𝓑^k (∂̄^k f) = ∂^k f` (lecture notes,
+  §4.1, after Exercise 4.1; Exercise 2.19 for `k = 1`, whose hint is "first consider smooth `h`
+  and then approximate"), used through the norm over Schwartz functions.
 * Elementary properties of the symbol: `|m| ≤ 1`, `m (−ξ) = m (ξ)`, `m (t ξ) = m (ξ)` for real
   `t ≠ 0`, continuity off `0`, measurability.
 
 ## References
 
 * O. Dragičević, *Analysis of the Ahlfors–Beurling transform*, lecture notes,
-  [arXiv:2109.04555](https://arxiv.org/abs/2109.04555), §1.3 ((1.11)) and Exercise 2.19.
+  [arXiv:2109.04555](https://arxiv.org/abs/2109.04555), §1.3 ((1.11)), Exercise 2.19 and §4.1.
 -/
 
 @[expose] public section
 
 noncomputable section
 
-open MeasureTheory
+open MeasureTheory Filter Topology
 open scoped SchwartzMap ENNReal ComplexConjugate
 
 namespace HarmonicAnalysis
@@ -78,5 +83,20 @@ theorem measurable_beurlingSymbol : Measurable beurlingSymbol :=
 theorem beurlingPow_dzbarCLM_pow (k : ℕ) (F : 𝓢(ℂ, ℂ)) :
     beurlingPow k ((dzbarCLM ^ k) F : ℂ → ℂ) = ((dzCLM ^ k) F : ℂ → ℂ) := by
   sorry
+
+/-- Density: if Schwartz functions `φ_k` satisfy `∂̄^k φ_k → u` and `∂^k φ_k → v` in `L^p`,
+`1 ≤ p`, then `‖v‖_p / ‖u‖_p ≤ ‖𝓑^k‖_p`. -/
+theorem div_le_beurlingPowNorm_of_tendsto (k : ℕ) {p : ℝ} (hp : 1 ≤ p) {φ : ℕ → 𝓢(ℂ, ℂ)}
+    {u v : ℂ → ℂ} (hu : AEStronglyMeasurable u volume) (hv : AEStronglyMeasurable v volume)
+    (hφu : Tendsto (fun j => eLpNorm (fun z => (dzbarCLM ^ k) (φ j) z - u z) (ENNReal.ofReal p)
+      volume) atTop (𝓝 0))
+    (hφv : Tendsto (fun j => eLpNorm (fun z => (dzCLM ^ k) (φ j) z - v z) (ENNReal.ofReal p)
+      volume) atTop (𝓝 0)) :
+    eLpNorm v (ENNReal.ofReal p) volume / eLpNorm u (ENNReal.ofReal p) volume ≤
+      beurlingPowNorm k p := by
+  refine div_le_multiplierNorm_of_tendsto _ hp (φ := fun j => (dzbarCLM ^ k) (φ j)) hu hv hφu ?_
+  have h : ∀ j, fourierMultiplier (fun ξ => beurlingSymbol ξ ^ k) ((dzbarCLM ^ k) (φ j)) =
+      ((dzCLM ^ k) (φ j) : ℂ → ℂ) := fun j => beurlingPow_dzbarCLM_pow k (φ j)
+  simpa only [h] using hφv
 
 end HarmonicAnalysis

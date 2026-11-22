@@ -20,16 +20,23 @@ Fourier transform is Mathlib's, `𝓕 f (ξ) = ∫ e^{−2πi ⟨v, ξ⟩} f (v)
   the dense subspace of Schwartz functions: `⨆_{f ∈ 𝓢(V)} ‖T_m f‖_p / ‖f‖_p` in `ℝ≥0∞` (with
   `0 / 0 = 0`; it is `∞` when `T_m` is unbounded on `L^p`).
 
-For a bounded measurable symbol and a Schwartz function `f`, `m · 𝓕 f` is integrable, so `T_m f`
-is a bounded continuous function (`HarmonicAnalysis.continuous_fourierMultiplier`), and
-`‖T_m f‖_p ≤ ‖T_m‖_p ‖f‖_p` (`HarmonicAnalysis.eLpNorm_fourierMultiplier_le`).
+## Main results
+
+* `HarmonicAnalysis.continuous_fourierMultiplier`: `T_m f` is continuous for every Schwartz
+  function `f` (when `m · 𝓕 f` is not integrable, Lean's integral makes it `0`).
+* `HarmonicAnalysis.eLpNorm_fourierMultiplier_le`: `‖T_m f‖_p ≤ ‖T_m‖_p ‖f‖_p`.
+* `HarmonicAnalysis.div_le_multiplierNorm_of_tendsto` (density): the norm over Schwartz functions
+  bounds the ratio `‖v‖_p / ‖u‖_p` for every pair `(u, v)` that is an `L^p`-limit of pairs
+  `(φ_k, T_m φ_k)` with `φ_k` Schwartz, that is, for `T_m` on the closure of its graph over
+  Schwartz functions. This is how `T_m` is applied to functions of Sobolev spaces that are not
+  Schwartz functions.
 -/
 
 @[expose] public section
 
 noncomputable section
 
-open MeasureTheory
+open MeasureTheory Filter Topology
 open scoped SchwartzMap FourierTransform ENNReal
 
 namespace HarmonicAnalysis
@@ -47,15 +54,27 @@ def multiplierNorm (m : V → ℂ) (p : ℝ) : ℝ≥0∞ :=
   ⨆ f : 𝓢(V, ℂ), eLpNorm (fourierMultiplier m f) (ENNReal.ofReal p) volume /
     eLpNorm (f : V → ℂ) (ENNReal.ofReal p) volume
 
-/-- For a bounded measurable symbol, `T_m f` is continuous for every Schwartz function `f`. -/
-theorem continuous_fourierMultiplier {m : V → ℂ} (hm : Measurable m) (hmb : ∃ C, ∀ ξ, ‖m ξ‖ ≤ C)
-    (f : 𝓢(V, ℂ)) : Continuous (fourierMultiplier m f) := by
+/-- `T_m f` is continuous for every Schwartz function `f`. -/
+theorem continuous_fourierMultiplier (m : V → ℂ) (f : 𝓢(V, ℂ)) :
+    Continuous (fourierMultiplier m f) := by
   sorry
 
 /-- `‖T_m f‖_p ≤ ‖T_m‖_p ‖f‖_p` for every Schwartz function `f`. -/
-theorem eLpNorm_fourierMultiplier_le (m : V → ℂ) {p : ℝ} (hp : 1 ≤ p) (f : 𝓢(V, ℂ)) :
+theorem eLpNorm_fourierMultiplier_le (m : V → ℂ) (p : ℝ) (f : 𝓢(V, ℂ)) :
     eLpNorm (fourierMultiplier m f) (ENNReal.ofReal p) volume ≤
       multiplierNorm m p * eLpNorm (f : V → ℂ) (ENNReal.ofReal p) volume := by
+  sorry
+
+/-- Density: if Schwartz functions `φ_k` satisfy `φ_k → u` and `T_m φ_k → v` in `L^p`, `1 ≤ p`,
+then `‖v‖_p / ‖u‖_p ≤ ‖T_m‖_p`. -/
+theorem div_le_multiplierNorm_of_tendsto (m : V → ℂ) {p : ℝ} (hp : 1 ≤ p) {φ : ℕ → 𝓢(V, ℂ)}
+    {u v : V → ℂ} (hu : AEStronglyMeasurable u volume) (hv : AEStronglyMeasurable v volume)
+    (hφu : Tendsto (fun k => eLpNorm (fun x => φ k x - u x) (ENNReal.ofReal p) volume) atTop
+      (𝓝 0))
+    (hφv : Tendsto (fun k => eLpNorm (fun x => fourierMultiplier m (φ k) x - v x)
+      (ENNReal.ofReal p) volume) atTop (𝓝 0)) :
+    eLpNorm v (ENNReal.ofReal p) volume / eLpNorm u (ENNReal.ofReal p) volume ≤
+      multiplierNorm m p := by
   sorry
 
 end HarmonicAnalysis

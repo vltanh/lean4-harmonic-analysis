@@ -25,11 +25,13 @@ line derivatives of Mathlib.
   `𝓕 (∂̄f) (ξ) = π i ξ 𝓕 f (ξ)` and `𝓕 (∂f) (ξ) = π i ξ̄ 𝓕 f (ξ)`.
 * `HarmonicAnalysis.dzbar_conj`, `HarmonicAnalysis.dz_conj`: the conjugation rules
   `∂̄ (conj ∘ g) = conj ∘ ∂g` and `∂ (conj ∘ g) = conj ∘ ∂̄g`.
+* `HarmonicAnalysis.measurable_dz`, `HarmonicAnalysis.measurable_dzbar`: `∂g` and `∂̄g` are
+  measurable for every `g : ℂ → ℂ`.
 
 ## References
 
 * O. Dragičević, *Analysis of the Ahlfors–Beurling transform*, lecture notes,
-  [arXiv:2109.04555](https://arxiv.org/abs/2109.04555), §1.1.
+  [arXiv:2109.04555](https://arxiv.org/abs/2109.04555), §1.
 -/
 
 @[expose] public section
@@ -77,6 +79,14 @@ theorem fourier_dzbarCLM (f : 𝓢(ℂ, F)) (ξ : ℂ) :
 theorem fourier_dzCLM (f : 𝓢(ℂ, F)) (ξ : ℂ) :
     𝓕 (dzCLM f : ℂ → F) ξ = ((π : ℂ) * Complex.I * conj ξ) • 𝓕 (f : ℂ → F) ξ := by
   sorry
+
+theorem measurable_dz (g : ℂ → ℂ) : Measurable (dz g) := by
+  unfold dz
+  fun_prop
+
+theorem measurable_dzbar (g : ℂ → ℂ) : Measurable (dzbar g) := by
+  unfold dzbar
+  fun_prop
 
 /-- The conjugation rule `∂̄ (conj ∘ g) = conj ∘ ∂g`. -/
 theorem dzbar_conj (g : ℂ → ℂ) (z : ℂ) : dzbar (fun w => conj (g w)) z = conj (dz g z) := by
