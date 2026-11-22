@@ -23,6 +23,9 @@ Hytönen–van Neerven–Veraar–Weis (HNVW) for `ℝ² ≅ ℂ` and scalar sym
 every `ξ ≠ 0`, then for `1 < p < ∞` and every sequence `R_j → ∞` (in HNVW, `ε_j = 1 / R_j ↓ 0`),
 `‖T_m‖_{L^p (ℝ²)} ≤ liminf_j ‖T_{(m (n / R_j))_n}‖_{L^p_0 (𝕋²)}`.
 
+The other direction, from the line to the circle and for vector-valued functions, is Proposition
+5.7.1, in `HarmonicAnalysis.VectorValued.Transference`.
+
 If the `liminf` is finite, `m` is bounded
 (`HarmonicAnalysis.exists_norm_le_of_liminf_torusMultiplierNorm_ne_top`), and `T_m` extends to a
 bounded operator on `L^p (ℝ²)` (`HarmonicAnalysis.existsUnique_extension_of_multiplierNorm_ne_top`):

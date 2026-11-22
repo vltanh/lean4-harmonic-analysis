@@ -46,6 +46,7 @@ import all HarmonicAnalysis.Torus.TrigPoly
 import all HarmonicAnalysis.Transference.ContinuousSymbol
 import all HarmonicAnalysis.Transference.Homogeneous
 import all HarmonicAnalysis.Transference.RiemannSum
+import all HarmonicAnalysis.VectorValued.CircPoly
 import all HarmonicAnalysis.VectorValued.Dyadic.Average
 import all HarmonicAnalysis.VectorValued.Dyadic.Martingale
 import all HarmonicAnalysis.VectorValued.Dyadic.Shift

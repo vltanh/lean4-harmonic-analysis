@@ -42,45 +42,6 @@ variable {l m n : Type*}
 
 /-! ### Trigonometric polynomials -/
 
-section Polynomials
-
-variable {V V' : Type*} [AddCommMonoid V] [Module ℂ V] [AddCommMonoid V'] [Module ℂ V']
-
-/-- The trigonometric polynomial whose coefficients are zero. -/
-theorem circPoly_zero (t : UnitAddCircle) : circPoly (0 : ℤ →₀ V) t = 0 :=
-  Finsupp.sum_zero_index
-
-/-- The trigonometric polynomial `e_k x`. -/
-theorem circPoly_single (k : ℤ) (x : V) (t : UnitAddCircle) :
-    circPoly (Finsupp.single k x) t = fourier k t • x :=
-  Finsupp.sum_single_index (smul_zero _)
-
-/-- The sum of two trigonometric polynomials. -/
-theorem circPoly_add (c d : ℤ →₀ V) (t : UnitAddCircle) :
-    circPoly (c + d) t = circPoly c t + circPoly d t :=
-  Finsupp.sum_add_index' (fun _ => smul_zero _) fun _ _ _ => smul_add _ _ _
-
-/-- The image of a trigonometric polynomial under a linear map. -/
-theorem circPoly_mapRange (T : V →ₗ[ℂ] V') (c : ℤ →₀ V) (t : UnitAddCircle) :
-    circPoly (c.mapRange T (map_zero T)) t = T (circPoly c t) := by
-  rw [circPoly, Finsupp.sum_mapRange_index fun _ => smul_zero _, circPoly, map_finsuppSum]
-  simp only [map_smul]
-
-/-- The product of a scalar and a trigonometric polynomial. -/
-theorem circPoly_smul (z : ℂ) (c : ℤ →₀ V) (t : UnitAddCircle) :
-    circPoly (z • c) t = z • circPoly c t :=
-  circPoly_mapRange (LinearMap.lsmul ℂ V z) c t
-
-/-- A finite sum of trigonometric polynomials. -/
-theorem circPoly_sum {ι : Type*} (s : Finset ι) (c : ι → ℤ →₀ V) (t : UnitAddCircle) :
-    circPoly (∑ i ∈ s, c i) t = ∑ i ∈ s, circPoly (c i) t := by
-  classical
-  induction s using Finset.induction_on with
-  | empty => exact circPoly_zero t
-  | insert i s hi ih => rw [Finset.sum_insert hi, Finset.sum_insert hi, circPoly_add, ih]
-
-end Polynomials
-
 /-- The product of two analytic polynomials is an analytic polynomial. -/
 theorem exists_circPoly_mul [Fintype m] {c : ℤ →₀ Matrix l m ℂ} {d : ℤ →₀ Matrix m n ℂ}
     (hc : ∀ k ∈ c.support, 0 ≤ k) (hd : ∀ k ∈ d.support, 0 ≤ k) :

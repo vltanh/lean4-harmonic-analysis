@@ -504,7 +504,7 @@ private theorem exists_isUMDBound : ∃ β : ℝ≥0∞, β ≠ ⊤ ∧ ∀ (q :
     exact (ENNReal.ofReal_lt_ofReal_iff (by linarith)).2 (by linarith)
   refine (isUMDBound_umdConst one_lt_two).mono ((hle q hq1 (hq ▸ ENNReal.ofReal_ne_top) n).trans
     (ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_left ?_ hC.le)))
-  rw [hq, ENNReal.toReal_ofReal (by linarith), sub_le_iff_le_add, pStar]
+  rw [hq, ENNReal.toReal_ofReal (by linarith), sub_le_iff_le_add, BanachProbability.pStar]
   refine max_le (by linarith) ?_
   rw [div_le_iff₀ (by linarith)]
   linarith

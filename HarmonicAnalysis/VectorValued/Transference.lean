@@ -5,7 +5,7 @@ Authors: The-Anh Vu-Le
 -/
 module
 
-public import Mathlib.Analysis.Fourier.AddCircle
+public import HarmonicAnalysis.VectorValued.CircPoly
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 import Mathlib.Algebra.Order.Interval.Set.Group
 import Mathlib.Analysis.Calculus.Deriv.Polynomial
@@ -37,6 +37,10 @@ density of the trigonometric polynomials (`eLpNorm_le_of_forall_circPoly`). The 
 the line is invariant under dilations (`eLpNorm_fourierInv_multiplier_dilate_le`), which is used in
 (5.61), p. 465.
 
+The other direction, from the torus to the plane, is Proposition 5.7.4 and Corollary 5.7.6 of the
+same section, for scalar symbols: `HarmonicAnalysis.Transference.ContinuousSymbol` and
+`HarmonicAnalysis.Transference.Homogeneous`.
+
 A shorter transference: if `m` is constant near each frequency `k` of `f = Σ_k a_k e_k`, take a
 Schwartz function `θ` whose Fourier transform has compact support. Then, for small `ε`,
 `T_m (θ (ε ·) f) = θ (ε ·) Σ_k m (k) a_k e_k` exactly, and Lemma 5.7.3 on both sides gives the
@@ -51,48 +55,7 @@ open scoped ENNReal FourierTransform Topology SchwartzMap
 
 namespace HarmonicAnalysis
 
-/-! ### Trigonometric polynomials -/
-
-/-- The trigonometric polynomial `Σ_n c_n e_n` on `𝕋 = ℝ / ℤ`. -/
-noncomputable def circPoly {V : Type*} [AddCommMonoid V] [Module ℂ V] (c : ℤ →₀ V)
-    (t : UnitAddCircle) : V :=
-  c.sum fun n x => fourier n t • x
-
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace ℂ X]
-
-/-- Trigonometric polynomials are continuous. -/
-theorem continuous_circPoly (c : ℤ →₀ X) : Continuous (circPoly c) := by
-  unfold circPoly Finsupp.sum
-  exact continuous_finsetSum _ fun n _ => (map_continuous (fourier n)).smul continuous_const
-
-private theorem memLp_circPoly (c : ℤ →₀ X) (r : ℝ≥0∞) : MemLp (circPoly c) r haarAddCircle :=
-  (continuous_circPoly c).memLp_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
-
-/-- The characters `e_k` have modulus `1`. -/
-theorem norm_fourier_apply_eq_one (k : ℤ) (t : UnitAddCircle) : ‖fourier k t‖ = 1 := by
-  rw [fourier_apply, Circle.norm_coe]
-
-/-- The Fourier coefficients of a trigonometric polynomial. -/
-theorem integral_fourier_smul_circPoly [CompleteSpace X] (c : ℤ →₀ X) (n : ℤ) :
-    ∫ t, fourier (-n) t • circPoly c t ∂haarAddCircle = c n := by
-  have hi : ∀ m : ℤ, Integrable (fun t : UnitAddCircle => fourier (-n) t • fourier m t • c m)
-      haarAddCircle := fun m => ((map_continuous (fourier (-n))).smul
-    ((map_continuous (fourier m)).smul continuous_const)).integrable_of_hasCompactSupport
-      (HasCompactSupport.of_compactSpace _)
-  have hterm : ∀ m : ℤ, ∫ t : UnitAddCircle, fourier (-n) t • fourier m t • c m ∂haarAddCircle =
-      if n = m then c m else 0 := fun m => by
-    have h := congrFun (fourierCoeff_fourier (T := 1) m) n
-    rw [fourierCoeff, Pi.single_apply] at h
-    simp only [smul_smul]
-    simp only [smul_eq_mul] at h
-    rw [integral_smul_const, h]
-    split_ifs <;> simp
-  simp only [circPoly, Finsupp.sum, Finset.smul_sum]
-  rw [integral_finsetSum _ fun m _ => hi m, Finset.sum_congr rfl fun m _ => hterm m,
-    Finset.sum_ite_eq]
-  split_ifs with h
-  · rfl
-  · exact (Finsupp.notMem_support_iff.1 h).symm
 
 /-! ### Lemma 5.7.3: periodisation and Riemann sums -/
 
