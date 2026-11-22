@@ -12,13 +12,16 @@ A Lean 4 library of harmonic analysis for functions with values in Banach spaces
 library builds with no `sorry` and no axiom beyond Lean's standard [`propext`](https://leanprover-community.github.io/mathlib4_docs/Init/Core.html#propext), [`Classical.choice`](https://leanprover-community.github.io/mathlib4_docs/Init/Prelude.html#Classical.choice) and
 [`Quot.sound`](https://leanprover-community.github.io/mathlib4_docs/Init/Prelude.html#Quot.sound); [`scripts/Audit.lean`](scripts/Audit.lean) checks this for every declaration and fails otherwise.
 
-**Not formalized, planned extensions.** The left-hand Littlewood–Paley inequalities and the
-operator-valued statement of HNVW I, Theorem 5.7.10 (1); Mihlin's theorem (5.3.18) and the Marcinkiewicz
-theorem; several variables; the Hilbert transform as a limit in `L^p` and its extension to all of
-`L^p (ℝ; X)` (the inequalities are on `𝓕⁻ L¹ ∩ L^p`); complex Rademacher variables; `H^p (X)` for
-functions other than the analytic polynomials beyond what the factorization needs; from Lust-Piquard
-and Pisier: the constant `1 + √2` of Theorem II.1, general `H¹–ℓ²` multipliers, Theorem III.1 (ii)–(iii),
-III.5–III.7, general `C_E`, infinite dimension; complex and rectangular matrices in the final theorem.
+**Not formalized, planned extensions.** From HNVW I: the dyadic shifts for all generations and all
+admissible kernels, and their convergence; the Hilbert transform as a limit in `L^p`; the extension of the
+inequalities on the line from `𝓕⁻ L¹ ∩ L^p` to `L^p (ℝ; X)`, and from finite to infinite Littlewood–Paley
+sums (with the intervals inside `(−1, 1)`); the left-hand Littlewood–Paley inequalities and the
+operator-valued statement of Theorem 5.7.10 (1); Mihlin's theorem (5.3.18) and the Marcinkiewicz theorem;
+several variables; complex Rademacher variables. From Lust-Piquard and Pisier: the easy inequality (I.14)
+in Corollary III.4, the constant `1 + √2` and the other parts of Theorem II.1, Corollaries 0.2 and 0.4,
+general `H¹–ℓ²` multipliers, Theorem III.1 (ii)–(iii), III.5–III.7, the appendix, general `C_E`, `H^p (X)`
+beyond what the factorization needs, infinite dimension; complex and rectangular matrices in the final
+theorem.
 
 ## Results
 
@@ -33,23 +36,23 @@ full references are in [docs/REFERENCES.md](docs/REFERENCES.md).
 
 | Theorem | Lean | Source | Module |
 | --- | --- | --- | --- |
-| Dyadic averages on the line form a martingale on each unit interval; the dyadic shifts `S_k` with the kernels `h` and (5.19), generations `0 ≤ j < n`: `‖Σ_j ε_j S_j f‖_p ≤ 2β ‖f‖_p`, `‖Σ_j S_j f‖_p ≤ 2β² ‖f‖_p` | [`martingale_dyadicAvg`](VectorValuedHarmonicAnalysis/Dyadic/Martingale.lean#L185), [`eLpNormRad_dyadicShift_le`](VectorValuedHarmonicAnalysis/Dyadic/Shift.lean#L176), [`eLpNorm_sum_dyadicShift_le`](VectorValuedHarmonicAnalysis/Dyadic/Shift.lean#L258) | HNVW I, Props 5.1.4, 5.1.5 | `Dyadic/Martingale`, `Dyadic/Shift` |
-| Averaging over translates gives a convolution: `∫_0^1 S_j (f (· + u)) (· − u) du = φ_{2^{−j}} * f`, and the bounds of the shifts for `φ_{2^{−j}} * f` and, at every scale, for `Σ_j φ_{t 2^{−j}} * f` | [`intervalIntegral_dyadicShift_translate`](VectorValuedHarmonicAnalysis/Dyadic/Average.lean#L339), [`eLpNormRad_dilateConv_le`](VectorValuedHarmonicAnalysis/Dyadic/Average.lean#L402), [`eLpNorm_sum_dilateConv_le`](VectorValuedHarmonicAnalysis/Dyadic/Average.lean#L472) | HNVW I, Lemma 5.1.9, Prop 5.1.10 | `Dyadic/Average` |
+| Dyadic averages on the line form a martingale on each unit interval; the parts `S_j`, `0 ≤ j < n`, of the dyadic shift with the kernel `h` or (5.19): `‖Σ_j ε_j S_j f‖_p ≤ 2β ‖f‖_p`, and `‖Σ_j S_j f‖_p ≤ 2β² ‖f‖_p` for (5.19) | [`martingale_dyadicAvg`](VectorValuedHarmonicAnalysis/Dyadic/Martingale.lean#L185), [`eLpNormRad_dyadicShift_le`](VectorValuedHarmonicAnalysis/Dyadic/Shift.lean#L176), [`eLpNorm_sum_dyadicShift_le`](VectorValuedHarmonicAnalysis/Dyadic/Shift.lean#L258) | HNVW I, Props 5.1.4, 5.1.5 | `Dyadic/Martingale`, `Dyadic/Shift` |
+| Averaging over translates gives a convolution: `∫_0^1 S_j (f (· + u)) (· − u) du = φ_{2^{−j}} * f`, `φ (x) = ∫ k (x + u) h (u) du` for a kernel `k`; hence `‖Σ_j ε_j φ_{2^{−j}} * f‖_p ≤ 2β ‖f‖_p` for `k = h`, and `‖Σ_j φ_{t 2^{−j}} * f‖_p ≤ 2β² ‖f‖_p` for `k` of (5.19) and `t > 0` | [`intervalIntegral_dyadicShift_translate`](VectorValuedHarmonicAnalysis/Dyadic/Average.lean#L339), [`eLpNormRad_dilateConv_le`](VectorValuedHarmonicAnalysis/Dyadic/Average.lean#L402), [`eLpNorm_sum_dilateConv_le`](VectorValuedHarmonicAnalysis/Dyadic/Average.lean#L472) | HNVW I, Lemma 5.1.9, Prop 5.1.10 | `Dyadic/Average` |
 | Hilbert transform: the truncations `H_{ε, 2^n ε}` are bounded on `L^p (ℝ; X)` by `4β² + 11`; their symbols are `−i sgn (ξ) m_{ε,R} (ξ)` with `\|m_{ε,R}\| ≤ 2`, `m_{ε,R} → 1`; hence `‖𝓕⁻ (sgn · G)‖_p ≤ (4β² + 11) ‖𝓕⁻ G‖_p` for `G ∈ L¹` | [`eLpNorm_truncatedHilbert_le`](VectorValuedHarmonicAnalysis/HilbertTransform/Truncated.lean#L600), [`truncatedHilbert_fourierInv`](VectorValuedHarmonicAnalysis/HilbertTransform/Fourier.lean#L410), [`abs_hilbertSymbol_le`](VectorValuedHarmonicAnalysis/HilbertTransform/Fourier.lean#L209), [`tendsto_hilbertSymbol`](VectorValuedHarmonicAnalysis/HilbertTransform/Fourier.lean#L237), [`eLpNorm_fourierInv_sign_le`](VectorValuedHarmonicAnalysis/HilbertTransform/Fourier.lean#L555) | HNVW I, Thm 5.1.13, Lemma 5.2.1, Prop 5.2.2 | `HilbertTransform/Truncated`, `HilbertTransform/Fourier` |
 | Littlewood–Paley on the line, for the intervals `(2^{k−1}, 2^k)`, `−(2^{k−1}, 2^k)`, `(−1, 1)`, `0 < k ≤ K`, and `f = 𝓕⁻ G`, `G ∈ L¹`: `‖Σ ε_k Δ_k f‖_p ≤ C_β ‖f‖_p` | [`eLpNormRad_fourierInv_indicator_le`](VectorValuedHarmonicAnalysis/LittlewoodPaley/Line.lean#L822), [`eLpNormRad_lineBlock_le`](VectorValuedHarmonicAnalysis/LittlewoodPaley/Line.lean#L1096) | HNVW I, Thm 5.3.24 and Cor 5.3.25, right-hand inequalities | `LittlewoodPaley/Line` |
-| Transference: if `T_m`, with a bounded operator-valued symbol `m` continuous at the integers, is bounded from `L^p (ℝ; X)` to `L^p (ℝ; Y)` with norm `C`, then so is its restriction to `ℤ`, from `L^p (𝕋; X)` to `L^p (𝕋; Y)` | [`eLpNorm_trigPoly_multiplier_le`](VectorValuedHarmonicAnalysis/Transference.lean#L1064); Lemmas 5.7.2, 5.7.3: [`tendsto_integral_dilate_multiplier`](VectorValuedHarmonicAnalysis/Transference.lean#L558), [`tendsto_eLpNorm_dilate_smul`](VectorValuedHarmonicAnalysis/Transference.lean#L320) | HNVW I, Prop 5.7.1 (`d = 1`) | `Transference` |
-| Littlewood–Paley on the circle, for the dyadic blocks `Ĩ_k ⊂ ℤ`, `\|k\| ≤ K`, and trigonometric polynomials: `‖Σ ε_k Δ̃_k f‖_{L^p (Ω × 𝕋; X)} ≤ C_β ‖f‖_{L^p (𝕋; X)}` | [`eLpNormRad_dyadicBlock_le`](VectorValuedHarmonicAnalysis/LittlewoodPaley/Circle.lean#L380), [`eLpNormRad_dyadicBlock_succ_le`](VectorValuedHarmonicAnalysis/LittlewoodPaley/Circle.lean#L368) | HNVW I, Thm 5.7.10 (2), right-hand inequality | `LittlewoodPaley/Circle` |
+| Transference: if `T_m`, with a bounded operator-valued symbol `m` such that each `m (·) x` is strongly measurable, and continuous at the integers, is bounded from `L^p (ℝ; X)` to `L^p (ℝ; Y)` with norm `C`, then so is its restriction to `ℤ`, from `L^p (𝕋; X)` to `L^p (𝕋; Y)` | [`eLpNorm_trigPoly_multiplier_le`](VectorValuedHarmonicAnalysis/Transference.lean#L1064); Lemmas 5.7.2, 5.7.3: [`tendsto_integral_dilate_multiplier`](VectorValuedHarmonicAnalysis/Transference.lean#L558), [`tendsto_eLpNorm_dilate_smul`](VectorValuedHarmonicAnalysis/Transference.lean#L320) | HNVW I, Prop 5.7.1 (`d = 1`) | `Transference` |
+| Littlewood–Paley on the circle, for the dyadic blocks `Ĩ_k ⊂ ℤ`, `\|k\| ≤ K`, and trigonometric polynomials: `‖Σ ε_k Δ̃_k f‖_{L^p (Ω × 𝕋; X)} ≤ C_β ‖f‖_{L^p (𝕋; X)}` | [`eLpNormRad_dyadicBlock_le`](VectorValuedHarmonicAnalysis/LittlewoodPaley/Circle.lean#L383), [`eLpNormRad_dyadicBlock_succ_le`](VectorValuedHarmonicAnalysis/LittlewoodPaley/Circle.lean#L371) | HNVW I, Thm 5.7.10 (2), right-hand inequality | `LittlewoodPaley/Circle` |
 | Szegő factorization: a continuous invertible `a : 𝕋 → M_n (ℂ)` is `Ψ h` a.e., `Ψ` unitary-valued, `h, h⁻¹ ∈ H²` | [`exists_szego_factorization`](VectorValuedHarmonicAnalysis/Hardy/Factorization.lean#L475) | Bekjan–Xu (2009), Thm 3.1 | `Hardy/Factorization` |
 | Riesz factorization: an analytic matrix polynomial is `f = g h` a.e., `g, h ∈ H²`, with `‖g (t)‖²_{S_{2p}} ≤ ‖f (t)‖_{S_p}` and `‖h (t)‖²_{S_{2p}} ≤ ‖f (t)‖_{S_p} + δ` for a.e. `t` and all `p ≥ 1` | [`exists_riesz_factorization`](VectorValuedHarmonicAnalysis/Hardy/Factorization.lean#L732) | Sarason (1967); Bekjan–Xu (2009), Thm 3.4 | `Hardy/Factorization` |
-| Paley's inequality: for `1 ≤ p ≤ 2` and every analytic polynomial `f = Σ c_k e_k` with `c_k ∈ M_n (ℂ)`, `c_{2^k} = a_k + b_k` with `‖(Σ a_k a_kᴴ)^{1/2}‖_{S_p} + ‖(Σ b_kᴴ b_k)^{1/2}‖_{S_p} ≤ M ∫ ‖f‖_{S_p}`, `M` absolute | [`paley_schatten`](VectorValuedHarmonicAnalysis/Paley/Schatten.lean#L829) | LPP, Thm III.1 (i) for the Paley projection, and Thm II.1 without its constant | `Paley/Schatten` |
-| The lower Khintchine inequality, `1 ≤ p ≤ 2`: `A_k = a_k + b_k` with `‖(Σ a_k a_kᴴ)^{1/2}‖_{S_p} + ‖(Σ b_kᴴ b_k)^{1/2}‖_{S_p} ≤ M E ‖Σ ε_k A_k‖_{S_p}`, `M` absolute | [`rademacher_schatten_le`](VectorValuedHarmonicAnalysis/Paley/Rademacher.lean#L96) | LPP, Cor III.4, with signs; Pisier (1998), (8.4.4) | `Paley/Rademacher` |
+| Paley's inequality: for `1 ≤ p ≤ 2` and every analytic polynomial `f = Σ c_k e_k` with `c_k ∈ M_n (ℂ)`, `c_{2^k} = a_k + b_k` with `‖(Σ a_k a_kᴴ)^{1/2}‖_{S_p} + ‖(Σ b_kᴴ b_k)^{1/2}‖_{S_p} ≤ M ∫ ‖f‖_{S_p}`, `M` absolute | [`paley_schatten`](VectorValuedHarmonicAnalysis/Paley/Schatten.lean#L828) | LPP, Thm III.1 (i) for the Paley projection, and Thm II.1 without its constant | `Paley/Schatten` |
+| The lower Khintchine inequality, `1 ≤ p ≤ 2`: `A_k = a_k + b_k` with `‖(Σ a_k a_kᴴ)^{1/2}‖_{S_p} + ‖(Σ b_kᴴ b_k)^{1/2}‖_{S_p} ≤ M E ‖Σ ε_k A_k‖_{S_p}`, `M` absolute | [`rademacher_schatten_le`](VectorValuedHarmonicAnalysis/Paley/Rademacher.lean#L96) | LPP, Cor III.4 (`1 < p < 2`) and Thm 0.1 (`p = 1`), with signs; Pisier (1998), (8.4.4) | `Paley/Rademacher` |
 | **Noncommutative Khintchine inequality**: an absolute `C` such that for all `2 ≤ q < ∞` and real matrices `x_k` of any size, with `m = max (‖(Σ x_kᵀ x_k)^{1/2}‖_{S_q}, ‖(Σ x_k x_kᵀ)^{1/2}‖_{S_q})`, `m ≤ ‖Σ ε_k x_k‖_{L_q (Ω; S_q)} ≤ C √q m`; for normal `x_k` with the one square function | [`ncKhintchine`](VectorValuedHarmonicAnalysis/NoncommutativeKhintchine.lean#L249), [`ncKhintchine_of_normal`](VectorValuedHarmonicAnalysis/NoncommutativeKhintchine.lean#L279) | Lust-Piquard (1986); LPP; Pisier (1998), Thm 8.4.1 (i), (8.4.5) | `NoncommutativeKhintchine` |
 
 The library uses [BanachProbability](https://github.com/vltanh/lean4-banach-probability) (UMD
 constants; Schatten norms of real and complex matrices, Hölder's inequality; Kahane's contraction
 principle; type 2 of `S_q` and K-convexity; norming elements) and
-[HarmonicAnalysis](https://github.com/vltanh/lean4-harmonic-analysis) (Minkowski's integral
-inequality).
+[HarmonicAnalysis](https://github.com/vltanh/lean4-harmonic-analysis) (a weighted form of
+Jensen's inequality).
 
 ## Method
 
@@ -75,12 +78,13 @@ The proofs follow the sources; the module docstrings say where they depart. In o
 
 | Source | Read | Used for | Departures and completions |
 | --- | --- | --- | --- |
-| HNVW I (2016) | the book | Sections 5.1–5.3, 5.7; Prop 1.3.1 | finitely many generations; the bounds are uniform in the truncation and the limit is taken on the Fourier side by Fatou's lemma, instead of the convergence of the averaged shifts in `L^p` (Lemmas 5.1.8, 5.1.12); the random dyadic systems are translates of the standard one; the randomised UMD property is used directly on unit intervals instead of Theorem 4.2.13; real signs, so the contraction principle costs a factor; continuity at the integers instead of Lebesgue points in Prop 5.7.1 |
-| Bekjan–Xu (2009) | arXiv:0705.1947 | Theorems 3.1, 3.4 | matrix case; `Φ (h) Φ (h⁻¹) = 1` is replaced by an explicit inverse; pointwise bounds, which give the mixed norms that LPP need; `f` an analytic polynomial; `δ > 0` instead of equality |
-| LPP (1991) | Ark. Mat. 29 | Theorem III.1 (i), Corollary III.4, pp. 254–255, (I.1)–(I.7) | (III.3) on average over the signs, from HNVW I, Theorem 5.7.10, instead of Bourgain's theorem for every choice of signs; the UMD property of `C_{2p}` from noncommutative martingale transforms (Randrianantoanina), instead of Cotlar's identity; symmetric matrices and the Hermitian dilation in the duality step |
+| HNVW I (2016), II (2017) | the books | I, Sections 5.1–5.3, 5.7; Props 1.2.22, 1.3.1, 3.2.10, Lemma 2.4.8; II, Thm 6.1.13 | finitely many generations; the bounds are uniform in the truncation and the limit is taken on the Fourier side by Fatou's lemma, instead of the convergence of the averaged shifts in `L^p` (Lemmas 5.1.8, 5.1.12); the random dyadic systems are translates of the standard one; the randomised UMD property is used directly on unit intervals instead of Theorem 4.2.13; for the left half of Prop 5.1.5, the martingale of the shifts; real signs, so the contraction principle costs a factor; Lemma 5.3.21 only for scalar weights equal up to dilation, with the `L¹` norm of the derivative; in Cor 5.3.25 the signs `±` are split first, by reflection; continuity at the integers instead of Lebesgue points in Prop 5.7.1; Minkowski's inequality by a weighted Jensen inequality |
+| Bekjan–Xu (2009) | arXiv:0705.1947 | Theorems 3.1, 3.4 | matrix case, `p = q = 2`, continuous `a`; `Φ (h) Φ (h⁻¹) = 1` is replaced by an explicit inverse, and (3.2), (3.3) and Proposition 3.3 are not needed; pointwise bounds, which give the mixed norms that LPP need; `f` an analytic polynomial |
+| LPP (1991) | Ark. Mat. 29 | Theorem III.1 (i), Corollary III.4, pp. 254–255, (I.1)–(I.7) | (III.3) on average over the signs, from HNVW I, Theorem 5.7.10, instead of Bourgain's theorem for every choice of signs; the UMD property of `C_{2p}` from noncommutative martingale transforms (Randrianantoanina), instead of Cotlar's identity; a factorization up to a factor `2` instead of the equality (β), p. 252; `H²` is defined by the vanishing of the Fourier coefficients; `p = 1` by the proof of Theorem III.1; symmetric matrices and the Hermitian dilation in the duality step |
 | Pisier (1998) | Numdam, `AST_1998__247__R1_0` | pp. 105–106, `√q` | the type 2 constant for all `q ≥ 2` (the source has even `q`) |
 
-Not consulted: Lust-Piquard (1986), Sarason (1967), Helson–Lowdenslager (1958), Bourgain (1986).
+Not consulted: Lust-Piquard (1986), Sarason (1967), Helson–Lowdenslager (1958), Arveson (1967),
+Bourgain (1986).
 
 ## Literature
 

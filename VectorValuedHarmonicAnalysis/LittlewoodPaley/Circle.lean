@@ -22,10 +22,11 @@ Source: Hytönen–van Neerven–Veraar–Weis (HNVW), *Analysis in Banach space
 says that the multiplier `m (ξ) x = Σ_k ε_k 1_{I_k} (ξ) x`, with values in `Y = L^p (Ω; X)`, is
 bounded on the line; its dilates `m (ρ ·)`, for irrational `ρ > 1`, have the same norm and are
 continuous at the integers, hence are transferred to `𝕋` by Proposition 5.7.1
-(`VectorValuedHarmonicAnalysis.Transference`); and `m (ρ j) = m (j)` at the frequencies `j` of `f`
-if `ρ` is near `1` ((5.61), (5.62)). In the book all `k ∈ ℤ` are taken at once; here the sums are
-finite. The left-hand inequality and the operator-valued statement (1) of that theorem are not
-treated.
+(`VectorValuedHarmonicAnalysis.Transference`); and, if `ρ` is near `1`, `ρ j ∈ I_k` exactly when
+`j ∈ Ĩ_k`, at the frequencies `j` of `f` ((5.61), (5.62); in (5.60) the intervals are half-open,
+here they are open, as in Corollary 5.3.25). The signs are real. In the book all `k ∈ ℤ` are taken
+at once; here the sums are finite. The left-hand inequality and the operator-valued statement (1) of
+that theorem are not treated.
 
 A shorter transference: `m (ρ ·)` is constant near each integer, so that a cut-off with compactly
 supported Fourier transform and Lemma 5.7.3 suffice, without duality and Proposition 5.7.1; see the
@@ -111,7 +112,7 @@ private theorem mem_lineBlock_iff_of_pos {N : ℕ} {ρ : ℝ} (hρ : 1 < ρ) (h�
       · have h5 : (j : ℝ) + 1 ≤ 2 ^ (k + 1) := by exact_mod_cast h4
         exact h2.trans_le h5
 
-/-- `m (ρ j) = m (j)` (HNVW I, p. 465). -/
+/-- `ρ j ∈ I_k` if and only if `j ∈ Ĩ_k` (HNVW I, p. 465). -/
 private theorem mem_lineBlock_iff {N : ℕ} {ρ : ℝ} (hρ : 1 < ρ) (hρN : ρ * N < N + 1) {j : ℤ}
     (hj : |j| ≤ N) (k : ℤ) : ρ * j ∈ lineBlock k ↔ j ∈ dyadicBlock k := by
   rcases lt_trichotomy k 0 with hk | rfl | hk
@@ -184,7 +185,8 @@ private theorem continuousAt_indicator_lineBlock {ρ : ℝ} (hρ : Irrational ρ
 
 /-! ### Rademacher sums as a multiplier
 
-HNVW I, p. 466: `Y = L^p (Ω; X)`, `Ω = {±1}^n`, and `m (ξ) x = Σ_k ε_k 1_{I_k} (ξ) x`. Here `Y` is
+HNVW I, p. 466: `Y = L^p (Ω; X)` and `m (ξ) x = Σ_k ε_k 1_{I_k} (ξ) x`, with `Ω = {±1}^n` (real
+signs). Here `Y` is
 the space of the functions `{±1}^n → X` with the norm of `ℓ^p`; it is `L^p (Ω; X)` up to the factor
 `2^{n/p}`. -/
 
@@ -310,7 +312,8 @@ private theorem eLpNorm_fourierInv_signMultiplier_le [CompleteSpace X] (hp : 0 <
       (measurableSet_lineBlock _))).aestronglyMeasurable, mul_assoc]
   gcongr
 
-/-- `T̃_{m (ρ ·)} f = Σ_k ε_k ⊗ Δ̃_{κ k} f`, as `m (ρ j) = m (j)` at the frequencies of `f`. -/
+/-- `T̃_{m (ρ ·)} f = Σ_k ε_k ⊗ Δ̃_{κ k} f`, as `m (ρ j) = Σ_k ε_k 1_{Ĩ_k} (j)` at the
+frequencies `j` of `f`. -/
 private theorem sum_signMultiplier (κ : Fin n → ℤ) {ρ : ℝ} {c : ℤ →₀ X}
     (hρ : ∀ j ∈ c.support, ∀ k, ρ * j ∈ lineBlock k ↔ j ∈ dyadicBlock k) (t : UnitAddCircle) :
     (c.sum fun j y => fourier j t • signMultiplier X p κ (ρ * j) y) =

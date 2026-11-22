@@ -42,13 +42,12 @@ Departures from the source:
 
 * (III.3) is proved only on average over the signs, which is all that (III.2) uses
   (`exists_avg_integral_paleyBlockClosed_le`, `exists_avg_integral_paleyBlockOpen_le`). The source
-  proves it for every choice of the signs, by Bourgain's multiplier theorem ([B2, Theorem 4] there,
-  a paper that was not consulted). Here it follows from the Littlewood–Paley inequality
-  (Hytönen–van Neerven–Veraar–Weis, *Analysis in Banach spaces I* (2016), Theorem 5.7.10;
-  `eLpNormRad_dyadicBlock_succ_le`) and the randomised boundedness of single frequencies
-  (`eLpNormRad_singleFrequency_le`): the blocks `[2^{k−1}, 2^k]` and `(2^{k−1}, 2^k]` of the source
-  differ from the dyadic blocks `[2^{k−1}, 2^k)` by one and two frequencies. The source treats
-  general multipliers `H¹ → ℓ²`; here only the sequence `2^k` occurs.
+  proves it for every choice of the signs, by Bourgain's multiplier theorem ([B2, Theorem 4] there).
+  Here it follows from the Littlewood–Paley inequality (Hytönen–van Neerven–Veraar–Weis, *Analysis
+  in Banach spaces I* (2016), Theorem 5.7.10; `eLpNormRad_dyadicBlock_succ_le`) and the randomised
+  boundedness of single frequencies (`eLpNormRad_singleFrequency_le`): the blocks `[2^{k−1}, 2^k]`
+  and `(2^{k−1}, 2^k]` of the source differ from the dyadic blocks `[2^{k−1}, 2^k)` by one and two
+  frequencies. The source treats general multipliers `H¹ → ℓ²`; here only the sequence `2^k` occurs.
 * That `C_{2p}` is UMD is proved in the source (p. 251) by Cotlar's identity, interpolation, duality
   and the equivalence of UMD and the boundedness of the Hilbert transform. Here
   `BanachProbability.umdConst_two_complexSchattenSpace_le` is used, which is proved from the weak

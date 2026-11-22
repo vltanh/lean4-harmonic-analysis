@@ -29,8 +29,8 @@ the exponents `1` and `p`.
 
 The signs are real throughout the package, also in complex spaces, where the book uses complex
 Rademacher variables. This costs a factor in the contraction principle for complex scalars: the best
-constant is `1` for complex Rademacher variables and `π / 2` for real signs; here it is `2`, from
-the real and the imaginary parts.
+constant is `1` for complex Rademacher variables and `π / 2` for real signs; here the
+constant `2 ≥ π / 2` is used.
 -/
 
 @[expose] public section
