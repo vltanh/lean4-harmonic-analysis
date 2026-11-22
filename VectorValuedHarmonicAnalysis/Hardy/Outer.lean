@@ -6,14 +6,18 @@ import Mathlib.MeasureTheory.SpecificCodomains.WithLp
 /-!
 # Outer functions and the factorization of `AᴴA`
 
-The theory of H. Helson and D. Lowdenslager, *Prediction theory and Fourier series in several
-variables. II*, Acta Math. 106 (1961), 175–213, §§9–10, for functions on the circle with values in
-the matrices of any shape.
+Part of the theory of H. Helson and D. Lowdenslager, *Prediction theory and Fourier series in
+several variables. II*, Acta Math. 106 (1961), 175–213, §§9–10, for functions on the circle with
+values in the matrices of any shape. (Theorems 8, 12 and 13 of this article are in
+`RangeFunction.lean`; the corollary of Theorem 10 and Theorem 11 are not included.) Some steps are
+those of the first article with this title, Acta Math. 99 (1958), 165–202.
 
 Helson and Lowdenslager consider products `W = A Aᴴ` and left-outer functions; transposing exchanges
 them with the products `Aᴴ A` and the right-outer functions considered here, used, in the equivalent
 form below, by D. Sarason, *Generalized interpolation in H^∞*, Trans. Amer. Math. Soc. 127 (1967),
-179–203, §10.
+179–203, §10. Moreover they work with the canonical process in `L² (W)`, which is multiplied by
+`e_{-n}`, so that the manifolds `M_n` increase with `n` (p. 202); here this process is realized by
+the columns of the functions `A e_k` in `L²`, and the manifolds `M_k` decrease.
 
 * `IsOuter A`: `A ∈ H²`, and the closure in `L²` of the functions `A (1 + P)`, `P` an analytic
   trigonometric polynomial without constant term, contains a constant.
@@ -21,6 +25,8 @@ form below, by D. Sarason, *Generalized interpolation in H^∞*, Trans. Amer. Ma
   `A e_j`, `j ≥ k`. An orthonormal basis of the orthogonal complement of `M_1` in `M_0` (the
   innovation of the process) is a matrix-valued function `X` with `Xᴴ X = 1`, and `Xᴴ A` is
   analytic. If `A ∈ H²`, the process has no remote past, `⋂ M_k = 0`, and `A = X (Xᴴ A)`.
+* `isOuter_of_dense`: `A ∈ H²` is outer if the functions `A Q`, `Q` an analytic polynomial, are
+  dense in `H²`.
 * `exists_isOuter`: if `A ∈ H²`, there is an outer function `B` whose constant coefficient is
   surjective, with at most as many rows as `A` has columns, such that `Bᴴ B = Aᴴ A`.
 * `IsOuter.range_eq` (Theorem 9): the range of an outer function is almost everywhere the range of
@@ -37,7 +43,7 @@ form below, by D. Sarason, *Generalized interpolation in H^∞*, Trans. Amer. Ma
 @[expose] public section
 
 open MeasureTheory AddCircle Filter
-open scoped ENNReal Matrix ComplexConjugate Topology
+open scoped Matrix Topology
 
 namespace VectorValuedHarmonicAnalysis
 
@@ -97,7 +103,7 @@ private theorem exists_mul_mul_eq [Fintype m] [Fintype n] (M : Matrix m n ℂ) :
   exact h3
 
 /-- The range of a limit of matrices `M Q_N` is contained in that of `M`. -/
-private theorem range_le_of_tendsto [Finite m] [Fintype n] [Fintype l] {M : Matrix m n ℂ}
+private theorem range_le_of_tendsto [Fintype n] [Fintype l] {M : Matrix m n ℂ}
     {Q : ℕ → Matrix n l ℂ} {F : Matrix m l ℂ} (h : Tendsto (fun N => M * Q N) atTop (𝓝 F)) :
     LinearMap.range F.mulVecLin ≤ LinearMap.range M.mulVecLin := by
   rintro _ ⟨v, rfl⟩
@@ -186,7 +192,8 @@ private theorem inner_shift_comm (k : ℤ) (f g : ColLp m) :
   rw [← LinearIsometry.inner_map_map (shift (-k)) (shift k f) g, shift_shift, neg_add_cancel,
     shift_zero]
 
-/-- `M_r`, the closed span of the functions `e_k a_j`, `k ≥ r`. -/
+/-- `M_r`, the closed span of the functions `e_k a_j`, `k ≥ r`. (Helson–Lowdenslager (1961), p. 202,
+take the index with the opposite sign, so that the manifolds increase.) -/
 private noncomputable def past (a : n → ColLp m) (r : ℤ) : Submodule ℂ (ColLp m) :=
   (Submodule.span ℂ {f | ∃ k : ℤ, r ≤ k ∧ ∃ j, f = shift k (a j)}).topologicalClosure
 
@@ -338,8 +345,8 @@ private theorem tendstoLTwo_toMat {F : ℕ → l → ColLp m} {f : l → ColLp m
 
 /-! ### The past and the polynomials -/
 
-/-- The linear combinations of the `e_k a_j`, `k ≥ r`, are the products of `a` and the polynomials
-with coefficients of order `≥ r`. -/
+/-- The linear combinations of the `e_k a_j`, `k ≥ r`, are products of `a` and polynomials with
+coefficients of order `≥ r`. -/
 private theorem exists_trigPoly_of_mem_span [Fintype n] {a : n → ColLp m} {r : ℤ} {y : ColLp m}
     (hy : y ∈ Submodule.span ℂ {f | ∃ k : ℤ, r ≤ k ∧ ∃ j, f = shift k (a j)}) :
     ∃ d : ℤ →₀ (n → ℂ), (∀ k < r, d k = 0) ∧
@@ -400,8 +407,9 @@ private theorem exists_tendsto_of_mem_past [Fintype n] [Finite l] {a : n → Col
 
 /-! ### The innovation as a matrix-valued function -/
 
-/-- Helson–Lowdenslager (1958), (51) and (52): the functions `e_k x`, `k ≠ 0`, are orthogonal to the
-innovation if `x` is in it. -/
+/-- Helson–Lowdenslager (1961), p. 202, "The subspaces `R_n` are mutually perpendicular" (the
+analogue of (1958), (51) and (52)): the functions `e_k x`, `k ≠ 0`, are orthogonal to the innovation
+if `x` is in it. -/
 private theorem inner_shift_innovation {a : n → ColLp m} {x y : ColLp m} (hx : x ∈ innovation a)
     (hy : y ∈ innovation a) {k : ℤ} (hk : k ≠ 0) : inner ℂ (shift k x) y = 0 := by
   rcases lt_or_gt_of_ne hk with hk | hk
@@ -411,8 +419,8 @@ private theorem inner_shift_innovation {a : n → ColLp m} {x y : ColLp m} (hx :
   · exact Submodule.inner_right_of_mem_orthogonal
       (past_anti a (by omega) (shift_mem_past_add k hx.1)) hy.2
 
-/-- Helson–Lowdenslager (1958), (54): an orthonormal basis of the innovation is orthonormal at
-almost every point. -/
+/-- Helson–Lowdenslager (1958), (54) and (64): an orthonormal basis of the innovation is orthonormal
+at almost every point. -/
 private theorem conjTranspose_mul_self_eq_one [Finite l] [DecidableEq l] {a : n → ColLp m}
     {x : l → ColLp m} (hx : Orthonormal ℂ x) (hxa : ∀ i, x i ∈ innovation a) :
     ∀ᵐ t ∂haarAddCircle, (toMat x t)ᴴ * toMat x t = 1 := by
@@ -431,7 +439,8 @@ private theorem conjTranspose_mul_self_eq_one [Finite l] [DecidableEq l] {a : n 
   ext i j
   exact ht i j
 
-/-- `xᴴ a` is analytic, because the innovation is orthogonal to the `e_k a_j`, `k ≥ 1`. -/
+/-- Helson–Lowdenslager (1958), (66) and (67): `xᴴ a` is analytic, because the innovation is
+orthogonal to the `e_k a_j`, `k ≥ 1`; (1961), p. 202, "The sum contains only terms with `i ≥ 0`". -/
 private theorem isHardyTwo_conjTranspose_toMat_mul [Finite l] {a : n → ColLp m}
     {x : l → ColLp m} (hx : Orthonormal ℂ x) (hxa : ∀ i, x i ∈ innovation a) :
     IsHardyTwo fun t => (toMat x t)ᴴ * toMat a t := by
@@ -443,7 +452,8 @@ private theorem isHardyTwo_conjTranspose_toMat_mul [Finite l] {a : n → ColLp m
   rw [matFourierCoeff_conjTranspose_toMat_mul, inner_shift_comm]
   exact Submodule.inner_left_of_mem_orthogonal (shift_mem_past a (by omega) j) (hxa i).2
 
-/-- The innovation is orthogonal to `M_1`. -/
+/-- `(x, u - P u) = (x, u)` for `x` in the innovation, which is orthogonal to `M_1`; `P` is the
+projection onto `M_1`. -/
 private theorem inner_sub_starProjection {a : n → ColLp m} {x : ColLp m} (hx : x ∈ innovation a)
     (u : ColLp m) : inner ℂ x (u - (past a 1).starProjection u) = inner ℂ x u := by
   rw [inner_sub_right, Submodule.inner_left_of_mem_orthogonal
@@ -481,32 +491,9 @@ private theorem toMat_sub_starProjection [Finite n] [Fintype l] {a : n → ColLp
   simp only [WithLp.ofLp_sum, Finset.sum_apply, WithLp.ofLp_smul, Pi.smul_apply, smul_eq_mul] at h1
   refine Eq.trans h1 (Finset.sum_congr rfl fun o _ => mul_comm _ _)
 
-/-- The constant coefficient of `xᴴ a` has full rank, because the components of the `a_j` orthogonal
-to `M_1` span the innovation. -/
-private theorem rank_matFourierCoeff_zero [Fintype n] [Fintype l] {a : n → ColLp m}
-    {x : l → ColLp m} (hx : Orthonormal ℂ x) (hxa : ∀ i, x i ∈ innovation a) :
-    (matFourierCoeff (fun t => (toMat x t)ᴴ * toMat a t) 0).rank = Fintype.card l := by
-  refine LinearIndependent.rank_matrix (Fintype.linearIndependent_iff.2 fun z hz i => ?_)
-  let w : ColLp m := ∑ i, conj (z i) • x i
-  have hw : w ∈ innovation a := Submodule.sum_mem _ fun i _ => Submodule.smul_mem _ _ (hxa i)
-  have h1 (j : n) : inner ℂ w (a j - (past a 1).starProjection (a j)) = 0 := by
-    rw [inner_sub_starProjection hw, sum_inner]
-    have h2 := congrFun hz j
-    rw [Finset.sum_apply] at h2
-    refine Eq.trans (Finset.sum_congr rfl fun i _ => ?_) h2
-    rw [inner_smul_left, Complex.conj_conj, ← matFourierCoeff_zero_conjTranspose_toMat_mul]
-    rfl
-  have h2 : innovation a ≤ LinearMap.ker (innerSL ℂ w).toLinearMap := by
-    rw [innovation_eq_span, Submodule.span_le]
-    rintro _ ⟨j, rfl⟩
-    exact h1 j
-  have h3 : w = 0 := inner_self_eq_zero.1 (h2 hw)
-  have h4 : inner ℂ (x i) w = conj (z i) := hx.inner_right_fintype _ i
-  rw [h3, inner_zero_right] at h4
-  exact (map_eq_zero _).1 h4.symm
-
-/-- Helson–Lowdenslager (1958), p. 187: the component of `a` orthogonal to `M_1` is approximated by
-the functions `a (1 + P)`. -/
+/-- Helson–Lowdenslager (1958), pp. 187 and 190 ("Let `I + H` be the unique element of minimal norm
+in the closure of this set"): the component `x B₀` of `a` orthogonal to `M_1`, where `B₀` is the
+constant coefficient of `xᴴ a`, is approximated by functions `a (1 + P)`. -/
 private theorem exists_tendsto_innovation [Fintype n] [DecidableEq n] [Fintype l] {a : n → ColLp m}
     {x : l → ColLp m} (hxa : ∀ i, x i ∈ innovation a)
     (hx : ∀ v ∈ innovation a, ∑ i, inner ℂ (x i) v • x i = v) :
@@ -558,20 +545,20 @@ private theorem inner_shift_unitLp_of_mem_past [DecidableEq m] {a : n → ColLp 
 private theorem eq_zero_of_forall_mem_past {a : n → ColLp m} (ha : IsHardyTwo (toMat a))
     {f : ColLp m} (hf : ∀ p : ℕ, f ∈ past a p) : f = 0 := by
   classical
-  have h0 (i : m) (k : ℤ) : fourierCoeff (fun t => (f t).ofLp i) k = 0 := by
-    rw [← inner_shift_unitLp]
-    exact inner_shift_unitLp_of_mem_past ha (hf (k.toNat + 1)) (by omega) i
-  have h1 (i : m) : ∀ᵐ t ∂haarAddCircle, (f t).ofLp i = 0 :=
-    ae_eq_zero_of_fourierCoeff_eq_zero (((Lp.memLp f).eval_piLp i).integrable one_le_two) (h0 i)
+  have h1 := ae_eq_zero_of_matFourierCoeff_eq_zero (f := toMat fun _ : Unit => f)
+    (fun i j => (memLp_toMat _ i j).integrable one_le_two) fun k => by
+      ext i j
+      refine (inner_shift_unitLp k i f).symm.trans ?_
+      exact inner_shift_unitLp_of_mem_past ha (hf (k.toNat + 1)) (by omega) i
   refine Lp.ext ?_
-  filter_upwards [ae_all_iff.2 h1, Lp.coeFn_zero (EuclideanSpace ℂ m) 2 (haarAddCircle (T := 1))]
-    with t ht h2
+  filter_upwards [h1, Lp.coeFn_zero (EuclideanSpace ℂ m) 2 (haarAddCircle (T := 1))] with t ht h2
   rw [h2]
   ext i
-  exact ht i
+  exact congrFun (congrFun ht i) ()
 
-/-- Helson–Lowdenslager (1961), p. 202: if there is no remote past, the spaces `e_k R`, `k ≥ 0`,
-span `M_0`. -/
+/-- Helson–Lowdenslager (1961), p. 202, "since `Y` has no remote past, they span together the same
+manifold as all the `M_n`": if the `a_j` are analytic, an element of `M_0` orthogonal to the spaces
+`e_k R`, `k ≥ 0`, vanishes. -/
 private theorem eq_zero_of_forall_inner_shift [Fintype l] {a : n → ColLp m}
     (ha : IsHardyTwo (toMat a)) {x : l → ColLp m} (hxa : ∀ i, x i ∈ innovation a)
     (hx : ∀ v ∈ innovation a, ∑ i, inner ℂ (x i) v • x i = v) {f : ColLp m} (hf : f ∈ past a 0)
@@ -595,7 +582,9 @@ private theorem eq_zero_of_forall_inner_shift [Fintype l] {a : n → ColLp m}
     have h5 := shift_mem_past_add p h4
     rwa [shift_shift, add_neg_cancel, shift_zero, add_comm] at h5
 
-/-- If the `a_j` are analytic, they are in the closed span of the functions `e_k x_i`, `k ≥ 0`. -/
+/-- Helson–Lowdenslager (1961), p. 202: the `e_k x_i` are "an orthonormal process having the same
+past". If the `a_j` are analytic, they are in the closed span of the functions `e_k x_i`, `k ≥ 0`.
+(The converse is clear, because the `x_i` are in `M_0`.) -/
 private theorem mem_past_innovation [Fintype l] {a : n → ColLp m} (ha : IsHardyTwo (toMat a))
     {x : l → ColLp m} (hxa : ∀ i, x i ∈ innovation a)
     (hx : ∀ v ∈ innovation a, ∑ i, inner ℂ (x i) v • x i = v) (j : n) : a j ∈ past x 0 := by
@@ -641,6 +630,75 @@ private theorem isHardyTwo_innovation {a : n → ColLp m} (ha : IsHardyTwo (toMa
 
 end Columns
 
+/-! ### Approximation by the functions `A Q` -/
+
+section Approximation
+
+variable [Fintype n]
+
+/-- The closure of the set of the functions `A Q`, `Q` an analytic polynomial, is invariant under
+multiplication by analytic polynomials (Helson–Lowdenslager (1961), p. 205). If it contains the
+bounded function `M`, it contains `M Q` for every analytic polynomial `Q`, hence `M G` for every
+`G ∈ H²`. -/
+private theorem exists_tendsto_mul [Finite l] [Finite m] {r : Type*} [Fintype r]
+    {A : UnitAddCircle → Matrix m n ℂ} (hA : ∀ i j, MemLp (fun t => A t i j) 2 haarAddCircle)
+    {M : UnitAddCircle → Matrix m r ℂ} {C : ℝ}
+    (hM : ∀ i j, AEStronglyMeasurable (fun t => M t i j) haarAddCircle)
+    (hC : ∀ᵐ t ∂haarAddCircle, ∀ i j, ‖M t i j‖ ≤ C) {d : ℕ → ℤ →₀ Matrix n r ℂ}
+    (hd : ∀ N, ∀ k ∈ (d N).support, 0 ≤ k)
+    (hlim : TendstoLTwo (fun N t => A t * trigPoly (d N) t) M) {G : UnitAddCircle → Matrix r l ℂ}
+    (hG : IsHardyTwo G) :
+    ∃ c : ℕ → ℤ →₀ Matrix n l ℂ, (∀ N, ∀ k ∈ (c N).support, 0 ≤ k) ∧
+      TendstoLTwo (fun N t => A t * trigPoly (c N) t) fun t => M t * G t := by
+  obtain ⟨Q, hQ, hQG⟩ := hG.exists_tendsto_trigPoly
+  choose e he het using fun K N => exists_trigPoly_mul (hd N) (hQ K)
+  -- `A d_N Q_K → M Q_K` for `N → ∞`
+  have h1 (K : ℕ) : TendstoLTwo (fun N t => A t * trigPoly (e K N) t)
+      fun t => M t * trigPoly (Q K) t := by
+    simpa only [het, Matrix.mul_assoc] using
+      hlim.mul_continuous (continuous_trigPoly_matrix (Q K)) fun N =>
+        memLp_mul_continuous hA (continuous_trigPoly_matrix (d N))
+  -- `M Q_K → M G` for `K → ∞`
+  have h2 := hQG.bounded_mul hM hC
+    fun K => memLp_entry_of_continuous (continuous_trigPoly_matrix (Q K))
+  obtain ⟨ν, hν⟩ := exists_tendstoLTwo_diagonal h1 h2
+  exact ⟨fun K => e K (ν K), fun K => he K (ν K), hν⟩
+
+/-- If `A Q_N → F` in `L²` and the columns of `X` are orthonormal, then `Xᴴ A Q_N → Xᴴ F`
+(Helson–Lowdenslager (1961), p. 203, with `F = X G`, so that `Xᴴ F = G`). -/
+private theorem tendsto_conjTranspose_mul [Fintype m] [DecidableEq l] {r : Type*}
+    {A : UnitAddCircle → Matrix m n ℂ} (hA : ∀ i j, MemLp (fun t => A t i j) 2 haarAddCircle)
+    {X : UnitAddCircle → Matrix m l ℂ} (hX2 : ∀ i j, MemLp (fun t => X t i j) 2 haarAddCircle)
+    (hX : ∀ᵐ t ∂haarAddCircle, (X t)ᴴ * X t = 1) {d : ℕ → ℤ →₀ Matrix n r ℂ}
+    {F : UnitAddCircle → Matrix m r ℂ} {G : UnitAddCircle → Matrix l r ℂ}
+    (hG : ∀ᵐ t ∂haarAddCircle, (X t)ᴴ * F t = G t)
+    (hlim : TendstoLTwo (fun N t => A t * trigPoly (d N) t) F) :
+    TendstoLTwo (fun N t => (X t)ᴴ * A t * trigPoly (d N) t) G :=
+  (hlim.bounded_mul (G := fun t => (X t)ᴴ) (fun i j => (hX2 j i).star.aestronglyMeasurable)
+    (norm_conjTranspose_apply_le_one hX) fun N =>
+      memLp_mul_continuous hA (continuous_trigPoly_matrix (d N))).congr_ae
+    (fun _ => ae_of_all _ fun _ => (Matrix.mul_assoc _ _ _).symm) hG
+
+/-- If functions `B Q`, `Q` an analytic polynomial, approximate `1`, the constant coefficient `B₀`
+of `B` is surjective, because the constant coefficients `B₀ Q̂ (0)` of the `B Q` approximate `1`.
+Departure from the source: Helson–Lowdenslager (1961) prove that `B` "is of rank `q` at each point"
+only on p. 207, and by contradiction: otherwise "the canonical process in `L² (W)` would have rank
+smaller than `q`". -/
+private theorem rank_matFourierCoeff_zero [Fintype m] [DecidableEq m]
+    {B : UnitAddCircle → Matrix m n ℂ} (hB : IsHardyTwo B) {d : ℕ → ℤ →₀ Matrix n m ℂ}
+    (hd : ∀ N, ∀ k ∈ (d N).support, 0 ≤ k)
+    (hlim : TendstoLTwo (fun N t => B t * trigPoly (d N) t) fun _ => 1) :
+    (matFourierCoeff B 0).rank = Fintype.card m := by
+  have h1 := hlim.tendsto_matFourierCoeff
+    (fun N => memLp_mul_continuous hB.1 (continuous_trigPoly_matrix (d N))) 0
+  simp only [fun N => hB.matFourierCoeff_mul_zero (isHardyTwo_trigPoly (hd N)),
+    matFourierCoeff_trigPoly, matFourierCoeff_const, ite_true] at h1
+  have h2 := range_le_of_tendsto h1
+  rw [Matrix.mulVecLin_one, LinearMap.range_id, top_le_iff, LinearMap.range_eq_top] at h2
+  exact Matrix.mulVec_surjective_iff_rank_eq_card.1 h2
+
+end Approximation
+
 variable [Fintype n] [DecidableEq n]
 
 /-! ### Outer functions -/
@@ -652,19 +710,18 @@ theorem memLp_mul_one_add {A : UnitAddCircle → Matrix m n ℂ}
     MemLp (fun t => (A t * (1 + trigPoly c t) : Matrix m n ℂ) i j) 2 haarAddCircle :=
   memLp_mul_continuous hA (continuous_const.add (continuous_trigPoly_matrix c)) i j
 
-/-- Helson–Lowdenslager (1961), §10: `A ∈ H²` is (right-)outer if the closure in `L²` of the
-functions `A (1 + P)`, where `P` is an analytic trigonometric polynomial without constant term,
-contains a constant function, which is necessarily the constant coefficient of `A`. -/
+/-- Helson–Lowdenslager (1961), p. 203, (125)–(127): `A ∈ H²` is (right-)outer if the closure in
+`L²` of the functions `A (1 + P)`, where `P` is an analytic trigonometric polynomial without
+constant term, contains a constant function. "Evidently the constant matrix can only be the constant
+term of `A`", so that the definition takes `Â (0)` for it. -/
 def IsOuter (A : UnitAddCircle → Matrix m n ℂ) : Prop :=
   IsHardyTwo A ∧ ∃ c : ℕ → ℤ →₀ Matrix n n ℂ, (∀ N, ∀ k ∈ (c N).support, 0 < k) ∧
     TendstoLTwo (fun N t => A t * (1 + trigPoly (c N) t)) fun _ => matFourierCoeff A 0
 
-/-- Helson–Lowdenslager (1961), §9, and (1958), (49)–(54): the innovation `X` of the columns of `A`.
-The entries of `A` are in `L²`; `X` has orthonormal columns at almost every point, `Xᴴ A` is
-analytic and its constant coefficient `B₀` is surjective; the functions `A (1 + P)`, with `P` an
-analytic polynomial without constant term, approximate `X B₀`. If `A` is analytic, there is no
-remote past: `X` is analytic and `A = X (Xᴴ A)`. -/
-theorem exists_innovation [Fintype m] {A : UnitAddCircle → Matrix m n ℂ}
+/-- The innovation `X` of the columns of `A`, see `exists_innovation`. The last assertion, used for
+p. 203 of Helson–Lowdenslager (1961), is that the columns of `X` are in the past of `A`, the closed
+span of the columns of the functions `A e_k`, `k ≥ 0`. -/
+private theorem exists_innovation_past [Fintype m] {A : UnitAddCircle → Matrix m n ℂ}
     (hA : ∀ i j, MemLp (fun t => A t i j) 2 haarAddCircle) :
     ∃ (q : ℕ) (X : UnitAddCircle → Matrix m (Fin q) ℂ), q ≤ Fintype.card n ∧
       (∀ i j, MemLp (fun t => X t i j) 2 haarAddCircle) ∧
@@ -673,7 +730,9 @@ theorem exists_innovation [Fintype m] {A : UnitAddCircle → Matrix m n ℂ}
       (∃ c : ℕ → ℤ →₀ Matrix n n ℂ, (∀ N, ∀ k ∈ (c N).support, 0 < k) ∧
         TendstoLTwo (fun N t => A t * (1 + trigPoly (c N) t))
           fun t => X t * matFourierCoeff (fun s => (X s)ᴴ * A s) 0) ∧
-      (IsHardyTwo A → IsHardyTwo X ∧ ∀ᵐ t ∂haarAddCircle, X t * ((X t)ᴴ * A t) = A t) := by
+      (IsHardyTwo A → IsHardyTwo X ∧ ∀ᵐ t ∂haarAddCircle, X t * ((X t)ᴴ * A t) = A t) ∧
+      ∃ d : ℕ → ℤ →₀ Matrix n (Fin q) ℂ, (∀ N, ∀ k ∈ (d N).support, 0 ≤ k) ∧
+        TendstoLTwo (fun N t => A t * trigPoly (d N) t) X := by
   obtain ⟨a, ha⟩ := exists_toMat hA
   obtain ⟨q, hq, x, hx, hxa, hxs⟩ := exists_orthonormal_innovation a
   have hX := conjTranspose_mul_self_eq_one hx hxa
@@ -681,9 +740,13 @@ theorem exists_innovation [Fintype m] {A : UnitAddCircle → Matrix m n ℂ}
     filter_upwards [ha] with t ht
     rw [ht]
   have hB0 := matFourierCoeff_congr_ae hB 0
-  refine ⟨q, toMat x, hq, memLp_toMat x, hX,
-    (isHardyTwo_conjTranspose_toMat_mul hx hxa).congr_ae hB, ?_, ?_, fun hA2 => ?_⟩
-  · rw [← hB0, rank_matFourierCoeff_zero hx hxa, Fintype.card_fin]
+  have hB2 := (isHardyTwo_conjTranspose_toMat_mul hx hxa).congr_ae hB
+  obtain ⟨d, hd, hdlim⟩ := exists_tendsto_of_mem_past fun i => (hxa i).1
+  have hdA := hdlim.congr_ae (G := fun N t => A t * trigPoly (d N) t)
+    (fun N => ha.mono fun t ht => by rw [ht]) (ae_of_all _ fun _ => rfl)
+  refine ⟨q, toMat x, hq, memLp_toMat x, hX, hB2, ?_, ?_, fun hA2 => ?_, d, hd, hdA⟩
+  · rw [rank_matFourierCoeff_zero hB2 hd
+      (tendsto_conjTranspose_mul hA (memLp_toMat x) hX hX hdA), Fintype.card_fin]
   · obtain ⟨c, hc, hlim⟩ := exists_tendsto_innovation hxa hxs
     rw [← hB0]
     refine ⟨c, hc, hlim.congr_ae (fun N => ?_) (ae_of_all _ fun _ => rfl)⟩
@@ -694,10 +757,29 @@ theorem exists_innovation [Fintype m] {A : UnitAddCircle → Matrix m n ℂ}
     filter_upwards [ha, toMat_mul_conjTranspose_mul ha2 hX hxa hxs] with t h1 h2
     rw [← h1, h2]
 
-/-- Helson–Lowdenslager (1961), p. 204: let `1 + H` be the limit of the `1 + P` in the extremal
-problem for `Aᴴ A = Bᴴ B`, where `B = Xᴴ A`. Then `A (1 + H) = X B̂ (0)`, so that
-`B (1 + H) = B̂ (0)`, which means that `B` is outer. (Page 203 has another argument: the past of `A`
-is that of `X`, hence the functions `B Q` are dense in `H²`.) -/
+/-- Helson–Lowdenslager (1961), §9, p. 202, and (1958), (49), (51), (52), (54), (63)–(67): the
+innovation `X` of the columns of `A`. The entries of `A` are in `L²`; `X` has at most as many
+columns as `A`, which are orthonormal at almost every point, `Xᴴ A` is analytic and its constant
+coefficient `B₀` is surjective (`rank_matFourierCoeff_zero`); the functions `A (1 + P)`, with `P` an
+analytic polynomial without constant term, approximate `X B₀`. If `A` is analytic, so is `X`, and
+there is no remote past, so that `A = X (Xᴴ A)`. -/
+theorem exists_innovation [Fintype m] {A : UnitAddCircle → Matrix m n ℂ}
+    (hA : ∀ i j, MemLp (fun t => A t i j) 2 haarAddCircle) :
+    ∃ (q : ℕ) (X : UnitAddCircle → Matrix m (Fin q) ℂ), q ≤ Fintype.card n ∧
+      (∀ i j, MemLp (fun t => X t i j) 2 haarAddCircle) ∧
+      (∀ᵐ t ∂haarAddCircle, (X t)ᴴ * X t = 1) ∧ IsHardyTwo (fun t => (X t)ᴴ * A t) ∧
+      (matFourierCoeff (fun t => (X t)ᴴ * A t) 0).rank = q ∧
+      (∃ c : ℕ → ℤ →₀ Matrix n n ℂ, (∀ N, ∀ k ∈ (c N).support, 0 < k) ∧
+        TendstoLTwo (fun N t => A t * (1 + trigPoly (c N) t))
+          fun t => X t * matFourierCoeff (fun s => (X s)ᴴ * A s) 0) ∧
+      (IsHardyTwo A → IsHardyTwo X ∧ ∀ᵐ t ∂haarAddCircle, X t * ((X t)ᴴ * A t) = A t) := by
+  obtain ⟨q, X, hq, hX2, hX, hB, hrank, hc, hH, -⟩ := exists_innovation_past hA
+  exact ⟨q, X, hq, hX2, hX, hB, hrank, hc, hH⟩
+
+/-- Helson–Lowdenslager (1958), (77) and p. 194: let `1 + H` be the limit of the `1 + P_N` in the
+extremal problem for `Aᴴ A`. If `A (1 + H) = X B̂ (0)`, where `B = Xᴴ A`, then the functions
+`B (1 + P_N)` converge to `B (1 + H) = B̂ (0)`, which means that `B` is outer ((1961), p. 204).
+(`exists_isOuter` follows (1961), p. 203, instead: the functions `B Q` are dense in `H²`.) -/
 theorem isOuter_conjTranspose_mul [Fintype m] [Fintype l] [DecidableEq l]
     {A : UnitAddCircle → Matrix m n ℂ} (hA : ∀ i j, MemLp (fun t => A t i j) 2 haarAddCircle)
     {X : UnitAddCircle → Matrix m l ℂ} (hX2 : ∀ i j, MemLp (fun t => X t i j) 2 haarAddCircle)
@@ -720,15 +802,61 @@ theorem IsOuter.submatrix {A : UnitAddCircle → Matrix m n ℂ} (hA : IsOuter A
   obtain ⟨hA2, c, hc, hlim⟩ := hA
   exact ⟨hA2.submatrix r id, c, hc, fun i j => hlim (r i) j⟩
 
-/-- Helson–Lowdenslager (1961), §§9–10: if `A ∈ H²`, then `Aᴴ A = Bᴴ B` for an outer function `B`
-whose constant coefficient is surjective, with at most as many rows as `A` has columns. -/
+/-- Helson–Lowdenslager (1961), p. 203: if the functions `A Q`, `Q` an analytic polynomial, are
+dense in `H²`, the functions `A (1 + P)`, `P` an analytic polynomial without constant term, "are
+dense in the subset of `H²` containing all functions with the same constant term as `A`": if `A Q`
+approximates `e_{-1} (F - A)`, then `A (1 + e_1 Q)` approximates `F`. -/
+private theorem exists_tendsto_mul_one_add_of_dense {A : UnitAddCircle → Matrix m n ℂ}
+    (hA : IsHardyTwo A) (h : ∀ G : UnitAddCircle → Matrix m n ℂ, IsHardyTwo G →
+      ∃ c : ℕ → ℤ →₀ Matrix n n ℂ, (∀ N, ∀ k ∈ (c N).support, 0 ≤ k) ∧
+        TendstoLTwo (fun N t => A t * trigPoly (c N) t) G)
+    {F : UnitAddCircle → Matrix m n ℂ} (hF : IsHardyTwo F)
+    (h0 : matFourierCoeff F 0 = matFourierCoeff A 0) :
+    ∃ c : ℕ → ℤ →₀ Matrix n n ℂ, (∀ N, ∀ k ∈ (c N).support, 0 < k) ∧
+      TendstoLTwo (fun N t => A t * (1 + trigPoly (c N) t)) F := by
+  obtain ⟨c, hc, hlim⟩ := h _ ((hF.sub hA).fourier_neg_one_smul (by
+    rw [matFourierCoeff_sub hF.isHardyOne.1 hA.isHardyOne.1, h0, sub_self]))
+  choose d hd hdt using fun N => exists_trigPoly_fourier_smul (hc N)
+  have h1 := hlim.mul_continuous (G := fun t => fourier 1 t • (1 : Matrix n n ℂ))
+    ((fourier 1).continuous.smul continuous_const) fun N =>
+      memLp_mul_continuous hA.1 (continuous_trigPoly_matrix (c N))
+  refine ⟨d, hd, fun i j => (h1 i j).congr fun N => ?_⟩
+  congr 1
+  ext t
+  dsimp only
+  rw [hdt, Matrix.mul_smul, Matrix.mul_one, Matrix.mul_smul, Matrix.mul_one, smul_smul,
+    ← fourier_add, add_neg_cancel, fourier_zero, one_smul, Matrix.mul_add, Matrix.mul_one,
+    Matrix.mul_smul, Matrix.add_apply, Matrix.sub_apply]
+  ring
+
+/-- Helson–Lowdenslager (1961), p. 203: if the functions `A Q`, `Q` an analytic polynomial, are
+dense in `H²`, the functions `A (1 + P)` are dense in the set of the functions of `H²` "with the
+same constant term as `A`, and so `A` is outer". -/
+theorem isOuter_of_dense {A : UnitAddCircle → Matrix m n ℂ} (hA : IsHardyTwo A)
+    (h : ∀ G : UnitAddCircle → Matrix m n ℂ, IsHardyTwo G →
+      ∃ c : ℕ → ℤ →₀ Matrix n n ℂ, (∀ N, ∀ k ∈ (c N).support, 0 ≤ k) ∧
+        TendstoLTwo (fun N t => A t * trigPoly (c N) t) G) : IsOuter A :=
+  ⟨hA, exists_tendsto_mul_one_add_of_dense hA h (isHardyTwo_const _)
+    (by rw [matFourierCoeff_const, ite_eq_left rfl])⟩
+
+/-- Helson–Lowdenslager (1961), corollary on p. 202, and p. 203: if `A ∈ H²`, then `Aᴴ A = Bᴴ B`
+for an outer function `B` whose constant coefficient is surjective, with at most as many rows as `A`
+has columns. Let `X` be the innovation and `B = Xᴴ A`, so that `A Q = X (B Q)` for every analytic
+polynomial `Q` (129). The columns of `X` are in the past of `A`, so that the functions `A Q`
+approximate `X`, hence `X G` for every `G ∈ H²`, "but this implies, because `X` is orthonormal, that
+the functions" `B Q` "are dense in `H²`", so that `B` is outer (`isOuter_of_dense`). -/
 theorem exists_isOuter [Fintype m] {A : UnitAddCircle → Matrix m n ℂ} (hA : IsHardyTwo A) :
     ∃ (q : ℕ) (B : UnitAddCircle → Matrix (Fin q) n ℂ), q ≤ Fintype.card n ∧ IsOuter B ∧
       (matFourierCoeff B 0).rank = q ∧ ∀ᵐ t ∂haarAddCircle, (B t)ᴴ * B t = (A t)ᴴ * A t := by
-  obtain ⟨q, X, hq, hX2, hX, hB, hrank, ⟨c, hc, hlim⟩, hH⟩ := exists_innovation hA.1
-  refine ⟨q, fun t => (X t)ᴴ * A t, hq, isOuter_conjTranspose_mul hA.1 hX2 hX hB hc hlim, hrank, ?_⟩
-  filter_upwards [(hH hA).2] with t ht
-  rw [Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose, Matrix.mul_assoc, ht]
+  obtain ⟨q, X, hq, hX2, hX, hB, hrank, -, hH, d, hd, hlim⟩ := exists_innovation_past hA.1
+  refine ⟨q, fun t => (X t)ᴴ * A t, hq, isOuter_of_dense hB fun G hG => ?_, hrank, ?_⟩
+  · obtain ⟨c, hc, hlim⟩ := exists_tendsto_mul hA.1 (fun i j => (hX2 i j).aestronglyMeasurable)
+      (hX.mono fun t ht => norm_apply_le_one_of_conjTranspose_mul_self ht) hd hlim hG
+    refine ⟨c, hc, tendsto_conjTranspose_mul hA.1 hX2 hX ?_ hlim⟩
+    filter_upwards [hX] with t ht
+    rw [← Matrix.mul_assoc, ht, Matrix.one_mul]
+  · filter_upwards [(hH hA).2] with t ht
+    rw [Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose, Matrix.mul_assoc, ht]
 
 /-- Helson–Lowdenslager (1961), proof of Theorem 9, first part: the range of `Â (0)` is contained in
 the range of `A` almost everywhere. -/
@@ -772,13 +900,9 @@ private theorem IsOuter.matFourierCoeff_mul_eq_zero [Fintype m] [Finite l]
 /-- Helson–Lowdenslager (1961), proof of Theorem 9, second part: `L A = 0` if `L Â (0) = 0`. -/
 private theorem IsOuter.mul_ae_eq_zero [Fintype m] [Finite l] {A : UnitAddCircle → Matrix m n ℂ}
     (hA : IsOuter A) {L : Matrix l m ℂ} (hL : L * matFourierCoeff A 0 = 0) :
-    ∀ᵐ t ∂haarAddCircle, L * A t = 0 := by
-  have h1 : ∀ᵐ t ∂haarAddCircle, ∀ i j, (L * A t) i j = 0 :=
-    ae_all_iff.2 fun i => ae_all_iff.2 fun j => ae_eq_zero_of_fourierCoeff_eq_zero
-      (((hA.1.const_mul L).1 i j).integrable one_le_two) fun k =>
-        congrFun (congrFun (hA.matFourierCoeff_mul_eq_zero hL k) i) j
-  filter_upwards [h1] with t ht
-  exact Matrix.ext ht
+    ∀ᵐ t ∂haarAddCircle, L * A t = 0 :=
+  ae_eq_zero_of_matFourierCoeff_eq_zero (hA.1.const_mul L).isHardyOne.1
+    (hA.matFourierCoeff_mul_eq_zero hL)
 
 /-- Helson–Lowdenslager (1961), Theorem 9: the range of an outer function is almost everywhere that
 of its constant coefficient. -/
@@ -808,23 +932,20 @@ private theorem IsOuter.exists_tendsto_matFourierCoeff_mul [Finite l] [Finite m]
     ∃ c : ℕ → ℤ →₀ Matrix n l ℂ, (∀ N, ∀ k ∈ (c N).support, 0 ≤ k) ∧
       TendstoLTwo (fun N t => A t * trigPoly (c N) t) fun t => matFourierCoeff A 0 * G t := by
   obtain ⟨hA2, p, hp, hlim⟩ := hA
-  obtain ⟨Q, hQ, hQG⟩ := hG.exists_tendsto_trigPoly
   choose d hd _ hdt using fun N => exists_trigPoly_eq_one_add_mul (hp N) (1 : Matrix n n ℂ)
-  choose e he het using fun K N => exists_trigPoly_mul (hd N) (hQ K)
-  -- `A (1 + P_N) Q_K → Â (0) Q_K` for `N → ∞`
-  have h3 (K : ℕ) : TendstoLTwo (fun N t => A t * trigPoly (e K N) t)
-      fun t => matFourierCoeff A 0 * trigPoly (Q K) t := by
-    simpa only [het, hdt, Matrix.mul_one, Matrix.mul_assoc] using
-      hlim.mul_continuous (continuous_trigPoly_matrix (Q K)) fun N => memLp_mul_one_add hA2.1 (p N)
-  -- `Â (0) Q_K → Â (0) G` for `K → ∞`
-  have h5 := hQG.continuous_mul (continuous_const (y := matFourierCoeff A 0))
-    fun K => memLp_entry_of_continuous (continuous_trigPoly_matrix (Q K))
-  obtain ⟨ν, hν⟩ := exists_tendstoLTwo_diagonal h3 h5
-  exact ⟨fun K => e K (ν K), fun K => he K (ν K), hν⟩
+  simp only [Matrix.mul_one] at hdt
+  simp only [← hdt] at hlim
+  obtain ⟨C, hC⟩ := exists_bound_of_continuous
+    (f := fun _ : UnitAddCircle => matFourierCoeff A 0) continuous_const
+  exact exists_tendsto_mul (M := fun _ => matFourierCoeff A 0) hA2.1
+    (fun _ _ => aestronglyMeasurable_const) (ae_of_all _ hC) hd hlim hG
 
 /-- Helson–Lowdenslager (1961), Theorem 10: if `A` is outer, the closure in `L²` of the functions
 `A Q`, `Q` an analytic trigonometric polynomial, consists of the functions of `H²` whose range is
-contained in that of `A` almost everywhere, that is, in the range of `Â (0)`. -/
+contained in that of `A` almost everywhere, that is, in the range of `Â (0)`. (That the closure is
+contained in `H²` is `TendstoLTwo.isHardyTwo`.) The source proves the case that `Â (0)` is
+surjective, "and the general case follows easily"; here a matrix `D` with `Â (0) D Â (0) = Â (0)`
+takes the place of the right inverse of `Â (0)`, and `F = Â (0) (D F)`. -/
 theorem IsOuter.exists_tendsto_iff [Fintype l] [Finite m] {A : UnitAddCircle → Matrix m n ℂ}
     (hA : IsOuter A) {F : UnitAddCircle → Matrix m l ℂ} (hF : IsHardyTwo F) :
     (∃ c : ℕ → ℤ →₀ Matrix n l ℂ, (∀ N, ∀ k ∈ (c N).support, 0 ≤ k) ∧

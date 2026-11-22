@@ -13,9 +13,12 @@ that `log det W` is integrable,
 
 where `Ψ` ranges over the Hermitian trigonometric polynomials with `∫ tr Ψ = 0` (H. Helson and D.
 Lowdenslager, *Prediction theory and Fourier series in several variables*, Acta Math. 99 (1958),
-165–202, Lemma 5; Lemma 4 is the same equality for all Hermitian functions `Ψ` with summable trace).
-In the source `W` is positive semidefinite and the left side is zero if `∫ log det W = −∞`; this
-case is treated in `posDef_of_szegoInf_pos` (Szego.lean). The trace of the source is normalized,
+165–202, Lemma 5). Lemma 4, the same equality for all Hermitian functions `Ψ` with summable trace,
+is not needed; of it only (59) is proved, for polynomials `Ψ`. In the source `W` is positive
+semidefinite and the left side is zero if `∫ log det W = −∞`, by a limiting process (pp. 172, 173,
+189). Here that process is carried out for the infimum of Theorem 8 instead
+(`posDef_of_szegoInf_pos`, Szego.lean), and in the proof of Theorem 2
+(`log_norm_fourierCoeff_zero_le_of_memLp_two`, Jensen.lean). The trace of the source is normalized,
 `tr 1 = 1`, so that `tr log W = (1/n) log det W`.
 
 * `exp_integral_log_det_le`: the inequality of the arithmetic and geometric means, (58).
@@ -23,9 +26,9 @@ case is treated in `posDef_of_szegoInf_pos` (Szego.lean). The trace of the sourc
 * `exists_integral_exp_trigPoly_le`: Lemma 5.
 
 The proof of Lemma 5 is that of Lemma 2, the scalar case, carried through for functions of the
-matrices `W (t)`: the positive and negative parts of `log W` are truncated, which gives bounded
-functions `Ψ` with `∫ tr Ψ = 0` and `∫ (1/n) tr (e^Ψ W)` close to `exp ((1/n) ∫ log det W)`, and
-these are replaced by their Fejér means.
+matrices `W (t)`: the positive and negative parts of `log W` are truncated and multiplied by
+constants, which gives bounded functions `Ψ` with `∫ tr Ψ = 0` and `∫ (1/n) tr (e^Ψ W)` close to
+`exp ((1/n) ∫ log det W)`, and these are replaced by their Fejér means.
 -/
 
 @[expose] public section
@@ -39,9 +42,10 @@ variable {n : Type*} [Fintype n] [DecidableEq n]
 
 /-! ### The inequality of the arithmetic and geometric means -/
 
-/-- "The trace of a Hermitian matrix is the average of its proper values; and the determinant is the
+/-- `log det W = Σ log λ_i`, where `λ_i` are the eigenvalues of the positive definite matrix `W`:
+"The trace of a Hermitian matrix is the average of its proper values; and the determinant is the
 product of the same numbers" (Helson–Lowdenslager (1958), p. 189). -/
-private theorem log_det_re_eq_sum {W : Matrix n n ℂ} (hW : W.PosDef) :
+theorem log_det_re_eq_sum {W : Matrix n n ℂ} (hW : W.PosDef) :
     Real.log W.det.re = ∑ i, Real.log (hW.isHermitian.eigenvalues i) := by
   have h : W.det = ((∏ i, hW.isHermitian.eigenvalues i : ℝ) : ℂ) := by
     rw [hW.isHermitian.det_eq_prod_eigenvalues, Complex.ofReal_prod]
@@ -49,50 +53,39 @@ private theorem log_det_re_eq_sum {W : Matrix n n ℂ} (hW : W.PosDef) :
   rw [h, Complex.ofReal_re, Real.log_prod fun i _ => (hW.eigenvalues_pos i).ne']
 
 /-- The inequality of the arithmetic and geometric means for the eigenvalues of a positive definite
-matrix of order `n`: `(1/n) log det W ≤ log ((1/n) tr W)`. -/
-theorem log_det_div_card_le_log_trace {W : Matrix n n ℂ} (hW : W.PosDef) :
-    Real.log W.det.re / Fintype.card n ≤ Real.log (W.trace.re / Fintype.card n) := by
-  cases isEmpty_or_nonempty n
-  · simp
-  have hn : (Fintype.card n : ℝ) ≠ 0 := Nat.cast_ne_zero.2 Fintype.card_ne_zero
-  have h := strictConcaveOn_log_Ioi.concaveOn.le_map_sum (t := Finset.univ)
-    (w := fun _ => (Fintype.card n : ℝ)⁻¹) (p := hW.isHermitian.eigenvalues)
-    (fun i _ => by positivity)
-    (by rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, mul_inv_cancel₀ hn])
-    (fun i _ => hW.eigenvalues_pos i)
-  rw [← Finset.smul_sum, ← Finset.smul_sum, ← log_det_re_eq_sum hW,
-    ← trace_re_eq_sum_eigenvalues hW.isHermitian, smul_eq_mul, smul_eq_mul] at h
-  rwa [div_eq_inv_mul, div_eq_inv_mul]
+matrix of order `n`: `exp ((1/n) log det W) ≤ (1/n) tr W`. -/
+private theorem exp_log_det_div_card_le [Nonempty n] {W : Matrix n n ℂ} (hW : W.PosDef) :
+    Real.exp (Real.log W.det.re / Fintype.card n) ≤ W.trace.re / Fintype.card n := by
+  have h := convexOn_exp.map_sum_le (t := Finset.univ) (w := fun _ => (Fintype.card n : ℝ)⁻¹)
+    (p := fun i => Real.log (hW.isHermitian.eigenvalues i)) (fun i _ => by positivity)
+    (by rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul,
+      mul_inv_cancel₀ (Nat.cast_ne_zero.2 Fintype.card_ne_zero)]) fun _ _ => Set.mem_univ _
+  simp only [Real.exp_log (hW.eigenvalues_pos _)] at h
+  rwa [← Finset.smul_sum, ← Finset.smul_sum, ← log_det_re_eq_sum hW,
+    ← trace_re_eq_sum_eigenvalues hW.isHermitian, smul_eq_mul, smul_eq_mul, ← div_eq_inv_mul,
+    ← div_eq_inv_mul] at h
 
 /-- The inequality of the arithmetic and geometric means: `|det M|^{2/n} ≤ (1/n) tr (Mᴴ M)` for a
 matrix `M` of order `n`. -/
 theorem norm_det_rpow_le_trace [Nonempty n] (M : Matrix n n ℂ) :
     ‖M.det‖ ^ (2 / Fintype.card n : ℝ) ≤ (Mᴴ * M).trace.re / Fintype.card n := by
-  have hn : (0 : ℝ) < Fintype.card n := by exact_mod_cast Fintype.card_pos
   by_cases h0 : M.det = 0
-  · rw [h0, norm_zero, Real.zero_rpow (by positivity), trace_conjTranspose_mul_self_re]
+  · have hn : (0 : ℝ) < Fintype.card n := by exact_mod_cast Fintype.card_pos
+    rw [h0, norm_zero, Real.zero_rpow (by positivity), trace_conjTranspose_mul_self_re]
     positivity
   have hpos : (Mᴴ * M).PosDef :=
     (Matrix.posSemidef_conjTranspose_mul_self M).posDef_iff_det_ne_zero.2 <| by
       rw [Matrix.det_mul, Matrix.det_conjTranspose]
       exact mul_ne_zero (star_ne_zero.2 h0) h0
-  have h1 := log_det_div_card_le_log_trace hpos
+  have h1 := exp_log_det_div_card_le hpos
   rw [det_conjTranspose_mul_self_re, Real.log_pow] at h1
-  rw [Real.rpow_def_of_pos (norm_pos_iff.2 h0),
-    ← Real.le_log_iff_exp_le (div_pos (Complex.pos_iff.1 hpos.trace_pos).1 hn)]
+  rw [Real.rpow_def_of_pos (norm_pos_iff.2 h0)]
   refine le_trans (le_of_eq ?_) h1
   push_cast
-  ring
+  ring_nf
 
-/-- `exp ((1/n) log det W) ≤ (1/n) tr W`. -/
-private theorem exp_log_det_div_card_le [Nonempty n] {W : Matrix n n ℂ} (hW : W.PosDef) :
-    Real.exp (Real.log W.det.re / Fintype.card n) ≤ W.trace.re / Fintype.card n := by
-  have hpos : 0 < W.trace.re / Fintype.card n :=
-    div_pos (Complex.pos_iff.1 hW.trace_pos).1 (Nat.cast_pos.2 Fintype.card_pos)
-  exact (Real.exp_le_exp.2 (log_det_div_card_le_log_trace hW)).trans_eq (Real.exp_log hpos)
-
-/-- Helson–Lowdenslager (1958), (58), without its middle term `∫ (det W)^{1/n}`:
-`exp ((1/n) ∫ log det W) ≤ ∫ (1/n) tr W`. -/
+/-- Helson–Lowdenslager (1958), (58), without its middle term `∫ (det W)^{1/n}` (which is a step of
+the proof): `exp ((1/n) ∫ log det W) ≤ ∫ (1/n) tr W`. -/
 theorem exp_integral_log_det_le [Nonempty n] {W : UnitAddCircle → Matrix n n ℂ}
     (hint : ∀ i j, Integrable (fun t => W t i j) haarAddCircle)
     (hW : ∀ᵐ t ∂haarAddCircle, (W t).PosDef)
@@ -150,8 +143,6 @@ theorem exp_integral_log_det_le_integral_exp [Nonempty n] {W : UnitAddCircle →
   have hE : Continuous E := continuous_matrix_exp.comp (hcont.const_smul (2⁻¹ : ℝ))
   have hΨ (i j : n) : Integrable (fun t => trigPoly c t i j) haarAddCircle :=
     (memLp_entry_of_continuous hcont i j).integrable one_le_two
-  have htr : ∫ t, (trigPoly c t).trace.re ∂haarAddCircle = 0 := by
-    rw [integral_trace_re hΨ, matFourierCoeff_trigPoly, h0, Complex.zero_re]
   have hdet : (fun t => Real.log (E t * W t * E t).det.re) =ᵐ[haarAddCircle]
       fun t => (trigPoly c t).trace.re + Real.log (W t).det.re :=
     hW.mono fun t ht => log_det_exp_half_conj (hc t) ht
@@ -159,7 +150,8 @@ theorem exp_integral_log_det_le_integral_exp [Nonempty n] {W : UnitAddCircle →
     (integrable_mul_continuous (integrable_continuous_mul hE hint) hE)
     (hW.mono fun t ht => posDef_exp_half_conj (hc t) ht)
     (((integrable_trace_re hΨ).add hlog).congr hdet.symm)
-  rw [integral_congr_ae hdet, integral_add (integrable_trace_re hΨ) hlog, htr, zero_add] at h
+  rw [integral_congr_ae hdet, integral_add (integrable_trace_re hΨ) hlog,
+    integral_trace_trigPoly_re, h0, Complex.zero_re, zero_add] at h
   simpa only [E, trace_exp_half_conj] using h
 
 /-! ### The truncations of the positive and negative parts of the logarithm -/
@@ -234,6 +226,11 @@ private theorem tendsto_cutNeg {s : ℝ} (hs : 0 < s) :
   filter_upwards [eventually_ge_atTop ⌈logNeg s⌉₊] with N hN
   rw [cutNeg_eq hs, min_eq_left (Nat.ceil_le.1 hN)]
 
+/-- `s ↦ b v_N − a u_N` is continuous. -/
+private theorem continuous_cut (N : ℕ) (a b : ℝ) :
+    Continuous fun s => b * cutNeg N s - a * cutPos N s :=
+  ((continuous_cutNeg N).const_mul b).sub ((continuous_cutPos N).const_mul a)
+
 /-- `e^{(u − a u_N) − (v − b v_N)} ≤ max (1, w)`, where `log w = u − v`. -/
 private theorem exp_cut_mul_le {s : ℝ} (hs : 0 < s) (N : ℕ) {a b : ℝ} (ha : 0 ≤ a) (hb : b ≤ 1) :
     Real.exp (b * cutNeg N s - a * cutPos N s) * s ≤ max 1 s := by
@@ -270,9 +267,9 @@ private theorem tendsto_exp_cut_mul {s : ℝ} (hs : 0 < s) {a b : ℕ → ℝ}
   rw [← h1]
   exact ((Real.continuous_exp.tendsto _).comp h).mul_const s
 
-/-- The constants of the proof of Lemma 2: if the integrals `p_N` of `u_N` and `q_N` of `v_N` have
-the same limit, the larger of the two is multiplied by a constant `≤ 1`, which tends to `1`, so that
-they agree. -/
+/-- The constants of the proof of Lemma 2, with the modification recorded at `exists_scaled_cut`: if
+the integrals `p_N` of `u_N` and `q_N` of `v_N` have the same limit, the larger of the two is
+multiplied by a constant `≤ 1`, which tends to `1`, so that they agree. -/
 private theorem exists_scaling {p q : ℕ → ℝ} {r : ℝ} (hp : ∀ N, 0 ≤ p N ∧ p N ≤ r)
     (hq : ∀ N, 0 ≤ q N ∧ q N ≤ r) (hpr : Tendsto p atTop (𝓝 r)) (hqr : Tendsto q atTop (𝓝 r)) :
     ∃ a b : ℕ → ℝ, (∀ N, 0 ≤ a N ∧ a N ≤ 1) ∧ (∀ N, 0 ≤ b N ∧ b N ≤ 1) ∧
@@ -358,10 +355,12 @@ private theorem integrable_trace_cfc_logPos
     (hint : ∀ i j, Integrable (fun t => W t i j) haarAddCircle)
     (hW : ∀ᵐ t ∂haarAddCircle, (W t).PosDef) :
     Integrable (fun t => (cfc logPos (W t)).trace.re) haarAddCircle := by
-  refine integrable_trace_cfc (fun i j => (hint i j).aestronglyMeasurable) hW continuous_logPos
-    (fun s hs => ?_) (integrable_trace_cfc_one_add hint hW)
-  rw [abs_of_nonneg (logPos_nonneg s), logPos_eq hs]
-  exact max_le ((Real.log_le_sub_one_of_pos hs).trans (by linarith)) (by linarith)
+  refine integrable_trace_cfc (B := fun s => s) (fun i j => (hint i j).aestronglyMeasurable) hW
+    continuous_logPos (fun s hs => ?_) ((integrable_trace_re hint).congr ?_)
+  · rw [abs_of_nonneg (logPos_nonneg s), logPos_eq hs]
+    exact max_le (Real.log_le_self hs.le) hs.le
+  · filter_upwards [hW] with t ht
+    rw [cfc_id' ℝ (W t) ht.isHermitian.isSelfAdjoint]
 
 /-- `tr v = tr u − log det W`. -/
 private theorem trace_cfc_logNeg {A : Matrix n n ℂ} (hA : A.PosDef) :
@@ -395,7 +394,8 @@ in `[0, 1]`, which tend to `1`, so that `Ψ_N = b_N v_N − a_N u_N` satisfies `
 
 Departure from the source: there only the `v_m` are multiplied by constants, and "for each `n` there
 is an `m` such that `∫ u_n ≤ ∫ v_m`". For the truncations `min (u, n)` and `min (v, m)` this fails
-if `u` is bounded and `v` is not: then `∫ u_n = ∫ u = ∫ v > ∫ v_m` for large `n` and all `m`. Here
+if `u` is bounded and `v` is not: then `∫ u_n = ∫ u = ∫ v > ∫ v_m` for large `n` and all `m`. (It
+holds if the `u_n` are chosen with `∫ u_n < ∫ u`, e.g. `(1 − 1/n) min (u, n)`, unless `u = 0`.) Here
 the one of `u_N` and `v_N` that has the larger integral is multiplied by a constant. -/
 private theorem exists_scaled_cut (hint : ∀ i j, Integrable (fun t => W t i j) haarAddCircle)
     (hW : ∀ᵐ t ∂haarAddCircle, (W t).PosDef)
@@ -421,6 +421,8 @@ private theorem exists_scaled_cut (hint : ∀ i j, Integrable (fun t => W t i j)
     ⟨(cutNeg_mem N s).1, (cutNeg_eq hs N).trans_le (min_le_left _ _)⟩
   have habs {φ ψ : ℝ → ℝ} (h : ∀ s, 0 < s → 0 ≤ φ s ∧ φ s ≤ ψ s) (s : ℝ) (hs : 0 < s) :
       |φ s| ≤ ψ s := (abs_of_nonneg (h s hs).1).trans_le (h s hs).2
+  -- `∫ tr u_N → ∫ tr u` and `∫ tr v_N → ∫ tr v` by dominated convergence; the source uses the
+  -- monotone limit theorem
   obtain ⟨a, b, ha, hb, hab, ha1, hb1⟩ := exists_scaling
     (fun N => integral_trace_cfc_mem hm hW (continuous_cutPos N) (hpu N) hu)
     (fun N => huv ▸ integral_trace_cfc_mem hm hW (continuous_cutNeg N) (hpv N) hv)
@@ -477,8 +479,7 @@ private theorem tendsto_integral_exp_cut
     Tendsto (fun N => ∫ t, (NormedSpace.exp
       (cfc (fun s => b N * cutNeg N s - a N * cutPos N s) (W t)) * W t).trace.re ∂haarAddCircle)
       atTop (𝓝 (Fintype.card n)) := by
-  have hφ (N : ℕ) : Continuous fun s => b N * cutNeg N s - a N * cutPos N s :=
-    ((continuous_cutNeg N).const_mul _).sub ((continuous_cutPos N).const_mul _)
+  have hφ (N : ℕ) := continuous_cut N (a N) (b N)
   have h := tendsto_integral_trace_cfc (fun i j => (hint i j).aestronglyMeasurable) hW
     (φ := fun N s => Real.exp (b N * cutNeg N s - a N * cutPos N s) * s) (ψ := fun _ => 1)
     (fun N => (Real.continuous_exp.comp (hφ N)).mul continuous_id) (fun N s hs => ?_)
@@ -516,8 +517,7 @@ private theorem exists_bounded_integral_exp_lt
   refine ⟨fun t => cfc (fun s => b N * cutNeg N s - a N * cutPos N s) (W t), N, fun i j => ?_,
     fun t => cfc_predicate _ _, fun t => norm_cfc_apply_le (fun s => ?_) _, hab N, hN⟩
   · exact aestronglyMeasurable_cfc (fun i j => (hint i j).aestronglyMeasurable)
-      (hW.mono fun t ht => ht.isHermitian)
-      (((continuous_cutNeg N).const_mul _).sub ((continuous_cutPos N).const_mul _)) i j
+      (hW.mono fun t ht => ht.isHermitian) (continuous_cut N (a N) (b N)) i j
   · have h1 := mul_nonneg (hb N).1 (cutNeg_mem N s).1
     have h2 := mul_nonneg (ha N).1 (cutPos_mem N s).1
     have h3 := (mul_le_of_le_one_left (cutNeg_mem N s).1 (hb N).2).trans (cutNeg_mem N s).2
@@ -552,9 +552,11 @@ private theorem trace_matFourierCoeff_zero {Ψ : UnitAddCircle → Matrix n n �
   rw [← integral_trace hΨ, show (fun t => (Ψ t).trace) = _ from funext h1,
     integral_complex_ofReal, h0, Complex.ofReal_zero]
 
-/-- "Every bounded function is boundedly the limit of Fejér means of its Fourier series; each
-approximating function is a trigonometric polynomial" which is Hermitian if `Ψ` is, and satisfies
-`∫ tr Ψ = 0` if `Ψ` does. -/
+/-- "Every bounded function `ψ` is boundedly the limit of Fejér means of its Fourier series […];
+each approximating function is a trigonometric polynomial" (Helson–Lowdenslager (1958), p. 174),
+which is Hermitian if `Ψ` is, and satisfies `∫ tr Ψ = 0` if `Ψ` does; so `Ψ` may be replaced by a
+trigonometric polynomial in an inequality `∫ tr (e^Ψ W) < r`. (A subsequence that converges almost
+everywhere suffices.) -/
 private theorem exists_trigPoly_integral_exp_lt {W : UnitAddCircle → Matrix n n ℂ}
     (hint : ∀ i j, Integrable (fun t => W t i j) haarAddCircle) {Ψ : UnitAddCircle → Matrix n n ℂ}
     {C r : ℝ} (hm : ∀ i j, AEStronglyMeasurable (fun t => Ψ t i j) haarAddCircle)

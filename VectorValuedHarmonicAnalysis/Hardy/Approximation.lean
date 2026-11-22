@@ -8,16 +8,18 @@ import Mathlib.LinearAlgebra.Matrix.Bilinear
 
 Tools for the matrix-valued Hardy classes `H¹` and `H²` of the circle.
 
-* `trigPoly_add`, `trigPoly_mapRange`, `exists_trigPoly_mul`: sums, images under linear maps, and
-  products of trigonometric polynomials.
+* `trigPoly_add`, `trigPoly_mapRange`, `exists_trigPoly_mul`: sums and images under linear maps of
+  trigonometric polynomials, products of analytic polynomials.
 * `IsHardyOne`: the Hardy class `H¹`, the matrix-valued functions with integrable entries whose
   Fourier coefficients of negative order vanish.
+* `ae_eq_zero_of_matFourierCoeff_eq_zero`: a function with integrable entries is zero almost
+  everywhere if its Fourier coefficients are zero.
 * `TendstoLTwo F f`: the entries of `F N` converge to those of `f` in `L²`; Fourier coefficients of
   the limit and of products, subsequences that converge almost everywhere. The analytic polynomials
   are dense in `H²` (`IsHardyTwo.exists_tendsto_trigPoly`).
 * `fejerCoeff f K`: the coefficients of the `K`-th Fejér mean of `f`, a trigonometric polynomial.
-  The Fejér means of `f` are averages of `f` for the Fejér kernel, a probability density, so that
-  they satisfy the bounds that `f` satisfies, and they converge to `f` in `L¹`.
+  For `K ≥ 1` it is an average of `f` for the Fejér kernel, a probability density, so that it
+  satisfies the bounds that `f` satisfies; the Fejér means of `f` converge to `f` in `L¹`.
 * `IsHardyOne.bounded_mul`, `IsHardyOne.mul_bounded`: the product of a bounded analytic function and
   a function of `H¹` is in `H¹`, and its constant coefficient is the product of those of the
   factors; `IsHardyTwo.bounded_mul`, `IsHardyTwo.mul_bounded`: the product of a bounded analytic
@@ -27,7 +29,7 @@ Tools for the matrix-valued Hardy classes `H¹` and `H²` of the circle.
 @[expose] public section
 
 open MeasureTheory AddCircle Filter
-open scoped ENNReal Matrix ComplexConjugate Topology
+open scoped ENNReal Matrix Topology
 
 namespace VectorValuedHarmonicAnalysis
 
@@ -94,6 +96,20 @@ theorem exists_trigPoly_mul [Fintype m] {c : ℤ →₀ Matrix l m ℂ} {d : ℤ
     rw [Matrix.mul_sum]
     refine Finset.sum_congr rfl fun q _ => ?_
     rw [fourier_add, Matrix.smul_mul, Matrix.mul_smul, smul_smul]
+
+/-- If `P` is an analytic polynomial, `e_1 P` is an analytic polynomial without constant term. -/
+theorem exists_trigPoly_fourier_smul {c : ℤ →₀ Matrix m n ℂ} (hc : ∀ k ∈ c.support, 0 ≤ k) :
+    ∃ d : ℤ →₀ Matrix m n ℂ, (∀ k ∈ d.support, 0 < k) ∧
+      ∀ t, trigPoly d t = fourier 1 t • trigPoly c t := by
+  refine ⟨c.embDomain (addRightEmbedding 1), fun k hk => ?_, fun t => ?_⟩
+  · rw [Finsupp.support_embDomain] at hk
+    obtain ⟨q, hq, rfl⟩ := Finset.mem_map.1 hk
+    rw [addRightEmbedding_apply]
+    have := hc q hq
+    omega
+  · rw [trigPoly, Finsupp.sum_embDomain, trigPoly, Finsupp.smul_sum]
+    refine Finsupp.sum_congr fun q _ => ?_
+    rw [addRightEmbedding_apply, smul_smul, ← fourier_add, add_comm]
 
 /-- If `P` is an analytic polynomial without constant term, `(1 + P) D` is an analytic polynomial
 with the constant coefficient `D`. -/
@@ -213,6 +229,17 @@ theorem IsHardyOne.congr_ae {f g : UnitAddCircle → Matrix m n ℂ} (hf : IsHar
     rw [ht]
   · rw [← matFourierCoeff_congr_ae h, hf.2 k hk]
 
+/-- A matrix-valued function with integrable entries is zero almost everywhere if its Fourier
+coefficients are zero. -/
+theorem ae_eq_zero_of_matFourierCoeff_eq_zero [Countable m] [Countable n]
+    {f : UnitAddCircle → Matrix m n ℂ} (hf : ∀ i j, Integrable (fun t => f t i j) haarAddCircle)
+    (h : ∀ k, matFourierCoeff f k = 0) : ∀ᵐ t ∂haarAddCircle, f t = 0 := by
+  have h1 : ∀ᵐ t ∂haarAddCircle, ∀ i j, f t i j = 0 :=
+    ae_all_iff.2 fun i => ae_all_iff.2 fun j => ae_eq_zero_of_fourierCoeff_eq_zero (hf i j)
+      fun k => congrFun (congrFun (h k) i) j
+  filter_upwards [h1] with t ht
+  exact Matrix.ext ht
+
 /-- The Fourier coefficients of a constant function. -/
 theorem matFourierCoeff_const (M : Matrix m n ℂ) (k : ℤ) :
     matFourierCoeff (fun _ => M) k = if k = 0 then M else 0 := by
@@ -223,6 +250,44 @@ theorem matFourierCoeff_const (M : Matrix m n ℂ) (k : ℤ) :
 /-- The constant functions are in `H²`. -/
 theorem isHardyTwo_const (M : Matrix m n ℂ) : IsHardyTwo fun _ => M :=
   ⟨fun _ _ => memLp_const _, fun k hk => by rw [matFourierCoeff_const, ite_eq_right hk.ne]⟩
+
+/-- The Fourier coefficients of a difference. -/
+theorem matFourierCoeff_sub {f g : UnitAddCircle → Matrix m n ℂ}
+    (hf : ∀ i j, Integrable (fun t => f t i j) haarAddCircle)
+    (hg : ∀ i j, Integrable (fun t => g t i j) haarAddCircle) (k : ℤ) :
+    matFourierCoeff (fun t => f t - g t) k = matFourierCoeff f k - matFourierCoeff g k := by
+  ext i j
+  have h := integral_sub ((hf i j).fourier_smul (-k)) ((hg i j).fourier_smul (-k))
+  simp only [← smul_sub] at h
+  exact h
+
+/-- The difference of two functions of `H²` is in `H²`. -/
+theorem IsHardyTwo.sub {f g : UnitAddCircle → Matrix m n ℂ} (hf : IsHardyTwo f)
+    (hg : IsHardyTwo g) : IsHardyTwo fun t => f t - g t :=
+  ⟨fun i j => (hf.1 i j).sub (hg.1 i j), fun k hk => by
+    rw [matFourierCoeff_sub hf.isHardyOne.1 hg.isHardyOne.1, hf.2 k hk, hg.2 k hk, sub_zero]⟩
+
+/-- The Fourier coefficients of the product of a function and a character. -/
+private theorem fourierCoeff_fourier_smul (q : ℤ) (v : UnitAddCircle → ℂ) (k : ℤ) :
+    fourierCoeff (fun t => fourier q t • v t) k = fourierCoeff v (k - q) := by
+  refine integral_congr_ae (ae_of_all _ fun t => ?_)
+  dsimp only
+  rw [smul_smul, ← fourier_add, neg_sub, sub_eq_add_neg, add_comm]
+
+/-- If `f ∈ H²` has no constant term, then `e_{-1} f ∈ H²`. -/
+theorem IsHardyTwo.fourier_neg_one_smul {f : UnitAddCircle → Matrix m n ℂ} (hf : IsHardyTwo f)
+    (h0 : matFourierCoeff f 0 = 0) : IsHardyTwo fun t => fourier (-1) t • f t := by
+  refine ⟨fun i j => (hf.1 i j).of_le ((fourier (-1)).continuous.aestronglyMeasurable.smul
+    (hf.1 i j).aestronglyMeasurable) (ae_of_all _ fun t => ?_), fun k hk => ?_⟩
+  · dsimp only
+    rw [Matrix.smul_apply, norm_smul, norm_fourier_apply_eq_one, one_mul]
+  · have h1 : matFourierCoeff f (k - -1) = 0 := by
+      rcases (show k - -1 ≤ 0 by omega).eq_or_lt with h | h
+      · rw [h, h0]
+      · exact hf.2 _ h
+    ext i j
+    exact (fourierCoeff_fourier_smul (-1) (fun t => f t i j) k).trans
+      (congrFun (congrFun h1 i) j)
 
 /-- The Fourier coefficients of the transposed function. -/
 theorem matFourierCoeff_transpose (f : UnitAddCircle → Matrix m n ℂ) (k : ℤ) :
@@ -286,12 +351,6 @@ theorem IsHardyTwo.mul_const [Fintype m] {f : UnitAddCircle → Matrix l m ℂ} 
     (R : Matrix m n ℂ) : IsHardyTwo fun t => f t * R := by
   simpa only [← Matrix.transpose_mul, Matrix.transpose_transpose] using
     (hf.transpose.const_mul Rᵀ).transpose
-
-/-- The product of two functions of `H²` is in `H¹`. -/
-theorem IsHardyTwo.mul [Fintype m] {g : UnitAddCircle → Matrix l m ℂ}
-    {h : UnitAddCircle → Matrix m n ℂ} (hg : IsHardyTwo g) (hh : IsHardyTwo h) :
-    IsHardyOne fun t => g t * h t :=
-  ⟨integrable_mul_of_memLp hg.1 hh.1, fun _ hk => matFourierCoeff_mul_of_neg hg hh hk⟩
 
 /-- The constant coefficient of a product of functions of `H²` is the product of their constant
 coefficients. -/
@@ -488,18 +547,6 @@ theorem tendsto_matFourierCoeff_mul_left [Fintype m] {g : UnitAddCircle → Matr
   exact tendsto_finsetSum _ fun o _ =>
     tendsto_fourierCoeff_mul (hg i o) (fun N => hF N o j) (h.memLp hF o j) (h o j) k
 
-/-- Multiplication on the right by a function of `L²` is continuous from `L²` to `L¹`: the Fourier
-coefficients of the products converge. -/
-theorem tendsto_matFourierCoeff_mul_right [Fintype n] {g : UnitAddCircle → Matrix n l ℂ}
-    (hg : ∀ i j, MemLp (fun t => g t i j) 2 haarAddCircle) (h : TendstoLTwo F f)
-    (hF : ∀ N i j, MemLp (fun t => F N t i j) 2 haarAddCircle) (k : ℤ) :
-    Tendsto (fun N => matFourierCoeff (fun t => F N t * g t) k) atTop
-      (𝓝 (matFourierCoeff (fun t => f t * g t) k)) := by
-  have key := h.transpose.tendsto_matFourierCoeff_mul_left (g := fun t => (g t)ᵀ)
-    (fun i j => hg j i) (fun N i j => hF N j i) k
-  simp only [← Matrix.transpose_mul, matFourierCoeff_transpose] at key
-  exact ((continuous_id.matrix_transpose).tendsto _).comp key
-
 end TendstoLTwo
 
 /-- Iterated limits in `L²`: if `φ K N → f K` for `N → ∞` and `f K → g` for `K → ∞`, then
@@ -553,18 +600,18 @@ theorem IsHardyTwo.exists_tendsto_trigPoly {f : UnitAddCircle → Matrix m n ℂ
 noncomputable def fejerKernel (K : ℕ) (t : UnitAddCircle) : ℝ :=
   ‖∑ j ∈ Finset.range K, fourier (j : ℤ) t‖ ^ 2 / K
 
-/-- The coefficients `(1 − |k| / K)₊ f̂ (k)` of the `K`-th Fejér mean of `f`. -/
+/-- The coefficients of the `K`-th Fejér mean of `f`: `(1 − |k| / K) f̂ (k)` if `|k| < K`, and `0`
+otherwise. -/
 noncomputable def fejerCoeff (f : UnitAddCircle → Matrix m n ℂ) (K : ℕ) : ℤ →₀ Matrix m n ℂ :=
   Finsupp.onFinset (Finset.Ioo (-(K : ℤ)) K)
-    (fun k => ((max 0 (1 - |(k : ℝ)| / K) : ℝ) : ℂ) •
-      if |k| < (K : ℤ) then matFourierCoeff f k else 0)
+    (fun k => if |k| < (K : ℤ) then ((1 - |(k : ℝ)| / K : ℝ) : ℂ) • matFourierCoeff f k else 0)
     (fun k hk => by
       rw [Finset.mem_Ioo, ← abs_lt]
       by_contra h
-      exact hk (by rw [ite_eq_right h, smul_zero]))
+      exact hk (ite_eq_right h))
 
-/-- The weights `(1 − |k| / K)₊` of the Fejér means. -/
-private noncomputable def fejerWeight (K : ℕ) (k : ℤ) : ℝ := max 0 (1 - |(k : ℝ)| / K)
+/-- The weights `1 − |k| / K`, `|k| < K`, of the Fejér means. -/
+private noncomputable def fejerWeight (K : ℕ) (k : ℤ) : ℝ := 1 - |(k : ℝ)| / K
 
 /-- The coefficients of the Fejér means of order `|k| < K`. -/
 private theorem fejerCoeff_apply (f : UnitAddCircle → Matrix m n ℂ) {K : ℕ} {k : ℤ}
@@ -573,7 +620,7 @@ private theorem fejerCoeff_apply (f : UnitAddCircle → Matrix m n ℂ) {K : ℕ
   rw [Finset.mem_Ioo, ← abs_lt] at hk
   simp [fejerCoeff, fejerWeight, hk]
 
-/-- There are `K − |k|` pairs `(i, j)` with `0 ≤ i, j < K` and `i − j = k`. -/
+/-- There are `max (K − |k|, 0)` pairs `(i, j)` with `0 ≤ i, j < K` and `i − j = k`. -/
 private theorem card_filter_sub_eq (K : ℕ) (k : ℤ) :
     ((Finset.range K ×ˢ Finset.range K).filter fun q => (q.1 : ℤ) - q.2 = k).card =
       (K - |k|).toNat := by
@@ -619,10 +666,7 @@ private theorem fejerKernel_eq_sum (K : ℕ) (t : UnitAddCircle) :
   have hcard : (((K - |k|).toNat : ℕ) : ℝ) = K - |(k : ℝ)| := by
     have h3 : (((K - |k|).toNat : ℕ) : ℤ) = K - |k| := Int.toNat_of_nonneg (by omega)
     exact_mod_cast congrArg (Int.cast (R := ℝ)) h3
-  have hw : fejerWeight K k = (K - |(k : ℝ)|) / K := by
-    rw [fejerWeight, sub_div, div_self hK.ne', max_eq_right]
-    rw [sub_nonneg, div_le_one hK]
-    exact_mod_cast hk.le
+  have hw : fejerWeight K k = (K - |(k : ℝ)|) / K := by rw [fejerWeight, sub_div, div_self hK.ne']
   rw [Finset.sum_const, card_filter_sub_eq, nsmul_eq_mul, hw, ← hcard]
   push_cast
   ring
@@ -811,11 +855,7 @@ private theorem fourierCoeff_trigPoly (c : ℤ →₀ ℂ) (k : ℤ) : fourierCo
 /-- The weights of the Fejér means converge to `1`. -/
 private theorem tendsto_fejerWeight (k : ℤ) :
     Tendsto (fun K => fejerWeight K k) atTop (𝓝 1) := by
-  have h1 : Tendsto (fun K : ℕ => 1 - |(k : ℝ)| / K) atTop (𝓝 1) := by
-    simpa using (tendsto_const_div_atTop_nhds_zero_nat |(k : ℝ)|).const_sub 1
-  have h2 : Tendsto (fun K : ℕ => max 0 (1 - |(k : ℝ)| / K)) atTop (𝓝 (max 0 1)) :=
-    tendsto_const_nhds.max h1
-  rwa [max_eq_right zero_le_one] at h2
+  simpa [fejerWeight] using (tendsto_const_div_atTop_nhds_zero_nat |(k : ℝ)|).const_sub 1
 
 /-- The Fejér means of a trigonometric polynomial converge to it in `L¹`. -/
 private theorem tendsto_fejerMean_trigPoly (c : ℤ →₀ ℂ) :
@@ -863,8 +903,7 @@ private theorem integrable_fejerKernel_mul {u : UnitAddCircle → ℂ} (hu : Int
   rw [Complex.norm_real]
   exact hC _ ⟨_, rfl⟩
 
-/-- If `p` approximates `u` in `L¹`, the `L¹` distance of `u` and its Fejér means is controlled by
-that of `p` and its Fejér means. -/
+/-- `‖σ_K u − u‖₁ ≤ ‖σ_K p − p‖₁ + 2 ‖u − p‖₁` for the Fejér means `σ_K`, `K ≥ 1`. -/
 private theorem integral_norm_fejerMean_sub_le {u p : UnitAddCircle → ℂ}
     (hu : Integrable u haarAddCircle) (hp : Integrable p haarAddCircle) {K : ℕ} (hK : 0 < K) :
     ∫ t, ‖fejerMean u K t - u t‖ ∂haarAddCircle ≤
@@ -944,13 +983,6 @@ theorem exists_seq_tendsto_fejerCoeff [Finite m] [Finite n] {f : UnitAddCircle �
     fun N => Nat.succ_pos _, h⟩
 
 /-! ### Products with bounded analytic functions -/
-
-/-- The Fourier coefficients of the product of a function with a character. -/
-private theorem fourierCoeff_fourier_smul (q : ℤ) (v : UnitAddCircle → ℂ) (k : ℤ) :
-    fourierCoeff (fun t => fourier q t • v t) k = fourierCoeff v (k - q) := by
-  refine integral_congr_ae (ae_of_all _ fun t => ?_)
-  dsimp only
-  rw [smul_smul, ← fourier_add, neg_sub, sub_eq_add_neg, add_comm]
 
 /-- The Fourier coefficients of the product of a trigonometric polynomial `P = Σ_q c_q e_q` and a
 function `f` with integrable entries: `(P f)^ (k) = Σ_q c_q f̂ (k − q)`. -/

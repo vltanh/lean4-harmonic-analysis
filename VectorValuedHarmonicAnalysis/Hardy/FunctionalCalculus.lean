@@ -11,12 +11,17 @@ import Mathlib.Analysis.SpecialFunctions.ContinuousFunctionalCalculus.ExpLog.Bas
 # Functions of matrices and of matrix-valued functions
 
 * The matrices `Mᴴ M`: their entries, trace and determinant.
-* The trace of a matrix-valued function on the circle: integrability and mean value.
+* The trace of a matrix-valued function on the circle: integrability, mean value, and limits of the
+  integrals (`tendsto_integral_trace_mul`, `TendstoLTwo.tendsto_integral_trace`). The determinant:
+  measurability.
 * The continuous functional calculus of Hermitian matrices: trace and determinant of `φ (W)`,
   measurability of `t ↦ φ (W t)` for a Hermitian matrix-valued function `W` on the circle.
 * The square root of a positive semidefinite function, which has entries in `L²` if the function has
   integrable entries.
 * The exponential of matrices.
+
+The traces and determinants that are real numbers in the mathematics (those of Hermitian matrices)
+are represented by their real parts.
 -/
 
 @[expose] public section
@@ -38,7 +43,7 @@ theorem conjTranspose_mul_self_apply_self (M : Matrix m n ℂ) (j : n) :
   simp only [Matrix.mul_apply, Matrix.conjTranspose_apply, Complex.star_def, Complex.conj_mul',
     Complex.ofReal_sum, Complex.ofReal_pow]
 
-/-- `|M_ij|² ≤ (Mᴴ M)_jj`. -/
+/-- `|M_ij|² ≤ Re (Mᴴ M)_jj`. -/
 theorem norm_apply_sq_le_conjTranspose_mul_self (M : Matrix m n ℂ) (i : m) (j : n) :
     ‖M i j‖ ^ 2 ≤ ((Mᴴ * M) j j).re := by
   rw [conjTranspose_mul_self_apply_self, Complex.ofReal_re]
@@ -52,13 +57,13 @@ theorem norm_apply_le_one_of_conjTranspose_mul_self [DecidableEq n] {M : Matrix 
   rw [hM, Matrix.one_apply_eq, Complex.one_re] at h
   exact (sq_le_one_iff₀ (norm_nonneg _)).1 h
 
-/-- `tr (Mᴴ M) = Σ |M_ij|²`. -/
+/-- `Re tr (Mᴴ M) = Σ |M_ij|²`. -/
 theorem trace_conjTranspose_mul_self_re [Fintype n] (M : Matrix m n ℂ) :
     (Mᴴ * M).trace.re = ∑ j, ∑ i, ‖M i j‖ ^ 2 := by
   simp only [Matrix.trace, Matrix.diag_apply, conjTranspose_mul_self_apply_self, Complex.re_sum,
     Complex.ofReal_re]
 
-/-- `|M_ij| ≤ √K` if `tr (Mᴴ M) ≤ K`. -/
+/-- `|M_ij| ≤ √K` if `Re tr (Mᴴ M) ≤ K`. -/
 theorem norm_apply_le_sqrt_of_trace_le [Fintype n] {M : Matrix m n ℂ} {K : ℝ}
     (h : (Mᴴ * M).trace.re ≤ K) (i : m) (j : n) : ‖M i j‖ ≤ √K := by
   refine Real.le_sqrt_of_sq_le (le_trans ?_ h)
@@ -66,7 +71,7 @@ theorem norm_apply_le_sqrt_of_trace_le [Fintype n] {M : Matrix m n ℂ} {K : ℝ
   exact Finset.single_le_sum (f := fun q : m × n => ‖M q.1 q.2‖ ^ 2) (fun _ _ => sq_nonneg _)
     (Finset.mem_univ (i, j))
 
-/-- `det (Mᴴ M) = |det M|²`. -/
+/-- `Re det (Mᴴ M) = |det M|²`. -/
 theorem det_conjTranspose_mul_self_re [DecidableEq m] (M : Matrix m m ℂ) :
     (Mᴴ * M).det.re = ‖M.det‖ ^ 2 := by
   rw [Matrix.det_mul, Matrix.det_conjTranspose, Complex.star_def,
@@ -82,9 +87,9 @@ end ConjTransposeMul
 
 variable {m n : Type*} [Fintype m] [Fintype n]
 
-/-! ### The trace of a matrix-valued function -/
+/-! ### Trace and determinant of a matrix-valued function -/
 
-/-- The trace of a function with integrable entries is integrable. -/
+/-- The real part of the trace of a function with integrable entries is integrable. -/
 theorem integrable_trace_re {W : UnitAddCircle → Matrix n n ℂ}
     (hW : ∀ i j, Integrable (fun t => W t i j) haarAddCircle) :
     Integrable (fun t => (W t).trace.re) haarAddCircle :=
@@ -98,7 +103,8 @@ theorem integral_trace {f : UnitAddCircle → Matrix n n ℂ}
     neg_zero, fourier_zero, one_smul]
   exact integral_finsetSum _ fun i _ => hf i i
 
-/-- The mean of the real part of the trace is that of the trace of the constant coefficient. -/
+/-- The mean of the real part of the trace is the real part of the trace of the constant
+coefficient. -/
 theorem integral_trace_re {f : UnitAddCircle → Matrix n n ℂ}
     (hf : ∀ i j, Integrable (fun t => f t i j) haarAddCircle) :
     ∫ t, (f t).trace.re ∂haarAddCircle = (matFourierCoeff f 0).trace.re := by
@@ -107,7 +113,13 @@ theorem integral_trace_re {f : UnitAddCircle → Matrix n n ℂ}
   rw [← integral_trace hf]
   exact integral_re h
 
-/-- `|tr (E A)| ≤ M Σ |A_ki|` if the entries of `E` are bounded by `M`. -/
+/-- The mean of the real part of the trace of a trigonometric polynomial. -/
+theorem integral_trace_trigPoly_re (c : ℤ →₀ Matrix n n ℂ) :
+    ∫ t, (trigPoly c t).trace.re ∂haarAddCircle = (c 0).trace.re := by
+  rw [integral_trace_re fun i j => integrable_haar_of_continuous
+    ((continuous_trigPoly_matrix c).matrix_elem i j), matFourierCoeff_trigPoly]
+
+/-- `|Re tr (E A)| ≤ M Σ |A_ki|` if the entries of `E` are bounded by `M`. -/
 private theorem norm_trace_mul_re_le {E A : Matrix n n ℂ} {M : ℝ} (hE : ∀ i j, ‖E i j‖ ≤ M) :
     ‖(E * A).trace.re‖ ≤ ∑ i, ∑ k, M * ‖A k i‖ := by
   refine (Complex.abs_re_le_norm _).trans
@@ -118,7 +130,7 @@ private theorem norm_trace_mul_re_le {E A : Matrix n n ℂ} {M : ℝ} (hE : ∀ 
   exact mul_le_mul_of_nonneg_right (hE i k) (norm_nonneg _)
 
 /-- If the continuous functions `E_N` converge to `E` boundedly and almost everywhere, then
-`∫ tr (E_N W) → ∫ tr (E W)` for every function `W` with integrable entries. -/
+`∫ Re tr (E_N W) → ∫ Re tr (E W)` for every function `W` with integrable entries. -/
 theorem tendsto_integral_trace_mul {E : ℕ → UnitAddCircle → Matrix n n ℂ}
     {E' W : UnitAddCircle → Matrix n n ℂ} {M : ℝ} (hE : ∀ N, Continuous (E N))
     (hM : ∀ N t i j, ‖E N t i j‖ ≤ M)
@@ -135,7 +147,7 @@ theorem tendsto_integral_trace_mul {E : ℕ → UnitAddCircle → Matrix n n ℂ
     Complex.continuous_re.comp (continuous_id.matrix_mul continuous_const).matrix_trace
   exact (hc.tendsto _).comp ht
 
-/-- The mean of `tr (Fᴴ F)` is the sum of the squares of the `L²` norms of the entries of `F`. -/
+/-- The mean of `Re tr (Fᴴ F)` is the sum of the squares of the `L²` norms of the entries of `F`. -/
 theorem integral_trace_conjTranspose_mul_self {F : UnitAddCircle → Matrix m n ℂ}
     (hF : ∀ i j, MemLp (fun t => F t i j) 2 haarAddCircle) :
     ∫ t, ((F t)ᴴ * F t).trace.re ∂haarAddCircle =
@@ -146,7 +158,7 @@ theorem integral_trace_conjTranspose_mul_self {F : UnitAddCircle → Matrix m n 
   exact Finset.sum_congr rfl fun j _ => integral_finsetSum _ fun i _ =>
     (hF i j).integrable_norm_pow two_ne_zero
 
-/-- Convergence in `L²` implies the convergence of the integrals of `tr (Fᴴ F)`. -/
+/-- Convergence in `L²` implies the convergence of the integrals of `Re tr (Fᴴ F)`. -/
 theorem TendstoLTwo.tendsto_integral_trace {F : ℕ → UnitAddCircle → Matrix m n ℂ}
     {f : UnitAddCircle → Matrix m n ℂ} (h : TendstoLTwo F f)
     (hF : ∀ N i j, MemLp (fun t => F N t i j) 2 haarAddCircle) :
@@ -158,7 +170,7 @@ theorem TendstoLTwo.tendsto_integral_trace {F : ℕ → UnitAddCircle → Matrix
     tendsto_integral_norm_sq (fun N => hF N i j) (h.memLp hF i j) (h i j)
 
 /-- `|f̂ (0)|² ≤ ∫ |f|²`. -/
-private theorem norm_fourierCoeff_zero_sq_le {f : UnitAddCircle → ℂ}
+theorem norm_fourierCoeff_zero_sq_le {f : UnitAddCircle → ℂ}
     (hf : MemLp f 2 haarAddCircle) :
     ‖fourierCoeff f 0‖ ^ 2 ≤ ∫ t, ‖f t‖ ^ 2 ∂haarAddCircle := by
   have h1 : ‖fourierCoeff f 0‖ ≤ ∫ t, ‖f t‖ ∂haarAddCircle := by
@@ -169,7 +181,7 @@ private theorem norm_fourierCoeff_zero_sq_le {f : UnitAddCircle → ℂ}
     (ae_of_all _ fun t => norm_nonneg _) (hf.integrable one_le_two).norm
     (hf.integrable_norm_pow two_ne_zero)
 
-/-- `tr (F̂ (0)ᴴ F̂ (0)) ≤ ∫ tr (Fᴴ F)`. -/
+/-- `Re tr (F̂ (0)ᴴ F̂ (0)) ≤ ∫ Re tr (Fᴴ F)`. -/
 theorem trace_matFourierCoeff_zero_le {F : UnitAddCircle → Matrix m n ℂ}
     (hF : ∀ i j, MemLp (fun t => F t i j) 2 haarAddCircle) :
     ((matFourierCoeff F 0)ᴴ * matFourierCoeff F 0).trace.re ≤
@@ -222,12 +234,13 @@ theorem aestronglyMeasurable_cfc {W : UnitAddCircle → Matrix n n ℂ}
     rw [ht.eq, ← two_smul ℝ, smul_smul, inv_mul_cancel₀ two_ne_zero, one_smul]
   exact congrArg (fun A : Matrix n n ℂ => cfc φ A i j) h2
 
-/-- The trace of a function of a Hermitian matrix is the sum of the values of the function at the
-eigenvalues. -/
-theorem trace_cfc {W : Matrix n n ℂ} (hW : W.IsHermitian) (φ : ℝ → ℝ) :
-    (cfc φ W).trace = ∑ i, ((φ (hW.eigenvalues i) : ℝ) : ℂ) := by
+/-- The real part of the trace of a function of a Hermitian matrix is the sum of the values of the
+function at the eigenvalues. -/
+theorem trace_cfc_re {W : Matrix n n ℂ} (hW : W.IsHermitian) (φ : ℝ → ℝ) :
+    (cfc φ W).trace.re = ∑ i, φ (hW.eigenvalues i) := by
   rw [hW.cfc_eq, Matrix.IsHermitian.cfc, Unitary.conjStarAlgAut_apply, Matrix.trace_mul_comm,
-    ← Matrix.mul_assoc, Unitary.coe_star_mul_self, Matrix.one_mul, Matrix.trace_diagonal]
+    ← Matrix.mul_assoc, Unitary.coe_star_mul_self, Matrix.one_mul, Matrix.trace_diagonal,
+    Complex.re_sum]
   rfl
 
 /-- The determinant of a function of a Hermitian matrix is the product of the values of the function
@@ -238,12 +251,7 @@ theorem det_cfc {W : Matrix n n ℂ} (hW : W.IsHermitian) (φ : ℝ → ℝ) :
     ← Matrix.mul_assoc, Unitary.coe_star_mul_self, Matrix.one_mul, Matrix.det_diagonal]
   rfl
 
-/-- The real part of the trace of a function of a Hermitian matrix. -/
-theorem trace_cfc_re {W : Matrix n n ℂ} (hW : W.IsHermitian) (φ : ℝ → ℝ) :
-    (cfc φ W).trace.re = ∑ i, φ (hW.eigenvalues i) := by
-  rw [trace_cfc hW, ← Complex.ofReal_sum, Complex.ofReal_re]
-
-/-- The trace of a Hermitian matrix is the sum of the eigenvalues. -/
+/-- The real part of the trace of a Hermitian matrix is the sum of the eigenvalues. -/
 theorem trace_re_eq_sum_eigenvalues {W : Matrix n n ℂ} (hW : W.IsHermitian) :
     W.trace.re = ∑ i, hW.eigenvalues i := by
   rw [← trace_cfc_re hW fun s => s, cfc_id' ℝ W hW.isSelfAdjoint]
@@ -312,10 +320,10 @@ theorem det_matrix_exp {A : Matrix n n ℂ} (hA : A.IsHermitian) :
   rw [matrix_exp_eq_cfc hA, det_cfc hA, trace_re_eq_sum_eigenvalues hA, Real.exp_sum,
     Complex.ofReal_prod]
 
-/-- `e^{−A} e^A = 1`. -/
-theorem exp_neg_mul_exp (A : Matrix n n ℂ) : NormedSpace.exp (-A) * NormedSpace.exp A = 1 := by
+/-- `e^A e^{−A} = 1`. -/
+theorem exp_mul_exp_neg (A : Matrix n n ℂ) : NormedSpace.exp A * NormedSpace.exp (-A) = 1 := by
   rw [Matrix.exp_neg,
-    Matrix.nonsing_inv_mul _ ((Matrix.isUnit_iff_isUnit_det _).1 (Matrix.isUnit_exp A))]
+    Matrix.mul_nonsing_inv _ ((Matrix.isUnit_iff_isUnit_det _).1 (Matrix.isUnit_exp A))]
 
 /-- `e^{A/2} e^{A/2} = e^A`. -/
 theorem exp_half_mul_self (A : Matrix n n ℂ) :

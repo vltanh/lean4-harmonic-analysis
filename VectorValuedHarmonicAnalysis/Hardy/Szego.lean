@@ -15,11 +15,12 @@ several variables*, Acta Math. 99 (1958), 165–202, §5, prove:
 * (Theorem 8, for absolutely continuous measures) `exp ((1/n) ∫ log det W)` is the infimum of
   `∫ (1/n) tr (Qᴴ W Q)` over the analytic trigonometric polynomials `Q` whose constant coefficient
   has determinant `1`; it is zero if `log det W` is not integrable (`szegoInf_eq`,
-  `posDef_of_szegoInf_pos`); it is `|det B̂ (0)|^{2/n}` if `W = Bᴴ B` with `B` outer and
-  `det B̂ (0) ≠ 0` (`IsOuter.szegoInf_eq`);
+  `posDef_of_szegoInf_pos`);
 * (Theorem 9) `W = Bᴴ B` for some `B ∈ H²` with `det B̂ (0) ≠ 0` if and only if `log det W` is
   integrable; then `B` can be chosen outer, with `∫ log |det B| = log |det B̂ (0)|`
-  (`exists_isOuter_of_integrable_log_det`, `integrable_log_det_of_isHardyTwo`).
+  (`exists_isOuter_of_integrable_log_det`, `integrable_log_det_of_isHardyTwo`). The infimum is
+  `|det B̂ (0)|^{2/n}` if `W = Bᴴ B` with `B` outer and `det B̂ (0) ≠ 0` (`IsOuter.szegoInf_eq`;
+  proof of (75), there for the `B` of (77)).
 
 The source writes the integrands in (44) and (55) as `tr ((A₀ + P)ᴴ (A₀ + P) W)`, which is
 `tr (Q W Qᴴ)` for `Q = A₀ + P`, and `W = B Bᴴ`, and normalizes the trace; the statements here are
@@ -62,6 +63,12 @@ private theorem log_det_re_eq {B W : Matrix n n ℂ} (h : Bᴴ * B = W) :
     Real.log W.det.re = 2 * Real.log ‖B.det‖ := by
   rw [← h, det_conjTranspose_mul_self_re, Real.log_pow]
   norm_num
+
+omit [DecidableEq n] in
+/-- `tr (Qᴴ W Q) ≥ 0` if `W` is positive semidefinite. -/
+private theorem trace_conjTranspose_mul_mul_nonneg {W : Matrix n n ℂ} (hW : W.PosSemidef)
+    (Q : Matrix n n ℂ) : 0 ≤ (Qᴴ * W * Q).trace.re :=
+  (Complex.nonneg_iff.1 (hW.conjTranspose_mul_mul_same Q).trace_nonneg).1
 
 omit [DecidableEq n] in
 /-- The entries of `Qᴴ W Q` are integrable if those of `W` are integrable and `Q` is continuous. -/
@@ -131,8 +138,25 @@ private theorem szegoInf_le {W : UnitAddCircle → Matrix n n ℂ}
     {c : ℤ →₀ Matrix n n ℂ // (∀ k ∈ c.support, 0 ≤ k) ∧ (c 0).det = 1})
   rintro _ ⟨d, rfl⟩
   refine div_nonneg (integral_nonneg_of_ae ?_) (Nat.cast_nonneg _)
-  filter_upwards [hW] with t ht
-  exact (Complex.nonneg_iff.1 (ht.conjTranspose_mul_mul_same _).trace_nonneg).1
+  exact hW.mono fun t ht => trace_conjTranspose_mul_mul_nonneg ht _
+
+/-- If `tr (Qᴴ W Q) ≤ K tr (Qᴴ V Q)` for all `Q`, the infimum for `W` is at most `K` times the
+infimum for `V`. -/
+private theorem szegoInf_le_mul {W V : UnitAddCircle → Matrix n n ℂ} {K : ℝ} (hK : 0 ≤ K)
+    (hint : ∀ i j, Integrable (fun t => W t i j) haarAddCircle)
+    (hV : ∀ i j, Integrable (fun t => V t i j) haarAddCircle)
+    (hW : ∀ᵐ t ∂haarAddCircle, (W t).PosSemidef)
+    (h : ∀ t (Q : Matrix n n ℂ), (Qᴴ * W t * Q).trace.re ≤ K * (Qᴴ * V t * Q).trace.re) :
+    szegoInf W ≤ K * szegoInf V := by
+  have := nonempty_szego (n := n)
+  rw [szegoInf, szegoInf, Real.mul_iInf_of_nonneg hK]
+  refine le_ciInf fun ⟨c, hc, h1⟩ => (szegoInf_le hW hc h1).trans ?_
+  have hcont := continuous_trigPoly_matrix c
+  rw [← mul_div_assoc, ← integral_const_mul]
+  exact div_le_div_of_nonneg_right (integral_mono
+    (integrable_trace_re (integrable_conjTranspose_mul_mul hint hcont))
+    ((integrable_trace_re (integrable_conjTranspose_mul_mul hV hcont)).const_mul K) fun t =>
+      h t _) (Nat.cast_nonneg _)
 
 /-- Helson–Lowdenslager (1958), (76): if `W = Bᴴ B` with `B ∈ H²`, then
 `|det B̂ (0)|^{2/n} ≤ ∫ (1/n) tr (Qᴴ W Q)` for every analytic polynomial `Q` with
@@ -164,7 +188,8 @@ theorem norm_det_rpow_le_szegoInf [Nonempty n] {W B : UnitAddCircle → Matrix n
 
 /-- If `A (1 + P_N) → F` in `L²`, where `Fᴴ F = Cᴴ C` with a constant matrix `C`, then the infimum
 for `W = Aᴴ A` is at most `(1/n) tr ((C D)ᴴ (C D))` if `det D = 1`: the polynomials `(1 + P_N) D`
-belong to the set over which the infimum is taken (Helson–Lowdenslager (1958), pp. 190–191, 194). -/
+belong to the set over which the infimum is taken (Helson–Lowdenslager (1958), pp. 190–191, 194; the
+matrix `C` of the source is `Cᴴ C` here). -/
 private theorem szegoInf_le_trace_of_tendsto {m q : Type*} [Fintype m] [Fintype q]
     {W : UnitAddCircle → Matrix n n ℂ} {A F : UnitAddCircle → Matrix m n ℂ} {C : Matrix q n ℂ}
     (hA : ∀ i j, MemLp (fun t => A t i j) 2 haarAddCircle)
@@ -198,8 +223,9 @@ private theorem szegoInf_le_trace_of_tendsto {m q : Type*} [Fintype m] [Fintype 
   exact szegoInf_le hW (hd N) (by rw [hd0, hD])
 
 /-- If `C` is not injective, there are matrices `D` with determinant `1` for which `tr (Dᴴ Cᴴ C D)`
-is as small as we please (Helson–Lowdenslager (1958), p. 190): the columns of `D` are a vector of
-the kernel and multiples by `s` of vectors of the standard basis. -/
+is as small as we please (Helson–Lowdenslager (1958), pp. 190–191; the matrix `C` of the source is
+`Cᴴ C` here): the columns of `D` are a multiple of a vector of the kernel and multiples by `s` of
+vectors of the standard basis. -/
 private theorem exists_det_eq_one_trace_le {q : Type*} [Fintype q] {C : Matrix q n ℂ} {v : n → ℂ}
     (hv : v ≠ 0) (hCv : C.mulVec v = 0) {s : ℝ} (hs : 0 < s) :
     ∃ D : Matrix n n ℂ, D.det = 1 ∧
@@ -235,7 +261,8 @@ private theorem exists_det_eq_one_trace_le {q : Type*} [Fintype q] {C : Matrix q
   rw [Finset.mul_sum]
   exact Finset.sum_le_sum fun i _ => hentry i j
 
-/-- "We assert that `C` is non-singular" (Helson–Lowdenslager (1958), p. 190). -/
+/-- "We assert that `C` is non-singular" (Helson–Lowdenslager (1958), p. 190; the matrix `C` of the
+source is `Cᴴ C` here). -/
 private theorem card_le_rank_of_szegoInf_pos {q : Type*} [Fintype q]
     {W : UnitAddCircle → Matrix n n ℂ} {C : Matrix q n ℂ} (hpos : 0 < szegoInf W)
     (hle : ∀ D : Matrix n n ℂ, D.det = 1 →
@@ -264,10 +291,11 @@ private theorem det_ne_zero_of_card_le_rank {M : Matrix n n ℂ} (h : Fintype.ca
   have h1 := Matrix.mulVec_surjective_iff_rank_eq_card.2 (le_antisymm M.rank_le_card_width h)
   exact ((Matrix.isUnit_iff_isUnit_det M).1 (Matrix.mulVec_surjective_iff_isUnit.1 h1)).ne_zero
 
-/-- The factorization furnished by a square matrix-valued function `X` with orthonormal columns, the
-columns being indexed by any set (Helson–Lowdenslager (1958), (64)–(66)). In the source, with the
-conventions used here, `X = A (1 + H) C^{−1/2}`, where `1 + H` is the limit of the polynomials
-`1 + P_N` and `C` is the constant matrix `(1 + H)ᴴ W (1 + H)`. -/
+/-- Helson–Lowdenslager (1958), (65), from (64): the factorization furnished by a matrix-valued
+function `X` with orthonormal columns, indexed by a set with `n` elements. (The `B` of the source,
+`C^{1/2} (1 + H)^{−1}` with the conventions used here, is `Xᴴ A` for `X = A (1 + H) C^{−1/2}`, where
+`1 + H` is the limit of the polynomials `1 + P_N` and `C` is the constant matrix
+`(1 + H)ᴴ W (1 + H)`.) -/
 private theorem exists_isOuter_of_innovation {q : Type*} [Finite q] [DecidableEq q] (e : q ≃ n)
     {A : UnitAddCircle → Matrix n n ℂ} {X : UnitAddCircle → Matrix n q ℂ}
     (hXX : ∀ᵐ t ∂haarAddCircle, (X t)ᴴ * X t = 1) (hB : IsOuter fun t => (X t)ᴴ * A t)
@@ -283,7 +311,11 @@ private theorem exists_isOuter_of_innovation {q : Type*} [Finite q] [DecidableEq
       ← Matrix.mul_assoc (X t), (Matrix.mul_eq_one_comm_of_equiv e).1 ht, Matrix.one_mul]
 
 /-- Helson–Lowdenslager (1958), Lemma 6: if the infimum is positive, then `W = Bᴴ B` for an outer
-function `B` with `det B̂ (0) ≠ 0`; that `B` is outer is (77) and the remark after it, p. 194. -/
+function `B` with `det B̂ (0) ≠ 0`; that `B` is outer is (77) and the remark after it, p. 194.
+
+In the proof `A = W^{1/2}`; `Q ↦ A Q` maps the `L²_W` of the source isometrically into `L²`. With
+`A (1 + H) = X B₀` the `C` of (63) is `B₀ᴴ B₀`, and `B = Xᴴ A = B₀ (1 + H)^{−1}` is the `B` of the
+source up to a constant unitary factor. -/
 theorem exists_isOuter_of_szegoInf_pos {W : UnitAddCircle → Matrix n n ℂ}
     (hint : ∀ i j, Integrable (fun t => W t i j) haarAddCircle)
     (hW : ∀ᵐ t ∂haarAddCircle, (W t).PosSemidef) (hpos : 0 < szegoInf W) :
@@ -323,101 +355,109 @@ private theorem exists_trace_exp_le {f : UnitAddCircle → Matrix n n ℂ} (hf :
   obtain ⟨K, hK⟩ := (isCompact_range h1).bddAbove
   exact ⟨max K 1, lt_max_of_lt_right one_pos, fun t => (hK ⟨t, rfl⟩).trans (le_max_left _ _)⟩
 
-/-- `tr (Qᴴ Q) ≤ tr e^Ψ tr (Qᴴ e^{−Ψ} Q)`: a form of "the eigenvalues of `e^{−Ψ}` are bounded from
-zero" (Helson–Lowdenslager (1958), p. 191). -/
-private theorem trace_le_trace_exp_mul {H : Matrix n n ℂ} (hH : H.IsHermitian)
+/-- `tr (Qᴴ Q) ≤ tr e^Ψ tr (Qᴴ e^{−Ψ} Q)`: a form of "The eigenvalues of `W` are bounded from zero"
+for `W = e^{−Ψ}` (Helson–Lowdenslager (1958), p. 191). -/
+private theorem trace_le_trace_exp_mul {Ψ : Matrix n n ℂ} (hΨ : Ψ.IsHermitian)
     (Q : Matrix n n ℂ) :
     (Qᴴ * Q).trace.re ≤
-      (NormedSpace.exp H).trace.re * (Qᴴ * NormedSpace.exp (-H) * Q).trace.re := by
-  have h1 : NormedSpace.exp ((2⁻¹ : ℝ) • H) * (NormedSpace.exp ((2⁻¹ : ℝ) • -H) * Q) = Q := by
-    rw [← Matrix.mul_assoc, smul_neg,
-      mul_eq_one_comm.1 (exp_neg_mul_exp ((2⁻¹ : ℝ) • H)), Matrix.one_mul]
-  have h2 := trace_conjTranspose_mul_self_mul_le (NormedSpace.exp ((2⁻¹ : ℝ) • H))
-    (NormedSpace.exp ((2⁻¹ : ℝ) • -H) * Q)
-  rwa [h1, conjTranspose_exp_half_mul_self hH,
-    ← conjTranspose_mul_mul_eq (conjTranspose_exp_half_mul_self hH.neg)] at h2
+      (NormedSpace.exp Ψ).trace.re * (Qᴴ * NormedSpace.exp (-Ψ) * Q).trace.re := by
+  have h1 : NormedSpace.exp ((2⁻¹ : ℝ) • Ψ) * (NormedSpace.exp ((2⁻¹ : ℝ) • -Ψ) * Q) = Q := by
+    rw [← Matrix.mul_assoc, smul_neg, exp_mul_exp_neg, Matrix.one_mul]
+  have h2 := trace_conjTranspose_mul_self_mul_le (NormedSpace.exp ((2⁻¹ : ℝ) • Ψ))
+    (NormedSpace.exp ((2⁻¹ : ℝ) • -Ψ) * Q)
+  rwa [h1, conjTranspose_exp_half_mul_self hΨ,
+    ← conjTranspose_mul_mul_eq (conjTranspose_exp_half_mul_self hΨ.neg)] at h2
 
-/-- "`‖A‖² ≥ 1` for each analytic trigonometric polynomial `A` whose leading coefficient has
-determinant one. Therefore the infimum is positive" for the weight `e^{−Ψ}` (Helson–Lowdenslager
-(1958), p. 191). -/
+/-- "`‖A‖² = ∫ tr (A* A) dσ ≥ 1` for each analytic trigonometric polynomial `A` whose leading
+coefficient `A₀` has determinant one. Therefore the infimum of (55) is positive" for the weight
+`e^{−Ψ}` (Helson–Lowdenslager (1958), p. 191). -/
 private theorem szegoInf_exp_neg_pos [Nonempty n] {c : ℤ →₀ Matrix n n ℂ}
     (hc : ∀ t, (trigPoly c t).IsHermitian) :
     0 < szegoInf fun t => NormedSpace.exp (-trigPoly c t) := by
-  have := nonempty_szego (n := n)
   have hcont := continuous_trigPoly_matrix c
   obtain ⟨K, hK0, hK⟩ := exists_trace_exp_le hcont
-  refine lt_of_lt_of_le (inv_pos.2 hK0) (le_ciInf fun ⟨d, hd, hd1⟩ => ?_)
-  have hd' := continuous_trigPoly_matrix d
   have h1 : 1 ≤ szegoInf fun _ : UnitAddCircle => (1 : Matrix n n ℂ) := by
     have h := norm_det_rpow_le_szegoInf (isHardyTwo_const (1 : Matrix n n ℂ))
       (W := fun _ => 1) (ae_of_all _ fun t => by simp)
     rwa [matFourierCoeff_const, ite_eq_left rfl, Matrix.det_one, norm_one, Real.one_rpow] at h
-  have h2 := h1.trans (szegoInf_le (ae_of_all _ fun _ => Matrix.PosSemidef.one) hd hd1)
-  have hint {g : UnitAddCircle → Matrix n n ℂ} (hg : Continuous g) :
-      Integrable (fun t => (g t).trace.re) haarAddCircle :=
-    integrable_haar_of_continuous (Complex.continuous_re.comp hg.matrix_trace)
-  have h3 : ∫ t, ((trigPoly d t)ᴴ * 1 * trigPoly d t).trace.re ∂haarAddCircle ≤
-      K * ∫ t, ((trigPoly d t)ᴴ * NormedSpace.exp (-trigPoly c t) *
-        trigPoly d t).trace.re ∂haarAddCircle := by
-    rw [← integral_const_mul]
-    refine integral_mono (hint ((hd'.matrix_conjTranspose.matrix_mul continuous_const).matrix_mul
-      hd')) ((hint ((hd'.matrix_conjTranspose.matrix_mul
-        (continuous_matrix_exp.comp hcont.neg)).matrix_mul hd')).const_mul K) fun t => ?_
-    simp only [Matrix.mul_one]
-    refine (trace_le_trace_exp_mul (hc t) _).trans (mul_le_mul_of_nonneg_right (hK t) ?_)
-    exact (Complex.nonneg_iff.1 ((posDef_matrix_exp
-      (hc t).neg).posSemidef.conjTranspose_mul_mul_same _).trace_nonneg).1
-  rw [inv_le_iff_one_le_mul₀' hK0, ← mul_div_assoc]
-  exact h2.trans (by gcongr)
+  have h2 := h1.trans (szegoInf_le_mul (V := fun t => NormedSpace.exp (-trigPoly c t)) hK0.le
+    (fun i j => integrable_const _) (fun i j => integrable_haar_of_continuous
+      ((continuous_matrix_exp.comp hcont.neg).matrix_elem i j))
+    (ae_of_all _ fun _ => Matrix.PosSemidef.one) fun t Q => by
+      rw [Matrix.mul_one]
+      exact (trace_le_trace_exp_mul (hc t) Q).trans (mul_le_mul_of_nonneg_right (hK t)
+        (trace_conjTranspose_mul_mul_nonneg (posDef_matrix_exp (hc t).neg).posSemidef Q)))
+  exact pos_of_mul_pos_right (one_pos.trans_le h2) hK0.le
 
-/-- (70), (72) and the sequel (Helson–Lowdenslager (1958), p. 192): if `B` and `Q` are bounded
-analytic functions with `Q B = 1` and `∫ log |det B| = 0`, then `|det Q̂ (0)| = 1`. -/
-private theorem norm_det_matFourierCoeff_eq_one {B Q : UnitAddCircle → Matrix n n ℂ} {C C' : ℝ}
+/-- "The inverse of `B` is the function `A = A₀ + A₀ H`, obtained as the limit in `L²_W` of a
+sequence of analytic trigonometric polynomials each having constant term `A₀`. With the present
+choice of `W` the sequence converges in `L²` as well, so that `A` is an analytic element of `L²`"
+(Helson–Lowdenslager (1958), p. 192). Here `Q` is the inverse of `B`, and the polynomials are
+`(1 + P_N) B̂ (0)⁻¹`, where `B (1 + P_N) → B̂ (0)`. -/
+private theorem isHardyTwo_of_mul_eq_one {B Q : UnitAddCircle → Matrix n n ℂ} {C : ℝ}
+    (hB : IsOuter B) (hB0 : (matFourierCoeff B 0).det ≠ 0)
+    (hQm : ∀ i j, AEStronglyMeasurable (fun t => Q t i j) haarAddCircle)
+    (hQC : ∀ᵐ t ∂haarAddCircle, ∀ i j, ‖Q t i j‖ ≤ C)
+    (hQB : ∀ᵐ t ∂haarAddCircle, Q t * B t = 1) : IsHardyTwo Q := by
+  obtain ⟨hB2, c, hc, hlim⟩ := hB
+  choose d hd _ hdt using fun N => exists_trigPoly_eq_one_add_mul (hc N) (matFourierCoeff B 0)⁻¹
+  have hL2 (N : ℕ) := memLp_mul_one_add hB2.1 (c N)
+  have hcont := continuous_const (X := UnitAddCircle) (y := (matFourierCoeff B 0)⁻¹)
+  have h1 := ((hlim.mul_continuous hcont hL2).bounded_mul hQm hQC fun N =>
+    memLp_mul_continuous (hL2 N) hcont).congr_ae (G := fun N => trigPoly (d N)) (g := Q)
+    (fun N => ?_) (ae_of_all _ fun t => ?_)
+  · exact h1.isHardyTwo fun N => isHardyTwo_trigPoly (hd N)
+  · filter_upwards [hQB] with t ht
+    rw [← Matrix.mul_assoc, ← Matrix.mul_assoc, ht, Matrix.one_mul, hdt]
+  · rw [Matrix.mul_nonsing_inv _ (isUnit_iff_ne_zero.2 hB0), Matrix.mul_one]
+
+/-- "It follows that the right side of (70) and of (72) is finite. Adding these inequalities gives
+zero on both sides. Therefore (70) and (72) are actually equalities" (Helson–Lowdenslager (1958), p.
+192): if `B` and `Q` are bounded analytic functions with `Q B = 1`, then `det Q̂ (0) ≠ 0`, and
+`∫ log |det Q| = log |det Q̂ (0)|`. -/
+private theorem integral_log_norm_det_eq {B Q : UnitAddCircle → Matrix n n ℂ} {C C' : ℝ}
     (hB : IsHardyTwo B) (hBC : ∀ᵐ t ∂haarAddCircle, ∀ i j, ‖B t i j‖ ≤ C) (hQ : IsHardyTwo Q)
     (hQC : ∀ᵐ t ∂haarAddCircle, ∀ i j, ‖Q t i j‖ ≤ C')
-    (hQB : ∀ᵐ t ∂haarAddCircle, Q t * B t = 1)
-    (hlog : ∫ t, Real.log ‖(B t).det‖ ∂haarAddCircle = 0) :
-    ‖(matFourierCoeff Q 0).det‖ = 1 := by
+    (hQB : ∀ᵐ t ∂haarAddCircle, Q t * B t = 1) :
+    (matFourierCoeff Q 0).det ≠ 0 ∧
+      ∫ t, Real.log ‖(Q t).det‖ ∂haarAddCircle = Real.log ‖(matFourierCoeff Q 0).det‖ := by
   have h1 : matFourierCoeff Q 0 * matFourierCoeff B 0 = 1 := by
     rw [← hQ.matFourierCoeff_mul_zero hB, matFourierCoeff_congr_ae hQB, matFourierCoeff_const,
       ite_eq_left rfl]
   have h2 : (matFourierCoeff Q 0).det * (matFourierCoeff B 0).det = 1 := by
     rw [← Matrix.det_mul, h1, Matrix.det_one]
-  have hQ0 := left_ne_zero_of_mul_eq_one h2
-  have hB0 := right_ne_zero_of_mul_eq_one h2
-  have h3 : ∫ t, Real.log ‖(Q t).det‖ ∂haarAddCircle = 0 := by
-    rw [← neg_eq_zero, ← integral_neg, ← hlog]
-    refine integral_congr_ae ?_
-    filter_upwards [hQB] with t ht
-    have h := congrArg Matrix.det ht
+  have hlog {M N : Matrix n n ℂ} (h : M * N = 1) : Real.log ‖N.det‖ = -Real.log ‖M.det‖ := by
+    have h := congrArg Matrix.det h
     rw [Matrix.det_mul, Matrix.det_one] at h
-    rw [eq_inv_of_mul_eq_one_left h, norm_inv, Real.log_inv, neg_neg]
-  have h4 := (log_norm_det_le_integral_log_norm_det hB.isHardyOne hBC hB0).2.2
-  have h5 := (log_norm_det_le_integral_log_norm_det hQ.isHardyOne hQC hQ0).2.2
-  have h6 : Real.log ‖(matFourierCoeff Q 0).det‖ + Real.log ‖(matFourierCoeff B 0).det‖ = 0 := by
-    rw [← Real.log_mul (norm_ne_zero_iff.2 hQ0) (norm_ne_zero_iff.2 hB0), ← norm_mul, h2, norm_one,
-      Real.log_one]
-  exact Real.eq_one_of_pos_of_log_eq_zero (norm_pos_iff.2 hQ0) (by linarith)
+    rw [eq_inv_of_mul_eq_one_right h, norm_inv, Real.log_inv]
+  have h3 : ∫ t, Real.log ‖(B t).det‖ ∂haarAddCircle =
+      -∫ t, Real.log ‖(Q t).det‖ ∂haarAddCircle := by
+    rw [← integral_neg]
+    exact integral_congr_ae (hQB.mono fun t ht => hlog ht)
+  have h4 := (log_norm_det_le_integral_log_norm_det hB.isHardyOne hBC
+    (right_ne_zero_of_mul_eq_one h2)).2.2
+  have h5 := (log_norm_det_le_integral_log_norm_det hQ.isHardyOne hQC
+    (left_ne_zero_of_mul_eq_one h2)).2.2
+  rw [h3, hlog h1] at h4
+  exact ⟨left_ne_zero_of_mul_eq_one h2, le_antisymm (neg_le_neg_iff.1 h4) h5⟩
 
-/-- "By assumption `Ψ` satisfies (57)": if `Bᴴ B = e^{−Ψ}` and `∫ tr Ψ = 0`, then
-`∫ log |det B| = 0` (Helson–Lowdenslager (1958), p. 192). -/
+/-- "By assumption `Ψ` satisfies (57). Making use of (71) we have `0 = ∫ log det e^Ψ = […]`"
+(Helson–Lowdenslager (1958), p. 192): if `Q Qᴴ = e^Ψ` and `∫ tr Ψ = 0`, then
+`∫ log |det Q| = 0`. -/
 private theorem integral_log_norm_det_eq_zero {c : ℤ →₀ Matrix n n ℂ}
     (hc : ∀ t, (trigPoly c t).IsHermitian) (h0 : (c 0).trace = 0)
-    {B : UnitAddCircle → Matrix n n ℂ}
-    (hB : ∀ᵐ t ∂haarAddCircle, (B t)ᴴ * B t = NormedSpace.exp (-trigPoly c t)) :
-    ∫ t, Real.log ‖(B t).det‖ ∂haarAddCircle = 0 := by
-  have h1 : ∀ᵐ t ∂haarAddCircle,
-      Real.log ‖(B t).det‖ = (2⁻¹ : ℝ) * -(trigPoly c t).trace.re := by
-    filter_upwards [hB] with t ht
-    have h2 := log_det_re_eq ht
-    rw [det_matrix_exp (hc t).neg, Complex.ofReal_re, Real.log_exp, Matrix.trace_neg,
-      Complex.neg_re] at h2
+    {Q : UnitAddCircle → Matrix n n ℂ}
+    (hQ : ∀ᵐ t ∂haarAddCircle, Q t * (Q t)ᴴ = NormedSpace.exp (trigPoly c t)) :
+    ∫ t, Real.log ‖(Q t).det‖ ∂haarAddCircle = 0 := by
+  have h1 : ∀ᵐ t ∂haarAddCircle, Real.log ‖(Q t).det‖ = (2⁻¹ : ℝ) * (trigPoly c t).trace.re := by
+    filter_upwards [hQ] with t ht
+    have h2 := log_det_re_eq (B := (Q t)ᴴ) (W := NormedSpace.exp (trigPoly c t))
+      (by rwa [Matrix.conjTranspose_conjTranspose])
+    rw [det_matrix_exp (hc t), Complex.ofReal_re, Real.log_exp, Matrix.det_conjTranspose,
+      norm_star] at h2
     linarith
-  have h3 : ∫ t, (trigPoly c t).trace.re ∂haarAddCircle = 0 := by
-    rw [integral_trace_re fun i j => integrable_haar_of_continuous
-      ((continuous_trigPoly_matrix c).matrix_elem i j), matFourierCoeff_trigPoly, h0,
-      Complex.zero_re]
-  rw [integral_congr_ae h1, integral_const_mul, integral_neg, h3, neg_zero, mul_zero]
+  rw [integral_congr_ae h1, integral_const_mul, integral_trace_trigPoly_re, h0, Complex.zero_re,
+    mul_zero]
 
 /-- Helson–Lowdenslager (1958), (69)–(72): if `∫ tr Ψ = 0`, then `e^Ψ = Q Qᴴ` for a bounded analytic
 function `Q` with `|det Q̂ (0)| = 1`. -/
@@ -435,15 +475,12 @@ private theorem exists_bounded_analytic_norm_det_eq_one [Nonempty n] {c : ℤ �
     (ae_of_all _ fun t => (posDef_matrix_exp (hc t).neg).posSemidef) (szegoInf_exp_neg_pos hc)
   obtain ⟨K, -, hK⟩ := exists_trace_exp_le hcont
   obtain ⟨K', -, hK'⟩ := exists_trace_exp_le hcont.neg
-  have hinv (t : UnitAddCircle) :
-      NormedSpace.exp (trigPoly c t) * NormedSpace.exp (-trigPoly c t) = 1 :=
-    mul_eq_one_comm.1 (exp_neg_mul_exp (trigPoly c t))
   have hBC : ∀ᵐ t ∂haarAddCircle, ∀ i j, ‖B t i j‖ ≤ √K' := by
     filter_upwards [hBW] with t ht
     exact norm_apply_le_sqrt_of_trace_le (ht ▸ hK' t)
   have hQB : ∀ᵐ t ∂haarAddCircle, NormedSpace.exp (trigPoly c t) * (B t)ᴴ * B t = 1 := by
     filter_upwards [hBW] with t ht
-    rw [Matrix.mul_assoc, ht, hinv]
+    rw [Matrix.mul_assoc, ht, exp_mul_exp_neg]
   have hQQ : ∀ᵐ t ∂haarAddCircle, (NormedSpace.exp (trigPoly c t) * (B t)ᴴ) *
       (NormedSpace.exp (trigPoly c t) * (B t)ᴴ)ᴴ = NormedSpace.exp (trigPoly c t) := by
     filter_upwards [hQB] with t ht
@@ -460,12 +497,10 @@ private theorem exists_bounded_analytic_norm_det_eq_one [Nonempty n] {c : ℤ �
       (fun t => (NormedSpace.exp (trigPoly c t) * (B t)ᴴ) i j) haarAddCircle :=
     (integrable_continuous_mul hexp (f := fun t => (B t)ᴴ)
       (fun i j => (hB.1.1 j i).star.integrable one_le_two) i j).aestronglyMeasurable
-  -- "the inverse of `B` is the limit in `L²` of a sequence of analytic trigonometric polynomials"
-  have hQ := hB.isHardyTwo_of_bounded_mul (Matrix.rank_of_isUnit _
-    ((Matrix.isUnit_iff_isUnit_det _).2 (isUnit_iff_ne_zero.2 hB0))) hQm hQC
-    ((isHardyTwo_const 1).congr_ae (hQB.mono fun t ht => ht.symm))
-  exact ⟨_, _, hQ, hQC, norm_det_matFourierCoeff_eq_one hB.1 hBC hQ hQC hQB
-    (integral_log_norm_det_eq_zero hc h0 hBW), hQQ⟩
+  have hQ := isHardyTwo_of_mul_eq_one hB hB0 hQm hQC hQB
+  obtain ⟨hQ0, hdet⟩ := integral_log_norm_det_eq hB.1 hBC hQ hQC hQB
+  exact ⟨_, _, hQ, hQC, Real.eq_one_of_pos_of_log_eq_zero (norm_pos_iff.2 hQ0)
+    (hdet.symm.trans (integral_log_norm_det_eq_zero hc h0 hQQ)), hQQ⟩
 
 /-- Helson–Lowdenslager (1958), (68): the exponential of a Hermitian trigonometric polynomial `Ψ`
 with `∫ tr Ψ = 0` is `Q Qᴴ` for a bounded analytic function `Q` with `det Q̂ (0) = 1` (the
@@ -479,7 +514,8 @@ theorem exists_bounded_analytic_mul_conjTranspose_eq_exp {c : ℤ →₀ Matrix 
   · exact ⟨fun _ => 1, 0, isHardyTwo_const 1, ae_of_all _ fun _ i => isEmptyElim i,
       Matrix.det_isEmpty, ae_of_all _ fun _ => Subsingleton.elim _ _⟩
   obtain ⟨Q, C, hQ, hC, hdet, hQQ⟩ := exists_bounded_analytic_norm_det_eq_one hc h0
-  -- multiplication by a constant of modulus `1` makes the determinant equal to `1`
+  -- in the source `A₀ = C^{−1/2}`, whose determinant is positive; here `B` is determined up to a
+  -- constant unitary factor, and a constant of modulus `1` makes the determinant equal to `1`
   obtain ⟨z, hz⟩ := IsAlgClosed.exists_pow_nat_eq (matFourierCoeff Q 0).det⁻¹
     (Fintype.card_pos (α := n))
   have hz1 : ‖z‖ = 1 := by
@@ -503,9 +539,10 @@ theorem exists_bounded_analytic_mul_conjTranspose_eq_exp {c : ℤ →₀ Matrix 
 
 /-! ### Theorem 8 -/
 
-/-- "The last inequality remains true when `A` ranges merely over trigonometric polynomials": a
-bounded analytic function is boundedly the limit of its Fejér means (Helson–Lowdenslager (1958), pp.
-192–193). -/
+/-- "The last inequality remains true when `A` ranges merely over trigonometric polynomials of the
+same kind": a bounded analytic function is boundedly the limit of its Fejér means
+(Helson–Lowdenslager (1958), pp. 192–193; a subsequence that converges almost everywhere
+suffices). -/
 private theorem szegoInf_le_of_bounded {W Q : UnitAddCircle → Matrix n n ℂ} {C : ℝ}
     (hint : ∀ i j, Integrable (fun t => W t i j) haarAddCircle)
     (hW : ∀ᵐ t ∂haarAddCircle, (W t).PosSemidef) (hQ : IsHardyOne Q)
@@ -535,8 +572,8 @@ private theorem det_conjTranspose_mul_mul_re (Q W : Matrix n n ℂ) :
   rw [Matrix.det_mul, Matrix.det_mul, Matrix.det_conjTranspose, mul_right_comm, Complex.star_def,
     ← Complex.normSq_eq_conj_mul_self, Complex.re_ofReal_mul, Complex.normSq_eq_norm_sq]
 
-/-- "The opposite inequality can be deduced directly from the one-dimensional version of Theorem 2"
-(Helson–Lowdenslager (1958), p. 193): (58) for `Qᴴ W Q` and Jensen's inequality for `det Q`. -/
+/-- "The opposite inequality […] can be deduced directly from the one-dimensional version of Theorem
+2" (Helson–Lowdenslager (1958), p. 193): (58) for `Qᴴ W Q` and Jensen's inequality for `det Q`. -/
 private theorem exp_integral_log_det_le_trace [Nonempty n] {W : UnitAddCircle → Matrix n n ℂ}
     (hint : ∀ i j, Integrable (fun t => W t i j) haarAddCircle)
     (hW : ∀ᵐ t ∂haarAddCircle, (W t).PosDef)
@@ -584,15 +621,13 @@ theorem szegoInf_eq [Nonempty n] {W : UnitAddCircle → Matrix n n ℂ}
   rw [integral_congr_ae (hQQ.mono fun t ht => congrArg (fun M => (M * W t).trace.re) ht)]
 
 /-- `log det W ≤ tr W`. -/
-private theorem log_det_le_trace [Nonempty n] {W : Matrix n n ℂ} (hW : W.PosDef) :
+private theorem log_det_le_trace {W : Matrix n n ℂ} (hW : W.PosDef) :
     Real.log W.det.re ≤ W.trace.re := by
-  have hn : (0 : ℝ) < Fintype.card n := by exact_mod_cast Fintype.card_pos
-  have h1 := (log_det_div_card_le_log_trace hW).trans
-    (Real.log_le_self (div_nonneg (Complex.pos_iff.1 hW.trace_pos).1.le hn.le))
-  exact (div_le_div_iff_of_pos_right hn).1 h1
+  rw [log_det_re_eq_sum hW, trace_re_eq_sum_eigenvalues hW.isHermitian]
+  exact Finset.sum_le_sum fun i _ => Real.log_le_self (hW.eigenvalues_pos i).le
 
 /-- "`log (w + ε)` is summable for each `ε > 0`" (Helson–Lowdenslager (1958), p. 172). -/
-private theorem integrable_log_det_add_smul_one [Nonempty n] {W : UnitAddCircle → Matrix n n ℂ}
+private theorem integrable_log_det_add_smul_one {W : UnitAddCircle → Matrix n n ℂ}
     (hint : ∀ i j, Integrable (fun t => W t i j) haarAddCircle)
     (hW : ∀ᵐ t ∂haarAddCircle, (W t).PosSemidef) {ε : ℝ} (hε : 0 < ε) :
     Integrable (fun t => Real.log (W t + ε • (1 : Matrix n n ℂ)).det.re) haarAddCircle := by
@@ -607,7 +642,7 @@ private theorem integrable_log_det_add_smul_one [Nonempty n] {W : UnitAddCircle 
   filter_upwards [hW] with t ht
   have h1 := log_det_le_trace (posDef_add_smul_one ht hε)
   have h2 := Real.log_le_log (by positivity) (pow_le_det_add_smul_one_re ht hε.le)
-  have h3 := (Complex.pos_iff.1 (posDef_add_smul_one ht hε).trace_pos).1
+  have h3 := (Complex.nonneg_iff.1 (posDef_add_smul_one ht hε).posSemidef.trace_nonneg).1
   have h4 := neg_abs_le (Real.log (ε ^ Fintype.card n))
   have h5 := abs_nonneg (Real.log (ε ^ Fintype.card n))
   rw [Pi.add_apply, Real.norm_eq_abs, abs_le]
@@ -618,21 +653,18 @@ private theorem szegoInf_le_szegoInf_add_smul_one {W : UnitAddCircle → Matrix 
     (hint : ∀ i j, Integrable (fun t => W t i j) haarAddCircle)
     (hW : ∀ᵐ t ∂haarAddCircle, (W t).PosSemidef) {ε : ℝ} (hε : 0 < ε) :
     szegoInf W ≤ szegoInf fun t => W t + ε • (1 : Matrix n n ℂ) := by
-  have := nonempty_szego (n := n)
-  refine le_ciInf fun ⟨c, hc, h1⟩ => (szegoInf_le hW hc h1).trans ?_
-  have hcont := continuous_trigPoly_matrix c
-  refine div_le_div_of_nonneg_right (integral_mono
-    (integrable_trace_re (integrable_conjTranspose_mul_mul hint hcont)) (integrable_trace_re
-      (integrable_conjTranspose_mul_mul (integrable_add_smul_one hint ε) hcont)) fun t => ?_)
-    (Nat.cast_nonneg _)
-  have h2 : 0 ≤ ((trigPoly c t)ᴴ * (ε • (1 : Matrix n n ℂ)) * trigPoly c t).trace.re :=
-    (Complex.nonneg_iff.1 (((Matrix.PosSemidef.one (n := n) (R := ℂ)).smul
-      hε.le).conjTranspose_mul_mul_same _).trace_nonneg).1
+  have h := szegoInf_le_mul (V := fun t => W t + ε • (1 : Matrix n n ℂ)) zero_le_one hint
+    (integrable_add_smul_one hint ε) hW fun t Q => ?_
+  · rwa [one_mul] at h
+  have h2 := trace_conjTranspose_mul_mul_nonneg (Matrix.PosSemidef.one.smul hε.le) Q
   simp only [Matrix.mul_add, Matrix.add_mul, Matrix.trace_add, Complex.add_re]
   linarith
 
 /-- Helson–Lowdenslager (1958), Theorem 8 (for an absolutely continuous measure): the infimum is
-zero unless `W` is positive definite almost everywhere and `log det W` is integrable. -/
+zero unless `W` is positive definite almost everywhere and `log det W` is integrable.
+
+Departure from the source: the limiting process of Lemmas 1, 2, 4 and 5 is carried out here, for
+`W + ε`. -/
 theorem posDef_of_szegoInf_pos {W : UnitAddCircle → Matrix n n ℂ}
     (hint : ∀ i j, Integrable (fun t => W t i j) haarAddCircle)
     (hW : ∀ᵐ t ∂haarAddCircle, (W t).PosSemidef) (hpos : 0 < szegoInf W) :
@@ -640,25 +672,15 @@ theorem posDef_of_szegoInf_pos {W : UnitAddCircle → Matrix n n ℂ}
       Integrable (fun t => Real.log (W t).det.re) haarAddCircle := by
   cases isEmpty_or_nonempty n
   · exact absurd hpos (by simp [szegoInf])
-  -- the limiting process of Lemma 1 of the source, carried out for the infimum of Theorem 8
   have hn : (0 : ℝ) < Fintype.card n := by exact_mod_cast Fintype.card_pos
   have hε (k : ℕ) : 0 < 1 / ((k : ℝ) + 1) := Nat.one_div_pos_of_nat
   have hanti : Antitone fun k : ℕ => 1 / ((k : ℝ) + 1) := fun _ _ => Nat.one_div_le_one_div
-  have hle1 (k : ℕ) : 1 / ((k : ℝ) + 1) ≤ 1 := by
-    simpa using hanti (Nat.zero_le k)
   have hlim (t : UnitAddCircle) : Tendsto (fun k : ℕ =>
       (W t + (1 / ((k : ℝ) + 1)) • (1 : Matrix n n ℂ)).det.re) atTop (𝓝 (W t).det.re) := by
     have hcont : Continuous fun ε : ℝ => (W t + ε • (1 : Matrix n n ℂ)).det.re := by fun_prop
     have h := hcont.tendsto 0
     simp only [zero_smul, add_zero] at h
     exact h.comp tendsto_one_div_add_atTop_nhds_zero_nat
-  have hupper : ∀ᵐ t ∂haarAddCircle, ∀ k : ℕ,
-      Real.log (W t + (1 / ((k : ℝ) + 1)) • (1 : Matrix n n ℂ)).det.re ≤
-        (W t + (1 : ℝ) • (1 : Matrix n n ℂ)).trace.re := by
-    filter_upwards [hW] with t ht k
-    have h3 := Real.log_le_log (Complex.pos_iff.1 (posDef_add_smul_one ht (hε k)).det_pos).1
-      (det_add_smul_one_re_mono ht (hε k).le (hle1 k))
-    exact h3.trans (log_det_le_trace (posDef_add_smul_one ht one_pos))
   have hlower (k : ℕ) : Fintype.card n * Real.log (szegoInf W) ≤
       ∫ t, Real.log (W t + (1 / ((k : ℝ) + 1)) • (1 : Matrix n n ℂ)).det.re ∂haarAddCircle := by
     have h3 := szegoInf_le_szegoInf_add_smul_one hint hW (hε k)
@@ -669,8 +691,7 @@ theorem posDef_of_szegoInf_pos {W : UnitAddCircle → Matrix n n ℂ}
   obtain ⟨h1, h2, -⟩ := pos_and_integrable_log
     (hW.mono fun t ht k => (Complex.pos_iff.1 (posDef_add_smul_one ht (hε k)).det_pos).1)
     (hW.mono fun t ht i j hij => det_add_smul_one_re_mono ht (hε j).le (hanti hij))
-    (ae_of_all _ hlim) (integrable_trace_re (integrable_add_smul_one hint 1))
-    (fun k => integrable_log_det_add_smul_one hint hW (hε k)) hupper hlower
+    (ae_of_all _ hlim) (fun k => integrable_log_det_add_smul_one hint hW (hε k)) hlower
   refine ⟨?_, h2⟩
   filter_upwards [hW, h1] with t ht hdet
   refine ht.posDef_iff_det_ne_zero.2 fun h => ?_
@@ -680,7 +701,7 @@ theorem posDef_of_szegoInf_pos {W : UnitAddCircle → Matrix n n ℂ}
 /-! ### Theorem 9 -/
 
 /-- "It is an elementary fact that `(det C)^{1/n} = inf tr (A₀ C A₀*)`" (Helson–Lowdenslager (1958),
-p. 193): the infimum is attained at a multiple `D` of the inverse. -/
+p. 193): the infimum is attained at a multiple `D` of `M⁻¹`, where `C = Mᴴ M`. -/
 private theorem exists_det_eq_one_trace_eq [Nonempty n] {M : Matrix n n ℂ} (hM : M.det ≠ 0) :
     ∃ D : Matrix n n ℂ, D.det = 1 ∧
       ((M * D)ᴴ * (M * D)).trace.re / Fintype.card n = ‖M.det‖ ^ (2 / Fintype.card n : ℝ) := by
@@ -698,7 +719,7 @@ private theorem exists_det_eq_one_trace_eq [Nonempty n] {M : Matrix n n ℂ} (hM
     ← Complex.normSq_eq_conj_mul_self, smul_eq_mul, Complex.re_ofReal_mul, Complex.natCast_re,
     Complex.normSq_eq_norm_sq, mul_div_cancel_right₀ _ hn]
 
-/-- Helson–Lowdenslager (1958), (75), pp. 193–194: if `W = Bᴴ B` with `B` outer and
+/-- Helson–Lowdenslager (1958), the proof of (75), pp. 193–194: if `W = Bᴴ B` with `B` outer and
 `det B̂ (0) ≠ 0`, the infimum is `|det B̂ (0)|^{2/n}`. -/
 theorem IsOuter.szegoInf_eq [Nonempty n] {W B : UnitAddCircle → Matrix n n ℂ}
     (hB : IsOuter B) (h0 : (matFourierCoeff B 0).det ≠ 0)
