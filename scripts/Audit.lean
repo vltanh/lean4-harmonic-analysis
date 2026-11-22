@@ -67,7 +67,17 @@ meta def mainResults : List Name :=
    ``HarmonicAnalysis.beurlingKappa_two_le_beurlingPowNorm_two,
    ``HarmonicAnalysis.beurlingKappa_two_pStar_le_beurlingPowNorm_two,
    ``HarmonicAnalysis.pStar_sub_one_lt_beurlingPowNorm_two,
-   ``HarmonicAnalysis.twentyOne_div_five_le_beurlingPowNorm_two_four]
+   ``HarmonicAnalysis.twentyOne_div_five_le_beurlingPowNorm_two_four,
+   ``UnitAddTorus.cubeFourierCoeff_fderiv,
+   ``UnitAddTorus.cubeFourierCoeff_fderiv_of_contDiff,
+   ``UnitAddTorus.summable_cubeFourierCoeff,
+   ``UnitAddTorus.hasSum_cubeFourierCoeff_mul_mFourier,
+   ``UnitAddTorus.eq_of_cubeFourierCoeff_eq,
+   ``UnitAddTorus.contDiff_periodicMultiplier,
+   ``UnitAddTorus.cubeFourierCoeff_periodicMultiplier,
+   ``UnitAddTorus.exists_dzbarPi_eq,
+   ``HarmonicAnalysis.periodicMultiplier_beurlingSymbol_dzbarPi,
+   ``HarmonicAnalysis.periodicMultiplier_trigPoly]
 
 /-- Lean's standard axioms. -/
 meta def standardAxioms : List Name := [``propext, ``Classical.choice, ``Quot.sound]
