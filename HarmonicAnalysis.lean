@@ -19,6 +19,7 @@ public import HarmonicAnalysis.Torus.Poisson
 public import HarmonicAnalysis.Torus.Lipschitz
 public import HarmonicAnalysis.Torus.Smooth
 public import HarmonicAnalysis.Transference.RiemannSum
+public import HarmonicAnalysis.Transference.ContinuousSymbol
 public import HarmonicAnalysis.Transference.Homogeneous
 public import HarmonicAnalysis.BeurlingAhlfors.Basic
 public import HarmonicAnalysis.BeurlingAhlfors.Duality

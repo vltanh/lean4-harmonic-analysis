@@ -18,8 +18,14 @@ public import HarmonicAnalysis.Transference.Homogeneous
   trigonometric polynomials.
 
 `HarmonicAnalysis.beurlingPowNorm_le_torusBeurlingPowNorm`: `‖𝓑^k‖_{L^p (ℝ²)} ≤
-‖𝓑^k‖_{L^p_0 (𝕋²)}` for `1 < p < ∞`, de Leeuw's transference for the symbol `m^k`, which is
-continuous off `0` and homogeneous of degree `0`.
+‖𝓑^k‖_{L^p_0 (𝕋²)}` for `1 < p < ∞`, the inequality `I ≤ II` of Corollary 5.7.6 of
+Hytönen–van Neerven–Veraar–Weis (`HarmonicAnalysis.multiplierNorm_le_torusMultiplierNorm`) for the
+symbol `m^k`, which is continuous off `0` and homogeneous of degree `0`.
+
+## References
+
+* T. Hytönen, J. van Neerven, M. Veraar, L. Weis, *Analysis in Banach Spaces, Volume I*, Ergebnisse
+  der Mathematik 63, Springer, 2016: Corollary 5.7.6 (pp. 462–463).
 -/
 
 @[expose] public section
@@ -39,7 +45,8 @@ def torusBeurlingPow (k : ℕ) (c : (Fin 2 → ℤ) →₀ ℂ) (x : UnitAddToru
 def torusBeurlingPowNorm (k : ℕ) (p : ℝ) : ℝ≥0∞ :=
   torusMultiplierNorm (fun n => beurlingSymbol (latticePoint n) ^ k) p
 
-/-- Transference: `‖𝓑^k‖_{L^p (ℝ²)} ≤ ‖𝓑^k‖_{L^p_0 (𝕋²)}` for `1 < p < ∞`. -/
+/-- Transference (HNVW, Corollary 5.7.6): `‖𝓑^k‖_{L^p (ℝ²)} ≤ ‖𝓑^k‖_{L^p_0 (𝕋²)}` for
+`1 < p < ∞`. -/
 theorem beurlingPowNorm_le_torusBeurlingPowNorm (k : ℕ) {p : ℝ} (hp : 1 < p) :
     beurlingPowNorm k p ≤ torusBeurlingPowNorm k p :=
   multiplierNorm_le_torusMultiplierNorm (m := fun ξ => beurlingSymbol ξ ^ k)

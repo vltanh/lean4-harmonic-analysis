@@ -25,6 +25,7 @@ import all HarmonicAnalysis.Torus.Lipschitz
 import all HarmonicAnalysis.Torus.Poisson
 import all HarmonicAnalysis.Torus.Smooth
 import all HarmonicAnalysis.Torus.TrigPoly
+import all HarmonicAnalysis.Transference.ContinuousSymbol
 import all HarmonicAnalysis.Transference.Homogeneous
 import all HarmonicAnalysis.Transference.RiemannSum
 
@@ -55,11 +56,12 @@ meta def mainResults : List Name :=
    ``HarmonicAnalysis.multiplierNorm_conj_comp_neg,
    ``HarmonicAnalysis.tendsto_eLpNorm_mollify_sub,
    ``HarmonicAnalysis.exists_tendsto_hasCompactFourierSupportOffZero,
-   ``HarmonicAnalysis.eLpNorm_tsum_le_torusMultiplierNorm,
+   ``HarmonicAnalysis.integral_torusMultiplier_mul_trigPoly,
    ``HarmonicAnalysis.hasSum_periodize,
    ``HarmonicAnalysis.tendsto_eLpNorm_tsum_fourier_mul_mFourier,
    ``HarmonicAnalysis.limsup_eLpNorm_sampledCoeff_le,
    ``HarmonicAnalysis.tendsto_riemannSum,
+   ``HarmonicAnalysis.multiplierNorm_le_liminf_torusMultiplierNorm,
    ``HarmonicAnalysis.multiplierNorm_le_torusMultiplierNorm,
    ``HarmonicAnalysis.beurlingPow_dzbarCLM_pow,
    ``HarmonicAnalysis.div_le_beurlingPowNorm_of_tendsto,
