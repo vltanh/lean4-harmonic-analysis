@@ -6,8 +6,9 @@ Lean 4 with Mathlib `v4.36.0-rc2`, on `ℂ ≅ ℝ²`, the torus `𝕋² = (ℝ/
 
 - **Fourier multipliers** `T_m f = 𝓕⁻¹(m · 𝓕f)` and their norms on `L^p`, computed on Schwartz
   functions, which also bound `T_m` on the `L^p`-closure of its graph (density); on the torus, on
-  mean-zero trigonometric polynomials. Duality for bounded measurable `m`:
-  `‖T_m‖_p = ‖T_{m̄}‖_{p'}` and `‖T_{m̄(−·)}‖_p = ‖T_m‖_p`.
+  mean-zero trigonometric polynomials. For bounded measurable `m`, the norm is that of the bounded
+  extension of `T_m` to `L^p` (`1 ≤ p < ∞`), and there is duality (`1 < p < ∞`):
+  `‖T_m‖_p = ‖T_m‖_{p'}`, `‖T_m‖_p = ‖T_{m̄}‖_{p'}`; also `‖T_{m̄(−·)}‖_p = ‖T_{m(−·)}‖_p = ‖T_m‖_p`.
 - **Transference from `𝕋²` to `ℝ²`** [HNVW, Prop. 5.7.4, Cor. 5.7.6], `1 < p < ∞`: for `m` continuous
   off `0` and `R_j → ∞`, `‖T_m‖_{L^p(ℝ²)} ≤ liminf_j ‖T_{m(·/R_j)}‖_{L^p_0(𝕋²)}`; for symbols
   homogeneous of degree `0`, `‖T_m‖_{L^p(ℝ²)} ≤ ‖T_m‖_{L^p_0(𝕋²)}`. Through the density of the Schwartz
@@ -26,7 +27,8 @@ Lean 4 with Mathlib `v4.36.0-rc2`, on `ℂ ≅ ℝ²`, the torus `𝕋² = (ℝ/
 
 **Status: complete.** Every statement is proved. The [audit](scripts/Audit.lean) checks that every
 declaration of the library depends only on Lean's standard axioms (`propext`, `Classical.choice`,
-`Quot.sound`): no `sorry`, no `axiom`, no `native_decide`.
+`Quot.sound`): no `sorry`, no `axiom`, no `native_decide`. (The Challenge of the
+[Palomar entry](#palomar) states its theorems with `sorry`, by design; its Solution proves them.)
 
 ## Main statements
 
@@ -37,6 +39,9 @@ the operator norms are suprema in `ℝ≥0∞`.
 | --- | --- | --- |
 | `𝓕(∂̄f)(ξ) = πiξ 𝓕f(ξ)`, `𝓕(∂f)(ξ) = πiξ̄ 𝓕f(ξ)` | `fourier_dzbarCLM`, `fourier_dzCLM` | |
 | `‖v‖_p / ‖u‖_p ≤ ‖T_m‖_p` if Schwartz `φ_k → u`, `T_m φ_k → v` in `L^p` | `div_le_multiplierNorm_of_tendsto` | density |
+| `‖T_m‖_p < ∞` iff `T_m` extends from Schwartz functions to a bounded operator on `L^p`, which is then unique, of norm `‖T_m‖_p` (`m` bounded measurable, `1 ≤ p`) | `existsUnique_extension_of_multiplierNorm_ne_top`, `enorm_eq_multiplierNorm` | density |
+| `‖T_m‖_p = ‖T_m‖_{p'}` (`m` bounded measurable, `1 < p`) | `multiplierNorm_conjExponent` | [HNVW, Prop. 5.3.7] |
+| `‖T_{m(−·)}‖_p = ‖T_m‖_p` | `multiplierNorm_comp_neg` | reflection; [HNVW, p. 403] |
 | `∫ T_m f · ḡ = ∫ f · conj(T_{m̄} g)` for Schwartz `f, g` (`m` bounded measurable) | `integral_fourierMultiplier_mul_conj` | |
 | `‖h‖_p ≤ A` if `\|∫ h ḡ\| ≤ A ‖g‖_{p'}` for all Schwartz `g` (`h` continuous, `1 < p`) | `eLpNorm_le_of_forall_schwartz` | duality |
 | `‖T_m‖_p = ‖T_{m̄}‖_{p'}` (`m` bounded measurable, `1 < p`) | `multiplierNorm_conj_conjExponent` | duality; [CDK, §1.3.1] for `R^k` |
@@ -48,8 +53,9 @@ the operator norms are suprema in `ℝ≥0∞`.
 | `R^{2/p} ‖Σ_n R⁻² 𝓕f(n/R) e_n‖_{L^p(𝕋²)} → ‖f‖_{L^p(ℝ²)}` as `R → ∞`, for Schwartz `f` (`1 ≤ p`) | `tendsto_eLpNorm_tsum_fourier_mul_mFourier` | [HNVW, Lemma 5.7.5] |
 | `Σ_n R⁻² φ(n/R) → ∫ φ` for `φ` continuous off `0`, `\|φ\| ≤ C(1+\|ξ\|)^{−3}` | `tendsto_riemannSum_real` | |
 | `‖T_m‖_{L^p(ℝ²)} ≤ liminf_j ‖T_{m(·/R_j)}‖_{L^p_0(𝕋²)}`, `R_j → ∞`, `m` continuous off `0` (`1 < p`) | `multiplierNorm_le_liminf_torusMultiplierNorm` | [HNVW, Prop. 5.7.4] |
+| `m` is bounded if that `liminf` is finite | `exists_norm_le_of_liminf_torusMultiplierNorm_ne_top` | |
 | `‖T_m‖_{L^p(ℝ²)} ≤ ‖T_m‖_{L^p_0(𝕋²)}`, `m` homogeneous of degree `0`, continuous off `0` (`1 < p`) | `multiplierNorm_le_torusMultiplierNorm` | [HNVW, Cor. 5.7.6] (`I ≤ II`) |
-| `𝓑^k(∂̄^k F) = ∂^k F` for Schwartz `F` | `beurlingPow_dzbarCLM_pow` | [D, p. 465]; [D-LN, §4.1, and Ex. 2.19 for `k = 1`] |
+| `𝓑^k(∂̄^k F) = ∂^k F` for Schwartz `F` | `beurlingPow_dzbarCLM_pow`, `beurlingPow_dzbar_iterate` | [D, p. 465]; [D-LN, §4.1, and Ex. 2.19 for `k = 1`] |
 | `‖v‖_p / ‖u‖_p ≤ ‖𝓑^k‖_p` if Schwartz `∂̄^k φ_j → u`, `∂^k φ_j → v` in `L^p` | `div_le_beurlingPowNorm_of_tendsto` | density; [D, p. 465]; [D-LN, Ex. 2.19, §4.1] |
 | `‖𝓑^k‖_p = ‖𝓑^k‖_{p'}` (`1 < p`) | `beurlingPowNorm_conjExponent` | [CDK, §1.3.1] |
 | `‖𝓑^k‖_{L^p(ℝ²)} ≤ ‖𝓑^k‖_{L^p_0(𝕋²)}` (`1 < p`) | `beurlingPowNorm_le_torusBeurlingPowNorm` | [HNVW, Cor. 5.7.6] (`I ≤ II`) |
@@ -80,6 +86,23 @@ theorem HarmonicAnalysis.beurlingKappa_two_le_beurlingPowNorm_two {p : ℝ} (hp 
 Here `beurlingKappa n p = (1/q)_n / (1/p)_n`, `1/q = 1 − 1/p`, with the Pochhammer symbol
 `(a)_n = a(a+1)⋯(a+n−1)`; `κ₂(p) = (p−1)(2p−1)/(p+1)`.
 
+## Palomar
+
+The entry [`palomar/FourierMultipliers/`](palomar/FourierMultipliers) states the headline theorems for
+the [Palomar registry](https://palomar-registry.org). It is not submitted yet.
+
+| File | Content |
+| --- | --- |
+| [`Challenge.lean`](palomar/FourierMultipliers/Challenge.lean) | the statements, with `sorry` proofs, and the definitions they use, from Mathlib alone (the definitions are a copy of [`HarmonicAnalysis/Defs.lean`](HarmonicAnalysis/Defs.lean)) |
+| [`Solution.lean`](palomar/FourierMultipliers/Solution.lean) | the same statements, proved from the library |
+| [`comparator.json`](palomar/FourierMultipliers/comparator.json) | Comparator's configuration: the 11 theorems compared |
+| [`formalization.yaml`](palomar/FourierMultipliers/formalization.yaml) | the metadata: sources, scope, every deviation from the sources |
+
+The compared theorems are: what the norm `‖T_m‖_p` is (`multiplierNorm_spec`); `‖T_m‖_p = ‖T_m‖_{p'}`;
+transference, for symbols continuous off `0` and for homogeneous ones; `𝓑^k(∂̄^k F) = ∂^k F`;
+`‖𝓑^k‖_p = ‖𝓑^k‖_{p'}`; the closed form of `κ₂(p)`; Dragičević's limit and lower bound for `n = 2`; the
+bound with `p*`, and `‖𝓑²‖_p > p* − 1`.
+
 ## Method
 
 - **Dragičević's lower bound** follows his proof [D, pp. 466–467], which [D-LN, Prop. 4.2] repeats,
@@ -97,6 +120,9 @@ Here `beurlingKappa n p = (1/q)_n / (1/p)_n`, `1/q = 1 − 1/p`, with the Pochha
   `‖𝓑^n‖_p = ‖𝓑^n‖_{p'}`, by `𝓑^{−n} = (𝓑^n)^*` and `𝓑^{−n} f = conj(𝓑^n(conj f))` [CDK, §1.3.1, for
   `R^k`, `𝓑 = R²`], as here (for bounded multipliers, by the standard duality argument: the adjoint of
   `T_m` is `T_{m̄}`, and Schwartz functions norm `L^p`).
+- **Duality** `‖T_m‖_p = ‖T_m‖_{p'}` follows [HNVW, Prop. 5.3.7], for scalar symbols:
+  `∫ T_m f · g = ∫ T_{m(−·)} g · f`, Hölder's inequality, the norming of `L^p` by Schwartz functions,
+  and the reflection `T_{m(−·)} f(−·) = (T_m f)(−·)`.
 - **Transference** follows [HNVW, Prop. 5.7.4 and Cor. 5.7.6], for scalar symbols on `ℝ² ≅ ℂ` and the
   inequality from `𝕋²` to `ℝ²`: for Schwartz `f`, `g` with Fourier transforms in `C_c^∞(ℂ∖{0})`,
   `∫ T_m f g = ∫ m 𝓕f 𝓕⁻¹g` is a limit of Riemann sums over `R⁻¹ℤ²`, which by orthogonality are
@@ -168,7 +194,7 @@ As of 22 November 2026; preprints are reported as claimed.
   norms, is in PALOMAR-2026-11-17-000007.
 - **New here, as far as we found:** `L^p` transference of Fourier multipliers from the torus to `ℝ²`; lower
   bounds for
-  `‖𝓑²‖_p`; the isometric duality `‖T_m‖_p = ‖T_{m̄}‖_{p'}`; the `L^p` asymptotics of periodisations
+  `‖𝓑²‖_p`; the isometric duality `‖T_m‖_p = ‖T_m‖_{p'}`; the `L^p` asymptotics of periodisations
   [HNVW, Lemma 5.7.5] and the density of the Schwartz functions with Fourier transform in
   `C_c^∞(ℝ^d∖{0})` [HNVW, Prop. 2.4.23 (ii)]; the corrections to HNVW listed under Method.
 
@@ -189,27 +215,32 @@ your project should use the same Mathlib version.
 
 ```sh
 lake exe cache get                 # Mathlib's compiled files
-lake build
+lake build                         # the library and the Palomar entry (whose Challenge has `sorry`s)
 lake env lean scripts/Audit.lean   # axioms: fails on any `sorry` or non-standard axiom
+# Comparator (needs bubblewrap): the Solution proves the Challenge's statements
+lake env lake comparator --config=palomar/FourierMultipliers/comparator.json
 ```
 
 ## Layout
 
 | Path | Content |
 | --- | --- |
+| [`HarmonicAnalysis/Defs.lean`](HarmonicAnalysis/Defs.lean) | the definitions that the headline theorems use |
 | [`HarmonicAnalysis/Complex/`](HarmonicAnalysis/Complex) | `Wirtinger` (`∂`, `∂̄` on functions and on `𝓢(ℂ, F)`, symbols, conjugation), `WirtingerRadial` (`∂`, `∂̄` of `z^a z̄^b K(\|z\|²)`), `RadialIntegral` (radial integrals) |
-| [`HarmonicAnalysis/FourierMultiplier/`](HarmonicAnalysis/FourierMultiplier) | `Basic` (`fourierMultiplier`, `multiplierNorm`, density), `Density` (mollifiers, the Schwartz functions with Fourier transform supported off `0`), `Norming` (`L^p` norms by Schwartz test functions), `Duality` |
+| [`HarmonicAnalysis/FourierMultiplier/`](HarmonicAnalysis/FourierMultiplier) | `Basic` (`fourierMultiplier`, `multiplierNorm`, density), `Density` (mollifiers, the Schwartz functions with Fourier transform supported off `0`), `Norming` (`L^p` norms by Schwartz test functions), `Duality`, `Extension` (`T_m` as an operator on `L^p`) |
 | [`HarmonicAnalysis/Torus/`](HarmonicAnalysis/Torus) | `Cube` (periodic functions, the unit cube, `𝕋² ↔ ℂ`), `Lattice` (the lattice `ℤ + iℤ`, the tiling of `ℂ` by cells, periodic functions on `𝕋²`), `TrigPoly` (trigonometric polynomials, `torusMultiplierNorm`, orthogonality), `Poisson` (periodisation, Poisson summation on `ℤ²`, the `L^p` norms of the periodisations), `Lipschitz` (Fourier coefficients over the unit cube, Parseval, derivatives of Lipschitz periodic functions), `Smooth` (smooth periodic functions: rapid decay, Fourier series, multipliers `T_m`, Wirtinger derivatives, `∂̄⁻¹`) |
 | [`HarmonicAnalysis/Transference/`](HarmonicAnalysis/Transference) | `RiemannSum`, `ContinuousSymbol` (symbols continuous off `0`), `Homogeneous` (symbols homogeneous of degree `0`) |
 | [`HarmonicAnalysis/BeurlingAhlfors/`](HarmonicAnalysis/BeurlingAhlfors) | `Basic` (symbol, `𝓑^k`, `𝓑^k ∂̄^k = ∂^k`, density), `Duality`, `TestFunctions` (Dragičević's `f_{2,α}`; with `TestFunctions/Profile`, one-variable calculus, and `TestFunctions/Approx`, its Schwartz approximations), `LowerBound` (Dragičević, `n = 2`), `Transference` (`𝓑^k` on `𝕋²`), `Periodic` (`𝓑` on smooth periodic functions) |
-| [`scripts/Audit.lean`](scripts/Audit.lean) | the axiom audit |
-| [`.github/workflows/`](.github/workflows) | CI: build, audit, import list of the audit, line lengths |
+| [`palomar/FourierMultipliers/`](palomar/FourierMultipliers) | the Palomar entry |
+| [`scripts/`](scripts) | `Audit.lean` (the axiom audit), `sync_challenge_defs.py` (the Challenge's copy of the definitions), `check_md_tables.py`, and tools for checking files and statements |
+| [`.github/workflows/`](.github/workflows) | CI: build, audit, import list of the audit, the Challenge's copy of the definitions, Markdown tables, line lengths; Palomar's preflight, run by hand |
 
 ## References
 
 - [HNVW] T. Hytönen, J. van Neerven, M. Veraar, L. Weis, *Analysis in Banach Spaces, Volume I*,
   Ergebnisse der Mathematik 63, Springer, 2016: Lemma 1.2.30, Proposition 1.2.32, Lemma 2.4.8,
-  Proposition 2.4.23, Definition 5.3.1, Propositions 5.7.1 and 5.7.4, Lemma 5.7.5, Corollary 5.7.6.
+  Proposition 2.4.23, Definitions 5.3.1 and 5.3.3, Propositions 5.3.7, 5.7.1 and 5.7.4, Lemma 5.7.5,
+  Corollary 5.7.6.
 - [D] O. Dragičević, *Some remarks on the `L^p` estimates for powers of the Ahlfors–Beurling
   operator*, Arch. Math. 96 (2011), 463–471: Theorem 1.1 (`p > 2`).
 - [D-LN] O. Dragičević, *Analysis of the Ahlfors–Beurling transform*, lecture notes (Seville,

@@ -1,0 +1,266 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/mathlib-initiative/formalization.yaml/main/schema/formalization.schema.json
+version: "v0.4"
+
+project:
+  name: "Fourier multipliers on L^p in Lean: transference, and powers of the Beurling-Ahlfors transform"
+  description: >-
+    Lean 4 proofs, from Mathlib alone, of results on the norms of scalar Fourier multipliers T_m on
+    L^p, 1 < p < infinity.
+
+
+    Transference from the torus to the plane (Hytönen, van Neerven, Veraar and Weis, "Analysis in
+    Banach Spaces I", Proposition 5.7.4 and the inequality I <= II of Corollary 5.7.6, for scalar
+    symbols in dimension 2): if m is continuous off 0 and eps_j decreases to 0, the norm of T_m on
+    L^p(R^2) is at most the liminf of the norms of the multipliers (m(eps_j k))_{k != 0} on the
+    mean-zero functions of L^p(T^2); for m homogeneous of degree 0, it is at most the norm of
+    (m(k))_{k != 0}. Duality on a Euclidean space (Proposition 5.3.7, for scalar symbols): the norms
+    of T_m on L^p and on L^{p'} are equal. The norms are suprema over Schwartz functions, and it is
+    proved that for bounded measurable m they are the norms of the bounded extensions of T_m to L^p.
+
+
+    Lower bounds for the square of the Beurling-Ahlfors transform B (Dragičević 2011, Theorem 1.1,
+    for n = 2): ||B^2||_p >= kappa_2(p) = (p - 1)(2p - 1)/(p + 1), with the limit of the ratios for
+    his test functions, from which it follows; with p* = max(p, p') and the equality of the norms of
+    B^k on L^p and L^{p'} (Carbonaro, Dragičević and Kovač 2023), ||B^2||_p >= kappa_2(p*), and
+    ||B^2||_p > p* - 1 for p != 2. B is the multiplier with symbol conj(xi)/xi, and B^k(dbar^k F) =
+    d^k F is proved for Schwartz functions F.
+  authors:
+    - "The-Anh Vu-Le"
+  license: "Apache-2.0"
+  responsible_maintainers:
+    - "The-Anh Vu-Le"
+
+classification:
+  arxiv: ["math.CA", "math.FA", "math.CV"]
+  msc2020: ["42B15", "42B20", "68V20"]
+
+sources:
+  - title: "Analysis in Banach Spaces, Volume I: Martingales and Littlewood-Paley Theory"
+    authors:
+      - "Tuomas Hytönen"
+      - "Jan van Neerven"
+      - "Mark Veraar"
+      - "Lutz Weis"
+    id: "Ergebnisse der Mathematik und ihrer Grenzgebiete (3) 63, Springer (2016)"
+    type: "book"
+    location: "https://doi.org/10.1007/978-3-319-48520-1"
+    relationship: "formalizes"
+    note: >-
+      Proposition 5.3.7 (p. 403), Proposition 5.7.4 (pp. 460-462) and, in Corollary 5.7.6
+      (pp. 462-463), the inequality I <= II, for scalar symbols and, in the last two, for d = 2.
+      Proved by the book's arguments, which also use Lemma 5.7.5 (proved by its proof) and
+      Proposition 2.4.23 (ii) (p. 118, proved by its proof, for Schwartz functions). Corrections to
+      the printed text are listed in fidelity.divergences.
+    author_endorsement: "not-contacted"
+  - title: "Some remarks on the L^p estimates for powers of the Ahlfors-Beurling operator"
+    authors:
+      - "Oliver Dragičević"
+    id: "Arch. Math. 96 (2011), 463-471"
+    type: "paper"
+    location: "https://doi.org/10.1007/s00013-011-0246-1"
+    relationship: "formalizes"
+    note: >-
+      Theorem 1.1 for n = 2, by its proof (pp. 466-467) with its test functions, for every p > 1 (the
+      paper assumes p > 2). The theorem is for every n; only n = 2 is formalized. Theorem 1.4 and
+      Proposition 1.3 are not formalized.
+    author_endorsement: "not-contacted"
+  - title: "Sharp L^p estimates of powers of the complex Riesz transform"
+    authors:
+      - "Andrea Carbonaro"
+      - "Oliver Dragičević"
+      - "Vjekoslav Kovač"
+    id: "Math. Ann. 386 (2023), 1081-1125; arXiv:2109.08369v3"
+    type: "paper"
+    location: "https://arxiv.org/abs/2109.08369v3"
+    relationship: "formalizes"
+    note: >-
+      Only Section 1.3.1: the norms of R^k on L^p and L^q are equal (read in arXiv v3), here for
+      the even powers R^{2k} = B^k. The main results (the sharp estimates of the norms of R^k) are
+      not formalized.
+    author_endorsement: "not-contacted"
+  - title: "Analysis of the Ahlfors-Beurling transform"
+    authors:
+      - "Oliver Dragičević"
+    id: "arXiv:2109.04555"
+    type: "other"
+    location: "https://arxiv.org/abs/2109.04555"
+    relationship: "background"
+    note: >-
+      Lecture notes (Seville, 2013). Proposition 4.2 repeats Theorem 1.1 of the 2011 paper and its
+      proof. The hint of Exercise 2.19 (approximate by smooth functions) is the density step used
+      for the test functions.
+
+related_formalizations:
+  - id: "https://github.com/TauCetiProject/TauCeti"
+    relationship: "independent"
+    note: >-
+      Lean 4. The Beurling transform on L^p as the multiplier conj(xi)/xi, bounded through
+      Mihlin-Hörmander, with B(dbar u) = d u for Schwartz u; multipliers on L^2 and their adjoints.
+      No transference and no lower bound for the norms of the powers was found in it (search of
+      22 November 2026). No code of it is used.
+  - id: "https://github.com/will1491/no-wandering-domains"
+    relationship: "independent"
+    note: >-
+      Lean 4 (arXiv:2609.16027). The Beurling transform as a principal value, its boundedness on
+      L^p and d w = B(dbar w), through the Carleson project's Calderón-Zygmund theory. No code of it
+      is used.
+  - id: "https://github.com/openai/math"
+    relationship: "independent"
+    note: "Lean 4. The Beurling transform as an isometric multiplier of L^2. No code of it is used."
+  - id: "https://github.com/Tencent-Hunyuan/Hyra-results"
+    relationship: "independent"
+    note: >-
+      Lean 4, for a claimed upper bound for the norm of the Beurling transform: the operator on L^2
+      and numerical certificates. No code of it is used.
+  - id: "https://github.com/facebookresearch/atlas-lean"
+    relationship: "independent"
+    note: >-
+      Lean 4. States, without proof, Lehto's lower bound p* - 1 for the norm of the Beurling transform
+      and Iwaniec's conjecture. No code of it is used.
+
+status:
+  scope: >-
+    Formalized, and compared: what multiplierNorm is (the norm of the unique bounded extension of T_m
+    from Schwartz functions to L^p, for bounded measurable m and 1 <= p < infinity); duality on a
+    Euclidean space; transference from T^2 to R^2 for scalar symbols continuous off 0, and for those
+    that are homogeneous of degree 0; B^k(dbar^k F) = d^k F for Schwartz F; the equality of the norms
+    of B^k on L^p and L^{p'}; Dragičević's limit and lower bound for n = 2, the bound with p* for all
+    1 < p < infinity, and its consequence ||B^2||_p > p* - 1.
+
+    Not formalized: operator-valued symbols and other dimensions in the transference; the equality
+    of the three norms in HNVW's Corollary 5.7.6 (the inequalities II <= III <= I); Dragičević's bound
+    for n != 2; that B is bounded on L^p (so the norms are in [0, infinity], and the lower bounds
+    hold there); that B is the singular integral with kernel -1/(pi z^2); that T_m extended from
+    Schwartz functions agrees with T_m on the larger space L^p ∩ L^1-check of HNVW (their p. 401).
+  sorry_count: 0
+  sorry_in_definitions: 0
+  axioms: []
+
+automation:
+  methods:
+    - method: "agent"
+      models: ["claude-opus-5-5"]
+      framework: "Claude Code 2.1.330 (VS Code extension, Claude Agent SDK)"
+      tool_setup: >-
+        The formalize-math-paper skill (https://github.com/vltanh/formalize-math-paper, version
+        4.3.1, commit f9198d5); Claude Code sessions and sub-agents that wrote the statements and
+        the proofs and compared them with the sources; this entry by one agent, with an independent
+        reviewer agent. Lean v4.36.0-rc2, Mathlib v4.36.0-rc2.
+      cost:
+        wall_time: "about 11 hours between the library's first and last commits (21-22 November 2026), not continuous, and about 2 hours for this entry; agent time not tracked"
+        spend_usd: "not tracked"
+        hardware: "local machine (20 cores, 62 GB RAM) and API"
+      prompting_notes: >-
+        Instructions: state the theorems of the cited sources in their general form as far as
+        feasible, follow the sources' proofs, record every deviation, use only Mathlib.
+  spend_usd: "not tracked"
+  notes: >-
+    The AI system wrote the code and the documents at the request of the maintainer. No person has
+    reviewed the proofs; Lean has checked them. Independent AI agents compared the statements and
+    the proofs with the cited sources.
+
+fidelity:
+  divergences: >-
+    HNVW. Statements: scalar symbols (X = Y = C); d = 2 in Proposition 5.7.4 and Corollary 5.7.6, with
+    R^2 = C and Z^2 = Z + iZ; every d in Proposition 5.3.7 (a Euclidean space). The norm on L^p(R^d) is
+    defined as a supremum over Schwartz functions and proved to be the norm of the unique bounded
+    extension of T_m from Schwartz functions to L^p; HNVW extend T_m from the space L^p ∩ L^1-check,
+    and their remark that a dense subspace such as the Schwartz functions gives the same extension
+    (p. 401, Proposition 2.4.23) is not formalized. The norm on L^p_0(T^2) is the supremum over
+    trigonometric polynomials of mean zero, as in HNVW (pp. 457-458). Proposition 5.3.7 is the
+    consequence that the spaces of L^p and L^{p'} multipliers are equal isometrically, without the
+    identification of the adjoint operator. Proposition 5.7.4 is printed without its first hypotheses
+    (Banach spaces, 1 < p < infinity) and without the boundedness of m, which the definition of T_m
+    asks for; here 1 < p < infinity is assumed, and the boundedness of m is proved when the liminf is
+    finite. The sequence eps_j tends to 0 through positive numbers, and need not be decreasing.
+    Corollary 5.7.6: only the inequality I <= II; m(0) is arbitrary (the book sets it to the mean of m
+    over the unit circle, which matters only for III). Proofs: the book's, for Proposition 5.3.7,
+    Proposition 5.7.4, Lemma 5.7.5, Proposition 2.4.23 (ii) and Corollary 5.7.6. Departures, forced
+    by slips of the text: the norming of T_m f uses test functions g whose Fourier transforms converge
+    in L^1 as well (the density in L^{p'} alone does not suffice); the cell in Lemma 5.7.5 is centred;
+    two interchanged exponents in the last display of the proof of Proposition 5.7.4.
+
+    Dragičević. Theorem 1.1 only for n = 2, and for every p > 1 where the paper has p > 2 (the same
+    proof). The paper's T is a singular integral; here B is the Fourier multiplier with symbol
+    conj(xi)/xi, the two being equal by a classical computation that is not formalized, and the proof
+    uses B only through B^2(dbar^2 f) = d^2 f, as the paper's does. The paper asserts that the test
+    functions belong to W^{n,p} and that this gives that identity; here it is proved by approximating
+    f_{2,alpha} by Schwartz functions, and the bound by density. The derivatives of f_{2,alpha} are
+    pointwise (they exist off 0 and the unit circle). The bound is for the supremum over Schwartz
+    functions, in [0, infinity].
+
+    Carbonaro, Dragičević and Kovač. Section 1.3.1 for the even powers R^{2k} = B^k, k >= 0, by its
+    argument: the adjoint of B^k is B^{-k}, and B^{-k} f is the conjugate of B^k applied to the
+    conjugate of f. The bounds with p* for p < 2 are not stated in Dragičević's paper; they combine
+    Theorem 1.1 for p' with this equality. The strict bound by p* - 1 is arithmetic:
+    kappa_2(p*) > p* - 1 for p* > 2.
+
+review:
+  status: "agent-reviewed"
+  reviewers:
+    - "Claude Opus 5.5 (independent agents)"
+  notes: >-
+    No human review. Independent AI agents compared the library's statements and proofs with the
+    sources, and another one compared the statements of this entry with them.
+
+alignment:
+  namespace: "FourierMultipliersChallenge"
+  statements:
+    - source: "HNVW, Definitions 5.3.1 and 5.3.3 (for Schwartz functions)"
+      lean: "FourierMultipliersChallenge.multiplierNorm_spec"
+      module: "FourierMultipliers.Challenge"
+      status: "proved"
+      note: "multiplierNorm m p is the norm of the unique bounded extension of T_m to L^p, which exists if and only if it is finite."
+    - source: "HNVW, Proposition 5.3.7 (scalar symbols)"
+      lean: "FourierMultipliersChallenge.multiplierNorm_conjExponent"
+      module: "FourierMultipliers.Challenge"
+      status: "proved"
+      note: "The norms of T_m on L^p and L^{p'} are equal, for bounded measurable m on a Euclidean space."
+    - source: "HNVW, Proposition 5.7.4 (scalar symbols, d = 2)"
+      lean: "FourierMultipliersChallenge.transference"
+      module: "FourierMultipliers.Challenge"
+      status: "proved"
+      note: "With the boundedness of m, when the liminf is finite, as a conclusion."
+    - source: "HNVW, Corollary 5.7.6, I <= II (scalar symbols, d = 2)"
+      lean: "FourierMultipliersChallenge.transference_homogeneous"
+      module: "FourierMultipliers.Challenge"
+      status: "partial"
+      note: "One of the inequalities between the three norms, which the corollary says are equal."
+    - source: "Dragičević 2011, p. 465 (T^n(dbar^n f) = d^n f)"
+      lean: "FourierMultipliersChallenge.beurlingPow_dzbar_iterate"
+      module: "FourierMultipliers.Challenge"
+      status: "proved"
+      note: "For Schwartz functions; the paper states it for functions of W^{n,p}."
+    - source: "Carbonaro-Dragičević-Kovač, Section 1.3.1"
+      lean: "FourierMultipliersChallenge.beurlingPowNorm_conjExponent"
+      module: "FourierMultipliers.Challenge"
+      status: "proved"
+      note: "For the even powers R^{2k} = B^k of the complex Riesz transform R."
+    - source: "Dragičević 2011, definition of kappa_n(p), n = 2"
+      lean: "FourierMultipliersChallenge.beurlingKappa_two"
+      module: "FourierMultipliers.Challenge"
+      status: "proved"
+      note: "The closed form of the constant; a check of the definition."
+    - source: "Dragičević 2011, Theorem 1.1 (the limit), n = 2"
+      lean: "FourierMultipliersChallenge.dragicevic_limit"
+      module: "FourierMultipliers.Challenge"
+      status: "partial"
+      note: "n = 2 only; for every p > 1 (the paper: p > 2)."
+    - source: "Dragičević 2011, Theorem 1.1 (the bound), n = 2"
+      lean: "FourierMultipliersChallenge.dragicevic_lower_bound"
+      module: "FourierMultipliers.Challenge"
+      status: "partial"
+      note: "n = 2 only; for every p > 1 (the paper: p > 2)."
+    - source: "Dragičević 2011, Theorem 1.1, n = 2, with Carbonaro-Dragičević-Kovač, Section 1.3.1"
+      lean: "FourierMultipliersChallenge.dragicevic_lower_bound_pStar"
+      module: "FourierMultipliers.Challenge"
+      status: "proved"
+      note: "The bound kappa_2(p*) for all 1 < p < infinity."
+    - source: "consequence of the previous one"
+      lean: "FourierMultipliersChallenge.pStar_sub_one_lt_beurlingPowNorm_two"
+      module: "FourierMultipliers.Challenge"
+      status: "proved"
+      note: "The norm of B^2 is greater than p* - 1 for p != 2."
+
+acknowledgements: >-
+  Mathlib; Lean's Comparator and the NanoDa kernel; Palomar's validation scripts.

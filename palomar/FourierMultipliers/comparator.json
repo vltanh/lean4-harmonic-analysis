@@ -1,0 +1,20 @@
+{
+  "challenge_module": "FourierMultipliers.Challenge",
+  "solution_module": "FourierMultipliers.Solution",
+  "theorem_names": [
+    "FourierMultipliersChallenge.multiplierNorm_spec",
+    "FourierMultipliersChallenge.multiplierNorm_conjExponent",
+    "FourierMultipliersChallenge.transference",
+    "FourierMultipliersChallenge.transference_homogeneous",
+    "FourierMultipliersChallenge.beurlingPow_dzbar_iterate",
+    "FourierMultipliersChallenge.beurlingPowNorm_conjExponent",
+    "FourierMultipliersChallenge.beurlingKappa_two",
+    "FourierMultipliersChallenge.dragicevic_limit",
+    "FourierMultipliersChallenge.dragicevic_lower_bound",
+    "FourierMultipliersChallenge.dragicevic_lower_bound_pStar",
+    "FourierMultipliersChallenge.pStar_sub_one_lt_beurlingPowNorm_two"
+  ],
+  "definition_names": [],
+  "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"],
+  "enable_nanoda": true
+}

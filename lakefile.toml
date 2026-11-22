@@ -1,7 +1,7 @@
 name = "HarmonicAnalysis"
 version = "0.1.0"
 keywords = ["math"]
-defaultTargets = ["HarmonicAnalysis"]
+defaultTargets = ["HarmonicAnalysis", "Palomar"]
 
 [leanOptions]
 pp.unicode.fun = true
@@ -18,3 +18,10 @@ rev = "v4.36.0-rc2"
 [[lean_lib]]
 name = "HarmonicAnalysis"
 globs = ["HarmonicAnalysis.*"]
+
+# The Challenge and Solution of each Palomar entry, as the modules `FourierMultipliers.Challenge`,
+# `FourierMultipliers.Solution`, ... of the source directory `palomar/`.
+[[lean_lib]]
+name = "Palomar"
+srcDir = "palomar"
+globs = ["FourierMultipliers.+"]

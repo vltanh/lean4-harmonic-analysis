@@ -3,7 +3,11 @@ module
 public meta import Lean.Elab.Command
 -- One `import all` line per module of the library, so that proofs are visible to the axiom
 -- traversal (the module system hides them from a plain `import`). Generate the lines with
---   find HarmonicAnalysis -name '*.lean' | sort | sed 's/\.lean$//; s#/#.#g; s/^/import all /'
+--   { find HarmonicAnalysis -name '*.lean'; cd palomar && find . -name Solution.lean; } |
+--     sed 's#^\./##; s/\.lean$//; s#/#.#g; s/^/import all /' | sort
+-- The Solution of each Palomar entry is imported, and no Challenge: a Challenge holds a copy of the
+-- definitions under the library's names.
+import all FourierMultipliers.Solution
 import all HarmonicAnalysis.BeurlingAhlfors.Basic
 import all HarmonicAnalysis.BeurlingAhlfors.Duality
 import all HarmonicAnalysis.BeurlingAhlfors.LowerBound
@@ -36,9 +40,10 @@ import all HarmonicAnalysis.Transference.RiemannSum
 
 Run with `lake env lean scripts/Audit.lean` after `lake build`.
 
-Prints the axioms on which the main theorems depend, then checks that they and every declaration
-of the library, including private and auxiliary ones, depend only on Lean's standard axioms
-`propext`, `Classical.choice` and `Quot.sound`. A `sorry` shows up as the axiom `sorryAx`.
+Prints the axioms on which the main theorems depend, and those of the Palomar entries (the
+Solutions in `palomar/`), then checks that they and every declaration of the library and of the
+Solutions, including private and auxiliary ones, depend only on Lean's standard axioms `propext`,
+`Classical.choice` and `Quot.sound`. A `sorry` shows up as the axiom `sorryAx`.
 
 `allowSorry` is `false`, so any `sorry` (the axiom `sorryAx`) fails the audit. Setting it to `true`
 while proofs are open lists the declarations whose own proof contains a `sorry` and fails only on
@@ -91,16 +96,34 @@ meta def mainResults : List Name :=
    ``HarmonicAnalysis.periodicMultiplier_beurlingSymbol_dzbarPi,
    ``HarmonicAnalysis.periodicMultiplier_trigPoly]
 
+/-- The theorems of the Palomar entries. -/
+meta def palomarTheorems : List Name :=
+  [``FourierMultipliersChallenge.multiplierNorm_spec,
+   ``FourierMultipliersChallenge.multiplierNorm_conjExponent,
+   ``FourierMultipliersChallenge.transference,
+   ``FourierMultipliersChallenge.transference_homogeneous,
+   ``FourierMultipliersChallenge.beurlingPow_dzbar_iterate,
+   ``FourierMultipliersChallenge.beurlingPowNorm_conjExponent,
+   ``FourierMultipliersChallenge.beurlingKappa_two,
+   ``FourierMultipliersChallenge.dragicevic_limit,
+   ``FourierMultipliersChallenge.dragicevic_lower_bound,
+   ``FourierMultipliersChallenge.dragicevic_lower_bound_pStar,
+   ``FourierMultipliersChallenge.pStar_sub_one_lt_beurlingPowNorm_two]
+
 /-- Lean's standard axioms. -/
 meta def standardAxioms : List Name := [``propext, ``Classical.choice, ``Quot.sound]
 
 /-- Whether `sorryAx` is listed instead of rejected (`true` only while proofs are open). -/
 meta def allowSorry : Bool := false
 
-/-- Whether `m` is a module of the library. -/
-meta def isLibraryModule (m : Name) : Bool := (`HarmonicAnalysis).isPrefixOf m
+/-- The modules of the Solutions of the Palomar entries. -/
+meta def palomarModules : List Name := [`FourierMultipliers.Solution]
 
-/-- The constants declared in the library. -/
+/-- Whether `m` is a module of the library or the Solution of a Palomar entry. -/
+meta def isLibraryModule (m : Name) : Bool :=
+  (`HarmonicAnalysis).isPrefixOf m || palomarModules.contains m
+
+/-- The constants declared in the library and in the Solutions of the Palomar entries. -/
 meta def libraryConstants (env : Environment) : Array Name := Id.run do
   let mut out : Array Name := #[]
   for m in env.header.moduleNames, d in env.header.moduleData do
@@ -124,7 +147,7 @@ elab "#audit" : command => do
   let env ← getEnv
   let mut bad : Array Name := #[]
   let mut rows : Array String := #[]
-  for n in mainResults do
+  for n in mainResults ++ palomarTheorems do
     let axs ← liftCoreM <| collectAxioms n
     unless acceptable axs do bad := bad.push n
     rows := rows.push s!"{n}: {axs.toList}"
