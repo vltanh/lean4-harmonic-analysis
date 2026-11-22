@@ -161,47 +161,17 @@ private theorem integrable_iteratedPoissonDeriv {m : ℝ → ℂ} {c : ℝ} (hm 
 
 /-! ### Convolutions on the Fourier side -/
 
-/-- `∫ K (s) e_v (x − s) ds = e_v (x) K̂ (v)`. -/
-private theorem integral_mul_expChar_sub (K : ℝ → ℂ) (x v : ℝ) :
-    ∫ s, K s * expChar v (x - s) = expChar v x * 𝓕 K v := by
-  rw [Real.fourier_real_eq_integral_exp_smul, ← integral_const_mul]
-  refine integral_congr_ae (ae_of_all _ fun s => ?_)
-  simp only [smul_eq_mul, expChar]
-  rw [← mul_assoc (Complex.exp _), ← Complex.exp_add, mul_comm]
-  push_cast
-  ring_nf
-
-/-- The convolution of `𝓕⁻ φ` with `𝓕⁻ H` on the Fourier side, by Fubini's theorem and the Fourier
-inversion theorem. -/
-private theorem integral_fourierInv_smul_fourierInv [CompleteSpace X] {φ : ℝ → ℂ}
-    (hφ : Continuous φ) (hφi : Integrable φ) (hK : Integrable (𝓕⁻ φ)) {H : ℝ → X}
-    (hH : Integrable H) (x : ℝ) :
+/-- The convolution of `𝓕⁻ φ` with `𝓕⁻ H` on the Fourier side, by the Fourier inversion theorem. -/
+private theorem integral_fourierInv_smul_fourierInv {φ : ℝ → ℂ} (hφ : Continuous φ)
+    (hφi : Integrable φ) (hK : Integrable (𝓕⁻ φ)) {H : ℝ → X} (hH : Integrable H) (x : ℝ) :
     ∫ s, 𝓕⁻ φ s • 𝓕⁻ H (x - s) = 𝓕⁻ (fun ξ => φ ξ • H ξ) x := by
-  have hint : Integrable (Function.uncurry fun s v : ℝ =>
-      (𝓕⁻ φ s * expChar v (x - s)) • H v) (volume.prod volume) := by
-    have h := (hK.smul_prod hH).bdd_smul 1 (φ := fun p : ℝ × ℝ => expChar p.2 (x - p.1))
-      (by unfold expChar; fun_prop : Continuous fun p : ℝ × ℝ =>
-        expChar p.2 (x - p.1)).aestronglyMeasurable
-      (ae_of_all _ fun p => (norm_expChar _ _).le)
-    refine h.congr (ae_of_all _ fun p => ?_)
-    simp only [Pi.smul_apply', Function.uncurry, smul_smul]
-    rw [mul_comm]
-  have h1 : ∫ s, 𝓕⁻ φ s • 𝓕⁻ H (x - s) =
-      ∫ s, ∫ v, (𝓕⁻ φ s * expChar v (x - s)) • H v := by
-    refine integral_congr_ae (ae_of_all _ fun s => ?_)
-    simp only
-    rw [fourierInv_eq_expChar H, ← integral_smul]
-    simp only [smul_smul]
   have hinv : 𝓕 (𝓕⁻ φ) = φ := by
     refine hφ.fourier_fourierInv_eq hφi ?_
     have h : 𝓕 φ = fun ξ => 𝓕⁻ φ (-ξ) := funext fun ξ => by
       rw [Real.fourierInv_eq_fourier_neg, neg_neg]
     rw [h]
     exact hK.comp_neg
-  rw [h1, integral_integral_swap hint, fourierInv_eq_expChar]
-  refine integral_congr_ae (ae_of_all _ fun v => ?_)
-  simp only
-  rw [integral_smul_const, integral_mul_expChar_sub, hinv, mul_smul]
+  rw [integral_smul_fourierInv_sub hK hH, hinv]
 
 /-! ### The representation (3.3) -/
 

@@ -6,6 +6,7 @@ Authors: The-Anh Vu-Le
 module
 
 public import HarmonicAnalysis.Hardy.RieszFactorization
+import HarmonicAnalysis.VectorValued.LittlewoodPaley.CircleSigns
 import BanachProbability.Noncommutative.ComplexSchattenUMD
 
 /-!
@@ -37,9 +38,11 @@ with `g, h ∈ H²` and `‖f‖_{L¹ (C_p)} = ‖g‖_{L² (C_{2p})} ‖h‖_{L
 `A_k = ∫ g H_{2^k} e_{−2^k}` and `B_k = ∫ G_{2^k} h e_{−2^k}`. By Jensen's inequality in
 `C_p (ℓ²_L)`, Hölder's inequality and the Cauchy–Schwarz inequality, the square function of the
 `A_k` is at most the norm of `g` in `L² (𝕋; C_{2p})` times that of the square function of the
-`H_{2^k} (t)`. By (I.7), the latter is dominated by the Rademacher sums of the `H_{2^k} (t)`,
-(III.2); and these are bounded by the norm of `h` in `L² (𝕋; C_{2p})`, (III.3), because `C_{2p}` is
-a UMD space. Similarly for the `B_k`.
+`H_{2^k} (t)`, for which (III.1) is proved: by (I.7), it is dominated by the Rademacher sums of the
+`H_{2^k} (t)`, (III.2); and these are, for every choice of the signs `ε_k`, bounded by the norm of
+`h` in `L² (𝕋; C_{2p})`, (III.3), because `C_{2p}` is a UMD space and
+`Σ_k ε_k H_{2^k} = Σ_p a_p ĥ (p) e_p` with `a_p = Σ_{p ≤ 2^k ≤ 2p} ε_k`, a bounded multiplier by
+McConnell's theorem (`exists_eLpNorm_blockSign_le`). Similarly for the `B_k`.
 
 `M` does not depend on `p`, because the UMD constants of `C_{2p}`, `2 ≤ 2p ≤ 4`, are bounded.
 (G. Pisier, *Non-commutative vector valued `L_p`-spaces and completely `p`-summing maps*, Astérisque
@@ -49,14 +52,9 @@ inequality (8.4.4) can be taken independent of `p`.)
 Departures from the source:
 
 * Only `E = ℓ^p` with `1 ≤ p ≤ 2`.
-* (III.3) is proved only on average over the signs, which is all that (III.2) uses
-  (`exists_avg_integral_paleyBlockClosed_le`, `exists_avg_integral_paleyBlockOpen_le`). The source
-  proves it for every choice of the signs, by Bourgain's multiplier theorem ([B2, Theorem 4] there).
-  Here it follows from the Littlewood–Paley inequality (Hytönen–van Neerven–Veraar–Weis, *Analysis
-  in Banach spaces I* (2016), Theorem 5.7.10; `eLpNormRad_dyadicBlock_succ_le`) and the randomised
-  boundedness of single frequencies (`eLpNormRad_singleFrequency_le`): the blocks `[2^{k−1}, 2^k]`
-  and `(2^{k−1}, 2^k]` of the source differ from the dyadic blocks `[2^{k−1}, 2^k)` by one and two
-  frequencies. The source treats general multipliers `H¹ → ℓ²`; here only the sequence `2^k` occurs.
+* The source treats general multipliers `H¹ → ℓ²`; here only the sequence `2^k` occurs. (For (III.3)
+  it cites a version of the Marcinkiewicz multiplier theorem by Bourgain ([B2, Theorem 4] there),
+  "see also [MC, Theorem 1.3]"; the second reference is the one followed here.)
 * The source recalls (p. 251) that `C_{2p}` is UMD, with Cotlar's trick, interpolation and duality
   as a known argument. The fact is proved in BanachProbability by Randrianantoanina's theorem on
   noncommutative martingale transforms (`BanachProbability.umdConst_two_complexSchattenSpace_le`;
@@ -145,7 +143,7 @@ theorem matFourierCoeff_mul_two_pow {g h : UnitAddCircle → Matrix n n ℂ} (hg
   · rw [ite_eq_left (by omega), ite_eq_right (by omega), Matrix.zero_mul, add_zero]
   · rw [ite_eq_right (by omega), ite_eq_left (by omega), Matrix.mul_zero, zero_add]
 
-/-! ### Littlewood–Paley for the blocks -/
+/-! ### The multipliers of (III.3) -/
 
 section Blocks
 
@@ -157,219 +155,167 @@ private def closedFreq (k : ℕ) : Finset ℕ :=
 private def openFreq (k : ℕ) : Finset ℕ :=
   (Finset.Icc 0 (2 ^ k)).filter fun p => 2 ^ k < 2 * p
 
-/-- The frequencies of `H_{2^{j+1}}` are those of the dyadic block `[2^j, 2^{j+1})` and `2^{j+1}`.
--/
-private theorem closedFreq_succ (j : ℕ) :
-    closedFreq (j + 1) = insert (2 ^ (j + 1)) (Finset.Ico (2 ^ j) (2 ^ (j + 1))) := by
-  ext p
-  simp only [closedFreq, Finset.mem_filter, Finset.mem_Icc, Finset.mem_insert, Finset.mem_Ico,
-    pow_succ]
-  have : 0 < 2 ^ j := by positivity
-  omega
-
-private theorem closedFreq_zero : closedFreq 0 = {1} := by
-  decide
-
-/-- The frequencies of `G_{2^{j+1}}` and `2^j` are those of `H_{2^{j+1}}`. -/
-private theorem insert_openFreq_succ (j : ℕ) :
-    insert (2 ^ j) (openFreq (j + 1)) = closedFreq (j + 1) := by
-  ext p
-  simp only [closedFreq, openFreq, Finset.mem_filter, Finset.mem_Icc, Finset.mem_insert, pow_succ]
-  have : 0 < 2 ^ j := by positivity
-  omega
-
-private theorem openFreq_zero : openFreq 0 = {1} := by
-  decide
-
-/-- The dyadic block `[2^j, 2^{j+1})`, as a set of natural numbers. -/
-private theorem mem_dyadicBlock_succ (q : ℤ) (j : ℕ) : q ∈ dyadicBlock ((j : ℕ) + 1) ↔
-    q ∈ (Finset.Ico (2 ^ j) (2 ^ (j + 1))).map Nat.castEmbedding := by
-  have h1 : ((j : ℤ) + 1).natAbs = j + 1 := by omega
-  rw [dyadicBlock, ite_eq_right (by omega), ite_eq_left (by omega), h1, Set.mem_Ico, Finset.mem_map]
-  simp only [add_tsub_cancel_right, Finset.mem_Ico, Nat.castEmbedding_apply]
+private theorem mem_closedFreq {p k : ℕ} :
+    p ∈ closedFreq k ↔ p ≠ 0 ∧ k ∈ Finset.Icc (Nat.clog 2 p) (Nat.log 2 p + 1) := by
+  rw [closedFreq, Finset.mem_filter, Finset.mem_Icc, Finset.mem_Icc,
+    Nat.clog_le_iff_le_pow one_lt_two]
   constructor
-  · rintro ⟨h2, h3⟩
-    have hq : 0 ≤ q := le_trans (by positivity) h2
-    lift q to ℕ using hq
-    exact ⟨q, ⟨by exact_mod_cast h2, by exact_mod_cast h3⟩, rfl⟩
-  · rintro ⟨p, ⟨h2, h3⟩, rfl⟩
-    exact ⟨by exact_mod_cast h2, by exact_mod_cast h3⟩
+  · rintro ⟨⟨-, h1⟩, h2⟩
+    have hp : p ≠ 0 := by
+      rintro rfl
+      simp at h2
+    refine ⟨hp, h1, ?_⟩
+    have h3 : 2 ^ k ≤ 2 ^ (Nat.log 2 p + 1) := by
+      have := Nat.lt_pow_succ_log_self one_lt_two p
+      rw [pow_succ] at this ⊢
+      cases k with
+      | zero => simp [Nat.one_le_iff_ne_zero]
+      | succ j =>
+        have h4 : 2 ^ j ≤ p := by
+          rw [pow_succ] at h2
+          omega
+        have := (Nat.le_log_iff_pow_le one_lt_two hp).2 h4
+        rw [pow_succ]
+        exact Nat.mul_le_mul_right 2 (Nat.pow_le_pow_right two_pos this)
+    exact (Nat.pow_le_pow_iff_right one_lt_two).1 h3
+  · rintro ⟨hp, h1, h2⟩
+    refine ⟨⟨Nat.zero_le _, h1⟩, ?_⟩
+    calc 2 ^ k ≤ 2 ^ (Nat.log 2 p + 1) := Nat.pow_le_pow_right two_pos h2
+      _ = 2 * 2 ^ Nat.log 2 p := by rw [pow_succ, mul_comm]
+      _ ≤ 2 * p := Nat.mul_le_mul_left 2 (Nat.pow_log_le_self 2 hp)
 
-/-- The block `Δ̃_{j+1} f`, as a sum over the natural numbers of `[2^j, 2^{j+1})`. -/
-private theorem trigBlock_dyadicBlock_succ {V : Type*} [AddCommMonoid V] [Module ℂ V]
-    (c : ℤ →₀ V) (j : ℕ) (t : UnitAddCircle) :
-    trigBlock (dyadicBlock ((j : ℕ) + 1)) c t =
-      ∑ p ∈ (Finset.Ico (2 ^ j) (2 ^ (j + 1)) : Finset ℕ), fourier (p : ℤ) t • c p := by
-  classical
-  rw [trigBlock, circPoly, Finsupp.sum_of_support_subset
-    (s := (Finset.Ico (2 ^ j) (2 ^ (j + 1))).map Nat.castEmbedding) _ _ _ fun _ _ => smul_zero _,
-    Finset.sum_map]
-  · refine Finset.sum_congr rfl fun p hp => ?_
-    rw [Finsupp.filter_apply_pos]
-    · rfl
-    · exact (mem_dyadicBlock_succ _ _).2 (Finset.mem_map_of_mem _ hp)
-  · intro q hq
-    rw [Finsupp.support_filter, Finset.mem_filter] at hq
-    exact (mem_dyadicBlock_succ q j).1 hq.2
+private theorem mem_openFreq {p k : ℕ} : p ∈ openFreq k ↔ p ≠ 0 ∧ Nat.clog 2 p = k := by
+  rw [openFreq, Finset.mem_filter, Finset.mem_Icc]
+  constructor
+  · rintro ⟨⟨-, h1⟩, h2⟩
+    have hp : p ≠ 0 := by
+      rintro rfl
+      simp at h2
+    refine ⟨hp, le_antisymm ((Nat.clog_le_iff_le_pow one_lt_two).2 h1) ?_⟩
+    cases k with
+    | zero => exact Nat.zero_le _
+    | succ j =>
+      refine (Nat.lt_clog_iff_pow_lt one_lt_two).2 ?_
+      rw [pow_succ] at h2
+      omega
+  · rintro ⟨hp, rfl⟩
+    refine ⟨⟨Nat.zero_le _, Nat.le_pow_clog one_lt_two p⟩, ?_⟩
+    rcases Nat.lt_or_ge 1 p with h | h
+    · obtain ⟨j, hj⟩ : ∃ j, Nat.clog 2 p = j + 1 :=
+        Nat.exists_eq_succ_of_ne_zero (Nat.clog_pos one_lt_two h).ne'
+      have h1 : 2 ^ j < p := (Nat.lt_clog_iff_pow_lt one_lt_two).1 (by omega)
+      rw [hj, pow_succ]
+      omega
+    · have : p = 1 := by omega
+      subst this
+      simp
+
+private theorem natCast_mem_map {p : ℕ} {S : Finset ℕ} :
+    (p : ℤ) ∈ S.map Nat.castEmbedding ↔ p ∈ S :=
+  Finset.mem_map' (f := Nat.castEmbedding)
+
+/-- The signs `ε_ℓ`, `ℓ < K`, extended by `0`. -/
+private def signExt {K : ℕ} (ε : Fin K → Bool) (ℓ : ℕ) : ℝ :=
+  if h : ℓ < K then coin (ε ⟨ℓ, h⟩) else 0
+
+private theorem signExt_mem {K : ℕ} (ε : Fin K → Bool) (ℓ : ℕ) :
+    signExt ε ℓ = 1 ∨ signExt ε ℓ = 0 ∨ signExt ε ℓ = -1 := by
+  rw [signExt]
+  split_ifs with h
+  · cases ε ⟨ℓ, h⟩ <;> simp
+  · simp
+
+private theorem signExt_coe {K : ℕ} (ε : Fin K → Bool) (k : Fin K) :
+    signExt ε k = coin (ε k) := by
+  simp [signExt]
+
+private theorem sum_signExt {K : ℕ} (ε : Fin K → Bool) (s : Finset ℕ) :
+    ∑ ℓ ∈ s, signExt ε ℓ = ∑ k : Fin K, if (k : ℕ) ∈ s then coin (ε k) else 0 := by
+  have h1 : (∑ k : Fin K, if (k : ℕ) ∈ s then coin (ε k) else 0) =
+      ∑ ℓ ∈ Finset.range K, if ℓ ∈ s then signExt ε ℓ else 0 := by
+    rw [← Fin.sum_univ_eq_sum_range (fun ℓ => if ℓ ∈ s then signExt ε ℓ else 0) K]
+    simp only [signExt_coe]
+  rw [h1, Finset.sum_ite_mem]
+  refine (Finset.sum_subset Finset.inter_subset_right fun ℓ hℓ hℓ' => ?_).symm
+  rw [signExt, dite_eq_right]
+  intro h
+  exact hℓ' (Finset.mem_inter.2 ⟨Finset.mem_range.2 h, hℓ⟩)
+
+/-- `a_p = Σ_{p ≤ 2^ℓ ≤ 2p} ε_ℓ` (Lust-Piquard–Pisier, p. 253), in terms of the blocks `H_{2^ℓ}`. -/
+private theorem closedBlockSign_signExt {K : ℕ} (ε : Fin K → Bool) (n : ℤ) :
+    closedBlockSign (signExt ε) n =
+      ∑ k : Fin K, if n ∈ (closedFreq k).map Nat.castEmbedding then coin (ε k) else 0 := by
+  rcases le_or_gt n 0 with hn | hn
+  · rw [closedBlockSign, ite_eq_right hn.not_gt]
+    refine (Finset.sum_eq_zero fun k _ => ite_eq_right fun h => ?_).symm
+    obtain ⟨p, hp, rfl⟩ := Finset.mem_map.1 h
+    exact (mem_closedFreq.1 hp).1 (by simpa using hn)
+  · lift n to ℕ using hn.le
+    have hn0 : n ≠ 0 := by
+      rintro rfl
+      simp at hn
+    rw [closedBlockSign, ite_eq_left hn, sum_signExt]
+    refine Finset.sum_congr rfl fun k _ => if_congr ?_ rfl rfl
+    rw [natCast_mem_map, mem_closedFreq, Int.toNat_natCast]
+    exact (and_iff_right hn0).symm
+
+/-- The same for the blocks `G_{2^ℓ}`. -/
+private theorem rightBlockSign_signExt {K : ℕ} (ε : Fin K → Bool) (n : ℤ) :
+    rightBlockSign (signExt ε) n =
+      ∑ k : Fin K, if n ∈ (openFreq k).map Nat.castEmbedding then coin (ε k) else 0 := by
+  rcases le_or_gt n 0 with hn | hn
+  · rw [rightBlockSign, ite_eq_right hn.not_gt]
+    refine (Finset.sum_eq_zero fun k _ => ite_eq_right fun h => ?_).symm
+    obtain ⟨p, hp, rfl⟩ := Finset.mem_map.1 h
+    exact (mem_openFreq.1 hp).1 (by simpa using hn)
+  · lift n to ℕ using hn.le
+    have hn0 : n ≠ 0 := by
+      rintro rfl
+      simp at hn
+    rw [rightBlockSign, ite_eq_left hn, ← Finset.sum_singleton (signExt ε), sum_signExt]
+    refine Finset.sum_congr rfl fun k _ => if_congr ?_ rfl rfl
+    rw [natCast_mem_map, mem_openFreq, Finset.mem_singleton, Int.toNat_natCast, eq_comm]
+    exact (and_iff_right hn0).symm
 
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace ℂ X]
 
-/-- The term `ĥ (2^j) e_{2^j}`. -/
-private noncomputable def freqTerm (c : ℤ →₀ X) (j : ℕ) (t : UnitAddCircle) : X :=
-  fourier ((2 ^ j : ℕ) : ℤ) t • c ((2 ^ j : ℕ) : ℤ)
-
-/-- The family `(0, u_0, u_1, …)`. -/
-private def prev (u : ℕ → UnitAddCircle → X) (k : ℕ) (t : UnitAddCircle) : X :=
-  if k = 0 then 0 else u (k - 1) t
-
-omit [NormedSpace ℂ X] in
-private theorem aestronglyMeasurable_prev {u : ℕ → UnitAddCircle → X}
-    (hu : ∀ k, AEStronglyMeasurable (u k) haarAddCircle) (k : ℕ) :
-    AEStronglyMeasurable (prev u k) haarAddCircle := by
-  by_cases hk : k = 0
-  · subst hk
-    exact aestronglyMeasurable_const
-  · have : prev u k = u (k - 1) := funext fun t => ite_eq_right hk
-    rw [this]
-    exact hu _
-
-/-- A Rademacher sum does not increase when the terms are shifted by one. -/
-private theorem eLpNormRad_prev_le {p : ℝ} (hp : 1 ≤ p) {u : ℕ → UnitAddCircle → X}
-    (hu : ∀ k, AEStronglyMeasurable (u k) haarAddCircle) (K : ℕ) :
-    eLpNormRad (fun k : Fin K => prev u k) p haarAddCircle ≤
-      eLpNormRad (fun k : Fin K => u k) p haarAddCircle := by
-  cases K with
-  | zero =>
-    have : (fun k : Fin 0 => prev u k) = fun k : Fin 0 => u k := funext fun k => k.elim0
-    rw [this]
-  | succ K =>
-    have hσ : Function.Injective fun k : Fin (K + 1) => k - 1 := fun a b h => by simpa using h
-    have h1 := eLpNormRad_comp_le hp hσ (f := fun k : Fin (K + 1) => u k) fun k => hu k
-    have h2 := eLpNormRad_indicator_le hp {0}ᶜ
-      (f := fun k : Fin (K + 1) => u (k - 1 : Fin (K + 1))) fun k => hu _
-    refine le_trans (le_of_eq ?_) (h2.trans h1)
-    congr 1
-    funext k
-    by_cases hk : k = 0
-    · subst hk
-      funext t
-      simp [prev]
-    · rw [Set.indicator_of_mem (by simpa using hk)]
-      funext t
-      have : (k : ℕ) ≠ 0 := fun h => hk (Fin.ext h)
-      simp [prev, this, Fin.coe_sub_one, hk]
-
-/-- `H_{2^k} = Δ̃_k f + c_{2^k} e_{2^k}`, without the first term for `k = 0`. -/
-private theorem sum_closedFreq (c : ℤ →₀ X) (k : ℕ) (t : UnitAddCircle) :
-    ∑ p ∈ closedFreq k, fourier (p : ℤ) t • c p =
-      prev (fun j => trigBlock (dyadicBlock ((j : ℕ) + 1)) c) k t + freqTerm c k t := by
-  cases k with
-  | zero => simp [closedFreq_zero, prev, freqTerm]
-  | succ j =>
-    rw [closedFreq_succ, Finset.sum_insert (by simp), add_comm]
-    simp [prev, freqTerm, trigBlock_dyadicBlock_succ]
-
-/-- `G_{2^k} = Δ̃_k f + c_{2^k} e_{2^k} − c_{2^{k−1}} e_{2^{k−1}}`, without the first and the last
-term for `k = 0`. -/
-private theorem sum_openFreq (c : ℤ →₀ X) (k : ℕ) (t : UnitAddCircle) :
-    ∑ p ∈ openFreq k, fourier (p : ℤ) t • c p =
-      prev (fun j => trigBlock (dyadicBlock ((j : ℕ) + 1)) c) k t + freqTerm c k t +
-        (-1 : ℂ) • prev (freqTerm c) k t := by
-  rw [← sum_closedFreq]
-  cases k with
-  | zero => simp [closedFreq_zero, openFreq_zero, prev]
-  | succ j =>
-    rw [← insert_openFreq_succ, Finset.sum_insert (by simp [openFreq, pow_succ, mul_comm])]
-    simp [prev, freqTerm]
-
-private theorem aestronglyMeasurable_trigBlock (s : Set ℤ) (c : ℤ →₀ X) :
-    AEStronglyMeasurable (trigBlock s c) haarAddCircle :=
-  (continuous_circPoly _).aestronglyMeasurable
-
-private theorem aestronglyMeasurable_freqTerm (c : ℤ →₀ X) (j : ℕ) :
-    AEStronglyMeasurable (freqTerm c j) haarAddCircle :=
-  ((fourier _).continuous.smul continuous_const).aestronglyMeasurable
-
-/-- The single frequencies `2^k`, one in each dyadic block. -/
-private theorem eLpNormRad_freqTerm_le [CompleteSpace X] {p : ℝ} (hp : 1 ≤ p) (c : ℤ →₀ X) (K : ℕ) :
-    eLpNormRad (fun k : Fin K => freqTerm c k) p haarAddCircle ≤
-      4 * eLpNormRad (fun k : Fin K => trigBlock (dyadicBlock ((k : ℕ) + 1)) c) p
-        haarAddCircle := by
+/-- `Σ ε_k H_{2^k} = Σ_p a_p ĥ (p) e_p` (Lust-Piquard–Pisier, p. 253), for blocks of frequencies. -/
+private theorem sum_coin_smul_block (S : ℕ → Finset ℕ) {K : ℕ} (ε : Fin K → Bool) {a : ℤ → ℝ}
+    (ha : ∀ n : ℤ, a n =
+      ∑ k : Fin K, if n ∈ (S k).map Nat.castEmbedding then coin (ε k) else 0)
+    (c : ℤ →₀ X) (t : UnitAddCircle) :
+    ∑ k, coin (ε k) • ∑ p ∈ S k, fourier (p : ℤ) t • c p =
+      circPoly (mulCoeff (fun n => (a n : ℂ)) c) t := by
   classical
-  have h := eLpNormRad_singleFrequency_le hp
-    (fun k : Fin K => c.filter (· ∈ dyadicBlock ((k : ℕ) + 1))) fun k => ((2 ^ (k : ℕ) : ℕ) : ℤ)
-  have h1 (k : Fin K) : c.filter (· ∈ dyadicBlock ((k : ℕ) + 1)) ((2 ^ (k : ℕ) : ℕ) : ℤ) =
-      c ((2 ^ (k : ℕ) : ℕ) : ℤ) := by
-    refine Finsupp.filter_apply_pos _ _ ((mem_dyadicBlock_succ _ _).2 ?_)
-    exact Finset.mem_map_of_mem _ (Finset.mem_Ico.2 ⟨le_rfl, by simp [pow_succ]⟩)
-  simp only [h1] at h
-  refine h.trans_eq ?_
-  congr 2
-
-variable [CompleteSpace X]
-
-/-- (III.3) on average over the signs, for the blocks `H_{2^k}` of a polynomial with values in a UMD
-space, in the norm of `L^p`, `1 < p < ∞`. Departure from the source, which obtains (III.3) for every
-choice of the signs from Bourgain's multiplier theorem: here `H_{2^k}` is a dyadic block and one
-frequency, and the Littlewood–Paley inequality is applied to the dyadic blocks. -/
-private theorem eLpNormRad_closed_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (hβ : IsUMDBound X p β)
-    (c : ℤ →₀ X) (K : ℕ) :
-    eLpNormRad (fun (k : Fin K) (t : UnitAddCircle) =>
-        ∑ q ∈ closedFreq k, fourier (q : ℤ) t • c q) p haarAddCircle ≤
-      5 * (littlewoodPaleyBound β * eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle) := by
-  have hF := fun j : ℕ => aestronglyMeasurable_trigBlock (dyadicBlock ((j : ℕ) + 1)) c
-  have h0 := eLpNormRad_dyadicBlock_succ_le hp hβ c K
-  have h1 := eLpNormRad_prev_le hp.le hF K
-  have h2 := eLpNormRad_freqTerm_le hp.le c K
-  simp only [sum_closedFreq]
-  refine (eLpNormRad_add_le hp.le (fun k => aestronglyMeasurable_prev hF k)
-    fun k => aestronglyMeasurable_freqTerm c k).trans ?_
-  calc _ ≤ littlewoodPaleyBound β * eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle +
-        4 * (littlewoodPaleyBound β * eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle) :=
-        add_le_add (h1.trans h0) (h2.trans (by gcongr))
-    _ = _ := by ring
-
-/-- The same for the blocks `G_{2^k}`, which are a dyadic block, plus one frequency, minus another.
--/
-private theorem eLpNormRad_open_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (hβ : IsUMDBound X p β)
-    (c : ℤ →₀ X) (K : ℕ) :
-    eLpNormRad (fun (k : Fin K) (t : UnitAddCircle) =>
-        ∑ q ∈ openFreq k, fourier (q : ℤ) t • c q) p haarAddCircle ≤
-      13 * (littlewoodPaleyBound β * eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle) := by
-  have hF := fun j : ℕ => aestronglyMeasurable_trigBlock (dyadicBlock ((j : ℕ) + 1)) c
-  have hL := aestronglyMeasurable_freqTerm c
-  have h0 := eLpNormRad_dyadicBlock_succ_le hp hβ c K
-  have h1 := eLpNormRad_prev_le hp.le hF K
-  have h2 := eLpNormRad_freqTerm_le hp.le c K
-  have h3 := eLpNormRad_prev_le hp.le hL K
-  have h4 := eLpNormRad_smul_le (μ := haarAddCircle) hp.le
-    (c := fun (_ : Fin K) (_ : UnitAddCircle) => (-1 : ℂ)) (fun _ _ => by simp)
-    (fun _ => aestronglyMeasurable_const) fun k => aestronglyMeasurable_prev hL k
-  simp only [sum_openFreq]
-  refine (eLpNormRad_add_le hp.le
-    (fun k => (aestronglyMeasurable_prev hF k).add (hL k))
-    fun k => (aestronglyMeasurable_prev hL k).const_smul _).trans ?_
-  refine (add_le_add_left (eLpNormRad_add_le hp.le (fun k => aestronglyMeasurable_prev hF k)
-    fun k => hL k) _).trans ?_
-  calc _ ≤ littlewoodPaleyBound β * eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle +
-        4 * (littlewoodPaleyBound β * eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle) +
-        2 * (4 * (littlewoodPaleyBound β *
-          eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle)) :=
-        add_le_add (add_le_add (h1.trans h0) (h2.trans (by gcongr)))
-          (h4.trans (by
-            gcongr
-            exact h3.trans (h2.trans (by gcongr))))
-    _ = _ := by ring
+  have h (k : Fin K) : ∑ p ∈ S k, fourier (p : ℤ) t • c p = ∑ n ∈ c.support,
+      if n ∈ (S k).map Nat.castEmbedding then fourier n t • c n else 0 := by
+    rw [Finset.sum_ite_mem]
+    refine (Finset.sum_map (S k) Nat.castEmbedding fun n : ℤ => fourier n t • c n).symm.trans
+      (Finset.sum_subset Finset.inter_subset_right fun n hn hn' => ?_).symm
+    have h0 : c n = 0 := by
+      by_contra h0
+      exact hn' (Finset.mem_inter.2 ⟨Finsupp.mem_support_iff.2 h0, hn⟩)
+    rw [h0, smul_zero]
+  rw [circPoly_mulCoeff, Finsupp.sum]
+  simp only [h, Finset.smul_sum]
+  rw [Finset.sum_comm]
+  refine Finset.sum_congr rfl fun n _ => ?_
+  rw [ha, Complex.ofReal_sum, Finset.sum_smul, Finset.smul_sum]
+  refine Finset.sum_congr rfl fun k _ => ?_
+  split_ifs
+  · rw [Complex.coe_smul, smul_comm]
+  · simp
 
 end Blocks
 
-/-! ### Square norms of Rademacher sums of continuous functions -/
+/-! ### Square norms of continuous functions -/
 
 section Sq
 
+variable {X Y : Type*} [NormedAddCommGroup X] [NormedAddCommGroup Y]
+
 /-- The square of the `L²` norm of a continuous function. -/
-private theorem eLpNorm_two_sq_eq {X : Type*} [NormedAddCommGroup X] {u : UnitAddCircle → X}
-    (hu : Continuous u) :
+private theorem eLpNorm_two_sq_eq {u : UnitAddCircle → X} (hu : Continuous u) :
     eLpNorm u (ENNReal.ofReal 2) haarAddCircle ^ (2 : ℝ) =
       ENNReal.ofReal (∫ t, ‖u t‖ ^ 2 ∂haarAddCircle) := by
   have hint : Integrable (fun t => ‖u t‖ ^ 2) haarAddCircle :=
@@ -379,31 +325,15 @@ private theorem eLpNorm_two_sq_eq {X : Type*} [NormedAddCommGroup X] {u : UnitAd
   refine lintegral_congr fun t => ?_
   rw [ENNReal.ofReal_pow (norm_nonneg _), ofReal_norm, ENNReal.rpow_ofNat]
 
-variable {X : Type*} [NormedAddCommGroup X] [NormedSpace ℂ X]
-
-/-- The square of the norm of a Rademacher sum of continuous functions. -/
-private theorem eLpNormRad_two_sq_eq {K : ℕ} {u : Fin K → UnitAddCircle → X}
-    (hu : ∀ k, Continuous (u k)) :
-    eLpNormRad u 2 haarAddCircle ^ (2 : ℝ) = ENNReal.ofReal (avg fun ε : Fin K → Bool =>
-      ∫ t, ‖∑ k, coin (ε k) • u k t‖ ^ 2 ∂haarAddCircle) := by
-  rw [eLpNormRad_rpow two_pos fun k => (hu k).aestronglyMeasurable, avg, div_eq_inv_mul,
-    ENNReal.ofReal_mul (by positivity), ENNReal.ofReal_inv_of_pos (by positivity),
-    ENNReal.ofReal_sum_of_nonneg fun ε _ => integral_nonneg fun t => by positivity]
-  congr 1
-  · simp
-  · refine Finset.sum_congr rfl fun ε _ => ?_
-    exact eLpNorm_two_sq_eq (continuous_finsetSum _ fun k _ => (hu k).const_smul _)
-
-/-- From norms of Rademacher sums to averages of integrals. -/
-private theorem avg_integral_le_of_eLpNormRad_le {K : ℕ} {u : Fin K → UnitAddCircle → X}
-    (hu : ∀ k, Continuous (u k)) {v : UnitAddCircle → X} (hv : Continuous v) {C : ℝ≥0∞}
-    (hC : C ≠ ⊤) (h : eLpNormRad u 2 haarAddCircle ≤
+/-- From norms to integrals of squares. -/
+private theorem integral_sq_le_of_eLpNorm_le {u : UnitAddCircle → X} (hu : Continuous u)
+    {v : UnitAddCircle → Y} (hv : Continuous v) {C : ℝ≥0∞} (hC : C ≠ ⊤)
+    (h : eLpNorm u (ENNReal.ofReal 2) haarAddCircle ≤
       C * eLpNorm v (ENNReal.ofReal 2) haarAddCircle) :
-    (avg fun ε : Fin K → Bool => ∫ t, ‖∑ k, coin (ε k) • u k t‖ ^ 2 ∂haarAddCircle) ≤
-      C.toReal ^ 2 * ∫ t, ‖v t‖ ^ 2 ∂haarAddCircle := by
+    ∫ t, ‖u t‖ ^ 2 ∂haarAddCircle ≤ C.toReal ^ 2 * ∫ t, ‖v t‖ ^ 2 ∂haarAddCircle := by
   have h0 : 0 ≤ ∫ t, ‖v t‖ ^ 2 ∂haarAddCircle := integral_nonneg fun t => by positivity
   have h1 := ENNReal.rpow_le_rpow h (z := 2) (by norm_num)
-  rw [ENNReal.mul_rpow_of_nonneg _ _ (by norm_num), eLpNorm_two_sq_eq hv, eLpNormRad_two_sq_eq hu,
+  rw [ENNReal.mul_rpow_of_nonneg _ _ (by norm_num), eLpNorm_two_sq_eq hv, eLpNorm_two_sq_eq hu,
     ← ENNReal.ofReal_toReal hC, ENNReal.ofReal_rpow_of_nonneg ENNReal.toReal_nonneg (by norm_num),
     ← ENNReal.ofReal_mul (by positivity)] at h1
   simpa using (ENNReal.ofReal_le_ofReal_iff (by positivity)).1 h1
@@ -467,25 +397,26 @@ private theorem norm_sum_block_partialCoeff {S : ℕ → Finset ℕ} (hS : ∀ k
 
 /-- From polynomials to `H²`, by the convergence of the partial sums of the Fourier series of `h`.
 -/
-private theorem avg_integral_block_le {S : ℕ → Finset ℕ} (hS : ∀ k, ∀ p ∈ S k, p ≤ 2 ^ k)
-    {C : ℝ≥0∞} (hC : C ≠ ⊤) {K : ℕ}
+private theorem integral_block_le {S : ℕ → Finset ℕ} (hS : ∀ k, ∀ p ∈ S k, p ≤ 2 ^ k)
+    {C : ℝ≥0∞} (hC : C ≠ ⊤) {K : ℕ} (ε : Fin K → Bool)
     (hle : ∀ c : ℤ →₀ ComplexSchattenSpace q n n,
-      eLpNormRad (fun (k : Fin K) (t : UnitAddCircle) =>
-          ∑ p ∈ S k, fourier (p : ℤ) t • c p) 2 haarAddCircle ≤
+      eLpNorm (fun t : UnitAddCircle => ∑ k, coin (ε k) • ∑ p ∈ S k, fourier (p : ℤ) t • c p)
+          (ENNReal.ofReal 2) haarAddCircle ≤
         C * eLpNorm (circPoly c) (ENNReal.ofReal 2) haarAddCircle)
     {h : UnitAddCircle → Matrix n n ℂ} (hh : IsHardyTwo h) :
-    (avg fun ε : Fin K → Bool => ∫ t : UnitAddCircle, complexSchattenNorm q
+    ∫ t : UnitAddCircle, complexSchattenNorm q
         (∑ k, coin (ε k) • ∑ p ∈ S k, fourier (p : ℤ) t • matFourierCoeff h p) ^ 2
-          ∂haarAddCircle) ≤
+          ∂haarAddCircle ≤
       C.toReal ^ 2 * ∫ t, complexSchattenNorm q (h t) ^ 2 ∂haarAddCircle := by
   refine ge_of_tendsto ((tendsto_integral_norm_sq_partialSum (Fact.out (p := 1 ≤ q)) hh.1).const_mul
     (C.toReal ^ 2)) ?_
   filter_upwards [Filter.eventually_ge_atTop (2 ^ K)] with N hN
-  have key := avg_integral_le_of_eLpNormRad_le
-    (u := fun (k : Fin K) (t : UnitAddCircle) =>
-      ∑ p ∈ S k, fourier (p : ℤ) t • partialCoeff q h N p)
-    (fun k => continuous_finsetSum _ fun p _ => (fourier _).continuous.smul continuous_const)
-    (continuous_circPoly _) hC (hle (partialCoeff q h N))
+  have hcont : Continuous fun t : UnitAddCircle =>
+      ∑ k, coin (ε k) • ∑ p ∈ S k, fourier (p : ℤ) t • partialCoeff q h N p :=
+    continuous_finsetSum _ fun k _ =>
+      (continuous_finsetSum _ fun p _ => (fourier _).continuous.smul continuous_const).const_smul _
+  have key := integral_sq_le_of_eLpNorm_le hcont (continuous_circPoly (partialCoeff q h N)) hC
+    (hle (partialCoeff q h N))
   simpa only [norm_sum_block_partialCoeff hS hN, norm_circPoly_partialCoeff hh] using key
 
 end Hardy
@@ -510,59 +441,48 @@ private theorem exists_isUMDBound : ∃ β : ℝ≥0∞, β ≠ ⊤ ∧ ∀ (q :
   rw [div_le_iff₀ (by linarith)]
   linarith
 
-private theorem littlewoodPaleyBound_ne_top {β : ℝ≥0∞} (hβ : β ≠ ⊤) :
-    littlewoodPaleyBound β ≠ ⊤ := by
-  unfold littlewoodPaleyBound hilbertBound
-  finiteness
-
-/-- Lust-Piquard–Pisier, (III.3), p. 253, on average over the signs, for the blocks `H_{2^k}` of
-`h ∈ H²`: `E ∫ ‖Σ ε_k H_{2^k}‖_{S_{2p}}² ≤ C ∫ ‖h‖_{S_{2p}}²` with an absolute constant `C`, for
-`1 ≤ p ≤ 2` and all sizes. Departure from the source: there (III.3) is proved for every choice of
-the signs, by Bourgain's multiplier theorem; the average, which is all that (III.2) uses, is bounded
-here by the Littlewood–Paley inequality and the randomised boundedness of single frequencies. -/
-theorem exists_avg_integral_paleyBlockClosed_le : ∃ C : ℝ, 0 < C ∧ ∀ (n : Type) [Fintype n]
+/-- **Lust-Piquard–Pisier, (III.3)**, p. 253, for the blocks `H_{2^k}` of `h ∈ H²`: for every choice
+of the signs `ε_k`, `∫ ‖Σ ε_k H_{2^k}‖_{S_{2p}}² ≤ C ∫ ‖h‖_{S_{2p}}²` with an absolute constant `C`,
+for `1 ≤ p ≤ 2` and all sizes. The multiplier is `a_p = Σ_{p ≤ 2^ℓ ≤ 2p} ε_ℓ`, bounded on
+`L² (𝕋; C_{2p})` by McConnell's theorem (`exists_eLpNorm_blockSign_le`). -/
+theorem exists_integral_paleyBlockClosed_le : ∃ C : ℝ, 0 < C ∧ ∀ (n : Type) [Fintype n]
     [DecidableEq n] (p : ℝ), 1 ≤ p → p ≤ 2 → ∀ (h : UnitAddCircle → Matrix n n ℂ), IsHardyTwo h →
-    ∀ K : ℕ, (avg fun ε : Fin K → Bool => ∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p))
-        (∑ k, coin (ε k) • paleyBlockClosed h k t) ^ 2 ∂haarAddCircle) ≤
+    ∀ (K : ℕ) (ε : Fin K → Bool), ∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p))
+        (∑ k, coin (ε k) • paleyBlockClosed h k t) ^ 2 ∂haarAddCircle ≤
       C * ∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p)) (h t) ^ 2 ∂haarAddCircle := by
   obtain ⟨β, hβ, hUMD⟩ := exists_isUMDBound
-  have hC : 5 * littlewoodPaleyBound β ≠ ⊤ :=
-    ENNReal.mul_ne_top (by norm_num) (littlewoodPaleyBound_ne_top hβ)
-  refine ⟨(5 * littlewoodPaleyBound β).toReal ^ 2 + 1, by positivity, ?_⟩
-  intro n _ _ p hp1 hp2 h hh K
-  have hfact : Fact (1 ≤ ENNReal.ofReal (2 * p)) :=
-    ⟨ENNReal.one_le_ofReal.2 (by linarith)⟩
+  obtain ⟨C, hC, hle⟩ := exists_eLpNorm_blockSign_le
+  refine ⟨(C β).toReal ^ 2 + 1, by positivity, ?_⟩
+  intro n _ _ p hp1 hp2 h hh K ε
+  have hfact : Fact (1 ≤ ENNReal.ofReal (2 * p)) := ⟨ENNReal.one_le_ofReal.2 (by linarith)⟩
   have hint : 0 ≤ ∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p)) (h t) ^ 2 ∂haarAddCircle :=
     integral_nonneg fun t => by positivity
-  refine (avg_integral_block_le (q := ENNReal.ofReal (2 * p)) (S := closedFreq)
-    (fun k r hr => (Finset.mem_Icc.1 (Finset.mem_filter.1 hr).1).2) hC (fun c => ?_) hh).trans ?_
-  · rw [mul_assoc]
-    exact eLpNormRad_closed_le one_lt_two (hUMD _ p hp1 hp2 rfl n) c K
-  · exact mul_le_mul_of_nonneg_right (by linarith) hint
+  refine (integral_block_le (q := ENNReal.ofReal (2 * p)) (S := closedFreq)
+    (fun k r hr => (Finset.mem_Icc.1 (Finset.mem_filter.1 hr).1).2) (hC β hβ) ε
+    (fun c => ?_) hh).trans (mul_le_mul_of_nonneg_right (by linarith) hint)
+  rw [funext (sum_coin_smul_block closedFreq ε (closedBlockSign_signExt ε) c)]
+  exact hle _ 2 one_lt_two β (hUMD _ p hp1 hp2 rfl n) _ (signExt_mem ε) _ (Or.inr (Or.inr rfl)) c
 
-/-- Lust-Piquard–Pisier, (III.3), p. 253, on average over the signs, for the blocks `G_{2^k}` of
-`g ∈ H²`: `E ∫ ‖Σ ε_k G_{2^k}‖_{S_{2p}}² ≤ C ∫ ‖g‖_{S_{2p}}²` with an absolute constant `C`, for
-`1 ≤ p ≤ 2` and all sizes. The departure from the source is that of
-`exists_avg_integral_paleyBlockClosed_le`. -/
-theorem exists_avg_integral_paleyBlockOpen_le : ∃ C : ℝ, 0 < C ∧ ∀ (n : Type) [Fintype n]
+/-- **Lust-Piquard–Pisier, (III.3)**, p. 253, for the blocks `G_{2^k}` of `g ∈ H²`: for every choice
+of the signs `ε_k`, `∫ ‖Σ ε_k G_{2^k}‖_{S_{2p}}² ≤ C ∫ ‖g‖_{S_{2p}}²` with an absolute constant `C`,
+for `1 ≤ p ≤ 2` and all sizes. ("Similarly for the `G'_k s`", p. 252.) -/
+theorem exists_integral_paleyBlockOpen_le : ∃ C : ℝ, 0 < C ∧ ∀ (n : Type) [Fintype n]
     [DecidableEq n] (p : ℝ), 1 ≤ p → p ≤ 2 → ∀ (g : UnitAddCircle → Matrix n n ℂ), IsHardyTwo g →
-    ∀ K : ℕ, (avg fun ε : Fin K → Bool => ∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p))
-        (∑ k, coin (ε k) • paleyBlockOpen g k t) ^ 2 ∂haarAddCircle) ≤
+    ∀ (K : ℕ) (ε : Fin K → Bool), ∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p))
+        (∑ k, coin (ε k) • paleyBlockOpen g k t) ^ 2 ∂haarAddCircle ≤
       C * ∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p)) (g t) ^ 2 ∂haarAddCircle := by
   obtain ⟨β, hβ, hUMD⟩ := exists_isUMDBound
-  have hC : 13 * littlewoodPaleyBound β ≠ ⊤ :=
-    ENNReal.mul_ne_top (by norm_num) (littlewoodPaleyBound_ne_top hβ)
-  refine ⟨(13 * littlewoodPaleyBound β).toReal ^ 2 + 1, by positivity, ?_⟩
-  intro n _ _ p hp1 hp2 g hg K
-  have hfact : Fact (1 ≤ ENNReal.ofReal (2 * p)) :=
-    ⟨ENNReal.one_le_ofReal.2 (by linarith)⟩
+  obtain ⟨C, hC, hle⟩ := exists_eLpNorm_blockSign_le
+  refine ⟨(C β).toReal ^ 2 + 1, by positivity, ?_⟩
+  intro n _ _ p hp1 hp2 g hg K ε
+  have hfact : Fact (1 ≤ ENNReal.ofReal (2 * p)) := ⟨ENNReal.one_le_ofReal.2 (by linarith)⟩
   have hint : 0 ≤ ∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p)) (g t) ^ 2 ∂haarAddCircle :=
     integral_nonneg fun t => by positivity
-  refine (avg_integral_block_le (q := ENNReal.ofReal (2 * p)) (S := openFreq)
-    (fun k r hr => (Finset.mem_Icc.1 (Finset.mem_filter.1 hr).1).2) hC (fun c => ?_) hg).trans ?_
-  · rw [mul_assoc]
-    exact eLpNormRad_open_le one_lt_two (hUMD _ p hp1 hp2 rfl n) c K
-  · exact mul_le_mul_of_nonneg_right (by linarith) hint
+  refine (integral_block_le (q := ENNReal.ofReal (2 * p)) (S := openFreq)
+    (fun k r hr => (Finset.mem_Icc.1 (Finset.mem_filter.1 hr).1).2) (hC β hβ) ε
+    (fun c => ?_) hg).trans (mul_le_mul_of_nonneg_right (by linarith) hint)
+  rw [funext (sum_coin_smul_block openFreq ε (rightBlockSign_signExt ε) c)]
+  exact hle _ 2 one_lt_two β (hUMD _ p hp1 hp2 rfl n) _ (signExt_mem ε) _ (Or.inr (Or.inl rfl)) c
 
 /-! ### Jensen's and Hölder's inequalities -/
 
@@ -690,9 +610,8 @@ private theorem integral_blockCol_sq_le {q : ℝ} (hq : 2 ≤ q) {K : ℕ}
     complexSchattenNorm_blockCol_sq_le_avg hq fun k => U k t
 
 /-- The first part of the proof of (γ), p. 250, with the norms of Theorem III.1, for the
-coefficients `∫ g U_k e_{−m_k}`: by Jensen's, Hölder's and the Cauchy–Schwarz inequality and
-(III.2), the row square function is at most
-`(∫ ‖g‖_{S_{2p}}²)^{1/2} (E ∫ ‖Σ ε_k U_k‖_{S_{2p}}²)^{1/2}`. -/
+coefficients `∫ g U_k e_{−m_k}`: by Jensen's, Hölder's and the Cauchy–Schwarz inequality, the row
+square function is at most `(∫ ‖g‖_{S_{2p}}²)^{1/2} (∫ ‖Σ U_k U_kᴴ‖_{S_p})^{1/2}`. -/
 private theorem complexSchattenNorm_blockRow_matFourierCoeff_le {p : ℝ} (hp : 1 ≤ p)
     {g : UnitAddCircle → Matrix n n ℂ} (hg : ∀ i j, MemLp (fun t => g t i j) 2 haarAddCircle)
     {K : ℕ} {U : Fin K → UnitAddCircle → Matrix n n ℂ} (hU : ∀ k, Continuous (U k))
@@ -700,8 +619,8 @@ private theorem complexSchattenNorm_blockRow_matFourierCoeff_le {p : ℝ} (hp : 
     complexSchattenNorm (ENNReal.ofReal p)
         (blockRow fun k => matFourierCoeff (fun t => g t * U k t) (m k)) ≤
       √(∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p)) (g t) ^ 2 ∂haarAddCircle) *
-        √(avg fun ε : Fin K → Bool => ∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p))
-          (∑ k, coin (ε k) • U k t) ^ 2 ∂haarAddCircle) := by
+        √(∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p)) (blockRow fun k => U k t) ^ 2
+          ∂haarAddCircle) := by
   have hq0 : ENNReal.ofReal (2 * p) ≠ 0 := by
     rw [Ne, ENNReal.ofReal_eq_zero]
     linarith
@@ -718,23 +637,20 @@ private theorem complexSchattenNorm_blockRow_matFourierCoeff_le {p : ℝ} (hp : 
       complexSchattenNorm (ENNReal.ofReal (2 * p)) (blockRow fun k => U k t) :=
     complexSchattenNorm_blockRow_smul hq0 _ fun k => norm_fourier_apply_eq_one _ _
   rw [e]
-  refine (complexSchattenNorm_integral_mul_le hp hg (memLp_entry_of_continuous hQ)).trans ?_
+  refine (complexSchattenNorm_integral_mul_le hp hg (memLp_entry_of_continuous hQ)).trans_eq ?_
   simp only [hQn]
-  exact mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt (integral_blockRow_sq_le (by linarith) hU))
-    (Real.sqrt_nonneg _)
 
 /-- The first part of the proof of (δ), p. 250, with the norms of Theorem III.1, for the
-coefficients `∫ U_k h e_{−m_k}`: by Jensen's, Hölder's and the Cauchy–Schwarz inequality and
-(III.2), the column square function is at most
-`(E ∫ ‖Σ ε_k U_k‖_{S_{2p}}²)^{1/2} (∫ ‖h‖_{S_{2p}}²)^{1/2}`. -/
+coefficients `∫ U_k h e_{−m_k}`: by Jensen's, Hölder's and the Cauchy–Schwarz inequality, the column
+square function is at most `(∫ ‖Σ U_kᴴ U_k‖_{S_p})^{1/2} (∫ ‖h‖_{S_{2p}}²)^{1/2}`. -/
 private theorem complexSchattenNorm_blockCol_matFourierCoeff_le {p : ℝ} (hp : 1 ≤ p)
     {h : UnitAddCircle → Matrix n n ℂ} (hh : ∀ i j, MemLp (fun t => h t i j) 2 haarAddCircle)
     {K : ℕ} {U : Fin K → UnitAddCircle → Matrix n n ℂ} (hU : ∀ k, Continuous (U k))
     (m : Fin K → ℤ) :
     complexSchattenNorm (ENNReal.ofReal p)
         (blockCol fun k => matFourierCoeff (fun t => U k t * h t) (m k)) ≤
-      √(avg fun ε : Fin K → Bool => ∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p))
-          (∑ k, coin (ε k) • U k t) ^ 2 ∂haarAddCircle) *
+      √(∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p)) (blockCol fun k => U k t) ^ 2
+          ∂haarAddCircle) *
         √(∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p)) (h t) ^ 2 ∂haarAddCircle) := by
   have hq0 : ENNReal.ofReal (2 * p) ≠ 0 := by
     rw [Ne, ENNReal.ofReal_eq_zero]
@@ -752,10 +668,34 @@ private theorem complexSchattenNorm_blockCol_matFourierCoeff_le {p : ℝ} (hp : 
       complexSchattenNorm (ENNReal.ofReal (2 * p)) (blockCol fun k => U k t) :=
     complexSchattenNorm_blockCol_smul hq0 _ fun k => norm_fourier_apply_eq_one _ _
   rw [e]
-  refine (complexSchattenNorm_integral_mul_le hp (memLp_entry_of_continuous hP) hh).trans ?_
+  refine (complexSchattenNorm_integral_mul_le hp (memLp_entry_of_continuous hP) hh).trans_eq ?_
   simp only [hPn]
-  exact mul_le_mul_of_nonneg_right (Real.sqrt_le_sqrt (integral_blockCol_sq_le (by linarith) hU))
-    (Real.sqrt_nonneg _)
+
+private theorem avg_le_of_forall {K : ℕ} {f : (Fin K → Bool) → ℝ} {C : ℝ} (h : ∀ ε, f ε ≤ C) :
+    avg f ≤ C :=
+  (avg_mono h).trans_eq (avg_const C)
+
+/-- Lust-Piquard–Pisier, (III.1), p. 252, for the Paley projection and `C_E = C_p`:
+`∫ ‖Σ H_{2^k} H_{2^k}ᴴ‖_{S_p} ≤ C ∫ ‖h‖_{S_{2p}}²`, by (III.2) and (III.3). -/
+private theorem exists_integral_blockRow_paleyBlockClosed_le : ∃ C : ℝ, 0 < C ∧ ∀ (n : Type)
+    [Fintype n] [DecidableEq n] (p : ℝ), 1 ≤ p → p ≤ 2 → ∀ (h : UnitAddCircle → Matrix n n ℂ),
+    IsHardyTwo h → ∀ K : ℕ, ∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p))
+        (blockRow fun k : Fin K => paleyBlockClosed h k t) ^ 2 ∂haarAddCircle ≤
+      C * ∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p)) (h t) ^ 2 ∂haarAddCircle := by
+  obtain ⟨C, hC, hle⟩ := exists_integral_paleyBlockClosed_le
+  exact ⟨C, hC, fun n _ _ p hp1 hp2 h hh K => (integral_blockRow_sq_le (by linarith) fun k =>
+    continuous_paleyBlockClosed h k).trans (avg_le_of_forall (hle n p hp1 hp2 h hh K))⟩
+
+/-- Lust-Piquard–Pisier, (III.1), p. 252, "similarly for the `G'_k s`":
+`∫ ‖Σ G_{2^k}ᴴ G_{2^k}‖_{S_p} ≤ C ∫ ‖g‖_{S_{2p}}²`. -/
+private theorem exists_integral_blockCol_paleyBlockOpen_le : ∃ C : ℝ, 0 < C ∧ ∀ (n : Type)
+    [Fintype n] [DecidableEq n] (p : ℝ), 1 ≤ p → p ≤ 2 → ∀ (g : UnitAddCircle → Matrix n n ℂ),
+    IsHardyTwo g → ∀ K : ℕ, ∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p))
+        (blockCol fun k : Fin K => paleyBlockOpen g k t) ^ 2 ∂haarAddCircle ≤
+      C * ∫ t, complexSchattenNorm (ENNReal.ofReal (2 * p)) (g t) ^ 2 ∂haarAddCircle := by
+  obtain ⟨C, hC, hle⟩ := exists_integral_paleyBlockOpen_le
+  exact ⟨C, hC, fun n _ _ p hp1 hp2 g hg K => (integral_blockCol_sq_le (by linarith) fun k =>
+    continuous_paleyBlockOpen g k).trans (avg_le_of_forall (hle n p hp1 hp2 g hg K))⟩
 
 end SquareFunction
 
@@ -788,8 +728,8 @@ theorem paley_schatten_of_isHardyOne : ∃ M : ℝ, 0 < M ∧ ∀ (n : Type) [Fi
       complexSchattenNorm (ENNReal.ofReal p) (blockRow a) +
         complexSchattenNorm (ENNReal.ofReal p) (blockCol b) ≤
       M * ∫ t, complexSchattenNorm (ENNReal.ofReal p) (f t) ∂haarAddCircle := by
-  obtain ⟨C₁, hC₁, hclosed⟩ := exists_avg_integral_paleyBlockClosed_le
-  obtain ⟨C₂, hC₂, hopen⟩ := exists_avg_integral_paleyBlockOpen_le
+  obtain ⟨C₁, hC₁, hclosed⟩ := exists_integral_blockRow_paleyBlockClosed_le
+  obtain ⟨C₂, hC₂, hopen⟩ := exists_integral_blockCol_paleyBlockOpen_le
   refine ⟨√C₁ + √C₂, by positivity, ?_⟩
   intro n _ _ p hp1 hp2 f hf K
   -- `f = g h`, (α) and (β)
