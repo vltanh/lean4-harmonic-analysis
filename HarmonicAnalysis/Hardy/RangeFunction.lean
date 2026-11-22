@@ -287,17 +287,6 @@ theorem isOuter_iff_integral_log_norm_det {A : UnitAddCircle → Matrix n n ℂ}
 
 /-! ### Analytic range functions and Theorem 12 -/
 
-/-- Helson–Lowdenslager (1961), §10: `A ∈ H²` is left-outer if the closure in `L²` of the functions
-`(1 + P) A`, with `P` an analytic trigonometric polynomial without constant term, contains a
-constant, that is, if the transposed function is outer. -/
-def IsLeftOuter (A : UnitAddCircle → Matrix m n ℂ) : Prop := IsOuter fun t => (A t)ᵀ
-
-/-- A range function, a function whose values are subspaces of `ℂᵐ`, is analytic if it is almost
-everywhere the range of a function of `H²`. -/
-def IsAnalyticRange (𝔥 : UnitAddCircle → Submodule ℂ (m → ℂ)) : Prop :=
-  ∃ (k : ℕ) (A : UnitAddCircle → Matrix m (Fin k) ℂ), IsHardyTwo A ∧
-    ∀ᵐ t ∂haarAddCircle, LinearMap.range (A t).mulVecLin = 𝔥 t
-
 /-- A range function is conjugate analytic if it is almost everywhere the range of the adjoint of a
 function of `H²`. (Sarason (1967) does not define this, and refers to Helson's book for range
 functions; this is the meaning adopted here.) -/
@@ -432,11 +421,6 @@ theorem IsAnalyticRange.exists_isometry {𝔥 : UnitAddCircle → Submodule ℂ 
 
 /-! ### The determinant on the range -/
 
-/-- `Δ W`, the determinant of the restriction of the Hermitian matrix `W` to its range: the product
-of its eigenvalues different from zero. -/
-noncomputable def rangeDet (W : Matrix n n ℂ) : ℝ :=
-  ((W.charpoly.roots.filter (· ≠ 0)).prod).re
-
 /-- The roots different from zero of `X^k p` are those of `p`. -/
 private theorem filter_roots_X_pow_mul {p : Polynomial ℂ} (hp : p ≠ 0) (k : ℕ) :
     (Polynomial.X ^ k * p).roots.filter (· ≠ 0) = p.roots.filter (· ≠ 0) := by
@@ -521,6 +505,16 @@ private theorem posDef_conjTranspose_mul_mul {q : ℕ} {W : Matrix m m ℂ} {V :
     _ ≤ (V * (Vᴴ * W * V)).rank := Matrix.rank_mul_le_left _ _
     _ ≤ (Vᴴ * W * V).rank := Matrix.rank_mul_le_right _ _
 
+/-- `Δ W` is the determinant of `W` as a transformation of its range: `Δ W = det (Vᴴ W V)` if the
+columns of `V` are an orthonormal basis of the range of the positive semidefinite matrix `W`. -/
+theorem rangeDet_eq_det_conjTranspose_mul_mul {q : ℕ} {W : Matrix m m ℂ} {V : Matrix m (Fin q) ℂ}
+    (hW : W.PosSemidef) (hV : Vᴴ * V = 1)
+    (h : LinearMap.range V.mulVecLin = LinearMap.range W.mulVecLin) :
+    rangeDet W = (Vᴴ * W * V).det.re := by
+  obtain ⟨h1, h2⟩ := posDef_conjTranspose_mul_mul hW hV h
+  conv_lhs => rw [← h2]
+  exact rangeDet_mul_mul_conjTranspose hV h1
+
 omit [DecidableEq m] in
 /-- The entries of `Vᴴ W V` are integrable if those of `W` are and `V` is bounded. -/
 private theorem integrable_conjTranspose_mul_mul_of_bounded {q : ℕ}
@@ -572,9 +566,8 @@ private theorem exists_mul_conjTranspose_eq {W : UnitAddCircle → Matrix n n �
     exact posDef_conjTranspose_mul_mul h1 h2 h3
   have hlogY : Integrable (fun t => Real.log (((V t)ᴴ * W t * V t)ᵀ).det.re) haarAddCircle := by
     refine hlog.congr ?_
-    filter_upwards [hVV, hY] with t h1 h2
-    conv_lhs => rw [← h2.2]
-    rw [rangeDet_mul_mul_conjTranspose h1 h2.1, Matrix.det_transpose]
+    filter_upwards [hW, hVV, hVW] with t h1 h2 h3
+    rw [rangeDet_eq_det_conjTranspose_mul_mul h1 h2 h3, Matrix.det_transpose]
   obtain ⟨B, hB, -, hBY, -⟩ := exists_isOuter_of_integrable_log_det
     (W := fun t => ((V t)ᴴ * W t * V t)ᵀ)
     (fun i j => integrable_conjTranspose_mul_mul_of_bounded hint

@@ -23,7 +23,8 @@ Cauchy's theorem on a half annulus; by dominated convergence `H_{ε,R} f → �
 (`tendsto_truncatedHilbert_fourierInv`). On a UMD space `X`, with a `UMD_p` constant `β`,
 `1 < p < ∞`, and for `f = 𝓕⁻ G ∈ L^p` with `G ∈ L¹`, that is, `f ∈ L^p ∩ Ľ¹`,
 
-`‖𝓕⁻ (sgn · G)‖_p ≤ (4 β² + 11) ‖𝓕⁻ G‖_p` (`eLpNorm_fourierInv_sign_le`).
+`‖𝓕⁻ (−i sgn · G)‖_p = ‖𝓕⁻ (sgn · G)‖_p ≤ (4 β² + 11) ‖𝓕⁻ G‖_p`
+(`eLpNorm_fourierInv_neg_I_sign_le`, `eLpNorm_fourierInv_sign_le`).
 
 This is the inequality for the Hilbert transform on the class `L^p ∩ Ľ¹`; its extension to all of
 `L^p (ℝ; X)` by density is not carried out here.
@@ -550,17 +551,17 @@ private theorem fourierInv_neg_I_smul (G : ℝ → X) :
   ring
 
 /-- **The Hilbert transform on UMD spaces** (HNVW I, Theorem 5.1.13 and Proposition 5.2.2): the
-inequality `‖𝓕⁻ (sgn · G)‖_p ≤ (4 β² + 11) ‖𝓕⁻ G‖_p`, `1 < p < ∞`, for the functions
-`f = 𝓕⁻ G ∈ L^p` with `G ∈ L¹` (the book's `L^p ∩ Ľ¹`). The extension to `L^p (ℝ; X)` by density is
-not part of the statement.
+inequality `‖H f‖_p ≤ (4 β² + 11) ‖f‖_p`, `1 < p < ∞`, for the functions `f = 𝓕⁻ G ∈ L^p` with
+`G ∈ L¹` (the book's `L^p ∩ Ľ¹`), where `H f = 𝓕⁻ (−i sgn · G)`. The extension to `L^p (ℝ; X)` by
+density is not part of the statement.
 
 Departure from the source: the book has `H_{ε,R} f → H f` in `L^p`. Here the limit is the pointwise
 one of Proposition 5.2.2, for `ε = 2^{−i}` and `R = 2^i`, and the uniform bound of the truncations
 passes to it by Fatou's lemma. -/
-theorem eLpNorm_fourierInv_sign_le [CompleteSpace X] {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞}
+theorem eLpNorm_fourierInv_neg_I_sign_le [CompleteSpace X] {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞}
     (hβ : IsUMDBound X p β) {G : ℝ → X} (hG : Integrable G)
     (hf : MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume) :
-    eLpNorm (𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G ξ) (ENNReal.ofReal p) volume ≤
+    eLpNorm (𝓕⁻ fun ξ => (-Complex.I * (Real.sign ξ : ℂ)) • G ξ) (ENNReal.ofReal p) volume ≤
       hilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
   have hε : ∀ i : ℕ, 0 < ((2 : ℝ) ^ i)⁻¹ := fun i => by positivity
   -- the truncations are continuous functions
@@ -578,14 +579,22 @@ theorem eLpNorm_fourierInv_sign_le [CompleteSpace X] {p : ℝ} (hp : 1 < p) {β 
         rw [norm_mul, norm_neg, Complex.norm_I, one_mul, Complex.norm_real]
         exact abs_sign_le ξ
   -- Fatou's lemma
-  have hfatou := (Lp.eLpNorm_lim_le_liminf_eLpNorm (p := ENNReal.ofReal p) (μ := volume)
+  exact (Lp.eLpNorm_lim_le_liminf_eLpNorm (p := ENNReal.ofReal p) (μ := volume)
     (fun i => (hcont i).aestronglyMeasurable) _
     (continuous_fourierInv_of_integrable hsym).aestronglyMeasurable
     (ae_of_all _ fun x => (tendsto_truncatedHilbert_fourierInv hG x).comp tendsto_two_pow)).trans
       ((liminf_le_liminf (Eventually.of_forall fun i =>
         eLpNorm_truncatedHilbert_le hp hβ hf (hε i) (2 * i))).trans (liminf_const _).le)
-  rw [fourierInv_neg_I_smul, eLpNorm_const_smul, enorm_neg, ← ofReal_norm, Complex.norm_I,
-    ENNReal.ofReal_one, one_mul] at hfatou
-  exact hfatou
+
+/-- `eLpNorm_fourierInv_neg_I_sign_le` for the multiplier `sgn`:
+`‖𝓕⁻ (sgn · G)‖_p ≤ (4 β² + 11) ‖𝓕⁻ G‖_p`. -/
+theorem eLpNorm_fourierInv_sign_le [CompleteSpace X] {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞}
+    (hβ : IsUMDBound X p β) {G : ℝ → X} (hG : Integrable G)
+    (hf : MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume) :
+    eLpNorm (𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G ξ) (ENNReal.ofReal p) volume ≤
+      hilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
+  have h := eLpNorm_fourierInv_neg_I_sign_le hp hβ hG hf
+  rwa [fourierInv_neg_I_smul, eLpNorm_const_smul, enorm_neg, ← ofReal_norm, Complex.norm_I,
+    ENNReal.ofReal_one, one_mul] at h
 
 end HarmonicAnalysis

@@ -29,4 +29,9 @@ globs = ["HarmonicAnalysis.*"]
 [[lean_lib]]
 name = "Palomar"
 srcDir = "palomar"
-globs = ["FourierMultipliers.+"]
+globs = [
+  "FourierMultipliers.+",
+  "HardyFactorization.+",
+  "PaleySchatten.+",
+  "VectorValuedLittlewoodPaley.+",
+]

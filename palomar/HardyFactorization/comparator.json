@@ -1,0 +1,20 @@
+{
+  "challenge_module": "HardyFactorization.Challenge",
+  "solution_module": "HardyFactorization.Solution",
+  "theorem_names": [
+    "HardyFactorizationChallenge.jensen",
+    "HardyFactorizationChallenge.exists_outer",
+    "HardyFactorizationChallenge.outer_range",
+    "HardyFactorizationChallenge.outer_closure",
+    "HardyFactorizationChallenge.szego",
+    "HardyFactorizationChallenge.spectral_factorization",
+    "HardyFactorizationChallenge.outer_iff",
+    "HardyFactorizationChallenge.analytic_range",
+    "HardyFactorizationChallenge.factorization",
+    "HardyFactorizationChallenge.riesz_factorization",
+    "HardyFactorizationChallenge.rangeDet_eq"
+  ],
+  "definition_names": [],
+  "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"],
+  "enable_nanoda": true
+}

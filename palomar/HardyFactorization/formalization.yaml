@@ -1,0 +1,344 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/mathlib-initiative/formalization.yaml/main/schema/formalization.schema.json
+version: "v0.4"
+
+project:
+  name: "Szegő's theorem and the Riesz factorization for matrix-valued functions, in Lean"
+  description: >-
+    Lean 4 proofs of theorems on matrix-valued functions on the circle, of Helson and Lowdenslager
+    (1958, 1961) and Sarason (1967).
+
+
+    Szegő's theorem for a positive semidefinite W with integrable entries (1958, Theorem 8, for
+    absolutely continuous measures): exp((1/n) int log det W) is the infimum of int (1/n) tr(Q* W Q)
+    over the analytic polynomials Q whose constant coefficient has determinant 1, and the infimum is
+    0 if log det W is not integrable. The factorization W = B* B with B in H^2, det B^(0) != 0,
+    exists exactly if int log det W > -infinity, and then with B outer (Theorem 9).
+
+
+    Outer functions and range functions (1961): the outer factor of A in H^2 of any shape, the range
+    of an outer function (Theorem 9), the closure of A Q (Theorem 10), the criterion int log |det A|
+    = log |det A^(0)| (Theorem 8), analytic range functions as ranges of left-outer isometries
+    (Theorem 12), and the factorization of positive functions of any rank (Theorem 13).
+
+
+    Riesz factorization (Sarason, Theorem 4, for matrices): every A in H^1 is A_1 A_2 with A_1, A_2
+    in H^2, A_2* A_2 = (A* A)^(1/2) and A_1* A_1 = A_2 A_2*, so that the squares of the S_{2p} norms
+    of A_1 and A_2 are the S_p norm of A, at almost every point and for every p > 0.
+  authors:
+    - "The-Anh Vu-Le"
+  license: "Apache-2.0"
+  responsible_maintainers:
+    - "The-Anh Vu-Le"
+
+classification:
+  arxiv: ["math.FA", "math.CV"]
+  msc2020: ["47A68", "30H10", "47A56", "42B30", "60G25", "15A23", "68V20"]
+
+sources:
+  - title: "Prediction theory and Fourier series in several variables"
+    authors:
+      - "Henry Helson"
+      - "David Lowdenslager"
+    id: "Acta Math. 99 (1958), 165-202"
+    type: "paper"
+    location: "https://doi.org/10.1007/bf02392425"
+    relationship: "formalizes"
+    note: >-
+      Theorem 2 with its corollary (pp. 175-176, for the circle), Theorem 8 (pp. 186-193, for
+      absolutely continuous measures) and Theorem 9 (pp. 193-194). Proved by the paper's arguments:
+      Lemma 5 and (58), (59), Lemma 6, (68), (76), Fejér means; of Theorem 1 only (23), p. 174. The
+      departures are in fidelity.divergences. Theorem 10 (pp. 195-196: a function F of H^1 with a
+      non-singular constant coefficient is a product of functions of H^2) is a case of Sarason's
+      Theorem 4, by which it is proved here, not by the paper's proof; that the condition on the
+      coefficient can be dropped, which the paper leaves open, is due to Sarason, whose proof ends
+      along the lines of this one (his p. 200).
+    author_endorsement: "not-contacted"
+  - title: "Prediction theory and Fourier series in several variables. II"
+    authors:
+      - "Henry Helson"
+      - "David Lowdenslager"
+    id: "Acta Math. 106 (1961), 175-213"
+    type: "paper"
+    location: "https://doi.org/10.1007/BF02545786"
+    relationship: "formalizes"
+    note: >-
+      Sections 9-11: the outer factor (pp. 202-203 and 207), Theorems 8, 9, 10 (pp. 204-205), 12
+      (pp. 207-208) and 13 (p. 209), by the paper's proofs; the departures are in
+      fidelity.divergences. Not formalized: the corollary of Theorem 10, Theorems 11 and 14-17, and
+      Sections 1-8.
+    author_endorsement: "not-contacted"
+  - title: "Generalized interpolation in H^infinity"
+    authors:
+      - "Donald Sarason"
+    id: "Trans. Amer. Math. Soc. 127 (1967), 179-203"
+    type: "paper"
+    location: "https://doi.org/10.1090/s0002-9947-1967-0208383-8"
+    relationship: "formalizes"
+    note: >-
+      Theorem 4 (Section 10, pp. 198-201) in finite dimension, by its proof (Lemmas 10.1, 10.3, 10.4
+      and the completion of the proof); Lemmas 10.2 and 10.5, for infinite dimension, are not
+      needed. The norm equalities are a consequence that the paper does not state.
+    author_endorsement: "not-contacted"
+  - title: "Lectures on invariant subspaces"
+    authors:
+      - "Henry Helson"
+    id: "Academic Press (1964)"
+    type: "book"
+    relationship: "background"
+    note: >-
+      Cited by Sarason for Lemmas 10.1 and 10.3. Not accessible and not consulted: Lemma 10.1 is, in
+      finite dimension and for B* B in place of A A*, Theorem 13 of Helson and Lowdenslager (1961),
+      and Lemma 10.3 is proved from Sections 9 and 10 of that paper.
+  - title: "Banach spaces of analytic functions"
+    authors:
+      - "Kenneth Hoffman"
+    id: "Prentice-Hall (1962)"
+    type: "book"
+    relationship: "background"
+    note: >-
+      Cited by Sarason for Szegő's theorem (an outer function of given modulus) and for the quotient
+      of a function by an outer function. Not accessible and not consulted: the first is Theorem 9
+      of Helson and Lowdenslager (1958), and the second is proved by the argument at the end of the
+      proof of Theorem 4.
+  - title: "On the factorization of matrices"
+    authors:
+      - "Norbert Wiener"
+    id: "Comment. Math. Helv. 29 (1955), 97-111"
+    type: "paper"
+    location: "https://doi.org/10.1007/bf02564273"
+    relationship: "background"
+    note: >-
+      The origin of Theorem 9 of Helson and Lowdenslager (1958), according to them (p. 194). Not
+      consulted; the proof is theirs.
+  - title: "The prediction theory of multivariate stochastic processes, I: The regularity condition; II: The linear predictor"
+    authors:
+      - "Norbert Wiener"
+      - "Pesi Masani"
+    id: "Acta Math. 98 (1957), 111-150; 99 (1958), 93-137"
+    type: "paper"
+    location: "https://doi.org/10.1007/BF02404472"
+    relationship: "background"
+    note: >-
+      A complete exposition of the results of Section 9 of Helson and Lowdenslager (1961), according
+      to them (p. 198); left-outer functions are its optimal factors (p. 207). Not consulted; the
+      proofs here follow Helson and Lowdenslager, with the steps that they leave out
+      (fidelity.divergences).
+
+related_formalizations:
+  - id: "https://github.com/vltanh/lean4-banach-probability"
+    relationship: "builds-on"
+    note: >-
+      Lean 4, same maintainer. The Solution uses its Schatten norms of complex matrices; their
+      definition is restated in the Challenge and is equal by definition to the one of that package
+      (complexSchattenNorm_eq in the Solution), whose entry SchattenClasses identifies the singular
+      values (complexSchattenNorm_eq_singularValues). No theorem of its entries is restated.
+  - id: "https://github.com/TauCetiProject/TauCeti"
+    relationship: "independent"
+    note: >-
+      Lean 4. H^2 of C^r-valued functions and block Toeplitz operators. Szegő's theorem for matrices
+      and the factorization of matrix-valued functions were not seen there. (Search of 22 November
+      2026; read as text, not built. No code of it is used.)
+  - id: "https://github.com/SHW715/HardySpace_formalization"
+    relationship: "independent"
+    note: >-
+      Lean 4. Scalar Hardy spaces of the disc, canonical factorization. (Search of 22 November 2026;
+      read as text, not built. No code of it is used.)
+  - id: "https://github.com/michael-haufschild-gib/hgt"
+    relationship: "independent"
+    note: >-
+      Lean 4. Scalar Hardy spaces, inner-outer factorization. (Search of 22 November 2026; read as
+      text, not built. No code of it is used.)
+  - id: "https://github.com/bjbraams/lean-CA"
+    relationship: "independent"
+    note: >-
+      Lean 4. Scalar Hardy spaces, Riesz factorization. (Search of 22 November 2026; read as text,
+      not built. No code of it is used.)
+
+status:
+  scope: >-
+    Formalized (the 11 theorems that Comparator checks), for functions on the circle with values in
+    complex matrices of finite size: Jensen's inequality for scalar functions of H^1; the outer
+    factor of a function of H^2 of any shape; the range of an outer function and the closure of A Q;
+    Szegő's theorem for integrable positive semidefinite functions, with the infimum 0 when log det
+    W is not integrable; the factorization W = B* B of full rank, with the criterion and an outer
+    factor; the criterion for square outer functions; analytic range functions; the factorization of
+    positive functions of any rank; the Riesz factorization of H^1 with the two identities of
+    Sarason's Theorem 4 and the equalities of the Schatten norms; what the determinant on the range
+    is.
+
+
+    Not formalized: the singular part of a matrix-valued measure in Szegő's theorem; Theorem 2 of
+    the 1958 paper on the torus; the corollary of Theorem 10 of 1961, the uniqueness of the outer
+    factor (Theorem 11) and Theorems 14-17; values in operators of infinite dimension (Sarason's
+    Lemmas 10.2 and 10.5); the functions as boundary values of analytic functions in the disc.
+  sorry_count: 0
+  sorry_in_definitions: 0
+  axioms: []
+
+automation:
+  methods:
+    - method: "agent"
+      models: ["claude-opus-5-5"]
+      framework: "Claude Code 2.1.330 (VS Code extension, Claude Agent SDK)"
+      tool_setup: >-
+        The formalize-math-paper skill (https://github.com/vltanh/formalize-math-paper, version
+        4.3.2, commit 8e884d5); Claude Code sessions and sub-agents that wrote the statements and
+        the proofs of the library and compared them with the sources; the number of agents was not
+        tracked for this library alone. This entry by one agent, with an independent reviewer agent.
+        Lean v4.36.0-rc2, Mathlib v4.36.0-rc2.
+      cost:
+        wall_time: >-
+          about 5 hours between the first and the last commit of the vector-valued part of the
+          library (22 November 2026, git log), with other work in parallel, and about 1 hour for
+          the three entries of this part together, with the additions to the library that they
+          needed and the review; agent time not tracked
+        spend_usd: "not tracked"
+        hardware: "local machine (20 cores, 62 GB RAM) and API"
+      prompting_notes: >-
+        Instructions: state the theorems of the cited sources in their general form as far as
+        feasible, follow the sources' proofs, record every deviation, use only Mathlib and packages
+        built on it.
+  spend_usd: "not tracked"
+  notes: >-
+    The AI system wrote the code and the documents. No person has reviewed the statements or the
+    proofs; Lean has checked the proofs. Independent AI agents compared the proofs of the library
+    with the cited sources, and one compared the statements of this entry with them.
+
+fidelity:
+  divergences: >-
+    Helson and Lowdenslager 1958 and 1961, statements. Functions on R/Z with values in matrices
+    indexed by finite types, defined everywhere, with almost everywhere statements; the unnormalized
+    trace, divided by n, where the papers have tr 1 = 1 (tr log W is (1/n) log det W there). The
+    papers consider W = B B*, left-outer functions and rows; Theorems 8 and 9 of 1958 and the outer
+    factor and Theorems 8, 9, 10 of 1961 are stated for the transposed functions (W = B* B,
+    right-outer functions, columns; 1958, p. 195, itself reverses the order of the factors), and
+    Theorem 9 of 1961 with ranges instead of null-spaces. A left-outer function is one whose
+    transpose is outer, where the 1961 paper passes between the two kinds with A(e^{-ix})*. The
+    constant function in the closure that defines outer functions is taken to be the constant
+    coefficient, as the paper remarks it must be. "int log det W > -infinity" is the integrability
+    of log det W with W positive definite almost everywhere (the positive part is integrable). 1958,
+    Theorem 2: for the circle only, where the exponents -(m, n), (m, n) in a half-plane, of the
+    paper are the positive integers; with b != 0 (for b = 0 the inequality is trivial), and with the
+    corollary (log |f| is integrable); that f != 0 almost everywhere is stated because Lean's log 0
+    is 0. 1958, Theorem 8: for absolutely continuous measures only; the matrices A_0 of determinant
+    one are the constant coefficients of the polynomials. 1958, Theorem 9: the positivity of W is
+    not used, since each of the two conditions implies it. 1961, pp. 202-203, 207: the outer factor
+    with the additional assertion of p. 207 that its rank is the number of its rows; 1961, Theorem
+    8: with the integrability of log |det A|. 1961, Theorem 10: for functions F of any number of
+    columns, and as an equivalence that includes that the closure is in H^2. 1961, Theorem 12:
+    isometries, which the proof gives, where the statement has partial isometries. 1961, Theorem 13:
+    the range functions are functions with values in the subspaces of C^n, equal to ranges almost
+    everywhere; "int log Delta W > -infinity" is the integrability of log Delta W.
+
+
+    Helson and Lowdenslager, proofs: the papers', with these departures, recorded in the docstrings
+    of the modules. 1958: the space L^2_W is realized in L^2 by W^{1/2}; the limiting process for
+    int log det W = -infinity is carried out once, for the infimum of Theorem 8 (in Theorem 2, for
+    the inequality itself), not in Lemmas 1, 2, 4 and 5; in the proof of Lemma 2 (p. 173), which
+    Lemma 5 repeats, the bounded increasing sequences are truncations min(u, n), min(v, n), and the
+    one with the larger integral is scaled, since for these the paper's "there is an m" fails when
+    the positive part is bounded and the negative part is not; in (68), B is determined up to a
+    constant unitary factor, so det A_0 = 1 by a constant of modulus 1; Fejér means along a
+    subsequence that converges almost everywhere; of Theorem 1 only (23), with bounded instead of
+    continuous analytic functions. 1961: that B has full rank by the argument of p. 207, whose last
+    step (a factor of W with r columns makes the rank of the process at most r) is proved here
+    because the paper does not prove it; in Theorem 8 the infimum (44) is computed from the limit
+    A_0, not from the element of smallest norm; in Theorem 12, range V = range B because D is
+    invertible, and U has rank U columns; in the necessity of Theorem 13, V is an isometry, not
+    shown to be left-outer (the paper says that this is true but not easy to prove, p. 208), and the
+    integrability is that of Theorem 9 of 1958, not Theorem 8; (131) lacks two logarithms.
+
+
+    Sarason. Theorem 4 for matrices of any shape, where the paper has operators on one separable
+    Hilbert space (in finite dimension and with a non-singular constant coefficient, the
+    factorization A = A_1 A_2 is Theorem 10 of Helson and Lowdenslager (1958), cited on p. 199); (A*
+    A)^(1/2) is expressed by (A_2* A_2)^2 = A* A, which is equivalent because A_2* A_2 is positive
+    semidefinite. The equalities of the norms for every 0 < p < infinity are not in the paper; they
+    follow from its two identities. In the proof: Lemma 10.3, quoted there from Helson's book, from
+    Sections 9 and 10 of Helson and Lowdenslager (1961); "conjugate analytic", which the paper does
+    not define, is defined (the range of the adjoint of a function of H^2); the partial isometry J
+    by an explicit formula, which makes it measurable, and J* J A_2* = A_2* by computation; Szegő's
+    theorem and the quotient by an outer function, quoted from Hoffman's book, from Theorem 9 of
+    Helson and Lowdenslager (1958) and the argument of the proof of Theorem 4; the norm of A(z) in
+    the weight is the sum of the |a_ij|.
+
+review:
+  status: "agent-reviewed"
+  reviewers:
+    - "Claude Opus 5.5 (independent agents)"
+  notes: >-
+    No human review. Independent AI agents compared the proofs of the library with the cited
+    sources. Another one compared the statements of this entry, its docstrings and this file with
+    the sources (page images for the scans) and found no wrong, vacuous or weakened statement; its
+    remarks on attributions, page numbers, divergences and wording were followed, and it checked the
+    corrected entry again, with a few further remarks on the new text, none on a statement, which
+    were followed.
+
+alignment:
+  namespace: "HardyFactorizationChallenge"
+  statements:
+    - source: "Helson-Lowdenslager 1958, Theorem 2 and its corollary (for the circle)"
+      lean: "HardyFactorizationChallenge.jensen"
+      module: "HardyFactorization.Challenge"
+      status: "partial"
+      note: "For the circle; there for half-planes of lattice points on the torus."
+    - source: "Helson-Lowdenslager 1961, pp. 202-203 and 207"
+      lean: "HardyFactorizationChallenge.exists_outer"
+      module: "HardyFactorization.Challenge"
+      status: "proved"
+      note: "Transposed; with the rank of the constant coefficient."
+    - source: "Helson-Lowdenslager 1961, Theorem 9"
+      lean: "HardyFactorizationChallenge.outer_range"
+      module: "HardyFactorization.Challenge"
+      status: "proved"
+      note: "Transposed: ranges of right-outer functions instead of null-spaces of left-outer ones."
+    - source: "Helson-Lowdenslager 1961, Theorem 10"
+      lean: "HardyFactorizationChallenge.outer_closure"
+      module: "HardyFactorization.Challenge"
+      status: "proved"
+      note: "Transposed; for functions with any number of columns."
+    - source: "Helson-Lowdenslager 1958, Theorem 8 (absolutely continuous measures)"
+      lean: "HardyFactorizationChallenge.szego"
+      module: "HardyFactorization.Challenge"
+      status: "partial"
+      note: >-
+        Transposed; without the singular part of the measure, which by (53) does not change the
+        infimum.
+    - source: "Helson-Lowdenslager 1958, Theorem 9"
+      lean: "HardyFactorizationChallenge.spectral_factorization"
+      module: "HardyFactorization.Challenge"
+      status: "proved"
+      note: "Transposed; B is moreover outer."
+    - source: "Helson-Lowdenslager 1961, Theorem 8"
+      lean: "HardyFactorizationChallenge.outer_iff"
+      module: "HardyFactorization.Challenge"
+      status: "proved"
+      note: "Transposed; with the integrability of log |det A|."
+    - source: "Helson-Lowdenslager 1961, Theorem 12"
+      lean: "HardyFactorizationChallenge.analytic_range"
+      module: "HardyFactorization.Challenge"
+      status: "proved"
+      note: "Isometries instead of partial isometries, as in the proof."
+    - source: "Helson-Lowdenslager 1961, Theorem 13"
+      lean: "HardyFactorizationChallenge.factorization"
+      module: "HardyFactorization.Challenge"
+      status: "proved"
+      note: "Matrices of any shape for the factor."
+    - source: "Sarason 1967, Theorem 4 (finite dimension)"
+      lean: "HardyFactorizationChallenge.riesz_factorization"
+      module: "HardyFactorization.Challenge"
+      status: "partial"
+      note: >-
+        Matrices; with the equalities of the Schatten norms, a consequence that the paper does not
+        state. Contains Helson-Lowdenslager 1958, Theorem 10 (the factorization when the constant
+        coefficient is non-singular).
+    - source: "a check of the definitions"
+      lean: "HardyFactorizationChallenge.rangeDet_eq"
+      module: "HardyFactorization.Challenge"
+      status: "proved"
+      note: >-
+        The determinant of a positive semidefinite matrix on its range, computed in an orthonormal
+        basis of the range.
+
+acknowledgements: >-
+  Mathlib; BanachProbability; Lean's Comparator and the NanoDa kernel; Palomar's validation scripts.

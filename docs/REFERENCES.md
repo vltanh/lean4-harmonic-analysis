@@ -83,7 +83,7 @@ In alphabetical order. Entries that the [README](../README.md) cites by a key be
   Anal. 250 (2007), 588–624, [doi:10.1016/j.jfa.2007.05.014](https://doi.org/10.1016/j.jfa.2007.05.014).
 - [HL1] H. Helson, D. Lowdenslager, *Prediction theory and Fourier series in several variables*, Acta Math.
   99 (1958), 165–202, [doi:10.1007/bf02392425](https://doi.org/10.1007/bf02392425): Theorem 2, (58), (59),
-  Lemmas 5 and 6, (68), Theorems 8 and 9.
+  Lemmas 5 and 6, (68), Theorems 8 and 9; Theorem 10 is a case of [S, Theorem 4].
 - [HL2] H. Helson, D. Lowdenslager, *Prediction theory and Fourier series in several variables. II*, Acta
   Math. 106 (1961), 175–213, [doi:10.1007/BF02545786](https://doi.org/10.1007/BF02545786): §§9–11,
   Theorems 8–10, 12 and 13.
@@ -94,7 +94,7 @@ In alphabetical order. Entries that the [README](../README.md) cites by a key be
   [doi:10.1007/978-3-319-48520-1](https://doi.org/10.1007/978-3-319-48520-1): for the scalar part, Lemma
   1.2.30, Proposition 1.2.32, Lemma 2.4.8, Proposition 2.4.23, Definitions 5.3.1 and 5.3.3, Propositions
   5.3.7, 5.7.1 and 5.7.4, Lemma 5.7.5, Corollary 5.7.6; for the vector-valued part, Sections 5.1–5.3 and
-  5.7, Propositions 1.2.22, 1.3.1, 3.2.10, Lemma 2.4.8.
+  5.7, Propositions 1.2.22, 1.3.1, 3.2.10 and 4.2.3, Lemma 2.4.8, Corollary 4.5.15.
 - [HNVW II] T. Hytönen, J. van Neerven, M. Veraar, L. Weis, *Analysis in Banach Spaces, Volume II*,
   Ergebnisse der Mathematik 67, Springer, 2017,
   [doi:10.1007/978-3-319-69808-3](https://doi.org/10.1007/978-3-319-69808-3): Theorem 6.1.13.
@@ -123,7 +123,7 @@ In alphabetical order. Entries that the [README](../README.md) cites by a key be
   (1986), 289–292, [Zbl 0592.47038](https://zbmath.org/?q=an:0592.47038). Not consulted.
 - [LPP] F. Lust-Piquard, G. Pisier, *Non commutative Khintchine and Paley inequalities*, Ark. Mat. 29
   (1991), 241–260, [doi:10.1007/BF02384340](https://doi.org/10.1007/BF02384340): Theorems 0.1,
-  II.1 a) (i) and III.1 (i), Corollary III.4, Remark III.5, pp. 242–243, 245–255.
+  0.3, II.1 a) (i) and III.1 (i), Corollary III.4, Remark III.5, pp. 242–243, 245–255.
 - L. Mackey, M. I. Jordan, R. Y. Chen, B. Farrell, J. A. Tropp, *Matrix concentration inequalities via
   the method of exchangeable pairs*, Ann. Probab. 42 (2014), 906–945,
   [doi:10.1214/13-AOP892](https://doi.org/10.1214/13-AOP892),
@@ -135,7 +135,7 @@ In alphabetical order. Entries that the [README](../README.md) cites by a key be
   [doi:10.4064/sm-58-1-45-90](https://doi.org/10.4064/sm-58-1-45-90).
 - T. R. McConnell, *On Fourier multiplier transformations of Banach-valued functions*, Trans. Amer.
   Math. Soc. 285 (1984), 739–757,
-  [doi:10.1090/s0002-9947-1984-0752501-x](https://doi.org/10.1090/s0002-9947-1984-0752501-x).
+  [doi:10.1090/s0002-9947-1984-0752501-x](https://doi.org/10.1090/s0002-9947-1984-0752501-x). Not consulted.
 - [NV] F. Nazarov, A. Volberg, *Heating of the Ahlfors–Beurling operator, and estimates of its norm*,
   St. Petersburg Math. J. 15 (2004), 563–573,
   [doi:10.1090/S1061-0022-04-00822-2](https://doi.org/10.1090/S1061-0022-04-00822-2).
@@ -176,4 +176,5 @@ In alphabetical order. Entries that the [README](../README.md) cites by a key be
   [doi:10.1007/bf02564273](https://doi.org/10.1007/bf02564273). Not consulted.
 - N. Wiener, P. Masani, *The prediction theory of multivariate stochastic processes I: The regularity
   condition*, Acta Math. 98 (1957), 111–150,
-  [doi:10.1007/BF02404472](https://doi.org/10.1007/BF02404472).
+  [doi:10.1007/BF02404472](https://doi.org/10.1007/BF02404472); *II: The linear predictor*, Acta Math. 99
+  (1958), 93–137, [doi:10.1007/BF02392423](https://doi.org/10.1007/BF02392423). Not consulted.

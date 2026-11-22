@@ -1051,22 +1051,25 @@ theorem eLpNorm_circPoly_multiplier_le [CompleteSpace X] [CompleteSpace Y] {p : 
 
 /-! ### Dilations -/
 
+/-- `(F (ρ ·))ˇ (x) = ρ⁻¹ Fˇ (ρ⁻¹ x)`. -/
+theorem fourierInv_comp_mul_left (F : ℝ → Y) {ρ : ℝ} (hρ : 0 < ρ) :
+    (𝓕⁻ fun ξ => F (ρ * ξ)) = ρ⁻¹ • fun x => 𝓕⁻ F (ρ⁻¹ * x) := by
+  funext x
+  have h2 := Measure.integral_comp_mul_left (fun v : ℝ =>
+    Complex.exp (((2 * Real.pi * (v * (ρ⁻¹ * x)) : ℝ) : ℂ) * Complex.I) • F v) ρ
+  rw [abs_of_pos (inv_pos.2 hρ)] at h2
+  rw [Pi.smul_apply, Real.fourierInv_eq', Real.fourierInv_eq']
+  simp only [RCLike.inner_apply, conj_trivial, mul_comm _ (ρ⁻¹ * x)] at h2 ⊢
+  rw [← h2]
+  refine integral_congr_ae (ae_of_all _ fun v => ?_)
+  simp only
+  congr 4
+  field_simp
+
 /-- `‖(F (ρ ·))ˇ‖_p = ρ^{1/p − 1} ‖F ˇ‖_p`. -/
 private theorem eLpNorm_fourierInv_dilate {p : ℝ} (hp : 0 < p) (F : ℝ → Y) {ρ : ℝ} (hρ : 0 < ρ) :
     eLpNorm (𝓕⁻ fun ξ => F (ρ * ξ)) (ENNReal.ofReal p) volume =
       ‖ρ⁻¹‖ₑ * (ENNReal.ofReal ρ ^ (1 / p) * eLpNorm (𝓕⁻ F) (ENNReal.ofReal p) volume) := by
-  have h1 : (𝓕⁻ fun ξ => F (ρ * ξ)) = ρ⁻¹ • fun x => 𝓕⁻ F (ρ⁻¹ * x) := by
-    funext x
-    have h2 := Measure.integral_comp_mul_left (fun v : ℝ =>
-      Complex.exp (((2 * Real.pi * (v * (ρ⁻¹ * x)) : ℝ) : ℂ) * Complex.I) • F v) ρ
-    rw [abs_of_pos (inv_pos.2 hρ)] at h2
-    rw [Pi.smul_apply, Real.fourierInv_eq', Real.fourierInv_eq']
-    simp only [RCLike.inner_apply, conj_trivial, mul_comm _ (ρ⁻¹ * x)] at h2 ⊢
-    rw [← h2]
-    refine integral_congr_ae (ae_of_all _ fun v => ?_)
-    simp only
-    congr 4
-    field_simp
   have h3 : eLpNorm (fun x => 𝓕⁻ F (ρ⁻¹ * x)) (ENNReal.ofReal p) volume =
       ENNReal.ofReal ρ ^ (1 / p) * eLpNorm (𝓕⁻ F) (ENNReal.ofReal p) volume := by
     have h4 := (measurableEmbedding_mulLeft₀ (inv_ne_zero hρ.ne')).eLpNorm_map_measure
@@ -1076,7 +1079,7 @@ private theorem eLpNorm_fourierInv_dilate {p : ℝ} (hp : 0 < p) (F : ℝ → Y)
     rw [show (fun x => 𝓕⁻ F (ρ⁻¹ * x)) = 𝓕⁻ F ∘ fun x => ρ⁻¹ * x from rfl, ← h4, smul_eq_mul]
     congr 2
     rw [one_div, ENNReal.toReal_inv, ENNReal.toReal_ofReal hp.le, one_div]
-  rw [h1, eLpNorm_const_smul, h3]
+  rw [fourierInv_comp_mul_left F hρ, eLpNorm_const_smul, h3]
 
 /-- The dilates `m (ρ ·)`, `ρ > 0`, of a Fourier multiplier on the line have the same norm as `m`
 (HNVW I, (5.61)), by the substitution `η = ρ ξ`. -/

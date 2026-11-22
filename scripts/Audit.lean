@@ -8,6 +8,7 @@ public meta import Lean.Elab.Command
 -- The Solution of each Palomar entry is imported, and no Challenge: a Challenge holds a copy of the
 -- definitions under the library's names.
 import all FourierMultipliers.Solution
+import all HardyFactorization.Solution
 import all HarmonicAnalysis.BeurlingAhlfors.Basic
 import all HarmonicAnalysis.BeurlingAhlfors.Duality
 import all HarmonicAnalysis.BeurlingAhlfors.LowerBound
@@ -27,6 +28,7 @@ import all HarmonicAnalysis.FourierMultiplier.Extension
 import all HarmonicAnalysis.FourierMultiplier.Norming
 import all HarmonicAnalysis.Hardy.Approximation
 import all HarmonicAnalysis.Hardy.Basic
+import all HarmonicAnalysis.Hardy.Defs
 import all HarmonicAnalysis.Hardy.FunctionalCalculus
 import all HarmonicAnalysis.Hardy.GeometricMean
 import all HarmonicAnalysis.Hardy.Jensen
@@ -47,6 +49,7 @@ import all HarmonicAnalysis.Transference.ContinuousSymbol
 import all HarmonicAnalysis.Transference.Homogeneous
 import all HarmonicAnalysis.Transference.RiemannSum
 import all HarmonicAnalysis.VectorValued.CircPoly
+import all HarmonicAnalysis.VectorValued.Defs
 import all HarmonicAnalysis.VectorValued.Dyadic.Average
 import all HarmonicAnalysis.VectorValued.Dyadic.Martingale
 import all HarmonicAnalysis.VectorValued.Dyadic.Shift
@@ -56,6 +59,8 @@ import all HarmonicAnalysis.VectorValued.LittlewoodPaley.Circle
 import all HarmonicAnalysis.VectorValued.LittlewoodPaley.Line
 import all HarmonicAnalysis.VectorValued.RademacherNorm
 import all HarmonicAnalysis.VectorValued.Transference
+import all PaleySchatten.Solution
+import all VectorValuedLittlewoodPaley.Solution
 
 /-!
 # Axiom audit
@@ -121,8 +126,10 @@ meta def mainResults : List Name :=
    ``HarmonicAnalysis.eLpNormRad_dyadicShift_le,
    ``HarmonicAnalysis.eLpNorm_sum_dilateConv_le,
    ``HarmonicAnalysis.eLpNorm_truncatedHilbert_le,
+   ``HarmonicAnalysis.eLpNorm_fourierInv_neg_I_sign_le,
    ``HarmonicAnalysis.eLpNorm_fourierInv_sign_le,
    ``HarmonicAnalysis.eLpNormRad_lineBlock_le,
+   ``HarmonicAnalysis.eLpNormRad_lineBlock_dilate_le,
    ``HarmonicAnalysis.eLpNorm_circPoly_multiplier_le,
    ``HarmonicAnalysis.eLpNormRad_dyadicBlock_le,
    ``HarmonicAnalysis.log_norm_fourierCoeff_zero_le_integral_log_norm,
@@ -138,6 +145,7 @@ meta def mainResults : List Name :=
    ``HarmonicAnalysis.exists_mul_conjTranspose_eq_iff,
    ``HarmonicAnalysis.isFactorable_iff,
    ``HarmonicAnalysis.exists_mul_eq_of_isHardyOne,
+   ``HarmonicAnalysis.paley_schatten_of_isHardyOne,
    ``HarmonicAnalysis.paley_schatten,
    ``HarmonicAnalysis.rademacher_schatten_le,
    ``HarmonicAnalysis.ncKhintchine,
@@ -155,7 +163,30 @@ meta def palomarTheorems : List Name :=
    ``FourierMultipliersChallenge.dragicevic_limit,
    ``FourierMultipliersChallenge.dragicevic_lower_bound,
    ``FourierMultipliersChallenge.dragicevic_lower_bound_pStar,
-   ``FourierMultipliersChallenge.pStar_sub_one_lt_beurlingPowNorm_two]
+   ``FourierMultipliersChallenge.pStar_sub_one_lt_beurlingPowNorm_two,
+   ``HardyFactorizationChallenge.jensen,
+   ``HardyFactorizationChallenge.exists_outer,
+   ``HardyFactorizationChallenge.outer_range,
+   ``HardyFactorizationChallenge.outer_closure,
+   ``HardyFactorizationChallenge.szego,
+   ``HardyFactorizationChallenge.spectral_factorization,
+   ``HardyFactorizationChallenge.outer_iff,
+   ``HardyFactorizationChallenge.analytic_range,
+   ``HardyFactorizationChallenge.factorization,
+   ``HardyFactorizationChallenge.riesz_factorization,
+   ``HardyFactorizationChallenge.rangeDet_eq,
+   ``PaleySchattenChallenge.paley,
+   ``PaleySchattenChallenge.khintchine_lower,
+   ``PaleySchattenChallenge.schatten_conjTranspose_mul_self,
+   ``PaleySchattenChallenge.schatten_two_sq,
+   ``VectorValuedLittlewoodPaleyChallenge.truncatedHilbert_bounded,
+   ``VectorValuedLittlewoodPaleyChallenge.hilbert_multiplier,
+   ``VectorValuedLittlewoodPaleyChallenge.hilbert_bounded,
+   ``VectorValuedLittlewoodPaleyChallenge.littlewoodPaley_line,
+   ``VectorValuedLittlewoodPaleyChallenge.littlewoodPaley_circle,
+   ``VectorValuedLittlewoodPaleyChallenge.transference,
+   ``VectorValuedLittlewoodPaleyChallenge.hilbert_bounded_innerProductSpace,
+   ``VectorValuedLittlewoodPaleyChallenge.eLpNormRad_rpow]
 
 /-- Lean's standard axioms. -/
 meta def standardAxioms : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -164,7 +195,9 @@ meta def standardAxioms : List Name := [``propext, ``Classical.choice, ``Quot.so
 meta def allowSorry : Bool := false
 
 /-- The modules of the Solutions of the Palomar entries. -/
-meta def palomarModules : List Name := [`FourierMultipliers.Solution]
+meta def palomarModules : List Name :=
+  [`FourierMultipliers.Solution, `HardyFactorization.Solution, `PaleySchatten.Solution,
+   `VectorValuedLittlewoodPaley.Solution]
 
 /-- Whether `m` is a module of the library or the Solution of a Palomar entry. -/
 meta def isLibraryModule (m : Name) : Bool :=

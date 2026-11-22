@@ -48,18 +48,6 @@ open scoped ENNReal FourierTransform SchwartzMap
 
 namespace HarmonicAnalysis
 
-/-- The dyadic blocks of `ℤ` (HNVW I, p. 464): `Ĩ_0 = {0}`, `Ĩ_k = [2^{k−1}, 2^k)`,
-`Ĩ_{−k} = (−2^k, −2^{k−1}]`, `k > 0`. -/
-def dyadicBlock (k : ℤ) : Set ℤ :=
-  if k = 0 then {0} else if 0 < k then Set.Ico (2 ^ (k.natAbs - 1)) (2 ^ k.natAbs)
-  else Set.Ioc (-2 ^ k.natAbs) (-2 ^ (k.natAbs - 1))
-
-open scoped Classical in
-/-- `Δ̃_s f = Σ_{n ∈ s} c_n e_n`, for a set `s` of frequencies. -/
-noncomputable def trigBlock {V : Type*} [AddCommMonoid V] [Module ℂ V] (s : Set ℤ) (c : ℤ →₀ V) :
-    UnitAddCircle → V :=
-  circPoly (c.filter (· ∈ s))
-
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace ℂ X]
 
 open scoped Classical in

@@ -6,6 +6,7 @@ Authors: The-Anh Vu-Le
 module
 
 public import HarmonicAnalysis.VectorValued.HilbertTransform.Fourier
+import HarmonicAnalysis.VectorValued.Transference
 import Mathlib.Analysis.Fourier.Convolution
 import Mathlib.Analysis.Real.Pi.Bounds
 
@@ -19,7 +20,8 @@ interval `I`, let `Δ_I f = 𝓕⁻ (1_I G)`. With independent fair signs `ε_k`
   (`eLpNormRad_fourierInv_indicator_le`);
 * `‖Σ_{|k| ≤ K} ε_k Δ_{I_k} f‖_{L^p (ℝ × Ω; X)} ≤ (144 ħ β + ħ) ‖f‖_{L^p (ℝ; X)}`, where
   `I_0 = (−1, 1)`, `I_k = (2^{k−1}, 2^k)` and `I_{−k} = −I_k` for `k > 0` (`lineBlock`,
-  `eLpNormRad_lineBlock_le`).
+  `eLpNormRad_lineBlock_le`), and the same for the dilates `ρ⁻¹ I_k`, `ρ > 0`
+  (`eLpNormRad_lineBlock_dilate_le`).
 
 Here `β` is a `UMD_p` constant of `X` and `ħ = hilbertBound β` the bound of the Hilbert transform.
 
@@ -28,8 +30,9 @@ pp. 404–405 and 412–420: the interval multipliers from the Hilbert transform
 (5.35), p. 404, and Proposition 5.3.10, p. 405), Lemma 5.3.21 (a randomised Mihlin theorem, from
 (5.36)), Lemma 5.3.22 (which is Proposition 5.1.10), Lemma 5.3.23 (the multipliers `1_I / φ̂_I`),
 Theorem 5.3.24, right-hand inequality, for the intervals `(2^k, 2^{k+1})`, `0 ≤ k < K`, and
-Corollary 5.3.25, right-hand inequality, for finitely many intervals. The left-hand inequalities are
-not treated.
+Corollary 5.3.25, right-hand inequality, for finitely many intervals; the dilated form of the
+corollary gives, by dropping terms, the finite sums of Theorem 5.3.24 over all dyadic intervals (the
+book deduces the corollary from the theorem). The left-hand inequalities are not treated.
 
 The signs are real here, while the Rademacher variables of the book are complex if `X` is complex.
 This costs a factor `2` in each application of the contraction principle (the book's constant for
@@ -869,12 +872,6 @@ theorem eLpNormRad_fourierInv_indicator_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0�
 
 /-! ### The intervals `I_k`, `k ∈ ℤ` -/
 
-/-- The intervals of HNVW I, Corollary 5.3.25 (p. 419): `I_0 = (−1, 1)`, and `I_k = (2^{k−1}, 2^k)`,
-`I_{−k} = (−2^k, −2^{k−1})` for `k > 0`. -/
-def lineBlock (k : ℤ) : Set ℝ :=
-  if k = 0 then Set.Ioo (-1) 1 else if 0 < k then Set.Ioo (2 ^ (k.natAbs - 1)) (2 ^ k.natAbs)
-  else Set.Ioo (-2 ^ k.natAbs) (-2 ^ (k.natAbs - 1))
-
 /-- `I_0 = (−1, 1)`. -/
 theorem lineBlock_zero : lineBlock 0 = Set.Ioo (-1) 1 := by
   simp [lineBlock]
@@ -1134,6 +1131,79 @@ theorem eLpNormRad_lineBlock_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (hβ : 
         · exact eLpNormRad_lineBlock_pos_le hp hβ hG hf K
         · exact eLpNormRad_lineBlock_zero_le hp hβ hG hf K
         · exact eLpNormRad_lineBlock_neg_le hp hβ hG hf K
+    _ = _ := by ring
+
+/-! ### Dilations -/
+
+omit [CompleteSpace X] in
+/-- `‖Σ ε_k 𝓕⁻ (F_k (ρ ·))‖_p = ρ^{1/p − 1} ‖Σ ε_k 𝓕⁻ F_k‖_p`. -/
+private theorem eLpNormRad_fourierInv_dilate {n : ℕ} {p : ℝ} (hp : 0 < p) (F : Fin n → ℝ → X)
+    {ρ : ℝ} (hρ : 0 < ρ) :
+    eLpNormRad (fun k => 𝓕⁻ fun ξ => F k (ρ * ξ)) p volume =
+      ‖ρ⁻¹‖ₑ * (ENNReal.ofReal ρ ^ (1 / p) * eLpNormRad (fun k => 𝓕⁻ (F k)) p volume) := by
+  let φ : ℝ ≃ᵐ ℝ := (Homeomorph.mulLeft₀ ρ⁻¹ (inv_ne_zero hρ.ne')).toMeasurableEquiv
+  have hφ : (volume : Measure ℝ).map φ = ENNReal.ofReal ρ • volume := by
+    have h := Real.map_volume_mul_left (inv_ne_zero hρ.ne')
+    rwa [inv_inv, abs_of_pos hρ] at h
+  have h1 : eLpNormRad (fun k x => 𝓕⁻ (F k) (φ x)) p volume =
+      eLpNormRad (fun k => 𝓕⁻ (F k)) p (ENNReal.ofReal ρ • volume) := by
+    have hprod := Measure.map_prod_map (volume : Measure ℝ)
+      (ProbabilityTheory.uniformOn (Set.univ : Set (Fin n → Bool))) φ.measurable measurable_id
+    rw [Measure.map_id] at hprod
+    rw [← hφ, eLpNormRad, eLpNormRad, hprod]
+    have hemb := (φ.prodCongr (MeasurableEquiv.refl (Fin n → Bool))).measurableEmbedding
+    exact (hemb.eLpNorm_map_measure
+      (g := fun z => ∑ k, (if z.2 k then (1 : ℝ) else -1) • 𝓕⁻ (F k) z.1)).symm
+  have h2 : eLpNormRad (fun k => 𝓕⁻ (F k)) p (ENNReal.ofReal ρ • volume) =
+      ENNReal.ofReal ρ ^ (1 / p) * eLpNormRad (fun k => 𝓕⁻ (F k)) p volume := by
+    rw [eLpNormRad, Measure.prod_smul_left, eLpNorm_smul_measure_of_ne_zero (by simpa using hρ),
+      smul_eq_mul, ENNReal.toReal_div, ENNReal.toReal_ofReal hp.le]
+    rfl
+  have h3 : (fun k => 𝓕⁻ fun ξ => F k (ρ * ξ)) = fun k x => ρ⁻¹ • 𝓕⁻ (F k) (φ x) := by
+    funext k x
+    exact congrFun (fourierInv_comp_mul_left (F k) hρ) x
+  rw [h3, eLpNormRad_fun_const_smul, h1, h2]
+
+/-- **The Littlewood–Paley inequality on the line, dilated**: `eLpNormRad_lineBlock_le` for the
+intervals `ρ⁻¹ I_k`, `|k| ≤ K`, with the same constant. For `ρ = 2^N` and `K = 2 N` these are the
+dyadic intervals `(2^j, 2^{j+1})`, `−(2^j, 2^{j+1})`, `−N ≤ j < N`, of HNVW I, Theorem 5.3.24
+(right-hand inequality), and `(−2^{−N}, 2^{−N})`. -/
+theorem eLpNormRad_lineBlock_dilate_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (hβ : IsUMDBound X p β)
+    {G : ℝ → X} (hG : Integrable G) (hf : MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume) (K : ℕ) {ρ : ℝ}
+    (hρ : 0 < ρ) :
+    eLpNormRad (fun i : Fin (2 * K + 1) =>
+        𝓕⁻ ({ξ | ρ * ξ ∈ lineBlock ((i : ℕ) - K)}.indicator G)) p volume ≤
+      (2 * littlewoodPaleyBound β + hilbertBound β) *
+        eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
+  have hp0 : 0 < p := by linarith
+  set G' : ℝ → X := fun ξ => G (ρ⁻¹ * ξ)
+  have hG' : Integrable G' := hG.comp_mul_left' (inv_ne_zero hρ.ne')
+  have hGG' : G = fun ξ => G' (ρ * ξ) := by
+    funext ξ
+    simp only [G', inv_mul_cancel_left₀ hρ.ne']
+  -- `‖𝓕⁻ G‖_p = ρ^{1/p − 1} ‖𝓕⁻ G'‖_p`
+  have hnorm : eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume =
+      ‖ρ⁻¹‖ₑ * (ENNReal.ofReal ρ ^ (1 / p) * eLpNorm (𝓕⁻ G') (ENNReal.ofReal p) volume) := by
+    have h := eLpNormRad_fourierInv_dilate (n := 1) hp0 (fun _ => G') hρ
+    rwa [← hGG', eLpNormRad_one hp0 (continuous_fourierInv_of_integrable hG).aestronglyMeasurable,
+      eLpNormRad_one hp0 (continuous_fourierInv_of_integrable hG').aestronglyMeasurable] at h
+  have hf' : MemLp (𝓕⁻ G') (ENNReal.ofReal p) volume := by
+    refine lt_top_iff_ne_top.2 fun h => hf.eLpNorm_lt_top.ne ?_
+    rw [hnorm, h, ENNReal.mul_top (ENNReal.rpow_pos (by simpa using hρ) (by simp)).ne',
+      ENNReal.mul_top (by simpa using hρ.ne')]
+  have hset : (fun i : Fin (2 * K + 1) => 𝓕⁻ ({ξ | ρ * ξ ∈ lineBlock ((i : ℕ) - K)}.indicator G)) =
+      fun i : Fin (2 * K + 1) =>
+        𝓕⁻ fun ξ => (lineBlock ((i : ℕ) - K)).indicator G' (ρ * ξ) := by
+    classical
+    funext i
+    refine congrArg (fun F : ℝ → X => 𝓕⁻ F) (funext fun ξ => ?_)
+    simp only [Set.indicator_apply, Set.mem_ofPred_eq, G', inv_mul_cancel_left₀ hρ.ne']
+  rw [hset, eLpNormRad_fourierInv_dilate hp0
+    (fun i : Fin (2 * K + 1) => (lineBlock ((i : ℕ) - K)).indicator G') hρ, hnorm]
+  calc _ ≤ ‖ρ⁻¹‖ₑ * (ENNReal.ofReal ρ ^ (1 / p) * ((2 * littlewoodPaleyBound β + hilbertBound β) *
+        eLpNorm (𝓕⁻ G') (ENNReal.ofReal p) volume)) := by
+        gcongr
+        exact eLpNormRad_lineBlock_le hp hβ hG' hf' K
     _ = _ := by ring
 
 end HarmonicAnalysis
