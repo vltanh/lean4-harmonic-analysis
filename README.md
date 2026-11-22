@@ -55,7 +55,7 @@ the operator norms are suprema in `ℝ≥0∞`.
 | `‖T_m‖_{L^p(ℝ²)} ≤ liminf_j ‖T_{m(·/R_j)}‖_{L^p_0(𝕋²)}`, `R_j → ∞`, `m` continuous off `0` (`1 < p`) | `multiplierNorm_le_liminf_torusMultiplierNorm` | [HNVW, Prop. 5.7.4] |
 | `m` is bounded if that `liminf` is finite | `exists_norm_le_of_liminf_torusMultiplierNorm_ne_top` | |
 | `‖T_m‖_{L^p(ℝ²)} ≤ ‖T_m‖_{L^p_0(𝕋²)}`, `m` homogeneous of degree `0`, continuous off `0` (`1 < p`) | `multiplierNorm_le_torusMultiplierNorm` | [HNVW, Cor. 5.7.6] (`I ≤ II`) |
-| `𝓑^k(∂̄^k F) = ∂^k F` for Schwartz `F`; the same for the `k`-fold iterate of `𝓑` | `beurlingPow_dzbarCLM_pow`, `iterate_beurlingPow_one_dzbar_iterate` | [D, p. 465]; [D-LN, §4.1, and Ex. 2.19 for `k = 1`] |
+| `𝓑^k(∂̄^k F) = ∂^k F` for Schwartz `F`; the same for the `k`-fold iterate of `𝓑` | `beurlingPow_dzbarCLM_pow`, `beurlingPow_dzbar_iterate`, `iterate_beurlingPow_one_dzbar_iterate` | [D, p. 465]; [D-LN, §4.1, and Ex. 2.19 for `k = 1`] |
 | `‖v‖_p / ‖u‖_p ≤ ‖𝓑^k‖_p` if Schwartz `∂̄^k φ_j → u`, `∂^k φ_j → v` in `L^p` | `div_le_beurlingPowNorm_of_tendsto` | density; [D, p. 465]; [D-LN, Ex. 2.19, §4.1] |
 | `‖𝓑^k‖_p = ‖𝓑^k‖_{p'}` (`1 < p`) | `beurlingPowNorm_conjExponent` | [CDK, §1.3.1] |
 | `‖𝓑^k‖_{L^p(ℝ²)} ≤ ‖𝓑^k‖_{L^p_0(𝕋²)}` (`1 < p`) | `beurlingPowNorm_le_torusBeurlingPowNorm` | [HNVW, Cor. 5.7.6] (`I ≤ II`) |
@@ -99,7 +99,8 @@ the [Palomar registry](https://palomar-registry.org). It is not submitted yet.
 | [`formalization.yaml`](palomar/FourierMultipliers/formalization.yaml) | the metadata: sources, scope, every deviation from the sources |
 
 The compared theorems are: what the norm `‖T_m‖_p` is (`multiplierNorm_spec`); `‖T_m‖_p = ‖T_m‖_{p'}`;
-transference, for symbols continuous off `0` and for homogeneous ones; `𝓑^k(∂̄^k F) = ∂^k F`;
+transference, for symbols continuous off `0` and for homogeneous ones; `𝓑^k(∂̄^k F) = ∂^k F`, also
+for the `k`-fold iterate of `𝓑`;
 `‖𝓑^k‖_p = ‖𝓑^k‖_{p'}`; the closed form of `κ₂(p)`; Dragičević's limit and lower bound for `n = 2`; the
 bound with `p*`, and `‖𝓑²‖_p > p* − 1`.
 

@@ -41,11 +41,11 @@ Scalar Fourier multipliers `T_m f = 𝓕⁻¹ (m · 𝓕 f)` on `L^p`, `1 < p < 
   not formalized, and the bounds below do not need it, as the supremum is at most that norm.)
 * The Beurling–Ahlfors transform `𝓑` is the Fourier multiplier with symbol `ξ̄ / ξ`, and `𝓑^k` the
   one with symbol `(ξ̄ / ξ)^k`. [D] defines `𝓑` (there `T`) as the singular integral
-  `−(1/π) p.v. ∫ f (ζ) (z − ζ)^{−2} dA (ζ)`, which has this symbol [CDK, (1.1)–(1.3)], a classical
-  fact that is not formalized here, and `𝓑^k` as its `k`-th power; `beurlingPow_dzbar_iterate` is
-  the property `𝓑^k (∂̄^k F) = ∂^k F` by which [D] uses it, for both meanings of `𝓑^k`. That `𝓑` is
-  bounded on `L^p` (Calderón–Zygmund) is neither assumed nor proved: the statements about
-  `‖𝓑^k‖_p` hold in `[0, ∞]`.
+  `−(1/π) p.v. ∫ f (ζ) (z − ζ)^{−2} dA (ζ)`, which has this symbol ([CDK, (1.1)–(1.3)], `k = 2`), a
+  classical fact that is not formalized here, and `𝓑^k` as its `k`-th power;
+  `beurlingPow_dzbar_iterate` is the property `𝓑^k (∂̄^k F) = ∂^k F` by which [D] uses it, for both
+  meanings of `𝓑^k`. That `𝓑` is bounded on `L^p` (Calderón–Zygmund) is neither assumed nor proved:
+  the statements about `‖𝓑^k‖_p` hold in `[0, ∞]`.
 
 ## Statements
 
@@ -60,9 +60,9 @@ Scalar Fourier multipliers `T_m f = 𝓕⁻¹ (m · 𝓕 f)` on `L^p`, `1 < p < 
   `k`-fold iterate of `𝓑` for `𝓑^k`.
 * `beurlingPowNorm_conjExponent` ([CDK, §1.3.1], for the even powers `R^{2k} = 𝓑^k` of the complex
   Riesz transform `R`): `‖𝓑^k‖_p = ‖𝓑^k‖_{p'}`.
-* `dragicevic_limit`, `dragicevic_lower_bound` ([D, Theorem 1.1] for `n = 2` and one cutoff `g₂`
-  only; there for every `n`, and `p > 2`): `‖∂² f_{2,α}‖_p / ‖∂̄² f_{2,α}‖_p → κ₂ (p)` as `α ↑ 1/p`,
-  and `‖𝓑²‖_p ≥ κ₂ (p)`. `beurlingKappa_two`: `κ₂ (p) = (p − 1)(2p − 1) / (p + 1)`.
+* `dragicevic_limit`, `dragicevic_lower_bound` ([D, Theorem 1.1] for `n = 2` only, and one cutoff
+  `g₂` in the limit; there for every `n`, and `p > 2`): `‖∂² f_{2,α}‖_p / ‖∂̄² f_{2,α}‖_p → κ₂ (p)`
+  as `α ↑ 1/p`, and `‖𝓑²‖_p ≥ κ₂ (p)`. `beurlingKappa_two`: `κ₂ (p) = (p − 1)(2p − 1) / (p + 1)`.
 * `dragicevic_lower_bound_pStar`, `pStar_sub_one_lt_beurlingPowNorm_two`: for `1 < p < ∞` and
   `p* = max (p, p')`, `‖𝓑²‖_p ≥ κ₂ (p*)`, and so `‖𝓑²‖_p > p* − 1` if `p ≠ 2`. For `p < 2`, the
   first is the bound for `p'` and [CDK, §1.3.1].
@@ -246,8 +246,9 @@ theorem transference_homogeneous {m : ℂ → ℂ} (hm : ∀ ξ ≠ 0, Continuou
     multiplierNorm m p ≤ torusMultiplierNorm (fun k => m (latticePoint k)) p := by
   sorry
 
-/-- `𝓑^k (∂̄^k F) = ∂^k F` for every Schwartz function `F` ([D, p. 465] states it for `F = f_{k,α}`,
-because `f_{k,α} ∈ W^{k,p}`); and so does the `k`-fold iterate of `𝓑 = 𝓑^1`. -/
+/-- `𝓑^k (∂̄^k F) = ∂^k F` for every Schwartz function `F` ([D, p. 465] states it for `f_{k,α}` in
+place of `F`, because `f_{k,α} ∈ W^{k,p}`); and the same with the `k`-fold iterate of `𝓑 = 𝓑^1` in
+place of `𝓑^k`. -/
 theorem beurlingPow_dzbar_iterate (k : ℕ) (F : 𝓢(ℂ, ℂ)) :
     beurlingPow k (dzbar^[k] F) = dz^[k] F ∧ (beurlingPow 1)^[k] (dzbar^[k] F) = dz^[k] F := by
   sorry

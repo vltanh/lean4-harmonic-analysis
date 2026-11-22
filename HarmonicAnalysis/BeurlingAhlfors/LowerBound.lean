@@ -22,7 +22,7 @@ constant is `κ_n (p) = (1/q)_n / (1/p)_n` (`HarmonicAnalysis.beurlingKappa`); f
   test functions `f_{2,α} (z) = z² |z|^{−2α} g₂ (|z|)`,
   `‖∂²f_{2,α}‖_p / ‖∂̄²f_{2,α}‖_p → κ₂ (p)` as `α → 1/p` from below.
 * `HarmonicAnalysis.eLpNorm_div_le_beurlingPowNorm_two`: `‖∂²f_{2,α}‖_p / ‖∂̄²f_{2,α}‖_p ≤ ‖𝓑²‖_p`
-  for `0 < α < 1/p`, since `f_{2,α} ∈ W^{2,p}` and `𝓑² (∂̄²f) = ∂²f`.
+  for `0 < α < 1/p`, by Schwartz approximations of `f_{2,α}` and `𝓑² (∂̄²φ) = ∂²φ` for these.
 * `HarmonicAnalysis.beurlingKappa_two_le_beurlingPowNorm_two` (Dragičević's theorem, `n = 2`):
   `κ₂ (p) ≤ ‖𝓑²‖_p` for `1 < p < ∞`.
 * `HarmonicAnalysis.beurlingKappa_two_pStar_le_beurlingPowNorm_two`: `κ₂ (p*) ≤ ‖𝓑²‖_p` for
@@ -212,7 +212,7 @@ theorem tendsto_eLpNorm_div_testFun {p : ℝ} (hp : 1 < p) :
   exact (heq α hα).symm
 
 /-- `‖∂²f_{2,α}‖_p / ‖∂̄²f_{2,α}‖_p ≤ ‖𝓑²‖_p` for `1 < p < ∞` and `0 < α < 1/p`: Schwartz
-approximations of `f_{2,α} ∈ W^{2,p}` and `𝓑² ∂̄² = ∂²` on Schwartz functions. -/
+approximations of `f_{2,α}` and `𝓑² ∂̄² = ∂²` on Schwartz functions. -/
 theorem eLpNorm_div_le_beurlingPowNorm_two {p α : ℝ} (hp : 1 < p) (hα0 : 0 < α)
     (hα : α * p < 1) :
     eLpNorm (dz (dz (testFun 2 α))) (ENNReal.ofReal p) volume /

@@ -62,9 +62,9 @@ sources:
     relationship: "formalizes"
     note: >-
       Theorem 1.1 for n = 2, by its proof (pp. 466-467) with the test functions of p. 465, for every
-      p > 1 (the paper assumes p > 2). The theorem is for every n and every suitable cutoff g_n; only
-      n = 2 and the paper's example of a cutoff are formalized. Theorem 1.4 and Proposition 1.3 are
-      not formalized.
+      p > 1 (the paper assumes p > 2). The theorem is stated for every n and any sufficiently smooth,
+      rapidly decaying cutoff g_n (the proof, p. 467, is written for the paper's example of one); only
+      n = 2 and that example are formalized. Theorem 1.4 and Proposition 1.3 are not formalized.
     author_endorsement: "not-contacted"
   - title: "Sharp L^p estimates of powers of the complex Riesz transform"
     authors:
@@ -134,8 +134,8 @@ status:
     of the three norms in HNVW's Corollary 5.7.6 (the inequalities II <= III <= I); Dragičević's bound
     for n != 2, and other cutoffs; that B is bounded on L^p (so the norms are in [0, infinity], and the
     lower bounds hold there); that B is the singular integral with kernel -1/(pi z^2); that B^k, the
-    multiplier with symbol (conj(xi)/xi)^k, is the k-th power of B as an operator on L^p (only on
-    the functions dbar^k F, F Schwartz); that T_m extended from Schwartz functions agrees with T_m on
+    multiplier with symbol (conj(xi)/xi)^k, is the k-th power of B as an operator on L^p (they are
+    proved to agree only on the functions dbar^k F, F Schwartz); that T_m extended from Schwartz functions agrees with T_m on
     the larger space L^p ∩ L^1-check of HNVW (their p. 401); that mean-zero trigonometric polynomials
     are dense in L^p_0.
   sorry_count: 0
@@ -153,7 +153,7 @@ automation:
         the proofs and compared them with the sources; this entry by one agent, with an independent
         reviewer agent. Lean v4.36.0-rc2, Mathlib v4.36.0-rc2.
       cost:
-        wall_time: "about 11 hours between the library's first and last commits (21-22 November 2026), not continuous, and about 2 hours for this entry; agent time not tracked"
+        wall_time: "about 11 hours between the library's first and last commits (21-22 November 2026), not continuous, and about 1 hour for this entry; agent time not tracked"
         spend_usd: "not tracked"
         hardware: "local machine (20 cores, 62 GB RAM) and API"
       prompting_notes: >-
@@ -161,8 +161,8 @@ automation:
         feasible, follow the sources' proofs, record every deviation, use only Mathlib.
   spend_usd: "not tracked"
   notes: >-
-    The AI system wrote the code and the documents at the request of the maintainer. No person has
-    reviewed the proofs; Lean has checked them. Independent AI agents compared the statements and
+    The AI system wrote the code and the documents. No person has reviewed the proofs; Lean has
+    checked them. Independent AI agents compared the statements and
     the proofs with the cited sources.
 
 fidelity:
@@ -194,10 +194,11 @@ fidelity:
     preliminary truncation is not needed; in Lemma 5.7.5 the tail of the periodisation is summed
     pointwise before the norm is taken.
 
-    Dragičević. Theorem 1.1 only for n = 2, and for the cutoff g_2 that the paper gives as an example
-    (there, any sufficiently smooth, rapidly decaying g_n equal to 1 on [0, 1]); for every p > 1 where
-    the paper has p > 2 (the same proof; for p <= 2, kappa_2(p) <= 1 and the bound says little, the one
-    with p* being the informative one). The paper's T is a singular integral; here B is the Fourier
+    Dragičević. Theorem 1.1 only for n = 2, and, in the limit, for the cutoff g_2 that the paper gives
+    as an example (p. 465 allows any sufficiently smooth, rapidly decaying g_n equal to 1 on [0, 1];
+    the proof, p. 467, is written for the example); for every p > 1 where the paper has p > 2 (the same
+    proof; for p <= 2, kappa_2(p) <= 1 and the bound says little, the one with p* being the
+    informative one). The paper's T is a singular integral; here B is the Fourier
     multiplier with symbol conj(xi)/xi, the two being equal by a classical computation that is not
     formalized, and B^n is the multiplier with the n-th power of the symbol, where the paper has the
     n-th power of T. The proof uses B^2 through B^2(dbar^2 F) = d^2 F, proved for Schwartz functions F.
@@ -209,8 +210,8 @@ fidelity:
     almost everywhere the weak ones is not formalized. The bound is for the supremum over Schwartz
     functions, in [0, infinity].
 
-    Carbonaro, Dragičević and Kovač. Section 1.3.1 (a standard reduction in the paper, for all powers
-    R^k, k an integer) for the even powers R^{2k} = B^k, k >= 0, by its argument: the adjoint of B^k is
+    Carbonaro, Dragičević and Kovač. Section 1.3.1 (one of the paper's reductions, for all
+    powers R^k, k an integer) for the even powers R^{2k} = B^k, k >= 0, by its argument: the adjoint of B^k is
     B^{-k}, and B^{-k} f is the conjugate of B^k applied to the conjugate of f. The bounds with p* for
     p < 2 are not stated in Dragičević's paper; they combine
     Theorem 1.1 for p' with this equality. The strict bound by p* - 1 is arithmetic:
@@ -275,8 +276,8 @@ alignment:
     - source: "Dragičević 2011, Theorem 1.1, n = 2, with Carbonaro-Dragičević-Kovač, Section 1.3.1"
       lean: "FourierMultipliersChallenge.dragicevic_lower_bound_pStar"
       module: "FourierMultipliers.Challenge"
-      status: "proved"
-      note: "The bound kappa_2(p*) for all 1 < p < infinity."
+      status: "adapted"
+      note: "n = 2 only. The bound kappa_2(p*) for all 1 < p < infinity, not stated in the paper for p < 2."
     - source: "consequence of the previous one"
       lean: "FourierMultipliersChallenge.pStar_sub_one_lt_beurlingPowNorm_two"
       module: "FourierMultipliers.Challenge"
