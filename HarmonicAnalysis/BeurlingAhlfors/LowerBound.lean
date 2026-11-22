@@ -8,7 +8,6 @@ module
 public import HarmonicAnalysis.BeurlingAhlfors.Duality
 public import HarmonicAnalysis.BeurlingAhlfors.TestFunctions
 public import HarmonicAnalysis.Complex.RadialIntegral
-public import Mathlib.RingTheory.Polynomial.Pochhammer
 
 /-!
 # Dragičević's lower bound for `‖𝓑²‖_p`
@@ -75,14 +74,6 @@ open scoped ENNReal
 namespace HarmonicAnalysis
 
 open BeurlingAhlfors
-
-/-- Dragičević's constant `κ_n (p) = (1/q)_n / (1/p)_n`, `1/q = 1 − 1/p`, with the Pochhammer
-symbol `(a)_n = a (a + 1) ⋯ (a + n − 1)`. -/
-def beurlingKappa (n : ℕ) (p : ℝ) : ℝ :=
-  (ascPochhammer ℝ n).eval (1 - p⁻¹) / (ascPochhammer ℝ n).eval p⁻¹
-
-/-- `p* = max (p, p / (p − 1))`. -/
-def pStar (p : ℝ) : ℝ := max p (p / (p - 1))
 
 /-- `κ₂ (p) = (p − 1)(2p − 1) / (p + 1)`. -/
 theorem beurlingKappa_two {p : ℝ} (hp : 0 < p) :

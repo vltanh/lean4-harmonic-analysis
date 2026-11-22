@@ -174,12 +174,12 @@ def approxSchwartz (α : ℝ) (k : ℕ) : 𝓢(ℂ, ℂ) :=
 theorem coe_approxSchwartz (α : ℝ) (k : ℕ) : ⇑(approxSchwartz α k) = approxFun α k := rfl
 
 theorem dzCLM_sq_apply (f : 𝓢(ℂ, ℂ)) (z : ℂ) : (dzCLM ^ 2) f z = dz (dz f) z := by
-  rw [pow_two, mul_apply_eq_comp, dzCLM_apply,
-    show ⇑(dzCLM f) = dz ⇑f from funext (dzCLM_apply f)]
+  rw [coe_dzCLM_pow]
+  rfl
 
 theorem dzbarCLM_sq_apply (f : 𝓢(ℂ, ℂ)) (z : ℂ) : (dzbarCLM ^ 2) f z = dzbar (dzbar f) z := by
-  rw [pow_two, mul_apply_eq_comp, dzbarCLM_apply,
-    show ⇑(dzbarCLM f) = dzbar ⇑f from funext (dzbarCLM_apply f)]
+  rw [coe_dzbarCLM_pow]
+  rfl
 
 /-- `∂²φ_k` is the pointwise `∂²` of `z² K_k (|z|²)`. -/
 theorem dzCLM_sq_approxSchwartz (α : ℝ) (k : ℕ) (z : ℂ) :

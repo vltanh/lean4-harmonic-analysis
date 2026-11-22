@@ -24,7 +24,8 @@ With `ℂ ≅ ℝ²` by `x + iy ↦ (x, y)` and Mathlib's Fourier transform
 
 * `HarmonicAnalysis.beurlingPow_dzbarCLM_pow`: `𝓑^k (∂̄^k F) = ∂^k F` for every Schwartz `F`
   (on the Fourier side, `m^k (π i ξ)^k = (π i ξ̄)^k`). For `k = 1` this is the characterisation
-  `𝓑 (∂̄h) = ∂h` of the Beurling–Ahlfors transform.
+  `𝓑 (∂̄h) = ∂h` of the Beurling–Ahlfors transform. With the pointwise derivatives:
+  `HarmonicAnalysis.beurlingPow_dzbar_iterate`.
 * `HarmonicAnalysis.div_le_beurlingPowNorm_of_tendsto` (density): if Schwartz functions `φ_k`
   satisfy `∂̄^k φ_k → u` and `∂^k φ_k → v` in `L^p`, then `‖v‖_p / ‖u‖_p ≤ ‖𝓑^k‖_p`. For
   `f ∈ W^{k,p}` with `u = ∂̄^k f`, `v = ∂^k f`, this is `𝓑^k (∂̄^k f) = ∂^k f` (Dragičević 2011,
@@ -49,18 +50,6 @@ open MeasureTheory Filter Topology
 open scoped SchwartzMap ENNReal ComplexConjugate FourierTransform Real
 
 namespace HarmonicAnalysis
-
-/-- The symbol `m (ξ) = ξ̄ / ξ` of the Beurling–Ahlfors transform (`m (0) = 0`). -/
-def beurlingSymbol (ξ : ℂ) : ℂ := conj ξ / ξ
-
-/-- `𝓑^k f = 𝓕⁻¹ (m^k · 𝓕 f)`, with `m (ξ) = ξ̄ / ξ`. -/
-def beurlingPow (k : ℕ) (f : ℂ → ℂ) : ℂ → ℂ :=
-  fourierMultiplier (fun ξ => beurlingSymbol ξ ^ k) f
-
-/-- `‖𝓑^k‖_{L^p (ℝ²) → L^p (ℝ²)}`: the supremum of `‖𝓑^k f‖_p / ‖f‖_p` over the (dense) Schwartz
-functions `f`. -/
-def beurlingPowNorm (k : ℕ) (p : ℝ) : ℝ≥0∞ :=
-  multiplierNorm (fun ξ => beurlingSymbol ξ ^ k) p
 
 theorem norm_beurlingSymbol_le (ξ : ℂ) : ‖beurlingSymbol ξ‖ ≤ 1 := by
   rcases eq_or_ne ξ 0 with rfl | h
@@ -114,6 +103,12 @@ theorem beurlingPow_dzbarCLM_pow (k : ℕ) (F : 𝓢(ℂ, ℂ)) :
   -- Fourier inversion on `𝓢(ℂ, ℂ)`.
   rw [beurlingPow, fourierMultiplier, hsymb, ← SchwartzMap.fourier_coe,
     ← SchwartzMap.fourierInv_coe, FourierTransform.fourierInv_fourier_eq]
+
+/-- `𝓑^k (∂̄^k F) = ∂^k F` for every Schwartz function `F`, with the pointwise derivatives. -/
+theorem beurlingPow_dzbar_iterate (k : ℕ) (F : 𝓢(ℂ, ℂ)) :
+    beurlingPow k (dzbar^[k] F) = dz^[k] F := by
+  rw [← coe_dzbarCLM_pow, ← coe_dzCLM_pow]
+  exact beurlingPow_dzbarCLM_pow k F
 
 /-- Density: if Schwartz functions `φ_k` satisfy `∂̄^k φ_k → u` and `∂^k φ_k → v` in `L^p`,
 `1 ≤ p`, then `‖v‖_p / ‖u‖_p ≤ ‖𝓑^k‖_p`. -/

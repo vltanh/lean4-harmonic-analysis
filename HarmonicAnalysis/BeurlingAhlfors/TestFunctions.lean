@@ -76,13 +76,6 @@ open scoped SchwartzMap ENNReal Real ComplexConjugate
 
 namespace HarmonicAnalysis.BeurlingAhlfors
 
-/-- Dragičević's cutoff `g_n (x) = 1` for `x ≤ 1`, `exp (−(x − 1)^n)` for `x > 1`. -/
-def testCutoff (n : ℕ) (x : ℝ) : ℝ := if x ≤ 1 then 1 else Real.exp (-(x - 1) ^ n)
-
-/-- Dragičević's test function `f_{n,α} (z) = z^n |z|^{−2α} g_n (|z|)`. -/
-def testFun (n : ℕ) (α : ℝ) (z : ℂ) : ℂ :=
-  z ^ n * ((‖z‖ ^ (-2 * α) * testCutoff n ‖z‖ : ℝ) : ℂ)
-
 /-! ### Local forms: `f_{2,α} (z) = z² K (|z|²)` -/
 
 /-- Locality of `∂²`: functions that agree near `z` have the same `∂²` at `z`. -/

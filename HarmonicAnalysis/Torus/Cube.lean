@@ -5,9 +5,8 @@ Authors: The-Anh Vu-Le
 -/
 module
 
-public import Mathlib.Analysis.Fourier.AddCircleMulti
+public import HarmonicAnalysis.Defs
 public import Mathlib.MeasureTheory.Group.Integral
-public import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
 
 /-!
 # The torus `𝕋^ι`, periodic functions on `ℝ^ι` and the unit cube
@@ -206,9 +205,6 @@ end HaarNormalized
 namespace HarmonicAnalysis
 
 open UnitAddTorus
-
-/-- The lattice point `n₀ + i n₁ ∈ ℂ` of `n ∈ ℤ²`. -/
-def latticePoint (n : Fin 2 → ℤ) : ℂ := (n 0 : ℂ) + (n 1 : ℂ) * Complex.I
 
 /-- The projection `ℂ → 𝕋² = (ℝ / ℤ)²`, `y ↦ (Re y, Im y) mod ℤ²`. -/
 def ofComplex (y : ℂ) : UnitAddTorus (Fin 2) := ofPi ![y.re, y.im]

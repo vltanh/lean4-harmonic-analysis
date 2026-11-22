@@ -5,7 +5,7 @@ Authors: The-Anh Vu-Le
 -/
 module
 
-public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
+public import HarmonicAnalysis.Defs
 
 /-!
 # The Wirtinger derivatives
@@ -44,16 +44,6 @@ namespace HarmonicAnalysis
 
 variable {F : Type*} [NormedAddCommGroup F] [NormedSpace ℂ F]
 
-/-- The Wirtinger derivative `∂g (z) = ½ (∂_x g (z) − i ∂_y g (z))` of a function `g : ℂ → F`
-(`0` where `g` is not real-differentiable). -/
-def dz (g : ℂ → F) (z : ℂ) : F :=
-  (2⁻¹ : ℂ) • (fderiv ℝ g z 1 - Complex.I • fderiv ℝ g z Complex.I)
-
-/-- The Wirtinger derivative `∂̄g (z) = ½ (∂_x g (z) + i ∂_y g (z))` of a function `g : ℂ → F`
-(`0` where `g` is not real-differentiable). -/
-def dzbar (g : ℂ → F) (z : ℂ) : F :=
-  (2⁻¹ : ℂ) • (fderiv ℝ g z 1 + Complex.I • fderiv ℝ g z Complex.I)
-
 /-- `∂ = ½ (∂_x − i ∂_y)` as a continuous linear map of the Schwartz space `𝓢(ℂ, F)`. -/
 def dzCLM : 𝓢(ℂ, F) →L[ℂ] 𝓢(ℂ, F) :=
   (2⁻¹ : ℂ) • (LineDeriv.lineDerivOpCLM ℂ 𝓢(ℂ, F) (1 : ℂ) -
@@ -69,6 +59,22 @@ theorem dzCLM_apply (f : 𝓢(ℂ, F)) (z : ℂ) : dzCLM f z = dz f z := by
 
 theorem dzbarCLM_apply (f : 𝓢(ℂ, F)) (z : ℂ) : dzbarCLM f z = dzbar f z := by
   simp [dzbarCLM, dzbar, SchwartzMap.lineDerivOp_apply_eq_fderiv]
+
+/-- `∂^k` on the Schwartz space is the `k`-fold pointwise derivative. -/
+theorem coe_dzCLM_pow (k : ℕ) (f : 𝓢(ℂ, F)) : ⇑((dzCLM ^ k) f) = dz^[k] f := by
+  induction k with
+  | zero => rfl
+  | succ k ih =>
+    rw [pow_succ', mul_apply_eq_comp, Function.iterate_succ_apply', ← ih]
+    exact funext (dzCLM_apply _)
+
+/-- `∂̄^k` on the Schwartz space is the `k`-fold pointwise derivative. -/
+theorem coe_dzbarCLM_pow (k : ℕ) (f : 𝓢(ℂ, F)) : ⇑((dzbarCLM ^ k) f) = dzbar^[k] f := by
+  induction k with
+  | zero => rfl
+  | succ k ih =>
+    rw [pow_succ', mul_apply_eq_comp, Function.iterate_succ_apply', ← ih]
+    exact funext (dzbarCLM_apply _)
 
 /-- The Fourier transform of a line derivative, pointwise:
 `𝓕 (∂_m f) (ξ) = 2πi ⟨ξ, m⟩ 𝓕 f (ξ)`. -/

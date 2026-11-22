@@ -21,7 +21,11 @@ For `1 < p < ∞` and `q = p / (p − 1)`:
   (conjugation): `conj (T_m (conj f)) = T_{m̃} f` with `m̃ (ξ) = conj (m (−ξ))`, so
   `‖T_{m̃}‖_p = ‖T_m‖_p`.
 
-Together: `‖T_m‖_p = ‖T_{m (−·)}‖_q`; for an even symbol, `‖T_m‖_p = ‖T_m‖_q`.
+* `HarmonicAnalysis.multiplierNorm_comp_neg` (reflection): `‖T_{m (−·)}‖_p = ‖T_m‖_p`.
+* `HarmonicAnalysis.multiplierNorm_conjExponent`: `‖T_m‖_p = ‖T_m‖_q` for bounded measurable `m`,
+  the case of scalar symbols of Proposition 5.3.7 of Hytönen–van Neerven–Veraar–Weis (HNVW), by
+  their proof: `∫ T_m f · g = ∫ T_{m (−·)} g · f`
+  (`HarmonicAnalysis.integral_fourierMultiplier_comp_neg_mul`) and reflection.
 
 The adjoint identity holds because both sides equal `∫ m · 𝓕 f · conj (𝓕 g)`
 (`HarmonicAnalysis.integral_fourierInv_mul_conj`, Fubini; the bilinear form is
@@ -39,6 +43,8 @@ Schwartz function `g`, hence `‖T_m f‖_p ≤ ‖T_{m̄}‖_q ‖f‖_p`, beca
   §1.3.1 (for the powers of the complex Riesz transform).
 * O. Dragičević, *Analysis of the Ahlfors–Beurling transform*, lecture notes,
   [arXiv:2109.04555](https://arxiv.org/abs/2109.04555), Exercise 1.16.
+* T. Hytönen, J. van Neerven, M. Veraar, L. Weis, *Analysis in Banach Spaces, Volume I*, Ergebnisse
+  der Mathematik 63, Springer, 2016: Proposition 5.3.7 (p. 403).
 -/
 
 @[expose] public section
@@ -119,15 +125,6 @@ theorem integral_fourierInv_mul {φ g : V → ℂ} (hφ : Integrable φ) (hg : I
     simpa using (Complex.conjCLE : ℂ →L[ℝ] ℂ).integrable_comp hg
   have h := integral_fourierInv_mul_conj hφ hg'
   simpa only [← fourierInv_conj, Complex.conj_conj] using h
-
-private theorem integrable_smul_fourier {m : V → ℂ} (hm : Measurable m)
-    (hmb : ∃ C, ∀ ξ, ‖m ξ‖ ≤ C) (f : 𝓢(V, ℂ)) :
-    Integrable (fun ξ => m ξ • 𝓕 (f : V → ℂ) ξ) := by
-  obtain ⟨C, hC⟩ := hmb
-  have : Integrable (𝓕 (f : V → ℂ)) := by
-    rw [← SchwartzMap.fourier_coe]
-    exact (𝓕 f).integrable
-  simpa [smul_eq_mul] using this.bdd_mul hm.aestronglyMeasurable (ae_of_all _ hC)
 
 /-- The `L²`-adjoint of `T_m` is `T_{m̄}`: `∫ T_m f · ḡ = ∫ f · conj (T_{m̄} g)` for Schwartz
 functions `f`, `g` and a bounded measurable symbol `m`. -/
@@ -235,5 +232,96 @@ theorem multiplierNorm_conj_comp_neg (m : V → ℂ) (p : ℝ) :
     rw [fourierMultiplier_conj, this]
   rw [hT, hf]
   exact congr_arg₂ (· / ·) (eLpNorm_conj _ _ _) (eLpNorm_conj _ _ _)
+
+/-! ### Reflection, and `‖T_m‖_p = ‖T_m‖_q` -/
+
+/-- Reflection: `T_{m (−·)} (f (−·)) = (T_m f) (−·)` (HNVW, p. 403), for every function `f`. -/
+theorem fourierMultiplier_comp_neg (m : V → ℂ) (f : V → ℂ) (x : V) :
+    fourierMultiplier (fun ξ => m (-ξ)) (fun v => f (-v)) x = fourierMultiplier m f (-x) := by
+  have h : (fun ξ => m (-ξ) • 𝓕 (fun v => f (-v)) ξ) =
+      (fun ξ => m ξ • 𝓕 f ξ) ∘ LinearIsometryEquiv.neg ℝ (E := V) := by
+    funext ξ
+    exact congrArg (m (-ξ) • ·)
+      (Real.fourier_comp_linearIsometry (LinearIsometryEquiv.neg ℝ (E := V)) f ξ)
+  rw [fourierMultiplier, h, Real.fourierInv_comp_linearIsometry]
+  rfl
+
+/-- Reflection: `‖T_{m (−·)}‖_{L^p} = ‖T_m‖_{L^p}` (HNVW, p. 403). -/
+theorem multiplierNorm_comp_neg (m : V → ℂ) (p : ℝ) :
+    multiplierNorm (fun ξ => m (-ξ)) p = multiplierNorm m p := by
+  let N : 𝓢(V, ℂ) → 𝓢(V, ℂ) :=
+    SchwartzMap.compCLMOfContinuousLinearEquiv ℂ (ContinuousLinearEquiv.neg ℝ : V ≃L[ℝ] V)
+  have hN : ∀ f x, N f x = f (-x) := fun f x => rfl
+  have hsurj : Function.Surjective N := fun f => ⟨N f, by
+    ext x
+    simp [hN]⟩
+  have hneg : ∀ h : V → ℂ, Continuous h → eLpNorm (fun x => h (-x)) (ENNReal.ofReal p) volume =
+      eLpNorm h (ENNReal.ofReal p) volume := fun h hh =>
+    eLpNorm_comp_measurePreserving hh.aestronglyMeasurable (Measure.measurePreserving_neg _)
+  unfold multiplierNorm
+  rw [← hsurj.iSup_comp]
+  refine iSup_congr fun f => ?_
+  have hT : fourierMultiplier (fun ξ => m (-ξ)) (N f) = fun x => fourierMultiplier m f (-x) :=
+    funext fun x => fourierMultiplier_comp_neg m f x
+  rw [hT, hneg _ (continuous_fourierMultiplier m f)]
+  congr 1
+  exact hneg f f.continuous
+
+/-- The bilinear pairing (HNVW, proof of Proposition 5.3.7): `∫ T_m f · g = ∫ T_{m (−·)} g · f` for
+Schwartz functions `f`, `g` and a bounded measurable symbol `m`. Both sides are
+`∫ m 𝓕 f 𝓕⁻¹ g`. -/
+theorem integral_fourierMultiplier_comp_neg_mul {m : V → ℂ} (hm : Measurable m)
+    (hmb : ∃ C, ∀ ξ, ‖m ξ‖ ≤ C) (f g : 𝓢(V, ℂ)) :
+    ∫ x, fourierMultiplier m f x * g x = ∫ x, fourierMultiplier (fun ξ => m (-ξ)) g x * f x := by
+  have hmb' : ∃ C, ∀ ξ, ‖m (-ξ)‖ ≤ C := by
+    obtain ⟨C, hC⟩ := hmb
+    exact ⟨C, fun ξ => hC (-ξ)⟩
+  have hm' : Measurable fun ξ => m (-ξ) := hm.comp measurable_neg
+  unfold fourierMultiplier
+  rw [integral_fourierInv_mul (integrable_smul_fourier hm hmb f) g.integrable,
+    integral_fourierInv_mul (integrable_smul_fourier hm' hmb' g) f.integrable]
+  conv_rhs => rw [← integral_neg_eq_self]
+  congr 1
+  funext ξ
+  simp only [Real.fourierInv_eq_fourier_neg, neg_neg, smul_eq_mul]
+  ring
+
+/-- `‖T_m‖_p ≤ ‖T_{m (−·)}‖_q`, by duality. -/
+private theorem multiplierNorm_le_comp_neg_conjExponent {m : V → ℂ} (hm : Measurable m)
+    (hmb : ∃ C, ∀ ξ, ‖m ξ‖ ≤ C) {p : ℝ} (hp : 1 < p) :
+    multiplierNorm m p ≤ multiplierNorm (fun ξ => m (-ξ)) (p / (p - 1)) := by
+  have hpq : p.HolderConjugate (p / (p - 1)) :=
+    (Real.holderConjugate_iff_eq_conjExponent hp).2 rfl
+  have : ENNReal.HolderConjugate (ENNReal.ofReal p) (ENNReal.ofReal (p / (p - 1))) :=
+    hpq.ennrealOfReal
+  refine iSup_le fun f => ENNReal.div_le_of_le_mul ?_
+  rw [mul_comm]
+  refine eLpNorm_le_of_forall_schwartz (continuous_fourierMultiplier m f) hp fun g => ?_
+  have hg : (conjSchwartz g : V → ℂ) = fun x => conj (g x) := funext fun x => conjSchwartz_apply g x
+  have h := integral_fourierMultiplier_comp_neg_mul hm hmb f (conjSchwartz g)
+  simp only [conjSchwartz_apply] at h
+  rw [h]
+  simp_rw [mul_comm _ (f _)]
+  refine (enorm_integral_mul_le f.continuous.aestronglyMeasurable
+    (continuous_fourierMultiplier _ _).aestronglyMeasurable (ENNReal.ofReal p)
+    (ENNReal.ofReal (p / (p - 1)))).trans ?_
+  rw [mul_assoc]
+  gcongr
+  refine (eLpNorm_fourierMultiplier_le _ _ (conjSchwartz g)).trans_eq ?_
+  rw [hg]
+  exact congrArg _ (eLpNorm_conj _ _ _)
+
+/-- **HNVW, Proposition 5.3.7**, for scalar symbols: `‖T_m‖_{L^p} = ‖T_m‖_{L^q}`,
+`q = p / (p − 1)`, for a bounded measurable symbol `m` and `1 < p < ∞`. By the bilinear pairing and
+reflection, `‖T_m‖_p ≤ ‖T_{m (−·)}‖_q = ‖T_m‖_q`, and the same with `p` and `q` interchanged. -/
+theorem multiplierNorm_conjExponent {m : V → ℂ} (hm : Measurable m) (hmb : ∃ C, ∀ ξ, ‖m ξ‖ ≤ C)
+    {p : ℝ} (hp : 1 < p) : multiplierNorm m p = multiplierNorm m (p / (p - 1)) := by
+  have hpq : p.HolderConjugate (p / (p - 1)) :=
+    (Real.holderConjugate_iff_eq_conjExponent hp).2 rfl
+  have h := multiplierNorm_le_comp_neg_conjExponent hm hmb hpq.symm.lt
+  rw [← hpq.symm.conjugate_eq, multiplierNorm_comp_neg] at h
+  refine le_antisymm ?_ h
+  rw [← multiplierNorm_comp_neg m (p / (p - 1))]
+  exact multiplierNorm_le_comp_neg_conjExponent hm hmb hp
 
 end HarmonicAnalysis

@@ -5,8 +5,7 @@ Authors: The-Anh Vu-Le
 -/
 module
 
-public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
-public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
+public import HarmonicAnalysis.Defs
 
 /-!
 # Fourier multipliers on a Euclidean space
@@ -44,15 +43,14 @@ namespace HarmonicAnalysis
 variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
   [MeasurableSpace V] [BorelSpace V]
 
-/-- The Fourier multiplier with symbol `m`: `T_m f = 𝓕⁻¹ (m · 𝓕 f)`. -/
-def fourierMultiplier (m : V → ℂ) (f : V → ℂ) : V → ℂ :=
-  𝓕⁻ (fun ξ : V => m ξ • 𝓕 f ξ)
-
-/-- `‖T_m‖_{L^p → L^p}`: the supremum of `‖T_m f‖_p / ‖f‖_p` over the (dense) Schwartz functions
-`f`. -/
-def multiplierNorm (m : V → ℂ) (p : ℝ) : ℝ≥0∞ :=
-  ⨆ f : 𝓢(V, ℂ), eLpNorm (fourierMultiplier m f) (ENNReal.ofReal p) volume /
-    eLpNorm (f : V → ℂ) (ENNReal.ofReal p) volume
+/-- `m · 𝓕 f` is integrable for a bounded measurable symbol `m` and a Schwartz function `f`. -/
+theorem integrable_smul_fourier {m : V → ℂ} (hm : Measurable m) (hmb : ∃ C, ∀ ξ, ‖m ξ‖ ≤ C)
+    (f : 𝓢(V, ℂ)) : Integrable (fun ξ => m ξ • 𝓕 (f : V → ℂ) ξ) := by
+  obtain ⟨C, hC⟩ := hmb
+  have : Integrable (𝓕 (f : V → ℂ)) := by
+    rw [← SchwartzMap.fourier_coe]
+    exact (𝓕 f).integrable
+  simpa [smul_eq_mul] using this.bdd_mul hm.aestronglyMeasurable (ae_of_all _ hC)
 
 /-- `T_m f` is continuous for every Schwartz function `f`. -/
 theorem continuous_fourierMultiplier (m : V → ℂ) (f : 𝓢(V, ℂ)) :

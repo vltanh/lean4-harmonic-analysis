@@ -15,9 +15,11 @@ import all HarmonicAnalysis.BeurlingAhlfors.Transference
 import all HarmonicAnalysis.Complex.RadialIntegral
 import all HarmonicAnalysis.Complex.Wirtinger
 import all HarmonicAnalysis.Complex.WirtingerRadial
+import all HarmonicAnalysis.Defs
 import all HarmonicAnalysis.FourierMultiplier.Basic
 import all HarmonicAnalysis.FourierMultiplier.Density
 import all HarmonicAnalysis.FourierMultiplier.Duality
+import all HarmonicAnalysis.FourierMultiplier.Extension
 import all HarmonicAnalysis.FourierMultiplier.Norming
 import all HarmonicAnalysis.Torus.Cube
 import all HarmonicAnalysis.Torus.Lattice
@@ -52,6 +54,9 @@ meta def mainResults : List Name :=
   [``HarmonicAnalysis.fourier_dzbarCLM,
    ``HarmonicAnalysis.fourier_dzCLM,
    ``HarmonicAnalysis.div_le_multiplierNorm_of_tendsto,
+   ``HarmonicAnalysis.existsUnique_extension_of_multiplierNorm_ne_top,
+   ``HarmonicAnalysis.enorm_eq_multiplierNorm,
+   ``HarmonicAnalysis.multiplierNorm_conjExponent,
    ``HarmonicAnalysis.multiplierNorm_conj_conjExponent,
    ``HarmonicAnalysis.multiplierNorm_conj_comp_neg,
    ``HarmonicAnalysis.tendsto_eLpNorm_mollify_sub,
@@ -62,7 +67,9 @@ meta def mainResults : List Name :=
    ``HarmonicAnalysis.tendsto_riemannSum_real,
    ``HarmonicAnalysis.multiplierNorm_le_liminf_torusMultiplierNorm,
    ``HarmonicAnalysis.multiplierNorm_le_torusMultiplierNorm,
+   ``HarmonicAnalysis.exists_norm_le_of_liminf_torusMultiplierNorm_ne_top,
    ``HarmonicAnalysis.beurlingPow_dzbarCLM_pow,
+   ``HarmonicAnalysis.beurlingPow_dzbar_iterate,
    ``HarmonicAnalysis.div_le_beurlingPowNorm_of_tendsto,
    ``HarmonicAnalysis.beurlingPowNorm_conjExponent,
    ``HarmonicAnalysis.beurlingPowNorm_le_torusBeurlingPowNorm,

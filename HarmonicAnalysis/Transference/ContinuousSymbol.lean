@@ -23,6 +23,11 @@ Hytönen–van Neerven–Veraar–Weis (HNVW) for `ℝ² ≅ ℂ` and scalar sym
 every `ξ ≠ 0`, then for `1 < p < ∞` and every sequence `R_j → ∞` (in HNVW, `ε_j = 1 / R_j ↓ 0`),
 `‖T_m‖_{L^p (ℝ²)} ≤ liminf_j ‖T_{(m (n / R_j))_n}‖_{L^p_0 (𝕋²)}`.
 
+If the `liminf` is finite, `m` is bounded
+(`HarmonicAnalysis.exists_norm_le_of_liminf_torusMultiplierNorm_ne_top`), and `T_m` extends to a
+bounded operator on `L^p (ℝ²)` (`HarmonicAnalysis.existsUnique_extension_of_multiplierNorm_ne_top`):
+`m` is a Fourier multiplier on `L^p (ℝ²)`.
+
 ## Proof
 
 That of HNVW, pp. 461–462.
@@ -270,8 +275,8 @@ private theorem enorm_integral_fourierMultiplier_mul_le {m : ℂ → ℂ}
 
 /-- The symbol is bounded off `0` by `liminf_j ‖T_{m (· / R_j)}‖`: its values are limits of values
 at points of the lattices `R_j⁻¹ ℤ²`, off `0`. -/
-private theorem enorm_le_liminf {m : ℂ → ℂ} (hmc : ∀ ξ ≠ 0, ContinuousAt m ξ) {R : ℕ → ℝ}
-    (hR : Tendsto R atTop atTop) {p : ℝ} (hp : 0 < p) {ξ : ℂ} (hξ : ξ ≠ 0) :
+theorem enorm_le_liminf_torusMultiplierNorm {m : ℂ → ℂ} (hmc : ∀ ξ ≠ 0, ContinuousAt m ξ)
+    {R : ℕ → ℝ} (hR : Tendsto R atTop atTop) {p : ℝ} (hp : 0 < p) {ξ : ℂ} (hξ : ξ ≠ 0) :
     ‖m ξ‖ₑ ≤ liminf (fun j => torusMultiplierNorm (fun n => m (latticePoint n / R j)) p) atTop := by
   obtain ⟨n, hn⟩ := exists_tendsto_latticePoint_div ξ
   have hv := hn.comp hR
@@ -403,7 +408,8 @@ theorem multiplierNorm_le_liminf_torusMultiplierNorm {m : ℂ → ℂ}
   have hpq : p.HolderConjugate (p / (p - 1)) :=
     (Real.holderConjugate_iff_eq_conjExponent hp).2 rfl
   have hm : Measurable m := measurable_of_continuousAt_ne_zero hmc
-  have hmM : ∀ ξ ≠ 0, ‖m ξ‖ₑ ≤ M := fun ξ hξ => enorm_le_liminf hmc hR (by linarith) hξ
+  have hmM : ∀ ξ ≠ 0, ‖m ξ‖ₑ ≤ M := fun ξ hξ =>
+    enorm_le_liminf_torusMultiplierNorm hmc hR (by linarith) hξ
   -- The bound for the pairing of Schwartz functions.
   have hpair := enorm_integral_fourierMultiplier_mul_le_of_forall hm hM hmM hp hpq.symm.lt
     fun f g hf hg => enorm_integral_fourierMultiplier_mul_le hmc hR hp hf hg hM
@@ -415,5 +421,27 @@ theorem multiplierNorm_le_liminf_torusMultiplierNorm {m : ℂ → ℂ}
   rw [hg, show eLpNorm (fun x => conj (g x)) _ volume = _ from eLpNorm_conj _ _ _,
     ← mul_assoc] at h
   exact h
+
+/-- If the `liminf` is finite, the symbol is bounded, and so the symbol of a Fourier multiplier in
+the sense of HNVW, Definition 5.3.1. -/
+theorem exists_norm_le_of_liminf_torusMultiplierNorm_ne_top {m : ℂ → ℂ}
+    (hmc : ∀ ξ ≠ 0, ContinuousAt m ξ) {R : ℕ → ℝ} (hR : Tendsto R atTop atTop) {p : ℝ}
+    (hp : 0 < p) (hM : liminf (fun j => torusMultiplierNorm (fun n => m (latticePoint n / R j)) p)
+      atTop ≠ ⊤) : ∃ C, ∀ ξ, ‖m ξ‖ ≤ C := by
+  set M := liminf (fun j => torusMultiplierNorm (fun n => m (latticePoint n / R j)) p) atTop
+  refine ⟨max ‖m 0‖ M.toReal, fun ξ => ?_⟩
+  rcases eq_or_ne ξ 0 with rfl | hξ
+  · exact le_max_left _ _
+  refine le_max_of_le_right ?_
+  rw [← toReal_enorm]
+  exact ENNReal.toReal_mono hM (enorm_le_liminf_torusMultiplierNorm hmc hR hp hξ)
+
+/-- The dilated symbols in the notation of HNVW, `m (ε k)` with `ε = 1 / R ↓ 0`. -/
+theorem torusMultiplierNorm_div_inv (m : ℂ → ℂ) (ε p : ℝ) :
+    torusMultiplierNorm (fun n => m (latticePoint n / (ε⁻¹ : ℝ))) p =
+      torusMultiplierNorm (fun n => m (ε * latticePoint n)) p := by
+  congr 1
+  funext n
+  rw [Complex.ofReal_inv, div_inv_eq_mul, mul_comm]
 
 end HarmonicAnalysis

@@ -5,8 +5,7 @@ Authors: The-Anh Vu-Le
 -/
 module
 
-public import Mathlib.Analysis.Fourier.AddCircleMulti
-public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
+public import HarmonicAnalysis.Defs
 
 /-!
 # Trigonometric polynomials and Fourier multipliers on the torus
@@ -43,22 +42,6 @@ namespace HarmonicAnalysis
 open UnitAddTorus
 
 variable {ι : Type*} [Fintype ι]
-
-/-- The trigonometric polynomial `x ↦ Σ_n c_n e^{2πi ⟨n, x⟩}` on the torus `𝕋^ι`. -/
-def trigPoly (c : (ι → ℤ) →₀ ℂ) (x : UnitAddTorus ι) : ℂ :=
-  c.sum fun n a => a * mFourier n x
-
-/-- The Fourier multiplier with symbol `m : ℤ^ι → ℂ` applied to the trigonometric polynomial with
-coefficients `c`: `x ↦ Σ_n m (n) c_n e^{2πi ⟨n, x⟩}`. -/
-def torusMultiplier (m : (ι → ℤ) → ℂ) (c : (ι → ℤ) →₀ ℂ) (x : UnitAddTorus ι) : ℂ :=
-  c.sum fun n a => m n * a * mFourier n x
-
-/-- `‖T_m‖_{L^p_0 (𝕋^ι) → L^p_0 (𝕋^ι)}`: the supremum over the (dense) mean-zero trigonometric
-polynomials (`c₀ = 0`). -/
-def torusMultiplierNorm (m : (ι → ℤ) → ℂ) (p : ℝ) : ℝ≥0∞ :=
-  ⨆ (c : (ι → ℤ) →₀ ℂ) (_ : c 0 = 0),
-    eLpNorm (torusMultiplier m c) (ENNReal.ofReal p) volume /
-      eLpNorm (trigPoly c) (ENNReal.ofReal p) volume
 
 private lemma norm_mFourier_apply (n : ι → ℤ) (x : UnitAddTorus ι) : ‖mFourier n x‖ = 1 := by
   simp [mFourier, fourier_apply, norm_prod, Circle.norm_coe]
