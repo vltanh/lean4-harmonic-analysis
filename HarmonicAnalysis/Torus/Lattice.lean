@@ -143,8 +143,8 @@ theorem hasSum_integral_centredCell_add {E : Type*} [NormedAddCommGroup E] [Norm
 /-! ### Functions on the torus -/
 
 /-- `|e_n| = 1` on `𝕋²`. -/
-theorem norm_mFourier_apply (n : Fin 2 → ℤ) (z : UnitAddTorus (Fin 2)) : ‖mFourier n z‖ = 1 := by
-  simp [mFourier, fourier_apply, Circle.norm_coe]
+theorem norm_mFourier_apply (n : Fin 2 → ℤ) (z : UnitAddTorus (Fin 2)) : ‖mFourier n z‖ = 1 :=
+  norm_mFourier_apply_eq_one n z
 
 /-- Fourier coefficients on `𝕋²` (with the Haar measure of total mass one) as integrals over the
 centred cell: `F̂ (n) = ∫_{(−½, ½]²} e_{−n} (y) F (y) dy`. -/

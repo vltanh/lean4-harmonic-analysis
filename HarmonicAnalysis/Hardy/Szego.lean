@@ -25,7 +25,9 @@ several variables*, Acta Math. 99 (1958), 165–202, §5, prove:
   integrable; then `B` can be chosen outer, with `∫ log |det B| = log |det B̂ (0)|`
   (`exists_isOuter_of_integrable_log_det`, `integrable_log_det_of_isHardyTwo`). The infimum is
   `|det B̂ (0)|^{2/n}` if `W = Bᴴ B` with `B` outer and `det B̂ (0) ≠ 0` (`IsOuter.szegoInf_eq`;
-  proof of (75), there for the `B` of (77)).
+  proof of (75), there for the `B` of (77)), and therefore every such `B` has this property
+  (`integral_log_norm_det_of_isOuter`; this is also a part of Theorem 8 of their second article,
+  *Prediction theory and Fourier series in several variables. II*, Acta Math. 106 (1961), 175–213).
 
 The source writes the integrands in (44) and (55) as `tr ((A₀ + P)ᴴ (A₀ + P) W)`, which is
 `tr (Q W Qᴴ)` for `Q = A₀ + P`, and `W = B Bᴴ`, and normalizes the trace; the statements here are
@@ -62,12 +64,6 @@ private theorem trace_conjTranspose_mul_self_mul_le {l m n : Type*} [Fintype l] 
   exact Matrix.frobenius_norm_mul M N
 
 variable {n : Type*} [Fintype n] [DecidableEq n]
-
-/-- If `W = Bᴴ B`, then `log det W = 2 log |det B|`. -/
-private theorem log_det_re_eq {B W : Matrix n n ℂ} (h : Bᴴ * B = W) :
-    Real.log W.det.re = 2 * Real.log ‖B.det‖ := by
-  rw [← h, det_conjTranspose_mul_self_re, Real.log_pow]
-  norm_num
 
 omit [DecidableEq n] in
 /-- `tr (Qᴴ W Q) ≥ 0` if `W` is positive semidefinite. -/
@@ -306,9 +302,9 @@ private theorem exists_isOuter_of_innovation {q : Type*} [Finite q] [DecidableEq
   · exact Matrix.rank_le_card_width _
   · exact hrank.trans_eq (Matrix.rank_submatrix _ e.symm (Equiv.refl n)).symm
   · filter_upwards [hXX] with t ht
-    rw [Matrix.conjTranspose_submatrix, Matrix.submatrix_mul_equiv, Matrix.submatrix_id_id,
-      Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose, Matrix.mul_assoc,
-      ← Matrix.mul_assoc (X t), (Matrix.mul_eq_one_comm_of_equiv e).1 ht, Matrix.one_mul]
+    rw [Matrix.conjTranspose_submatrix, Matrix.submatrix_mul_equiv, Matrix.submatrix_id_id]
+    exact conjTranspose_mul_self_of_mul_eq (by
+      rw [← Matrix.mul_assoc, (Matrix.mul_eq_one_comm_of_equiv e).1 ht, Matrix.one_mul])
 
 /-- Helson–Lowdenslager (1958), Lemma 6: if the infimum is positive, then `W = Bᴴ B` for an outer
 function `B` with `det B̂ (0) ≠ 0`; that `B` is outer is (77) and the remark after it, p. 194.
@@ -326,7 +322,7 @@ theorem exists_isOuter_of_szegoInf_pos {W : UnitAddCircle → Matrix n n ℂ}
       (cfc Real.sqrt (W t))ᴴ * cfc Real.sqrt (W t) = W t := by
     filter_upwards [hW] with t ht
     rw [(posSemidef_cfc_sqrt (W t)).isHermitian.eq, cfc_sqrt_mul_self ht]
-  obtain ⟨q, X, hq, hX, hXX, hB, hrank, ⟨c, hc, hlim⟩, -⟩ := exists_innovation hA
+  obtain ⟨q, X, hq, hX, hXX, hB, ⟨c, hc, hlim⟩, -⟩ := exists_innovation hA
   have hFC : ∀ᵐ t ∂haarAddCircle,
       (X t * matFourierCoeff (fun s => (X s)ᴴ * cfc Real.sqrt (W s)) 0)ᴴ *
         (X t * matFourierCoeff (fun s => (X s)ᴴ * cfc Real.sqrt (W s)) 0) =
@@ -338,7 +334,8 @@ theorem exists_isOuter_of_szegoInf_pos {W : UnitAddCircle → Matrix n n ℂ}
     szegoInf_le_trace_of_tendsto hA hAW hFC hc hlim hD
   have e : Fin q ≃ n := Fintype.equivOfCardEq <| by
     rw [Fintype.card_fin]
-    exact le_antisymm hq (hcard.trans_eq hrank)
+    exact le_antisymm hq (hcard.trans ((Matrix.rank_le_card_height _).trans_eq
+      (Fintype.card_fin q)))
   obtain ⟨B, h1, h2, h3⟩ := exists_isOuter_of_innovation e hXX
     (isOuter_conjTranspose_mul hA hX hXX hB hc hlim) hcard
   refine ⟨B, h1, h2, ?_⟩
@@ -441,7 +438,7 @@ private theorem integral_log_norm_det_eq {B Q : UnitAddCircle → Matrix n n ℂ
   rw [h3, hlog h1] at h4
   exact ⟨left_ne_zero_of_mul_eq_one h2, le_antisymm (neg_le_neg_iff.1 h4) h5⟩
 
-/-- "By assumption `Ψ` satisfies (57). Making use of (71) we have `0 = ∫ log det e^Ψ = […]`"
+/-- "By assumption `Ψ` satisfies (57). Making use of (71) we have `0 = ∫ log det e^Ψ dσ = […]`"
 (Helson–Lowdenslager (1958), p. 192): if `Q Qᴴ = e^Ψ` and `∫ tr Ψ = 0`, then
 `∫ log |det Q| = 0`. -/
 private theorem integral_log_norm_det_eq_zero {c : ℤ →₀ Matrix n n ℂ}
@@ -451,10 +448,9 @@ private theorem integral_log_norm_det_eq_zero {c : ℤ →₀ Matrix n n ℂ}
     ∫ t, Real.log ‖(Q t).det‖ ∂haarAddCircle = 0 := by
   have h1 : ∀ᵐ t ∂haarAddCircle, Real.log ‖(Q t).det‖ = (2⁻¹ : ℝ) * (circPoly c t).trace.re := by
     filter_upwards [hQ] with t ht
-    have h2 := log_det_re_eq (B := (Q t)ᴴ) (W := NormedSpace.exp (circPoly c t))
-      (by rwa [Matrix.conjTranspose_conjTranspose])
-    rw [det_matrix_exp (hc t), Complex.ofReal_re, Real.log_exp, Matrix.det_conjTranspose,
-      norm_star] at h2
+    have h2 := log_det_conjTranspose_mul_self_re (Q t)ᴴ
+    rw [Matrix.conjTranspose_conjTranspose, ht, det_matrix_exp (hc t), Complex.ofReal_re,
+      Real.log_exp, Matrix.det_conjTranspose, norm_star] at h2
     linarith
   rw [integral_congr_ae h1, integral_const_mul, integral_trace_circPoly_re, h0, Complex.zero_re,
     mul_zero]
@@ -731,6 +727,56 @@ theorem IsOuter.szegoInf_eq [Nonempty n] {W B : UnitAddCircle → Matrix n n ℂ
   exact (szegoInf_le_trace_of_tendsto (F := fun _ => matFourierCoeff B 0)
     (C := matFourierCoeff B 0) hB2.1 hBW (ae_of_all _ fun _ => rfl) hc hlim hD).trans_eq hDn
 
+/-- Helson–Lowdenslager (1958), Theorem 9, the necessity, with (76): if `B ∈ H²` and
+`det B̂ (0) ≠ 0`, then `log |det B|` is integrable and `∫ log |det B| ≥ log |det B̂ (0)|`. -/
+theorem integrable_log_det_of_isHardyTwo {B : UnitAddCircle → Matrix n n ℂ} (hB : IsHardyTwo B)
+    (h0 : (matFourierCoeff B 0).det ≠ 0) :
+    (∀ᵐ t ∂haarAddCircle, (B t).det ≠ 0) ∧
+      Integrable (fun t => Real.log ‖(B t).det‖) haarAddCircle ∧
+      Real.log ‖(matFourierCoeff B 0).det‖ ≤ ∫ t, Real.log ‖(B t).det‖ ∂haarAddCircle := by
+  cases isEmpty_or_nonempty n
+  · simp [Matrix.det_isEmpty]
+  have hn : (0 : ℝ) < Fintype.card n := by exact_mod_cast Fintype.card_pos
+  have hint := integrable_conjTranspose_mul_self hB.1
+  have h1 := norm_det_rpow_le_szegoInf hB (ae_of_all _ fun t => rfl)
+  obtain ⟨hpos, hlog⟩ := posDef_of_szegoInf_pos hint
+    (ae_of_all _ fun t => Matrix.posSemidef_conjTranspose_mul_self _)
+    ((Real.rpow_pos_of_pos (norm_pos_iff.2 h0) _).trans_le h1)
+  rw [szegoInf_eq hint hpos hlog, Real.rpow_def_of_pos (norm_pos_iff.2 h0), Real.exp_le_exp] at h1
+  simp only [log_det_conjTranspose_mul_self_re] at hlog h1
+  rw [integral_const_mul] at h1
+  refine ⟨?_, ?_, ?_⟩
+  · filter_upwards [hpos] with t ht hdet
+    have h2 := ht.det_pos
+    rw [Matrix.det_mul, hdet, mul_zero] at h2
+    exact lt_irrefl _ h2
+  · simpa using hlog.const_mul 2⁻¹
+  · field_simp at h1
+    linarith
+
+/-- Helson–Lowdenslager (1958), (75), and (1961), p. 204, one half of Theorem 8: an outer function
+`B` with `det B̂ (0) ≠ 0` satisfies `∫ log |det B| = log |det B̂ (0)|`. In (1961), if `B` is outer,
+then `B (1 + H) = B₀`, so that `C = B₀ᴴ B₀` and (131) is an equality. Here, as in the proof of (75)
+for the `B` of (77), the infimum (44) of the first paper, for `W = Bᴴ B`, is computed from the limit
+`B₀` of the functions `B (1 + P)` (`IsOuter.szegoInf_eq`; the lower bound is (76)) and not from the
+element of smallest norm, so that its uniqueness is not used. -/
+theorem integral_log_norm_det_of_isOuter {B : UnitAddCircle → Matrix n n ℂ} (hB : IsOuter B)
+    (h0 : (matFourierCoeff B 0).det ≠ 0) :
+    ∫ t, Real.log ‖(B t).det‖ ∂haarAddCircle = Real.log ‖(matFourierCoeff B 0).det‖ := by
+  cases isEmpty_or_nonempty n
+  · simp [Matrix.det_isEmpty]
+  have hn : (Fintype.card n : ℝ) ≠ 0 := Nat.cast_ne_zero.2 Fintype.card_ne_zero
+  obtain ⟨hdet, hlog, -⟩ := integrable_log_det_of_isHardyTwo hB.1 h0
+  have h2 := szegoInf_eq (W := fun t => (B t)ᴴ * B t)
+    (integrable_conjTranspose_mul_self hB.1.1)
+    (hdet.mono fun t ht => posDef_conjTranspose_mul_self ht)
+    ((hlog.const_mul 2).congr (ae_of_all _ fun t => (log_det_conjTranspose_mul_self_re _).symm))
+  rw [hB.szegoInf_eq h0 (ae_of_all _ fun _ => rfl), Real.rpow_def_of_pos (norm_pos_iff.2 h0),
+    Real.exp_eq_exp] at h2
+  simp only [log_det_conjTranspose_mul_self_re, integral_const_mul] at h2
+  field_simp at h2
+  linarith
+
 /-- Helson–Lowdenslager (1958), Theorem 9, the sufficiency: if `W` is positive definite almost
 everywhere and `log det W` is integrable, then `W = Bᴴ B` for an outer function `B` with
 `det B̂ (0) ≠ 0` and `∫ log |det B| = log |det B̂ (0)|`. -/
@@ -748,42 +794,8 @@ theorem exists_isOuter_of_integrable_log_det {W : UnitAddCircle → Matrix n n �
     · rw [Matrix.det_isEmpty]
       exact one_ne_zero
     · simp [Matrix.det_isEmpty]
-  have hn : (Fintype.card n : ℝ) ≠ 0 := Nat.cast_ne_zero.2 Fintype.card_ne_zero
-  have hinf := szegoInf_eq hint hW hlog
   obtain ⟨B, hB, h0, hBW⟩ := exists_isOuter_of_szegoInf_pos hint
-    (hW.mono fun t ht => ht.posSemidef) (hinf ▸ Real.exp_pos _)
-  refine ⟨B, hB, h0, hBW, ?_⟩
-  rw [integral_congr_ae (hBW.mono fun t ht => log_det_re_eq ht), integral_const_mul,
-    hB.szegoInf_eq h0 hBW, Real.rpow_def_of_pos (norm_pos_iff.2 h0), Real.exp_eq_exp]
-    at hinf
-  field_simp at hinf
-  linarith
-
-/-- Helson–Lowdenslager (1958), Theorem 9, the necessity, with (76): if `B ∈ H²` and
-`det B̂ (0) ≠ 0`, then `log |det B|` is integrable and `∫ log |det B| ≥ log |det B̂ (0)|`. -/
-theorem integrable_log_det_of_isHardyTwo {B : UnitAddCircle → Matrix n n ℂ} (hB : IsHardyTwo B)
-    (h0 : (matFourierCoeff B 0).det ≠ 0) :
-    (∀ᵐ t ∂haarAddCircle, (B t).det ≠ 0) ∧
-      Integrable (fun t => Real.log ‖(B t).det‖) haarAddCircle ∧
-      Real.log ‖(matFourierCoeff B 0).det‖ ≤ ∫ t, Real.log ‖(B t).det‖ ∂haarAddCircle := by
-  cases isEmpty_or_nonempty n
-  · simp [Matrix.det_isEmpty]
-  have hn : (0 : ℝ) < Fintype.card n := by exact_mod_cast Fintype.card_pos
-  have hint := integrable_conjTranspose_mul_self hB.1
-  have h1 := norm_det_rpow_le_szegoInf hB (ae_of_all _ fun t => rfl)
-  obtain ⟨hpos, hlog⟩ := posDef_of_szegoInf_pos hint
-    (ae_of_all _ fun t => Matrix.posSemidef_conjTranspose_mul_self _)
-    ((Real.rpow_pos_of_pos (norm_pos_iff.2 h0) _).trans_le h1)
-  rw [szegoInf_eq hint hpos hlog, Real.rpow_def_of_pos (norm_pos_iff.2 h0), Real.exp_le_exp] at h1
-  simp only [log_det_re_eq rfl] at hlog h1
-  rw [integral_const_mul] at h1
-  refine ⟨?_, ?_, ?_⟩
-  · filter_upwards [hpos] with t ht hdet
-    have h2 := ht.det_pos
-    rw [Matrix.det_mul, hdet, mul_zero] at h2
-    exact lt_irrefl _ h2
-  · simpa using hlog.const_mul 2⁻¹
-  · field_simp at h1
-    linarith
+    (hW.mono fun t ht => ht.posSemidef) (szegoInf_eq hint hW hlog ▸ Real.exp_pos _)
+  exact ⟨B, hB, h0, hBW, integral_log_norm_det_of_isOuter hB h0⟩
 
 end HarmonicAnalysis

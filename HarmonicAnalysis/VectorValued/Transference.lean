@@ -7,6 +7,7 @@ module
 
 public import HarmonicAnalysis.VectorValued.CircPoly
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
+import HarmonicAnalysis.FourierMultiplier.Density
 import Mathlib.Algebra.Order.Interval.Set.Group
 import Mathlib.Analysis.Calculus.Deriv.Polynomial
 import Mathlib.Analysis.Normed.Module.HahnBanach
@@ -275,12 +276,6 @@ private theorem schwartz_rpow_le {p : ℝ} (hp : 1 ≤ p) (φ : 𝓢(ℝ, ℂ)) 
         gcongr
         linarith
 
-private theorem eLpNorm_rpow_eq_lintegral {α E : Type*} [MeasurableSpace α] [NormedAddCommGroup E]
-    {μ : Measure α} {p : ℝ} (hp : 0 < p) {f : α → E} (hf : AEStronglyMeasurable f μ) :
-    eLpNorm f (ENNReal.ofReal p) μ ^ p = ∫⁻ x, ‖f x‖ₑ ^ p ∂μ := by
-  rw [eLpNorm_eq_lintegral_rpow_enorm_toReal (by simpa using hp) ENNReal.ofReal_ne_top hf,
-    ENNReal.toReal_ofReal hp.le, ← ENNReal.rpow_mul, one_div_mul_cancel hp.ne', ENNReal.rpow_one]
-
 /-- **HNVW I, Lemma 5.7.3**, for `d = 1`: for `φ ∈ 𝓢 (ℝ)` and `f ∈ L^p (𝕋; X)`, `1 ≤ p < ∞`,
 `ε^{1/p} ‖φ (ε ·) f‖_{L^p (ℝ; X)} → ‖φ‖_{L^p (ℝ)} ‖f‖_{L^p (𝕋; X)}` as `ε ↓ 0`. As in the book,
 `ε ∫_ℝ ‖φ (ε x) f (x)‖^p dx = ∫_0^1 (ε Σ_k |φ (ε (x + k))|^p) ‖f (x)‖^p dx`, and the Riemann sums
@@ -295,12 +290,12 @@ theorem tendsto_eLpNorm_dilate_smul {p : ℝ} (hp : 1 ≤ p) (φ : 𝓢(ℝ, ℂ
   have hWc : Continuous fun y => ‖φ y‖ₑ ^ p :=
     ENNReal.continuous_rpow_const.comp φ.continuous.enorm
   have hfm := hf.aestronglyMeasurable
-  have hnorm := eLpNorm_rpow_eq_lintegral hp0 hfm
+  have hnorm := eLpNorm_ofReal_rpow_eq_lintegral hp0 hfm
   have hfin : ∫⁻ t, ‖f t‖ₑ ^ p ∂haarAddCircle ≠ ∞ := by
     rw [← hnorm]
     exact ENNReal.rpow_ne_top_of_nonneg hp0.le hf.eLpNorm_ne_top
   have h := tendsto_lintegral_dilate hWc hC hφ (hfm.enorm.pow_const p) hfin
-  rw [← hnorm, ← eLpNorm_rpow_eq_lintegral hp0 φ.continuous.aestronglyMeasurable,
+  rw [← hnorm, ← eLpNorm_ofReal_rpow_eq_lintegral hp0 φ.continuous.aestronglyMeasurable,
     ← ENNReal.mul_rpow_of_nonneg _ _ hp0.le] at h
   -- the `p`-th roots
   have h1 := (ENNReal.continuous_rpow_const (y := 1 / p)).continuousAt.tendsto.comp h
@@ -311,7 +306,7 @@ theorem tendsto_eLpNorm_dilate_smul {p : ℝ} (hp : 1 ≤ p) (φ : 𝓢(ℝ, ℂ
       (hfm.comp_quasiMeasurePreserving quasiMeasurePreserving_coe)
   have h2 : ∫⁻ x : ℝ, ‖φ (ε * x)‖ₑ ^ p * ‖f (x : UnitAddCircle)‖ₑ ^ p =
       eLpNorm (fun x : ℝ => φ (ε * x) • f (x : UnitAddCircle)) (ENNReal.ofReal p) volume ^ p := by
-    rw [eLpNorm_rpow_eq_lintegral hp0 hm]
+    rw [eLpNorm_ofReal_rpow_eq_lintegral hp0 hm]
     refine lintegral_congr fun x => ?_
     rw [enorm_smul, ENNReal.mul_rpow_of_nonneg _ _ hp0.le]
   simp only [Function.comp_apply, h2]
@@ -483,8 +478,8 @@ private theorem integral_circPoly_multiplier (m : ℝ → X →L[ℂ] Y) (a : �
       ∑ l ∈ b.support, ∑ k ∈ a.support, if k = -l then b l (m k (a k)) else 0 := by
   have hi : ∀ k l : ℤ, Integrable (fun t : UnitAddCircle =>
       (fourier k t * fourier l t) * b l (m k (a k))) haarAddCircle := fun k l =>
-    (((map_continuous (fourier k)).mul (map_continuous (fourier l))).mul
-      continuous_const).integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
+    integrable_haar_of_continuous
+      (((map_continuous (fourier k)).mul (map_continuous (fourier l))).mul continuous_const)
   have h1 : ∀ t, circPoly b t (a.sum fun k y => fourier k t • m k y) =
       ∑ l ∈ b.support, ∑ k ∈ a.support, (fourier k t * fourier l t) * b l (m k (a k)) := fun t => by
     rw [circPoly, Finsupp.sum, sum_apply]
@@ -586,9 +581,10 @@ private theorem lintegral_dual_le {α : Type*} [MeasurableSpace α] {μ : Measur
   refine (lintegral_mono h1).trans ?_
   have h2 := ENNReal.lintegral_mul_le_Lp_mul_Lq μ hpq hu.enorm hg.enorm
   simp only [Pi.mul_apply] at h2
-  rw [← eLpNorm_rpow_eq_lintegral hpq.pos hu, ← eLpNorm_rpow_eq_lintegral hpq.symm.pos hg,
-    ← ENNReal.rpow_mul, ← ENNReal.rpow_mul, mul_one_div_cancel hpq.ne_zero,
-    mul_one_div_cancel hpq.symm.ne_zero, ENNReal.rpow_one, ENNReal.rpow_one] at h2
+  rw [← eLpNorm_ofReal_rpow_eq_lintegral hpq.pos hu,
+    ← eLpNorm_ofReal_rpow_eq_lintegral hpq.symm.pos hg, ← ENNReal.rpow_mul, ← ENNReal.rpow_mul,
+    mul_one_div_cancel hpq.ne_zero, mul_one_div_cancel hpq.symm.ne_zero, ENNReal.rpow_one,
+    ENNReal.rpow_one] at h2
   exact h2
 
 private theorem enorm_integral_dual_le {α : Type*} [MeasurableSpace α] {μ : Measure α} {p q : ℝ}
@@ -689,7 +685,7 @@ private theorem eLpNorm_simpleFunc_le {α : Type*} [MeasurableSpace α] {μ : Me
   have hp1 : 0 < p - 1 := hpq.sub_one_pos
   have hsm : AEStronglyMeasurable (⇑s) μ := s.aestronglyMeasurable
   set N := eLpNorm (⇑s) (ENNReal.ofReal p) μ with hN
-  have hNp : N ^ p = ∫⁻ t, ‖s t‖ₑ ^ p ∂μ := eLpNorm_rpow_eq_lintegral hpq.pos hsm
+  have hNp : N ^ p = ∫⁻ t, ‖s t‖ₑ ^ p ∂μ := eLpNorm_ofReal_rpow_eq_lintegral hpq.pos hsm
   have hNt : N ≠ ∞ := (s.memLp_of_isFiniteMeasure _ μ).eLpNorm_ne_top
   rcases eq_or_ne N 0 with hN0 | hN0
   · rw [hN0]
@@ -712,7 +708,7 @@ private theorem eLpNorm_simpleFunc_le {α : Type*} [MeasurableSpace α] {μ : Me
     rw [← ofReal_norm, ENNReal.ofReal_rpow_of_nonneg (norm_nonneg _) hpq.nonneg]
   have h2 : eLpNorm (⇑g) (ENNReal.ofReal q) μ ≤ N ^ (p - 1) := by
     rw [← ENNReal.rpow_le_rpow_iff hpq.symm.pos,
-      eLpNorm_rpow_eq_lintegral hpq.symm.pos g.aestronglyMeasurable, ← ENNReal.rpow_mul,
+      eLpNorm_ofReal_rpow_eq_lintegral hpq.symm.pos g.aestronglyMeasurable, ← ENNReal.rpow_mul,
       hpq.sub_one_mul_conj, hNp]
     refine lintegral_mono fun t => ?_
     have h3 : ‖g t‖ₑ ≤ ‖s t‖ₑ ^ (p - 1) := by
@@ -910,7 +906,7 @@ private theorem eLpNorm_gaussian {p : ℝ} (hp : 0 < p) {φ : 𝓢(ℝ, ℂ)}
     (hφ : ∀ x, φ x = ((Real.exp (-(Real.pi / p * x ^ 2)) : ℝ) : ℂ)) :
     eLpNorm φ (ENNReal.ofReal p) volume = 1 := by
   have h1 : eLpNorm φ (ENNReal.ofReal p) volume ^ p = 1 := by
-    rw [eLpNorm_rpow_eq_lintegral hp φ.continuous.aestronglyMeasurable]
+    rw [eLpNorm_ofReal_rpow_eq_lintegral hp φ.continuous.aestronglyMeasurable]
     have h2 : ∀ x, ‖φ x‖ₑ ^ p = ENNReal.ofReal (Real.exp (-Real.pi * x ^ 2)) := fun x => by
       rw [← ofReal_norm, hφ, Complex.norm_real, Real.norm_of_nonneg (Real.exp_pos _).le,
         ENNReal.ofReal_rpow_of_nonneg (Real.exp_pos _).le hp.le, ← Real.exp_mul]

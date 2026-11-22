@@ -60,13 +60,6 @@ private theorem eq_zero_of_det_one_add_eq_one {n : Type*} [Fintype n] [Decidable
   rw [h2, add_le_iff_nonpos_right] at h3
   exact le_antisymm h3 (hY.eigenvalues_nonneg i)
 
-/-- `Mᴴ M` is positive definite if `M` is invertible. -/
-private theorem posDef_conjTranspose_mul_self {n : Type*} [Fintype n] [DecidableEq n]
-    {M : Matrix n n ℂ} (hM : M.det ≠ 0) : (Mᴴ * M).PosDef := by
-  rw [(Matrix.posSemidef_conjTranspose_mul_self M).posDef_iff_det_ne_zero, Matrix.det_mul,
-    Matrix.det_conjTranspose]
-  exact mul_ne_zero (star_ne_zero.2 hM) hM
-
 /-- If `Mᴴ M ≤ C`, `M` is invertible and the logarithms of the determinants of `Mᴴ M` and `C` are
 equal, then `C = Mᴴ M` (Helson–Lowdenslager (1961), (131): "with equality if and only if
 `C = A₀ A₀*`"). -/
@@ -98,17 +91,6 @@ private theorem eq_of_log_det_eq {n : Type*} [Fintype n] [DecidableEq n] {M C : 
 
 /-! ### Theorem 8 -/
 
-/-- The constant coefficient of the adjoint function is the adjoint of the constant coefficient. -/
-private theorem matFourierCoeff_zero_conjTranspose {m n : Type*}
-    (F : UnitAddCircle → Matrix m n ℂ) :
-    matFourierCoeff (fun t => (F t)ᴴ) 0 = (matFourierCoeff F 0)ᴴ := by
-  ext i j
-  rw [Matrix.conjTranspose_apply, matFourierCoeff, matFourierCoeff, Matrix.of_apply,
-    Matrix.of_apply]
-  simp only [fourierCoeff, neg_zero, fourier_zero, one_smul, Matrix.conjTranspose_apply,
-    ← starRingEnd_apply]
-  exact integral_conj
-
 /-- The mean of a positive semidefinite function is positive semidefinite. -/
 private theorem posSemidef_matFourierCoeff_zero {n : Type*} [Finite n]
     {K : UnitAddCircle → Matrix n n ℂ}
@@ -116,8 +98,9 @@ private theorem posSemidef_matFourierCoeff_zero {n : Type*} [Finite n]
     (hK : ∀ᵐ t ∂haarAddCircle, (K t).PosSemidef) : (matFourierCoeff K 0).PosSemidef := by
   cases nonempty_fintype n
   refine Matrix.PosSemidef.of_dotProduct_mulVec_nonneg ?_ fun x => ?_
-  · exact (matFourierCoeff_zero_conjTranspose K).symm.trans
-      (matFourierCoeff_congr_ae (hK.mono fun t ht => ht.isHermitian.eq) 0)
+  · have h0 := matFourierCoeff_conjTranspose K 0
+    rw [neg_zero, matFourierCoeff_congr_ae (hK.mono fun t ht => ht.isHermitian.eq)] at h0
+    exact h0.symm
   · have h1 (M : Matrix n n ℂ) : star x ⬝ᵥ M.mulVec x =
         ((Matrix.replicateCol Unit x)ᴴ * (M * Matrix.replicateCol Unit x)) () () := by
       simp [Matrix.mul_apply, dotProduct, Matrix.mulVec]
@@ -143,7 +126,7 @@ private theorem matFourierCoeff_zero_sub {m n : Type*} [Fintype m]
     (hF j i).star.integrable one_le_two
   have h1 := matFourierCoeff_const_mul F₀ᴴ hF1 0
   have h2 := matFourierCoeff_mul_const hF2 F₀ 0
-  rw [matFourierCoeff_zero_conjTranspose, ← hF₀] at h2
+  rw [matFourierCoeff_conjTranspose, neg_zero, ← hF₀] at h2
   rw [← hF₀] at h1 ⊢
   have h3 (i j : n) : Integrable (fun t => (F₀ᴴ * F t) i j) haarAddCircle :=
     integrable_continuous_mul continuous_const hF1 i j
@@ -207,55 +190,32 @@ private theorem ae_eq_of_eq_conjTranspose_mul {m n : Type*} [Fintype m] [Finite 
 
 variable {m n : Type*} [Fintype m] [DecidableEq m] [Fintype n] [DecidableEq n]
 
-/-- Helson–Lowdenslager (1961), p. 204: if `A` is outer, then `A (1 + H) = A₀` and `C = A₀ᴴ A₀`, so
-that (131) is an equality. Here the infimum (44) of the first paper, for `W = Aᴴ A`, is computed
-from the limit `A₀` of the functions `A (1 + P)` (`IsOuter.szegoInf_eq`; the lower bound is (76)
-there) and not from the element of smallest norm, so that its uniqueness is not used. -/
-private theorem integral_log_norm_det_of_isOuter {A : UnitAddCircle → Matrix n n ℂ} (hA : IsOuter A)
-    (h0 : (matFourierCoeff A 0).det ≠ 0) :
-    ∫ t, Real.log ‖(A t).det‖ ∂haarAddCircle = Real.log ‖(matFourierCoeff A 0).det‖ := by
-  cases isEmpty_or_nonempty n
-  · simp [Matrix.det_isEmpty]
-  have hn : (Fintype.card n : ℝ) ≠ 0 := Nat.cast_ne_zero.2 Fintype.card_ne_zero
-  obtain ⟨hdet, hlog, -⟩ := integrable_log_det_of_isHardyTwo hA.1 h0
-  have h1 (t : UnitAddCircle) : Real.log ((A t)ᴴ * A t).det.re = 2 * Real.log ‖(A t).det‖ := by
-    rw [det_conjTranspose_mul_self_re, Real.log_pow, Nat.cast_ofNat]
-  have h2 := szegoInf_eq (W := fun t => (A t)ᴴ * A t)
-    (integrable_conjTranspose_mul_self hA.1.1)
-    (hdet.mono fun t ht => posDef_conjTranspose_mul_self ht)
-    ((hlog.const_mul 2).congr (ae_of_all _ fun t => (h1 t).symm))
-  rw [hA.szegoInf_eq h0 (ae_of_all _ fun _ => rfl), Real.rpow_def_of_pos (norm_pos_iff.2 h0),
-    Real.exp_eq_exp] at h2
-  simp only [h1, integral_const_mul] at h2
-  field_simp at h2
-  linarith
-
 /-- `2 ∫ log |det A| = log det C` for the constant `C = B₀ᴴ B₀` of the extremal problem for
-`W = Aᴴ A` (Helson–Lowdenslager (1961), p. 204: "We have moreover `det C = exp ∫ log det W`"). The
-source uses (44) of the first paper and the elementary equality for `det C`; here they are applied,
-with (76) for the lower bound, to `W = Bᴴ B`, `B = Xᴴ A` outer (`IsOuter.szegoInf_eq`). -/
+`W = Aᴴ A` (Helson–Lowdenslager (1961), p. 204: "We have moreover `det C = exp ∫ log det W dσ`").
+The source uses (44) of the first paper and the elementary equality for `det C`; here they are
+applied, with (76) for the lower bound, to `W = Bᴴ B`, `B = Xᴴ A` outer (`IsOuter.szegoInf_eq`). -/
 private theorem two_mul_integral_log_norm_det {q : ℕ} (e : Fin q ≃ n)
     {A : UnitAddCircle → Matrix n n ℂ} {B : UnitAddCircle → Matrix (Fin q) n ℂ} (hB : IsOuter B)
-    (hrank : (matFourierCoeff B 0).rank = q)
+    (hrank : Fintype.card n ≤ (matFourierCoeff B 0).rank)
     (hBA : ∀ᵐ t ∂haarAddCircle, (B t)ᴴ * B t = (A t)ᴴ * A t) :
     2 * ∫ t, Real.log ‖(A t).det‖ ∂haarAddCircle =
       Real.log ((matFourierCoeff B 0)ᴴ * matFourierCoeff B 0).det.re := by
-  have h1 (M : Matrix (Fin q) n ℂ) : (Mᴴ * M).det.re = ‖(M.submatrix e.symm id).det‖ ^ 2 := by
-    rw [← det_conjTranspose_mul_self_re, Matrix.conjTranspose_submatrix, Matrix.submatrix_mul_equiv,
-      Matrix.submatrix_id_id]
-  have h2 : (matFourierCoeff (fun t => (B t).submatrix e.symm id) 0).det ≠ 0 := by
-    refine det_ne_zero_of_rank_eq ?_
-    rw [← Fintype.card_congr e, Fintype.card_fin]
-    exact (Matrix.rank_submatrix (matFourierCoeff B 0) e.symm (Equiv.refl n)).trans hrank
+  have h1 (M : Matrix (Fin q) n ℂ) :
+      Real.log (Mᴴ * M).det.re = 2 * Real.log ‖(M.submatrix e.symm id).det‖ := by
+    rw [← log_det_conjTranspose_mul_self_re, Matrix.conjTranspose_submatrix,
+      Matrix.submatrix_mul_equiv, Matrix.submatrix_id_id]
+  have h2 : (matFourierCoeff (fun t => (B t).submatrix e.symm id) 0).det ≠ 0 :=
+    det_ne_zero_of_rank_eq (le_antisymm (Matrix.rank_le_card_width _) (hrank.trans_eq
+      (Matrix.rank_submatrix (matFourierCoeff B 0) e.symm (Equiv.refl n)).symm))
   have h3 := integral_log_norm_det_of_isOuter (hB.submatrix e.symm) h2
   have h4 : ∀ᵐ t ∂haarAddCircle,
       Real.log ‖((B t).submatrix e.symm id).det‖ = Real.log ‖(A t).det‖ := by
     filter_upwards [hBA] with t ht
     have h5 := h1 (B t)
-    rw [ht, det_conjTranspose_mul_self_re] at h5
-    rw [(pow_left_inj₀ (norm_nonneg _) (norm_nonneg _) two_ne_zero).1 h5]
+    rw [ht, log_det_conjTranspose_mul_self_re] at h5
+    exact (mul_left_cancel₀ two_ne_zero h5).symm
   rw [integral_congr_ae h4] at h3
-  rw [h3, h1, Real.log_pow, Nat.cast_ofNat]
+  rw [h3, h1]
   rfl
 
 /-- The constant coefficient of the limit of functions `A (1 + P)` is that of `A`
@@ -285,21 +245,20 @@ private theorem exists_extremal {A : UnitAddCircle → Matrix n n ℂ} (hA : IsH
       (∀ i j, MemLp (fun t => F t i j) 2 haarAddCircle) ∧
       matFourierCoeff F 0 = matFourierCoeff A 0 ∧ (∀ᵐ t ∂haarAddCircle, (F t)ᴴ * F t = C) ∧
       2 * ∫ t, Real.log ‖(A t).det‖ ∂haarAddCircle = Real.log C.det.re := by
-  obtain ⟨q, X, hq, hX2, hX, hB, hrank, ⟨c, hc, hlim⟩, hH, -⟩ := exists_innovation hA.1
+  obtain ⟨q, X, hq, hX2, hX, hB, ⟨c, hc, hlim⟩, hH, -⟩ := exists_innovation hA.1
   have hBo := isOuter_conjTranspose_mul hA.1 hX2 hX hB hc hlim
   obtain ⟨B₀, hB₀⟩ : ∃ M, M = matFourierCoeff (fun s => (X s)ᴴ * A s) 0 := ⟨_, rfl⟩
-  rw [← hB₀] at hlim hrank
+  rw [← hB₀] at hlim
   have hF0 := matFourierCoeff_zero_of_tendsto hA hc hlim
-  have hBA : ∀ᵐ t ∂haarAddCircle, ((X t)ᴴ * A t)ᴴ * ((X t)ᴴ * A t) = (A t)ᴴ * A t := by
-    filter_upwards [hH hA] with t ht
-    rw [Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose, Matrix.mul_assoc, ht]
-  obtain ⟨e⟩ : Nonempty (Fin q ≃ n) := by
-    refine ⟨Fintype.equivOfCardEq (le_antisymm (by rwa [Fintype.card_fin]) ?_)⟩
+  have hBA : ∀ᵐ t ∂haarAddCircle, ((X t)ᴴ * A t)ᴴ * ((X t)ᴴ * A t) = (A t)ᴴ * A t :=
+    (hH hA).mono fun t ht => conjTranspose_mul_self_of_mul_eq ht
+  have hrank : Fintype.card n ≤ B₀.rank :=
     calc Fintype.card n = (matFourierCoeff X 0 * B₀).rank := by
           rw [← matFourierCoeff_mul_const (fun i j => (hX2 i j).integrable one_le_two), hF0,
             Matrix.rank_of_det_ne_zero h0]
       _ ≤ B₀.rank := Matrix.rank_mul_le_right _ _
-      _ = Fintype.card (Fin q) := by rw [hrank, Fintype.card_fin]
+  have e : Fin q ≃ n := Fintype.equivOfCardEq
+    (le_antisymm (by rwa [Fintype.card_fin]) (hrank.trans (Matrix.rank_le_card_height _)))
   refine ⟨c, fun t => X t * B₀, B₀ᴴ * B₀, hc, hlim, memLp_mul_continuous hX2 continuous_const, hF0,
     ?_, ?_⟩
   · filter_upwards [hX] with t ht
@@ -319,7 +278,7 @@ theorem isOuter_iff_integral_log_norm_det {A : UnitAddCircle → Matrix n n ℂ}
   have hle := posSemidef_sub_conjTranspose_mul hF hFC
   have hdet : Real.log C.det.re =
       Real.log ((matFourierCoeff F 0)ᴴ * matFourierCoeff F 0).det.re := by
-    rw [← hlog, h, hF0, det_conjTranspose_mul_self_re, Real.log_pow, Nat.cast_ofNat]
+    rw [← hlog, h, hF0, log_det_conjTranspose_mul_self_re]
   have hCA := eq_of_log_det_eq (hF0 ▸ h0) hle hdet
   -- hence `A (1 + H) = A₀`
   refine ⟨hA, c, hc, hlim.congr_ae (fun N => ae_of_all _ fun t => rfl) ?_⟩
@@ -349,12 +308,9 @@ def IsConjAnalyticRange (𝔥 : UnitAddCircle → Submodule ℂ (m → ℂ)) : P
 omit [DecidableEq n] in
 /-- Helson–Lowdenslager (1961), proof of Theorem 12: "there is a left-outer function `B` such that
 `W = B B*`, and `B` can be chosen to have `q` columns, where `q` is the rank of the canonical
-process"; "`B` is of rank `q` at each point". Departure from the source: for the last assertion the
-source argues by contradiction: restricting `B` to the complement of its null space would give a
-factor with fewer columns, and the canonical process a smaller rank (the last step is not proved
-there); here the rank of `B` is that of its constant coefficient (Theorem 9), which is `q` because
-functions `Q B`, `Q` an analytic polynomial, approximate the identity matrix (p. 203;
-`rank_matFourierCoeff_zero`, Outer.lean). -/
+process"; "`B` is of rank `q` at each point". The last assertion follows here from the rank of the
+constant coefficient by Theorem 9; that this is `q` is a part of `exists_isOuter`, where the
+argument of the source for it (p. 207) is given and completed (`rank_of_isOuter`, Outer.lean). -/
 private theorem exists_isLeftOuter {A : UnitAddCircle → Matrix m n ℂ} (hA : IsHardyTwo A) :
     ∃ (q : ℕ) (B : UnitAddCircle → Matrix m (Fin q) ℂ), IsLeftOuter B ∧
       (∀ᵐ t ∂haarAddCircle, (B t).rank = q) ∧
@@ -573,12 +529,11 @@ private theorem integrable_conjTranspose_mul_mul_of_bounded {q : ℕ}
     (hV : ∀ i j, AEStronglyMeasurable (fun t => V t i j) haarAddCircle)
     (hC : ∀ᵐ t ∂haarAddCircle, ∀ i j, ‖V t i j‖ ≤ C) (i j : Fin q) :
     Integrable (fun t => ((V t)ᴴ * W t * V t) i j) haarAddCircle := by
-  simp only [Matrix.mul_apply, Matrix.conjTranspose_apply, Finset.sum_mul]
-  refine integrable_finsetSum _ fun a _ => integrable_finsetSum _ fun b _ => ?_
-  have h1 : Integrable (fun t => star (V t b i) * W t b a) haarAddCircle :=
-    (hW b a).bdd_mul (c := C) (hV b i).star (hC.mono fun t ht => by simpa using ht b i)
-  refine (h1.bdd_mul (c := C) (hV a j) (hC.mono fun t ht => ht a j)).congr (ae_of_all _ fun t => ?_)
-  exact mul_comm _ _
+  have h1 := integrable_bounded_mul (g := fun t => (V t)ᴴ) (fun i j => (hV j i).star)
+    (hC.mono fun t ht i j => by simpa using ht j i) hW
+  have h2 := integrable_bounded_mul (g := fun t => (V t)ᵀ) (f := fun t => ((V t)ᴴ * W t)ᵀ)
+    (fun i j => hV j i) (hC.mono fun t ht i j => ht j i) (fun i j => h1 j i) j i
+  simpa only [← Matrix.transpose_mul, Matrix.transpose_apply] using h2
 
 /-- Helson–Lowdenslager (1961), (140): `log Δ W = log det (D Dᴴ) = 2 log |det D|` for
 `W = (V D) (V D)ᴴ`, `V` an isometry. -/
@@ -590,8 +545,7 @@ private theorem log_rangeDet_mul_mul_conjTranspose {q : ℕ} {V : Matrix m (Fin 
     have h3 : Dᴴ.det ≠ 0 := by rwa [Matrix.det_conjTranspose, star_ne_zero]
     simpa using posDef_conjTranspose_mul_self h3
   rw [Matrix.conjTranspose_mul, Matrix.mul_assoc V, ← Matrix.mul_assoc D, ← Matrix.mul_assoc V,
-    rangeDet_mul_mul_conjTranspose hV h2, ← h1, det_conjTranspose_mul_self_re, Real.log_pow]
-  norm_num
+    rangeDet_mul_mul_conjTranspose hV h2, ← h1, log_det_conjTranspose_mul_self_re]
 
 /-- `M Mᴴ` is the transpose of `Nᴴ N` for `M = Nᵀ`. -/
 private theorem transpose_mul_conjTranspose_transpose {k n : Type*} [Fintype k]
@@ -648,10 +602,10 @@ theorem exists_mul_conjTranspose_eq_iff {W : UnitAddCircle → Matrix n n ℂ}
   · -- "The necessity of the first condition is obvious"
     filter_upwards [hAW] with t ht
     rw [← ht, range_mul_conjTranspose]
-  · -- (140). The source takes the finiteness of the integral from Theorem 8; here it is its
-    -- integrability part, which holds for every `D ∈ H²` with `det D̂ (0) ≠ 0`
-    -- (`integrable_log_det_of_isHardyTwo`). `V` is an isometry, not shown to be left-outer (see
-    -- `exists_isometry_mul`).
+  · -- (140). The source takes the finiteness of the integral from Theorem 8; here it is the
+    -- necessity part of Theorem 9 of the first paper, which holds for every `D ∈ H²` with
+    -- `det D̂ (0) ≠ 0` (`integrable_log_det_of_isHardyTwo`). `V` is an isometry, not shown to be
+    -- left-outer (see `exists_isometry_mul`).
     obtain ⟨q, V, D, -, hV, hD, hD0, hDt, hVD⟩ := exists_isometry_mul hA
     refine ((integrable_log_det_of_isHardyTwo hD.1 hD0).2.1.const_mul 2).congr ?_
     filter_upwards [hAW, hV, hDt, hVD] with t h1 h2 h3 h4

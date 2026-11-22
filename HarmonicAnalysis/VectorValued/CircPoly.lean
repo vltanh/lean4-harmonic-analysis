@@ -79,6 +79,11 @@ end Algebra
 
 section Normed
 
+/-- Continuous functions on the circle are integrable. -/
+theorem integrable_haar_of_continuous {E : Type*} [NormedAddCommGroup E] {u : UnitAddCircle → E}
+    (hu : Continuous u) : Integrable u haarAddCircle :=
+  hu.integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
+
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace ℂ X]
 
 /-- Trigonometric polynomials are continuous. -/
@@ -98,9 +103,8 @@ theorem norm_fourier_apply_eq_one (k : ℤ) (t : UnitAddCircle) : ‖fourier k t
 theorem integral_fourier_smul_circPoly [CompleteSpace X] (c : ℤ →₀ X) (n : ℤ) :
     ∫ t, fourier (-n) t • circPoly c t ∂haarAddCircle = c n := by
   have hi : ∀ m : ℤ, Integrable (fun t : UnitAddCircle => fourier (-n) t • fourier m t • c m)
-      haarAddCircle := fun m => ((map_continuous (fourier (-n))).smul
-    ((map_continuous (fourier m)).smul continuous_const)).integrable_of_hasCompactSupport
-      (HasCompactSupport.of_compactSpace _)
+      haarAddCircle := fun m => integrable_haar_of_continuous
+    ((map_continuous (fourier (-n))).smul ((map_continuous (fourier m)).smul continuous_const))
   have hterm : ∀ m : ℤ, ∫ t : UnitAddCircle, fourier (-n) t • fourier m t • c m ∂haarAddCircle =
       if n = m then c m else 0 := fun m => by
     have h := congrFun (fourierCoeff_fourier (T := 1) m) n

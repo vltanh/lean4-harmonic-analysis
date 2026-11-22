@@ -6,6 +6,7 @@ Authors: The-Anh Vu-Le
 module
 
 public import HarmonicAnalysis.Defs
+import HarmonicAnalysis.Torus.Cube
 
 /-!
 # Trigonometric polynomials and Fourier multipliers on the torus
@@ -43,23 +44,12 @@ open UnitAddTorus
 
 variable {ι : Type*} [Fintype ι]
 
-private lemma norm_mFourier_apply (n : ι → ℤ) (x : UnitAddTorus ι) : ‖mFourier n x‖ = 1 := by
-  simp [mFourier, fourier_apply, norm_prod, Circle.norm_coe]
-
 theorem continuous_trigPoly (c : (ι → ℤ) →₀ ℂ) : Continuous (trigPoly c) :=
   continuous_finsetSum _ fun n _ => continuous_const.mul (mFourier n).continuous
 
 theorem continuous_torusMultiplier (m : (ι → ℤ) → ℂ) (c : (ι → ℤ) →₀ ℂ) :
     Continuous (torusMultiplier m c) :=
   continuous_finsetSum _ fun n _ => continuous_const.mul (mFourier n).continuous
-
-/-- The measure of the torus, of total mass one, is the product of the Haar probability measures. -/
-private lemma volume_eq_pi_haarAddCircle : (volume : Measure (UnitAddTorus ι)) =
-    Measure.pi fun _ : ι => AddCircle.haarAddCircle := by
-  rw [volume_pi]
-  congr 1
-  funext i
-  rw [AddCircle.volume_eq_smul_haarAddCircle, ENNReal.ofReal_one, one_smul]
 
 /-! ### Orthogonality -/
 
@@ -150,7 +140,7 @@ private lemma eLpNorm_mFourier (n : ι → ℤ) {p : ℝ} (hp : 0 < p) :
     rw [volume_eq_pi_haarAddCircle]
     exact IsProbabilityMeasure.ne_zero _
   rw [eLpNorm_congr_norm_ae (g := fun _ => (1 : ℂ)) (mFourier n).continuous.aestronglyMeasurable
-      aestronglyMeasurable_const (ae_of_all _ fun x => by simp [norm_mFourier_apply]),
+      aestronglyMeasurable_const (ae_of_all _ fun x => by simp [norm_mFourier_apply_eq_one]),
     eLpNorm_const _ (by simpa using hp) hμ, volume_eq_pi_haarAddCircle, measure_univ]
   simp
 

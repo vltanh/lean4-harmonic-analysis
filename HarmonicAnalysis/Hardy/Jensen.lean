@@ -26,8 +26,8 @@ vanishing integral is `2 Re P` with `P = Σ_{k > 0} c_k e_k`, and `e^P = 1 + Q`,
 limit in `L¹` of its Fejér means.
 
 For a bounded analytic function `Q` with values in the square matrices, `det Q` is bounded and
-analytic with constant coefficient `det Q̂ (0)`, hence `∫ log |det Q| ≥ log |det Q̂ (0)|` (cf. (70),
-loc. cit.).
+analytic with constant coefficient `det Q̂ (0)`, hence, if `det Q̂ (0) ≠ 0`,
+`∫ log |det Q| ≥ log |det Q̂ (0)|` (cf. (70), loc. cit.).
 -/
 
 @[expose] public section
@@ -45,9 +45,10 @@ private def IsBoundedAnalytic (u : UnitAddCircle → ℂ) : Prop :=
     ∃ C : ℝ, ∀ᵐ t ∂haarAddCircle, ‖u t‖ ≤ C
 
 /-- An analytic scalar function as a function of `H¹` with values in the `1 × 1` matrices. -/
-private theorem IsBoundedAnalytic.isHardyOne {u : UnitAddCircle → ℂ} (hu : IsBoundedAnalytic u) :
+private theorem isHardyOne_of_scalar {u : UnitAddCircle → ℂ} (hu : Integrable u haarAddCircle)
+    (hneg : ∀ k : ℤ, k < 0 → fourierCoeff u k = 0) :
     IsHardyOne fun t => Matrix.of fun _ _ : Unit => u t :=
-  ⟨fun _ _ => hu.1, fun k hk => Matrix.ext fun _ _ => hu.2.1 k hk⟩
+  ⟨fun _ _ => hu, fun k hk => Matrix.ext fun _ _ => hneg k hk⟩
 
 /-- The product of bounded analytic scalar functions is bounded and analytic, and its constant
 coefficient is the product of those of the factors. -/
@@ -56,7 +57,8 @@ private theorem IsBoundedAnalytic.mul {u v : UnitAddCircle → ℂ} (hu : IsBoun
       fourierCoeff (fun t => u t * v t) 0 = fourierCoeff u 0 * fourierCoeff v 0 := by
   obtain ⟨C, hC⟩ := hu.2.2
   obtain ⟨C', hC'⟩ := hv.2.2
-  obtain ⟨⟨h1, h2⟩, h3⟩ := hu.isHardyOne.bounded_mul (hC.mono fun t ht _ _ => ht) hv.isHardyOne
+  obtain ⟨⟨h1, h2⟩, h3⟩ := (isHardyOne_of_scalar hu.1 hu.2.1).bounded_mul
+    (hC.mono fun t ht _ _ => ht) (isHardyOne_of_scalar hv.1 hv.2.1)
   have e (t : UnitAddCircle) : ((Matrix.of fun _ _ : Unit => u t) *
       Matrix.of fun _ _ : Unit => v t) () () = u t * v t := by
     simp [Matrix.mul_apply]
@@ -270,8 +272,8 @@ private theorem exists_integral_exp_mul_le {w : UnitAddCircle → ℝ} (hw : Int
       Matrix.mul_diagonal, h1]
   simp only [h2, ← Complex.ofReal_mul, Complex.ofReal_re]
 
-/-- `P̄ = Σ_k c̄_k e_{−k}` if `P = Σ_k c_k e_k`. -/
-private theorem circPoly_neg (p : ℤ →₀ Matrix Unit Unit ℂ) (t : UnitAddCircle) :
+/-- The adjoint of `Σ c_k e_k` is `Σ c_kᴴ e_{−k}`. -/
+private theorem circPoly_conjTranspose (p : ℤ →₀ Matrix Unit Unit ℂ) (t : UnitAddCircle) :
     circPoly (Finsupp.equivMapDomain (Equiv.neg ℤ)
       (p.mapRange Matrix.conjTranspose Matrix.conjTranspose_zero)) t = (circPoly p t)ᴴ := by
   rw [circPoly, Finsupp.sum_equivMapDomain, Finsupp.sum_mapRange_index fun _ => smul_zero _,
@@ -289,16 +291,11 @@ private theorem exists_eq_add_conjTranspose {c : ℤ →₀ Matrix Unit Unit ℂ
       ∀ t, circPoly c t = circPoly p t + (circPoly p t)ᴴ := by
   classical
   have hneg (k : ℤ) : c (-k) = (c k)ᴴ := by
-    ext i j
-    rw [← matFourierCoeff_circPoly c, ← matFourierCoeff_circPoly c, Matrix.conjTranspose_apply,
-      matFourierCoeff, matFourierCoeff, Matrix.of_apply, Matrix.of_apply, fourierCoeff,
-      fourierCoeff, Complex.star_def, ← integral_conj]
-    refine integral_congr_ae (ae_of_all _ fun t => ?_)
-    dsimp only
-    rw [smul_eq_mul, smul_eq_mul, map_mul, ← fourier_neg]
-    exact congrArg _ ((hc t).apply i j).symm
+    have h := matFourierCoeff_conjTranspose (circPoly c) (-k)
+    rw [funext fun t => (hc t).eq] at h
+    rwa [neg_neg, matFourierCoeff_circPoly, matFourierCoeff_circPoly] at h
   refine ⟨c.filter (0 < ·), fun k hk => (Finset.mem_filter.1 hk).2, fun t => ?_⟩
-  rw [← circPoly_neg, ← circPoly_add]
+  rw [← circPoly_conjTranspose, ← circPoly_add]
   congr 1
   ext1 k
   rw [Finsupp.add_apply, Finsupp.equivMapDomain_apply, Finsupp.mapRange_apply, Finsupp.filter_apply,
@@ -358,9 +355,8 @@ private theorem norm_sq_fourierCoeff_zero_le {f q : UnitAddCircle → ℂ}
     filter_upwards [hC] with t ht
     rw [norm_mul]
     gcongr
-  have h1 := (hq.isHardyOne.bounded_mul (hC.mono fun t ht _ _ => ht)
-    (f := fun t => Matrix.of fun _ _ : Unit => f t)
-    ⟨fun _ _ => hf.integrable one_le_two, fun k hk => Matrix.ext fun _ _ => hneg k hk⟩).2
+  have h1 := ((isHardyOne_of_scalar hq.1 hq.2.1).bounded_mul (hC.mono fun t ht _ _ => ht)
+    (isHardyOne_of_scalar (hf.integrable one_le_two) hneg)).2
   have h2 : fourierCoeff (fun t => q t * f t) 0 = fourierCoeff f 0 := by
     have h3 := congrFun (congrFun h1 ()) ()
     simp only [Matrix.mul_apply, matFourierCoeff, Matrix.of_apply, Finset.univ_unique,
@@ -390,7 +386,8 @@ function `f`.
 Departure from the source: (28) is Theorem 1 for the weight `|f|²`, whose logarithm is not known to
 be summable. The limiting process with which the source treats such weights in Lemmas 1 and 2 (pp.
 172–173) is carried out here for the inequality `|f̂ (0)|² ≤ exp (∫ log (|f|² + ε))`. Of Theorem 1
-only (23) is used. -/
+only (23) is used, with all bounded analytic `1 + Q`; the reduction to polynomials (p. 174) and the
+opposite inequality (25) are not needed. -/
 theorem log_norm_fourierCoeff_zero_le_of_memLp_two {f : UnitAddCircle → ℂ}
     (hf : MemLp f 2 haarAddCircle) (hneg : ∀ k : ℤ, k < 0 → fourierCoeff f k = 0)
     (h0 : fourierCoeff f 0 ≠ 0) :
@@ -436,13 +433,12 @@ private theorem exists_tendsto_fejer {f : UnitAddCircle → ℂ} (hf : Integrabl
       (∀ K, fourierCoeff (p K) 0 = fourierCoeff f 0) ∧
       Tendsto (fun K => ∫ t, ‖p K t - f t‖ ∂haarAddCircle) atTop (𝓝 0) := by
   let F : UnitAddCircle → Matrix Unit Unit ℂ := fun t => Matrix.of fun _ _ => f t
-  have hFneg (k : ℤ) (hk : k < 0) : matFourierCoeff F k = 0 := Matrix.ext fun _ _ => hneg k hk
-  have hF (i j : Unit) : Integrable (fun t => F t i j) haarAddCircle := hf
+  have hF : IsHardyOne F := isHardyOne_of_scalar hf hneg
   refine ⟨fun K t => circPoly (fejerCoeff F (K + 1)) t () (), fun K =>
     (continuous_circPoly_matrix _).matrix_elem () (), fun K k hk => ?_, fun K => ?_,
-    (tendsto_integral_norm_fejerCoeff_sub hF () ()).comp (tendsto_add_atTop_nat 1)⟩
+    (tendsto_integral_norm_fejerCoeff_sub hF.1 () ()).comp (tendsto_add_atTop_nat 1)⟩
   · exact congrFun (congrFun ((isHardyTwo_circPoly
-      (nonneg_of_mem_support_fejerCoeff hFneg (K + 1))).2 k hk) ()) ()
+      (nonneg_of_mem_support_fejerCoeff hF.2 (K + 1))).2 k hk) ()) ()
   · have h := matFourierCoeff_circPoly (fejerCoeff F (K + 1)) 0
     rw [fejerCoeff_zero F K.succ_pos] at h
     exact congrFun (congrFun h ()) ()

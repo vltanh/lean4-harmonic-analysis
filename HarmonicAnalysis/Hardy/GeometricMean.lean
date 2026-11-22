@@ -78,15 +78,10 @@ theorem norm_det_rpow_le_trace [Nonempty n] (M : Matrix n n ℂ) :
   · have hn : (0 : ℝ) < Fintype.card n := by exact_mod_cast Fintype.card_pos
     rw [h0, norm_zero, Real.zero_rpow (by positivity), trace_conjTranspose_mul_self_re]
     positivity
-  have hpos : (Mᴴ * M).PosDef :=
-    (Matrix.posSemidef_conjTranspose_mul_self M).posDef_iff_det_ne_zero.2 <| by
-      rw [Matrix.det_mul, Matrix.det_conjTranspose]
-      exact mul_ne_zero (star_ne_zero.2 h0) h0
-  have h1 := exp_log_det_div_card_le hpos
-  rw [det_conjTranspose_mul_self_re, Real.log_pow] at h1
+  have h1 := exp_log_det_div_card_le (posDef_conjTranspose_mul_self h0)
+  rw [log_det_conjTranspose_mul_self_re] at h1
   rw [Real.rpow_def_of_pos (norm_pos_iff.2 h0)]
   refine le_trans (le_of_eq ?_) h1
-  push_cast
   ring_nf
 
 /-- Helson–Lowdenslager (1958), (58), without its middle term `∫ (det W)^{1/n}` (which is a step of
@@ -398,10 +393,10 @@ private theorem integral_trace_cfc_mem
 in `[0, 1]`, which tend to `1`, so that `Ψ_N = b_N v_N − a_N u_N` satisfies `∫ tr Ψ_N = 0`.
 
 Departure from the source: there only the `v_m` are multiplied by constants, and "for each `n` there
-is an `m` such that `∫ u_n ≤ ∫ v_m`". For the truncations `min (u, n)` and `min (v, m)` this fails
-if `u` is bounded and `v` is not: then `∫ u_n = ∫ u = ∫ v > ∫ v_m` for large `n` and all `m`. (It
-holds if the `u_n` are chosen with `∫ u_n < ∫ u`, e.g. `(1 − 1/n) min (u, n)`, unless `u = 0`.) Here
-the one of `u_N` and `v_N` that has the larger integral is multiplied by a constant. -/
+is an `m` such that `∫ u_n dσ ≤ ∫ v_m dσ`". For the truncations `min (u, n)` and `min (v, m)` this
+fails if `u` is bounded and `v` is not: then `∫ u_n = ∫ u = ∫ v > ∫ v_m` for large `n` and all `m`.
+(It holds if the `u_n` are chosen with `∫ u_n < ∫ u`, e.g. `(1 − 1/n) min (u, n)`, unless `u = 0`.)
+Here the one of `u_N` and `v_N` that has the larger integral is multiplied by a constant. -/
 private theorem exists_scaled_cut (hint : ∀ i j, Integrable (fun t => W t i j) haarAddCircle)
     (hW : ∀ᵐ t ∂haarAddCircle, (W t).PosDef)
     (hlog : Integrable (fun t => Real.log (W t).det.re) haarAddCircle)

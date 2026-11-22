@@ -32,7 +32,7 @@ public import Mathlib.MeasureTheory.Group.Integral
 
 The first two items normalise the measure on `ℝ / ℤ` as `Mathlib.Analysis.Fourier.AddCircleMulti`
 does, with its local instances; the last two items use Mathlib's global measure on `ℝ / ℤ`, which
-is the same measure of total mass one.
+is the same measure of total mass one (`HarmonicAnalysis.volume_eq_pi_haarAddCircle`).
 -/
 
 @[expose] public section
@@ -158,8 +158,12 @@ theorem mFourier_ofPi (n : ι → ℤ) (x : ι → ℝ) :
   push_cast
   ring
 
-theorem norm_mFourier_ofPi (n : ι → ℤ) (x : ι → ℝ) : ‖mFourier n (ofPi x)‖ = 1 := by
+/-- `|e_n| = 1` on `𝕋^ι`. -/
+theorem norm_mFourier_apply_eq_one (n : ι → ℤ) (z : UnitAddTorus ι) : ‖mFourier n z‖ = 1 := by
   simp [mFourier, fourier_apply, norm_prod, Circle.norm_coe]
+
+theorem norm_mFourier_ofPi (n : ι → ℤ) (x : ι → ℝ) : ‖mFourier n (ofPi x)‖ = 1 :=
+  norm_mFourier_apply_eq_one n (ofPi x)
 
 theorem mFourier_ofPi_add (n : ι → ℤ) (x y : ι → ℝ) :
     mFourier n (ofPi (x + y)) = mFourier n (ofPi x) * mFourier n (ofPi y) := by
@@ -206,6 +210,15 @@ namespace HarmonicAnalysis
 
 open UnitAddTorus
 
+/-- Mathlib's measure on the torus, of total mass one, is the product of the Haar probability
+measures. -/
+theorem volume_eq_pi_haarAddCircle {ι : Type*} [Fintype ι] :
+    (volume : Measure (UnitAddTorus ι)) = Measure.pi fun _ : ι => AddCircle.haarAddCircle := by
+  rw [volume_pi]
+  congr 1
+  funext i
+  rw [AddCircle.volume_eq_smul_haarAddCircle, ENNReal.ofReal_one, one_smul]
+
 /-- The projection `ℂ → 𝕋² = (ℝ / ℤ)²`, `y ↦ (Re y, Im y) mod ℤ²`. -/
 def ofComplex (y : ℂ) : UnitAddTorus (Fin 2) := ofPi ![y.re, y.im]
 
@@ -237,15 +250,10 @@ theorem mFourier_ofComplex (n : Fin 2 → ℤ) (y : ℂ) :
 cell of `ℂ`. -/
 theorem lintegral_torus_eq_centredCell (f : UnitAddTorus (Fin 2) → ℝ≥0∞) :
     ∫⁻ x, f x = ∫⁻ y in centredCell, f (ofComplex y) := by
-  -- The global measure on `𝕋²` is the product of the Haar probability measures on `ℝ / ℤ`.
   have hvol : (volume : Measure (UnitAddTorus (Fin 2))) =
       @volume _ (@MeasureSpace.pi (Fin 2) _ (fun _ => UnitAddCircle)
-        (fun _ => instMeasureSpaceUnitAddCircle)) := by
-    simp only [volume_pi]
-    congr 1
-    funext i
-    rw [AddCircle.volume_eq_smul_haarAddCircle, ENNReal.ofReal_one, one_smul]
-    rfl
+        (fun _ => instMeasureSpaceUnitAddCircle)) :=
+    volume_eq_pi_haarAddCircle
   rw [hvol, UnitAddTorus.lintegral_preimage f (fun _ => -2⁻¹),
     ← Complex.volume_preserving_equiv_pi.setLIntegral_comp_preimage_emb
       Complex.measurableEquivPi.measurableEmbedding]

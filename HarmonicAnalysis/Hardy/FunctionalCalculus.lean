@@ -83,6 +83,22 @@ theorem det_conjTranspose_mul_self_re [DecidableEq m] (M : Matrix m m ℂ) :
   rw [Matrix.det_mul, Matrix.det_conjTranspose, Complex.star_def,
     ← Complex.normSq_eq_conj_mul_self, Complex.ofReal_re, Complex.normSq_eq_norm_sq]
 
+/-- `log det (Mᴴ M) = 2 log |det M|`. -/
+theorem log_det_conjTranspose_mul_self_re [DecidableEq m] (M : Matrix m m ℂ) :
+    Real.log (Mᴴ * M).det.re = 2 * Real.log ‖M.det‖ := by
+  rw [det_conjTranspose_mul_self_re, Real.log_pow, Nat.cast_ofNat]
+
+/-- `Mᴴ M` is positive definite if `M` is invertible. -/
+theorem posDef_conjTranspose_mul_self [DecidableEq m] {M : Matrix m m ℂ} (hM : M.det ≠ 0) :
+    (Mᴴ * M).PosDef :=
+  .conjTranspose_mul_self M (Matrix.mulVec_injective_of_isUnit
+    ((Matrix.isUnit_iff_isUnit_det M).2 (isUnit_iff_ne_zero.2 hM)))
+
+/-- If `X (Xᴴ A) = A`, then `(Xᴴ A)ᴴ (Xᴴ A) = Aᴴ A`. -/
+theorem conjTranspose_mul_self_of_mul_eq [Fintype l] {X : Matrix l m ℂ} {A : Matrix l n ℂ}
+    (h : X * (Xᴴ * A) = A) : (Xᴴ * A)ᴴ * (Xᴴ * A) = Aᴴ * A := by
+  rw [Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose, Matrix.mul_assoc, h]
+
 /-- If `W = Bᴴ B`, then `Qᴴ W Q = (B Q)ᴴ (B Q)`. -/
 theorem conjTranspose_mul_mul_eq [Fintype n] {B : Matrix m n ℂ} {W : Matrix n n ℂ}
     {Q : Matrix n l ℂ} (h : Bᴴ * B = W) : Qᴴ * W * Q = (B * Q)ᴴ * (B * Q) := by

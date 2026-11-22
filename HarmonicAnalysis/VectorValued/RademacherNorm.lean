@@ -7,7 +7,7 @@ module
 
 public import BanachProbability.SignCube.Bridge
 public import BanachProbability.RandomSums.Contraction
-import HarmonicAnalysis.FourierMultiplier.Density
+public import HarmonicAnalysis.FourierMultiplier.Density
 import Mathlib.MeasureTheory.Integral.Prod
 
 /-!
@@ -72,14 +72,6 @@ private theorem rad_lintegral_uniformOn (G : (Fin K → Bool) → ℝ≥0∞) :
       ENNReal.ofReal_inv_of_pos (by positivity), ENNReal.ofReal_pow (by norm_num),
       ENNReal.ofReal_ofNat]
   rw [hμ, mul_comm]
-
-/-- The `p`-th power of the `L^p` norm is the integral of the `p`-th power of the norm. -/
-theorem eLpNorm_ofReal_rpow_eq_lintegral {S F : Type*} [NormedAddCommGroup F]
-    {mS : MeasurableSpace S} {ν : Measure S} {p : ℝ} (hp : 0 < p) {f : S → F}
-    (hf : AEStronglyMeasurable f ν) :
-    eLpNorm f (ENNReal.ofReal p) ν ^ p = ∫⁻ z, ‖f z‖ₑ ^ p ∂ν := by
-  rw [eLpNorm_eq_lintegral_rpow_enorm_toReal (by simpa using hp) ENNReal.ofReal_ne_top hf,
-    ENNReal.toReal_ofReal hp.le, ← ENNReal.rpow_mul, one_div_mul_cancel hp.ne', ENNReal.rpow_one]
 
 /-- The Rademacher sum of measurable functions is measurable on the product. -/
 private theorem rad_aestronglyMeasurable {f : Fin K → α → E}

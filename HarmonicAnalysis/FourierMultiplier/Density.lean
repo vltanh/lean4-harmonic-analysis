@@ -70,6 +70,15 @@ open scoped SchwartzMap FourierTransform ENNReal ContDiff
 
 namespace HarmonicAnalysis
 
+/-- The `p`-th power of the `L^p` norm is the integral of the `p`-th power of the norm,
+`0 < p < ∞`. -/
+theorem eLpNorm_ofReal_rpow_eq_lintegral {S F : Type*} [NormedAddCommGroup F]
+    {mS : MeasurableSpace S} {ν : Measure S} {p : ℝ} (hp : 0 < p) {f : S → F}
+    (hf : AEStronglyMeasurable f ν) :
+    eLpNorm f (ENNReal.ofReal p) ν ^ p = ∫⁻ z, ‖f z‖ₑ ^ p ∂ν := by
+  rw [eLpNorm_eq_lintegral_rpow_enorm_toReal (by simpa using hp) ENNReal.ofReal_ne_top hf,
+    ENNReal.toReal_ofReal hp.le, ← ENNReal.rpow_mul, one_div_mul_cancel hp.ne', ENNReal.rpow_one]
+
 /-! ### Young's inequality -/
 
 /-- The computation in the proof of Young's inequality (HNVW, Lemma 1.2.30): for `1 ≤ p`,
@@ -236,12 +245,6 @@ private theorem eLpNorm_eq_lintegral_rpow {g : V → ℂ} (hg : Continuous g) {p
   rw [eLpNorm_eq_lintegral_rpow_enorm_toReal (by simpa using hp) ENNReal.ofReal_ne_top
     hg.aestronglyMeasurable, ENNReal.toReal_ofReal hp.le]
 
-/-- `‖g‖_p^p = ∫ |g|^p` for continuous `g` and `0 < p < ∞`. -/
-private theorem eLpNorm_rpow_eq_lintegral {g : V → ℂ} (hg : Continuous g) {p : ℝ} (hp : 0 < p) :
-    eLpNorm g (ENNReal.ofReal p) volume ^ p = ∫⁻ x, ‖g x‖ₑ ^ p := by
-  rw [eLpNorm_eq_lintegral_rpow hg hp, ← ENNReal.rpow_mul, one_div_mul_cancel hp.ne',
-    ENNReal.rpow_one]
-
 /-- `‖g_t‖_p → 0` if `‖g_t‖_p^p → 0`. -/
 private theorem tendsto_eLpNorm_of_rpow {ι : Type*} {l : Filter ι} {g : ι → V → ℂ} {p : ℝ}
     (hp : 0 < p) (h : Tendsto (fun t => eLpNorm (g t) (ENNReal.ofReal p) volume ^ p) l (𝓝 0)) :
@@ -320,7 +323,8 @@ theorem tendsto_eLpNorm_mollify_sub {ϕ : 𝓢(V, ℂ)} (hϕ : ∫ y, ϕ y = 1) 
           (ENNReal.rpow_ne_top_of_nonneg hp0.le hM)) ?_)
       rw [← lintegral_mul_const _ ϕ.continuous.enorm.measurable]
       gcongr with y
-      rw [← eLpNorm_rpow_eq_lintegral (g := fun x => f (x - t • y) - f x) (by fun_prop) hp0]
+      rw [← eLpNorm_ofReal_rpow_eq_lintegral hp0 (f := fun x => f (x - t • y) - f x)
+        (by fun_prop : Continuous fun x => f (x - t • y) - f x).aestronglyMeasurable]
       exact ENNReal.rpow_le_rpow (hNM _) hp0.le
     have hmin := lintegral_rpow_lintegral_le (hmeas t) hp hI
     simp_rw [hnorm] at hmin
@@ -378,7 +382,7 @@ theorem tendsto_eLpNorm_mollify_atTop [Nontrivial V] (ϕ f : 𝓢(V, ℂ)) {p : 
   have hd : 0 < d := Module.finrank_pos
   have hf1 : ∫⁻ y, ‖f y‖ₑ ≠ ⊤ := f.integrable.2.ne
   have hϕp : ∫⁻ x, ‖ϕ x‖ₑ ^ p ≠ ⊤ := by
-    rw [← eLpNorm_rpow_eq_lintegral ϕ.continuous hp0]
+    rw [← eLpNorm_ofReal_rpow_eq_lintegral hp0 ϕ.continuous.aestronglyMeasurable]
     exact ENNReal.rpow_ne_top_of_nonneg hp0.le (ϕ.memLp _).eLpNorm_lt_top.ne
   set A : ℝ≥0∞ := (∫⁻ y, ‖f y‖ₑ) ^ (p - 1) * ((∫⁻ y, ‖f y‖ₑ) * ∫⁻ x, ‖ϕ x‖ₑ ^ p)
   have hA : A ≠ ⊤ := ENNReal.mul_ne_top (ENNReal.rpow_ne_top_of_nonneg (by linarith) hf1)
@@ -404,7 +408,7 @@ theorem tendsto_eLpNorm_mollify_atTop [Nontrivial V] (ϕ f : 𝓢(V, ℂ)) {p : 
       refine lintegral_congr fun z => ?_
       simp only [sub_sub_cancel, c, d]
       ring
-    rw [eLpNorm_rpow_eq_lintegral (mollify ϕ f R).continuous hp0]
+    rw [eLpNorm_ofReal_rpow_eq_lintegral hp0 (mollify ϕ f R).continuous.aestronglyMeasurable]
     refine (lintegral_mono fun x => ENNReal.rpow_le_rpow (h1 x) hp0.le).trans
       ((lintegral_rpow_lintegral_mul_le (w := fun z => ‖f z‖ₑ)
         (h := fun x z => c * ‖ϕ (R⁻¹ • (x - z))‖ₑ) f.continuous.enorm.measurable ?_ hp.le).trans_eq

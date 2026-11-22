@@ -112,9 +112,8 @@ theorem rademacher_schatten_le : ∃ M : ℝ, 0 < M ∧ ∀ (n : Type) [Fintype 
   have hp0 : ENNReal.ofReal p ≠ 0 := (zero_lt_one.trans_le h1p).ne'
   have hint (ε : Fin K → Bool) : Integrable (fun t =>
       complexSchattenNorm (ENNReal.ofReal p) (circPoly (lacunaryCoeff A ε) t)) haarAddCircle :=
-    ((continuous_complexSchattenNorm h1p).comp
-      (continuous_circPoly_matrix _)).integrable_of_hasCompactSupport
-        (HasCompactSupport.of_compactSpace _)
+    integrable_haar_of_continuous
+      ((continuous_complexSchattenNorm h1p).comp (continuous_circPoly_matrix _))
   -- a choice of signs for which the integral is at most its average
   obtain ⟨ε, -, hε⟩ := Finset.exists_le_of_sum_le (s := (Finset.univ : Finset (Fin K → Bool)))
     Finset.univ_nonempty

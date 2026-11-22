@@ -111,6 +111,13 @@ private theorem IsHardyTwo.isFactorable {A : UnitAddCircle → Matrix m n ℂ} (
   ⟨Fintype.card m, _, hA.submatrix (Fintype.equivFin m).symm id, ae_of_all _ fun t => by
     rw [Matrix.conjTranspose_submatrix, Matrix.submatrix_mul_equiv, Matrix.submatrix_id_id]⟩
 
+omit [DecidableEq n] in
+/-- The sum of the absolute values of the entries of `A` is integrable if the entries are. -/
+private theorem integrable_sum_norm {A : UnitAddCircle → Matrix m n ℂ}
+    (hA : ∀ i j, Integrable (fun t => A t i j) haarAddCircle) :
+    Integrable (fun t => ∑ a, ∑ b, ‖A t a b‖) haarAddCircle :=
+  integrable_finsetSum _ fun a _ => integrable_finsetSum _ fun b _ => (hA a b).norm
+
 /-- `(Aᴴ A)^{1/2}` is measurable if `A` is. -/
 private theorem aestronglyMeasurable_cfc_sqrt {A : UnitAddCircle → Matrix m n ℂ}
     (hA : ∀ i j, AEStronglyMeasurable (fun t => A t i j) haarAddCircle) (i j : n) :
@@ -266,12 +273,10 @@ private theorem isFactorable_cfc_sqrt_of_isOuter {A : UnitAddCircle → Matrix m
     push_cast
     rw [← mul_pow, inv_mul_cancel₀ (by simpa using htne), one_pow]
   have hA1 (i : m) (j : n) := (hA.1 i j).aestronglyMeasurable
-  have hN : Integrable (fun t => ∑ a, ∑ b, ‖A t a b‖) haarAddCircle :=
-    integrable_finsetSum _ fun a _ => integrable_finsetSum _ fun b _ => (hA.1 a b).norm
   refine ⟨k, _, hB₀.inv_smul hh h0 hne (memLp_of_conjTranspose_mul_self (fun i j => ?_)
     (fun j => ?_) hBB), hBB⟩
   · exact (hh.1.1 () ()).aestronglyMeasurable.inv₀.mul (hB₀.1 i j).aestronglyMeasurable
-  · exact hN.mono' (aestronglyMeasurable_cfc_sqrt hA1 j j)
+  · exact (integrable_sum_norm hA.1).mono' (aestronglyMeasurable_cfc_sqrt hA1 j j)
       (ae_of_all _ fun t => norm_cfc_sqrt_apply_le (A t) j j)
 
 /-- Sarason (1967), Lemma 10.4: if `A ∈ H¹`, then `(Aᴴ A)^{1/2}` is factorable. (The source's lemma
@@ -282,10 +287,8 @@ theorem isFactorable_cfc_sqrt {A : UnitAddCircle → Matrix m n ℂ} (hA : IsHar
   -- the entries (any norm will do)
   let N (t : UnitAddCircle) : ℝ := ∑ a, ∑ b, ‖A t a b‖
   have hN0 (t : UnitAddCircle) : 0 ≤ N t := by positivity
-  have hN : Integrable N haarAddCircle :=
-    integrable_finsetSum _ fun a _ => integrable_finsetSum _ fun b _ => (hA.1 a b).norm
   have hpos (t : UnitAddCircle) : 0 < max 1 (N t) := zero_lt_one.trans_le (le_max_left _ _)
-  obtain ⟨hw, hlog⟩ := integrable_weight hN0 hN
+  obtain ⟨hw, hlog⟩ := integrable_weight hN0 (integrable_sum_norm hA.1)
   obtain ⟨h, hh, h0, hhw⟩ := exists_isOuter_norm_sq_eq (fun t => inv_pos.2 (hpos t)) hw hlog
   refine isFactorable_cfc_sqrt_of_isOuter hA hh h0 ?_ ?_ ?_
   · filter_upwards [hhw] with t ht h1

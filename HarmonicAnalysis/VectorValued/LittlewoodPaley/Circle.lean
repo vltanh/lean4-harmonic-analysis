@@ -440,8 +440,7 @@ theorem eLpNormRad_singleFrequency_le {p : ℝ} (hp : 1 ≤ p) {K : ℕ} (c : Fi
       rw [integral_finsetSum]
       · refine Finset.sum_congr rfl fun k _ => ?_
         rw [integral_smul, integral_fourier_smul_circPoly]
-      · exact fun k _ => ((hcont k).const_smul _).integrable_of_hasCompactSupport
-          (HasCompactSupport.of_compactSpace _)
+      · exact fun k _ => integrable_haar_of_continuous ((hcont k).const_smul _)
     rw [one_mul, h3]
     exact eLpNorm_const_integral_le hp hsum
   -- the contraction principle

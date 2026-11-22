@@ -17,7 +17,8 @@ For `f : 𝕋 → M_{m×n} (ℂ)`, `matFourierCoeff f k` is the matrix of the `k
 the entries. `f` is in the Hardy class `H²` (`IsHardyTwo f`) when its entries are in `L² (𝕋)` and
 its Fourier coefficients of negative order vanish. (F. Lust-Piquard and G. Pisier, *Non commutative
 Khintchine and Paley inequalities*, Ark. Mat. 29 (1991), p. 244, define `H²` as the closure in `L²`
-of the analytic polynomials; the equivalence of the two definitions is not used here.)
+of the analytic polynomials; the two definitions agree: `IsHardyTwo.exists_tendsto_circPoly`,
+`TendstoLTwo.isHardyTwo`, Approximation.lean.)
 
 * `matFourierCoeff_mul`: for `g, h ∈ H²` and `k ≥ 0`, `(g h)^ (k) = Σ_{0 ≤ q ≤ k} ĝ (q) ĥ (k − q)`;
   `matFourierCoeff_mul_of_neg`: for `k < 0`, `(g h)^ (k) = 0`.
@@ -175,8 +176,7 @@ theorem matFourierCoeff_circPoly (c : ℤ →₀ Matrix m n ℂ) (k : ℤ) :
     simp [circPoly_apply]
   have hint (q : ℤ) : Integrable (fun t : UnitAddCircle => c q i j * fourier q t)
       haarAddCircle :=
-    (continuous_const.mul (fourier q).continuous).integrable_of_hasCompactSupport
-      (HasCompactSupport.of_compactSpace _)
+    integrable_haar_of_continuous (continuous_const.mul (fourier q).continuous)
   rw [matFourierCoeff, Matrix.of_apply, h, fourierCoeff.sum _ _ fun q _ => hint q,
     Finset.sum_apply]
   simp only [fourierCoeff.const_mul, fourierCoeff_fourier, Pi.single_apply, mul_ite, mul_one,

@@ -98,11 +98,6 @@ theorem exists_circPoly_eq_one_add_mul [Fintype n] [DecidableEq n] {c : ℤ →�
 
 /-! ### Measurable and integrable functions -/
 
-/-- Continuous functions on the circle are integrable. -/
-theorem integrable_haar_of_continuous {E : Type*} [NormedAddCommGroup E] {u : UnitAddCircle → E}
-    (hu : Continuous u) : Integrable u haarAddCircle :=
-  hu.integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
-
 /-- The entries of a continuous function are bounded. -/
 theorem exists_bound_of_continuous [Finite m] [Finite n] {f : UnitAddCircle → Matrix m n ℂ}
     (hf : Continuous f) : ∃ C : ℝ, ∀ t i j, ‖f t i j‖ ≤ C := by
@@ -112,6 +107,13 @@ theorem exists_bound_of_continuous [Finite m] [Finite n] {f : UnitAddCircle → 
     isCompact_univ.exists_bound_of_continuousOn (E := m → n → ℂ) hf.continuousOn
   exact ⟨C, fun t i j => ((norm_le_pi_norm _ j).trans (norm_le_pi_norm _ i)).trans
     (hC t (Set.mem_univ t))⟩
+
+/-- If `f` is in `L^p`, so is `e_k f`. -/
+theorem memLp_fourier_smul {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] {p : ℝ≥0∞} (k : ℤ)
+    {f : UnitAddCircle → E} (hf : MemLp f p haarAddCircle) :
+    MemLp (fun t => fourier k t • f t) p haarAddCircle :=
+  hf.of_le ((fourier k).continuous.aestronglyMeasurable.smul hf.aestronglyMeasurable)
+    (ae_of_all _ fun t => by rw [norm_smul, norm_fourier_apply_eq_one, one_mul])
 
 /-- The entries of a product of functions with measurable entries are measurable. -/
 theorem aestronglyMeasurable_mul [Fintype m] {f : UnitAddCircle → Matrix l m ℂ}
@@ -156,6 +158,18 @@ theorem integrable_conjTranspose_mul_self [Fintype m] {f : UnitAddCircle → Mat
     (hf : ∀ i j, MemLp (fun t => f t i j) 2 haarAddCircle) (i j : n) :
     Integrable (fun t => ((f t)ᴴ * f t) i j) haarAddCircle :=
   integrable_mul_of_memLp (g := fun t => (f t)ᴴ) (fun i j => (hf j i).star) hf i j
+
+/-- The product of a bounded function and a function with integrable entries has integrable
+entries. -/
+theorem integrable_bounded_mul [Fintype m] {g : UnitAddCircle → Matrix l m ℂ}
+    {f : UnitAddCircle → Matrix m n ℂ} {C : ℝ}
+    (hg : ∀ i j, AEStronglyMeasurable (fun t => g t i j) haarAddCircle)
+    (hC : ∀ᵐ t ∂haarAddCircle, ∀ i j, ‖g t i j‖ ≤ C)
+    (hf : ∀ i j, Integrable (fun t => f t i j) haarAddCircle) (i : l) (j : n) :
+    Integrable (fun t => (g t * f t) i j) haarAddCircle := by
+  simp only [Matrix.mul_apply]
+  exact integrable_finsetSum _ fun o _ => (hf o j).bdd_mul (c := C) (hg i o)
+    (hC.mono fun t ht => ht i o)
 
 /-- The product of a bounded function and a function with entries in `L²` has entries in `L²`. -/
 theorem memLp_bounded_mul [Fintype m] {g : UnitAddCircle → Matrix l m ℂ}
@@ -258,21 +272,28 @@ private theorem fourierCoeff_fourier_smul (q : ℤ) (v : UnitAddCircle → ℂ) 
 /-- If `f ∈ H²` has no constant term, then `e_{-1} f ∈ H²`. -/
 theorem IsHardyTwo.fourier_neg_one_smul {f : UnitAddCircle → Matrix m n ℂ} (hf : IsHardyTwo f)
     (h0 : matFourierCoeff f 0 = 0) : IsHardyTwo fun t => fourier (-1) t • f t := by
-  refine ⟨fun i j => (hf.1 i j).of_le ((fourier (-1)).continuous.aestronglyMeasurable.smul
-    (hf.1 i j).aestronglyMeasurable) (ae_of_all _ fun t => ?_), fun k hk => ?_⟩
-  · dsimp only
-    rw [Matrix.smul_apply, norm_smul, norm_fourier_apply_eq_one, one_mul]
-  · have h1 : matFourierCoeff f (k - -1) = 0 := by
-      rcases (show k - -1 ≤ 0 by omega).eq_or_lt with h | h
-      · rw [h, h0]
-      · exact hf.2 _ h
-    ext i j
-    exact (fourierCoeff_fourier_smul (-1) (fun t => f t i j) k).trans
-      (congrFun (congrFun h1 i) j)
+  refine ⟨fun i j => memLp_fourier_smul (-1) (hf.1 i j), fun k hk => ?_⟩
+  have h1 : matFourierCoeff f (k - -1) = 0 := by
+    rcases (show k - -1 ≤ 0 by omega).eq_or_lt with h | h
+    · rw [h, h0]
+    · exact hf.2 _ h
+  ext i j
+  exact (fourierCoeff_fourier_smul (-1) (fun t => f t i j) k).trans (congrFun (congrFun h1 i) j)
 
 /-- The Fourier coefficients of the transposed function. -/
 theorem matFourierCoeff_transpose (f : UnitAddCircle → Matrix m n ℂ) (k : ℤ) :
     matFourierCoeff (fun t => (f t)ᵀ) k = (matFourierCoeff f k)ᵀ :=
+  rfl
+
+/-- The Fourier coefficients of the adjoint function. -/
+theorem matFourierCoeff_conjTranspose (f : UnitAddCircle → Matrix m n ℂ) (k : ℤ) :
+    matFourierCoeff (fun t => (f t)ᴴ) k = (matFourierCoeff f (-k))ᴴ := by
+  ext i j
+  rw [Matrix.conjTranspose_apply, matFourierCoeff, matFourierCoeff, Matrix.of_apply,
+    Matrix.of_apply, fourierCoeff, fourierCoeff, Complex.star_def, ← integral_conj]
+  refine integral_congr_ae (ae_of_all _ fun t => ?_)
+  dsimp only
+  rw [smul_eq_mul, smul_eq_mul, map_mul, ← fourier_neg, neg_neg]
   rfl
 
 /-- `fᵀ ∈ H²` if `f ∈ H²`. -/
@@ -1035,10 +1056,8 @@ private theorem IsHardyOne.bounded_mul_of_finite [Fintype m] [Finite l]
   have hzero (N : ℕ) (k q : ℤ) (hq : q ∈ (fejerCoeff g (ns N)).support) (hkq : k < q) :
       fejerCoeff g (ns N) q * matFourierCoeff f (k - q) = 0 := by
     rw [hf.2 _ (by omega), Matrix.mul_zero]
-  refine ⟨⟨fun i j => ?_, fun k hk => ?_⟩, ?_⟩
-  · simp only [Matrix.mul_apply]
-    exact integrable_finsetSum _ fun o _ => (hf.1 o j).bdd_mul (hg.1 i o).aestronglyMeasurable
-      (hC.mono fun t ht => ht i o)
+  refine ⟨⟨integrable_bounded_mul (fun i j => (hg.1 i j).aestronglyMeasurable) hC hf.1,
+    fun k hk => ?_⟩, ?_⟩
   · refine tendsto_nhds_unique (key k) (tendsto_const_nhds.congr fun N => ?_)
     refine (Finset.sum_eq_zero fun q hq => hzero N k q hq ?_).symm
     exact hk.trans_le (nonneg_of_mem_support_fejerCoeff hg.2 (ns N) q hq)

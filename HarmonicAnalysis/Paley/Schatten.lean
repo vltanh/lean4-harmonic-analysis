@@ -47,6 +47,7 @@ inequality (8.4.4) can be taken independent of `p`.)
 
 Departures from the source:
 
+* Only `E = ℓ^p` with `1 ≤ p ≤ 2`.
 * (III.3) is proved only on average over the signs, which is all that (III.2) uses
   (`exists_avg_integral_paleyBlockClosed_le`, `exists_avg_integral_paleyBlockOpen_le`). The source
   proves it for every choice of the signs, by Bourgain's multiplier theorem ([B2, Theorem 4] there).
@@ -370,13 +371,12 @@ private theorem eLpNorm_two_sq_eq {X : Type*} [NormedAddCommGroup X] {u : UnitAd
     (hu : Continuous u) :
     eLpNorm u (ENNReal.ofReal 2) haarAddCircle ^ (2 : ℝ) =
       ENNReal.ofReal (∫ t, ‖u t‖ ^ 2 ∂haarAddCircle) := by
-  have hmem : MemLp u (ENNReal.ofReal 2) haarAddCircle :=
-    hu.memLp_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
-  have h0 : 0 ≤ ∫ t, ‖u t‖ ^ 2 ∂haarAddCircle := integral_nonneg fun t => by positivity
-  rw [hmem.eLpNorm_eq_integral_rpow_norm (by simp) (by simp), ENNReal.toReal_ofReal (by simp)]
-  simp only [Real.rpow_ofNat]
-  rw [ENNReal.ofReal_rpow_of_nonneg (by positivity) (by simp), ← Real.rpow_mul h0]
-  norm_num
+  have hint : Integrable (fun t => ‖u t‖ ^ 2) haarAddCircle :=
+    integrable_haar_of_continuous (hu.norm.pow 2)
+  rw [eLpNorm_ofReal_rpow_eq_lintegral two_pos hu.aestronglyMeasurable,
+    ofReal_integral_eq_lintegral_ofReal hint (ae_of_all _ fun t => sq_nonneg _)]
+  refine lintegral_congr fun t => ?_
+  rw [ENNReal.ofReal_pow (norm_nonneg _), ofReal_norm, ENNReal.rpow_ofNat]
 
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace ℂ X]
 
@@ -762,7 +762,9 @@ end SquareFunction
 
 /-- Lust-Piquard–Pisier, (α) and (β), p. 252, for `C_E = C_p`: `f ∈ H¹` is a product `f = g h` of
 functions of `H²` such that `‖f‖_{H¹ (C_p)} = ‖g‖_{H² (C_{2p})} ‖h‖_{H² (C_{2p})}`. These are the
-factors of Sarason's theorem (`exists_mul_eq_of_isHardyOne`). -/
+factors of Sarason's theorem (`exists_mul_eq_of_isHardyOne`). (The source cites "[S, Theorem 4 and
+proof p. 204]" — Sarason's article ends on p. 203 — and (I.1). Here the equality comes from the two
+identities of Theorem 4, for every `0 < p < ∞`.) -/
 theorem exists_mul_eq_integral_complexSchattenNorm_eq {p : ℝ} (hp : 0 < p)
     {f : UnitAddCircle → Matrix n n ℂ} (hf : IsHardyOne f) :
     ∃ g h : UnitAddCircle → Matrix n n ℂ, IsHardyTwo g ∧ IsHardyTwo h ∧
