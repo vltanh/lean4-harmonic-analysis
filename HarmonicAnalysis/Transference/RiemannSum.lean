@@ -19,7 +19,7 @@ import Mathlib.MeasureTheory.Function.Floor
 `Σ_{n ∈ ℤ²} R⁻² φ (n / R)`, tend to `∫_ℂ φ` as `R → ∞` (`HarmonicAnalysis.tendsto_riemannSum` for
 `R ∈ ℕ`). No continuity at `0` is needed: the cells `R⁻¹ (n + [0, 1)²)` shrink, and the step
 functions `ξ ↦ φ (⌊R ξ⌋ / R)` converge to `φ` off `0` under the integrable bound
-`C' (1 + |ξ|)^{−3}`.
+`C' (1 + |ξ|)^{−3}`. A continuous function with compact support satisfies the hypotheses.
 
 `HarmonicAnalysis.exists_tendsto_latticePoint_div`: every `ξ ∈ ℂ` is a limit of points of the
 lattices `R⁻¹ ℤ²` as `R → ∞`.

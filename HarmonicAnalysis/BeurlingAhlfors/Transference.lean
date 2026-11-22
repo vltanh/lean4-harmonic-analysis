@@ -19,8 +19,8 @@ public import HarmonicAnalysis.Transference.Homogeneous
 
 `HarmonicAnalysis.beurlingPowNorm_le_torusBeurlingPowNorm`: `‖𝓑^k‖_{L^p (ℝ²)} ≤
 ‖𝓑^k‖_{L^p_0 (𝕋²)}` for `1 < p < ∞`, the inequality `I ≤ II` of Corollary 5.7.6 of
-Hytönen–van Neerven–Veraar–Weis (`HarmonicAnalysis.multiplierNorm_le_torusMultiplierNorm`) for the
-symbol `m^k`, which is continuous off `0` and homogeneous of degree `0`.
+Hytönen–van Neerven–Veraar–Weis (HNVW; `HarmonicAnalysis.multiplierNorm_le_torusMultiplierNorm`)
+for the symbol `m^k`, which is continuous off `0` and homogeneous of degree `0`.
 
 ## References
 

@@ -27,10 +27,12 @@ constant is `κ_n (p) = (1/q)_n / (1/p)_n` (`HarmonicAnalysis.beurlingKappa`); f
 * `HarmonicAnalysis.beurlingKappa_two_le_beurlingPowNorm_two` (Dragičević's theorem, `n = 2`):
   `κ₂ (p) ≤ ‖𝓑²‖_p` for `1 < p < ∞`.
 * `HarmonicAnalysis.beurlingKappa_two_pStar_le_beurlingPowNorm_two`: `κ₂ (p*) ≤ ‖𝓑²‖_p` for
-  `1 < p < ∞`. Dragičević's article states nothing for `p < 2`; that case is
-  `‖𝓑²‖_p = ‖𝓑²‖_q` (`HarmonicAnalysis.beurlingPowNorm_conjExponent`), the reduction to `p ≥ 2` of
-  Carbonaro–Dragičević–Kovač §1.3.1 (for `R^k`, `𝓑 = R²`). The lecture notes' Corollary 4.8 states
-  the weaker asymptotic form `‖T^n‖_p ≳ n^{1−2/p*}(p* − 1)`.
+  `1 < p < ∞`. Dragičević's Theorem 1.1 is for `p > 2`, and the article does not state the bound
+  with `κ_n` for `p < 2`; that case is `‖𝓑²‖_p = ‖𝓑²‖_q`
+  (`HarmonicAnalysis.beurlingPowNorm_conjExponent`), the reduction to `p ≥ 2` of
+  Carbonaro–Dragičević–Kovač §1.3.1 (for `R^k`, `𝓑 = R²`). The article recalls (p. 463), and the
+  lecture notes' Corollary 4.8 states, the weaker asymptotic form
+  `‖T^n‖_p ≳ n^{1−2/p*}(p* − 1)` for every `p`.
 * Corollaries: `p* − 1 < ‖𝓑²‖_p` for `p ≠ 2`
   (`HarmonicAnalysis.pStar_sub_one_lt_beurlingPowNorm_two`), since
   `κ₂ (p*) − (p* − 1) = (p* − 1)(p* − 2) / (p* + 1) > 0`; and `21/5 = κ₂ (4) ≤ ‖𝓑²‖₄`
@@ -43,13 +45,13 @@ for every `p > 1`. Only `n = 2` is proved here; general `n` is a planned extensi
 The proof is the article's (pp. 466–467; repeated in the lecture notes, Proposition 4.2), with its
 test functions (`HarmonicAnalysis.BeurlingAhlfors.testFun`): explicit integrals over the unit disc,
 of order `(1 − αp)⁻¹`, and integrals outside it that stay bounded, in the identity (2.1) for the
-ratio of the norms. The norm `‖𝓑²‖_p` is a supremum over Schwartz functions, and `f_{2,α}` is not
-one. The article asserts without proof that `f_{n,α}` "belongs to `W^{n,p}`, which ensures that
-`T^n (∂̄^n f) = ∂^n f`" (p. 465; lecture notes, §4.1 and Exercise 4.1; for `n = 1`, Exercise 2.19,
-whose hint is to approximate by smooth functions). What is used of it, `‖∂²f‖_p ≤ ‖𝓑²‖_p ‖∂̄²f‖_p`,
-is proved here by the density step `HarmonicAnalysis.div_le_beurlingPowNorm_of_tendsto`, applied to
-Schwartz approximations of `f_{2,α}` in `W^{2,p}`
-(`HarmonicAnalysis.BeurlingAhlfors.exists_schwartz_tendsto_testFun`).
+ratio of the `p`-th powers of the norms. The norm `‖𝓑²‖_p` is a supremum over Schwartz functions,
+and `f_{2,α}` is not one. The article asserts without proof that `f_{n,α}` "belongs to `W^{n,p}`,
+which ensures that `T^n (∂̄^n f) = ∂^n f`" (p. 465; lecture notes, §4.1 and Exercise 4.1; for
+`n = 1`, Exercise 2.19, whose hint is to approximate by smooth functions). What is used of it,
+`‖∂²f‖_p ≤ ‖𝓑²‖_p ‖∂̄²f‖_p`, is proved here by the density step
+`HarmonicAnalysis.div_le_beurlingPowNorm_of_tendsto`, applied to Schwartz approximations of
+`f_{2,α}` in `W^{2,p}` (`HarmonicAnalysis.BeurlingAhlfors.exists_schwartz_tendsto_testFun`).
 
 ## References
 

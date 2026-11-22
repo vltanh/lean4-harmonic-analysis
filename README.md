@@ -8,14 +8,16 @@ Lean 4 with Mathlib `v4.36.0-rc2`, on `ℂ ≅ ℝ²`, the torus `𝕋² = (ℝ/
   functions, which also bound `T_m` on the `L^p`-closure of its graph (density); on the torus, on
   mean-zero trigonometric polynomials. Duality for bounded measurable `m`:
   `‖T_m‖_p = ‖T_{m̄}‖_{p'}` and `‖T_{m̄(−·)}‖_p = ‖T_m‖_p`.
-- **Transference from `𝕋²` to `ℝ²`** [HNVW, Prop. 5.7.4, Cor. 5.7.6]: for `m` continuous off `0` and
-  `R_j → ∞`, `‖T_m‖_{L^p(ℝ²)} ≤ liminf_j ‖T_{m(·/R_j)}‖_{L^p_0(𝕋²)}`; for symbols homogeneous of
-  degree `0`, `‖T_m‖_{L^p(ℝ²)} ≤ ‖T_m‖_{L^p_0(𝕋²)}`. Through the density of the Schwartz functions with
-  Fourier transform in `C_c^∞(ℝ^d∖{0})`, Poisson summation on `ℤ²` and lattice Riemann sums.
+- **Transference from `𝕋²` to `ℝ²`** [HNVW, Prop. 5.7.4, Cor. 5.7.6], `1 < p < ∞`: for `m` continuous
+  off `0` and `R_j → ∞`, `‖T_m‖_{L^p(ℝ²)} ≤ liminf_j ‖T_{m(·/R_j)}‖_{L^p_0(𝕋²)}`; for symbols
+  homogeneous of degree `0`, `‖T_m‖_{L^p(ℝ²)} ≤ ‖T_m‖_{L^p_0(𝕋²)}`. Through the density of the Schwartz
+  functions with Fourier transform in `C_c^∞(ℝ^d∖{0})`, Poisson summation on `ℤ²` and lattice Riemann
+  sums.
 - **The Beurling–Ahlfors transform** `𝓑`, symbol `ξ̄/ξ`: `𝓑^k(∂̄^k F) = ∂^k F`,
   `‖𝓑^k‖_p = ‖𝓑^k‖_{p'}`, transference for `𝓑^k`, and **Dragičević's lower bound** for `n = 2`,
-  `‖𝓑²‖_p ≥ κ₂(p*) = (p*−1)(2p*−1)/(p*+1)`, `p* = max(p, p')`; hence `‖𝓑²‖_p > p* − 1` for
-  `p ≠ 2` and `‖𝓑²‖₄ ≥ 21/5`.
+  `‖𝓑²‖_p ≥ κ₂(p) = (p−1)(2p−1)/(p+1)`; with the duality of Carbonaro, Dragičević and Kovač for
+  `p < 2`, `‖𝓑²‖_p ≥ κ₂(p*)`, `p* = max(p, p')`, hence `‖𝓑²‖_p > p* − 1` for `p ≠ 2`, and
+  `‖𝓑²‖₄ ≥ 21/5`.
 - **Smooth periodic functions** on `ℝ^ι`, `ι` finite: the derivative formula
   `(∂_v g)^(n) = 2πi⟨n,v⟩ ĝ(n)`, rapid decay of the Fourier coefficients and absolute convergence
   of the Fourier series; Fourier multipliers `T_m g = Σ_n m(n) ĝ(n) e_n` with polynomially bounded
@@ -40,17 +42,17 @@ the operator norms are suprema in `ℝ≥0∞`.
 | `‖T_m‖_p = ‖T_{m̄}‖_{p'}` (`m` bounded measurable, `1 < p`) | `multiplierNorm_conj_conjExponent` | duality; [CDK, §1.3.1] for `R^k` |
 | `‖T_{m̄(−·)}‖_p = ‖T_m‖_p` | `multiplierNorm_conj_comp_neg` | conjugation; [CDK, §1.3.1] for `R^k` |
 | `ϕ_t ∗ f → f` in `L^p` as `t → 0` for Schwartz `f`, `ϕ`, `∫ϕ = 1` (`1 ≤ p`) | `tendsto_eLpNorm_mollify_sub` | [HNVW, Prop. 1.2.32] |
-| Schwartz `f_j → f` in every `L^p`, `1 < p < ∞`, `𝓕f_j → 𝓕f` in `L¹`, with `𝓕f_j ∈ C_c^∞(V∖{0})` | `exists_tendsto_hasCompactFourierSupportOffZero` | [HNVW, Prop. 2.4.23 (ii)] |
+| For Schwartz `f`: Schwartz `f_j → f` in every `L^p`, `1 < p < ∞`, `𝓕f_j → 𝓕f` in `L¹`, with `𝓕f_j ∈ C_c^∞(V∖{0})` | `exists_tendsto_hasCompactFourierSupportOffZero` | [HNVW, Prop. 2.4.23 (ii)] |
 | `∫_{𝕋^ι} T_m(Σ c_k e_k) (Σ d_ℓ e_ℓ) = Σ_k m(k) c_k d_{−k}` | `integral_torusMultiplier_mul_trigPoly` | orthogonality |
-| `Σ_j f(R(y+j)) = Σ_n R⁻² 𝓕f(n/R) e^{2πi⟨n,y⟩}` on `ℤ²` | `hasSum_periodize` | Poisson summation |
-| `R^{2/p} ‖Σ_n R⁻² 𝓕f(n/R) e_n‖_{L^p(𝕋²)} → ‖f‖_{L^p(ℝ²)}` as `R → ∞` (`1 ≤ p`) | `tendsto_eLpNorm_tsum_fourier_mul_mFourier` | [HNVW, Lemma 5.7.5] |
+| `Σ_j f(R(y+j)) = Σ_n R⁻² 𝓕f(n/R) e^{2πi⟨n,y⟩}` on `ℤ²`, for Schwartz `f` | `hasSum_periodize` | Poisson summation |
+| `R^{2/p} ‖Σ_n R⁻² 𝓕f(n/R) e_n‖_{L^p(𝕋²)} → ‖f‖_{L^p(ℝ²)}` as `R → ∞`, for Schwartz `f` (`1 ≤ p`) | `tendsto_eLpNorm_tsum_fourier_mul_mFourier` | [HNVW, Lemma 5.7.5] |
 | `Σ_n R⁻² φ(n/R) → ∫ φ` for `φ` continuous off `0`, `\|φ\| ≤ C(1+\|ξ\|)^{−3}` | `tendsto_riemannSum_real`, `tendsto_riemannSum` | |
-| `‖T_m‖_{L^p(ℝ²)} ≤ liminf_j ‖T_{m(·/R_j)}‖_{L^p_0(𝕋²)}`, `R_j → ∞`, `m` continuous off `0` | `multiplierNorm_le_liminf_torusMultiplierNorm` | [HNVW, Prop. 5.7.4] |
-| `‖T_m‖_{L^p(ℝ²)} ≤ ‖T_m‖_{L^p_0(𝕋²)}`, `m` homogeneous of degree `0`, continuous off `0` | `multiplierNorm_le_torusMultiplierNorm` | [HNVW, Cor. 5.7.6] (`I ≤ II`) |
-| `𝓑^k(∂̄^k F) = ∂^k F` for Schwartz `F` | `beurlingPow_dzbarCLM_pow` | [D-LN, Ex. 2.19] for `k = 1`; §4.1 |
-| `‖v‖_p / ‖u‖_p ≤ ‖𝓑^k‖_p` if Schwartz `∂̄^k φ_j → u`, `∂^k φ_j → v` in `L^p` | `div_le_beurlingPowNorm_of_tendsto` | density; [D-LN, Ex. 2.19, §4.1] |
-| `‖𝓑^k‖_p = ‖𝓑^k‖_{p'}` | `beurlingPowNorm_conjExponent` | [CDK, §1.3.1] |
-| `‖𝓑^k‖_{L^p(ℝ²)} ≤ ‖𝓑^k‖_{L^p_0(𝕋²)}` | `beurlingPowNorm_le_torusBeurlingPowNorm` | [HNVW, Cor. 5.7.6] (`I ≤ II`) |
+| `‖T_m‖_{L^p(ℝ²)} ≤ liminf_j ‖T_{m(·/R_j)}‖_{L^p_0(𝕋²)}`, `R_j → ∞`, `m` continuous off `0` (`1 < p`) | `multiplierNorm_le_liminf_torusMultiplierNorm` | [HNVW, Prop. 5.7.4] |
+| `‖T_m‖_{L^p(ℝ²)} ≤ ‖T_m‖_{L^p_0(𝕋²)}`, `m` homogeneous of degree `0`, continuous off `0` (`1 < p`) | `multiplierNorm_le_torusMultiplierNorm` | [HNVW, Cor. 5.7.6] (`I ≤ II`) |
+| `𝓑^k(∂̄^k F) = ∂^k F` for Schwartz `F` | `beurlingPow_dzbarCLM_pow` | [D, p. 465]; [D-LN, §4.1, and Ex. 2.19 for `k = 1`] |
+| `‖v‖_p / ‖u‖_p ≤ ‖𝓑^k‖_p` if Schwartz `∂̄^k φ_j → u`, `∂^k φ_j → v` in `L^p` | `div_le_beurlingPowNorm_of_tendsto` | density; [D, p. 465]; [D-LN, Ex. 2.19, §4.1] |
+| `‖𝓑^k‖_p = ‖𝓑^k‖_{p'}` (`1 < p`) | `beurlingPowNorm_conjExponent` | [CDK, §1.3.1] |
+| `‖𝓑^k‖_{L^p(ℝ²)} ≤ ‖𝓑^k‖_{L^p_0(𝕋²)}` (`1 < p`) | `beurlingPowNorm_le_torusBeurlingPowNorm` | [HNVW, Cor. 5.7.6] (`I ≤ II`) |
 | `f_{2,α} ∈ W^{2,p}`: Schwartz `φ_k` with `∂̄²φ_k → ∂̄²f_{2,α}`, `∂²φ_k → ∂²f_{2,α}` (`1 ≤ p`) | `BeurlingAhlfors.exists_schwartz_tendsto_testFun` | asserted in [D, p. 465], [D-LN, Ex. 4.1] (for `p > 2`) |
 | `‖∂²f_{2,α}‖_p / ‖∂̄²f_{2,α}‖_p → κ₂(p)` as `α → 1/p⁻` | `tendsto_eLpNorm_div_testFun` | [D, Thm 1.1] (for `p > 2`) |
 | `κ₂(p) ≤ ‖𝓑²‖_p` for `1 < p` | `beurlingKappa_two_le_beurlingPowNorm_two` | [D, Thm 1.1] (for `p > 2`) |
@@ -102,9 +104,9 @@ Here `beurlingKappa n p = (1/q)_n / (1/p)_n`, `1/q = 1 − 1/p`, with the Pochha
   summation) bound them by `‖T_{m(·/R)}‖ ‖f‖_p ‖g‖_{p'}` in the limit, and density [HNVW,
   Prop. 2.4.23 (ii)] and duality conclude. Corrections to the printed text, all in the docstrings:
   the missing hypotheses of Prop. 5.7.4 and the boundedness of `m`, the centred cell in Lemma 5.7.5,
-  two interchanged exponents, and the norming of `T_m f`, which needs the density in `L^{p'}`
-  together with the convergence of the Fourier transforms in `L¹`. Part (i) of Prop. 2.4.23 (not used)
-  is wrong for `C_c^∞(ℝ^d∖{0})`, whose functions vanish at `0`.
+  two interchanged exponents, and the norming of `T_m f`, for which the density of the `g` in `L^{p'}`
+  alone is not enough (here their Fourier transforms converge in `L¹` as well, as Prop. 2.4.23 says).
+  Part (i) of Prop. 2.4.23 (not used) is wrong for `C_c^∞(ℝ^d∖{0})`, whose functions vanish at `0`.
 - **Smooth periodic functions.** The Fourier coefficients over the unit cube `(0,1)^ι` are those
   of the function induced on the torus. The derivative formula integrates the difference quotients
   against `e_{−n}`, moves the translation onto `e_{−n}` by translation invariance, and passes to
@@ -126,8 +128,8 @@ Here `beurlingKappa n p = (1/q)_n / (1/p)_n`, `1/q = 1 − 1/p`, with the Pochha
 
 Arguments shorter than the sources' that the proofs here do not use:
 
-- [HNVW, Cor. 5.7.6], `I ≤ II`: the torus series with coefficients `R⁻² m(n) 𝓕f(n/R)`, `n ≠ 0`, at `x/R` are Riemann sums of `T_m f(x)`, and Fatou's lemma concludes, with no second test function, density or duality (checked in Lean at commit `bf215c5`).
-- [HNVW, Prop. 5.7.4]: `g` can be any Schwartz function, since `m 𝓕f 𝓕⁻¹g` is already continuous with compact support and the mean of `Σ_n 𝓕g(n/R) e_n` plays no role; this removes the density step for `g` (on paper).
+- [HNVW, Cor. 5.7.6], `I ≤ II`: the torus series with coefficients `R⁻² m(n) 𝓕f(n/R)`, `n ≠ 0`, at `x/R` are, up to the term `n = 0`, Riemann sums of `T_m f(x)`, and Fatou's lemma concludes, with no second test function, duality or density on `ℝ²`; the torus bound is extended to absolutely summable coefficients instead (checked in Lean at commit `bf215c5`).
+- [HNVW, Prop. 5.7.4]: `g` can be any Schwartz function, since `m 𝓕f 𝓕⁻¹g` is already continuous with compact support and the mean of the (then infinite, absolutely convergent) sum `Σ_n 𝓕g(n/R) e_n` plays no role; this removes the density step for `g` and the correction on norming (on paper).
 - [HNVW, Prop. 2.4.23 (ii)]: `‖h‖_p ≤ ‖h‖_1^{1/p} ‖h‖_∞^{1−1/p}` gives the `L^p` limits from `‖𝓕f_j − 𝓕f‖_1 → 0` and `‖ϕ_t ∗ f‖_1 ≤ ‖ϕ‖_1 ‖f‖_1` (on paper).
 
 ## Using it from another Lake project
@@ -166,8 +168,8 @@ lake env lean scripts/Audit.lean   # axioms: fails on any `sorry` or non-standar
 ## References
 
 - [HNVW] T. Hytönen, J. van Neerven, M. Veraar, L. Weis, *Analysis in Banach Spaces, Volume I*,
-  Ergebnisse der Mathematik 63, Springer, 2016: Lemma 1.2.30, Proposition 1.2.32, Proposition 2.4.23,
-  Proposition 5.7.4, Lemma 5.7.5, Corollary 5.7.6.
+  Ergebnisse der Mathematik 63, Springer, 2016: Lemma 1.2.30, Proposition 1.2.32, Lemma 2.4.8,
+  Proposition 2.4.23, Definition 5.3.1, Propositions 5.7.1 and 5.7.4, Lemma 5.7.5, Corollary 5.7.6.
 - [D] O. Dragičević, *Some remarks on the `L^p` estimates for powers of the Ahlfors–Beurling
   operator*, Arch. Math. 96 (2011), 463–471: Theorem 1.1 (`p > 2`).
 - [D-LN] O. Dragičević, *Analysis of the Ahlfors–Beurling transform*, lecture notes (Seville,

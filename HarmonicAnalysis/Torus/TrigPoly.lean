@@ -63,75 +63,12 @@ def torusMultiplierNorm (m : (ι → ℤ) → ℂ) (p : ℝ) : ℝ≥0∞ :=
 private lemma norm_mFourier_apply (n : ι → ℤ) (x : UnitAddTorus ι) : ‖mFourier n x‖ = 1 := by
   simp [mFourier, fourier_apply, norm_prod, Circle.norm_coe]
 
-/-- On the torus, of total mass one, the `L^q` norm is at most the sup norm. -/
-private lemma eLpNorm_le_norm (w : C(UnitAddTorus ι, ℂ)) (q : ℝ≥0∞) :
-    eLpNorm w q volume ≤ ENNReal.ofReal ‖w‖ := by
-  refine (eLpNorm_le_of_ae_bound w.continuous.aestronglyMeasurable
-    (ae_of_all _ w.norm_coe_le_norm)).trans_eq ?_
-  rw [volume_pi, Measure.pi_univ]
-  simp [AddCircle.measure_univ]
-
-/-- The coefficients determine the sum: if `Σ_n d_n e_n` converges in `C(𝕋^ι, ℂ)` to a function
-vanishing almost everywhere, then `d = 0`. -/
-private lemma eq_zero_of_hasSum_mFourier {d : (ι → ℤ) → ℂ} {g : C(UnitAddTorus ι, ℂ)}
-    (hg : HasSum (fun n => d n • mFourier n) g) (h0 : ⇑g =ᵐ[volume] 0) : d = 0 := by
-  have hg0 : g = 0 := by
-    ext x
-    exact congrFun ((g.continuous.ae_eq_iff_eq volume continuous_zero).1 h0) x
-  subst hg0
-  funext k
-  -- `⟨e_k, ·⟩` in `L²`, for the measure used by `orthonormal_mFourier`
-  let L : C(UnitAddTorus ι, ℂ) →L[ℂ] ℂ := (innerSL ℂ (mFourierLp 2 k)).comp
-    (ContinuousMap.toLp 2 (Measure.pi fun _ : ι => AddCircle.haarAddCircle) ℂ)
-  have hL : ∀ n, L (d n • mFourier n) = if n = k then d k else 0 := by
-    intro n
-    rw [map_smul, ContinuousLinearMap.comp_apply, innerSL_apply_apply]
-    change d n • inner ℂ (mFourierLp 2 k) (mFourierLp 2 n) = _
-    rw [orthonormal_iff_ite.mp (orthonormal_mFourier (d := ι)) k n]
-    by_cases h : n = k
-    · subst h; simp
-    · simp [h, Ne.symm h]
-  have := hg.mapL L
-  simp only [hL, map_zero] at this
-  exact (hasSum_ite_eq k (d k)).unique this
-
 theorem continuous_trigPoly (c : (ι → ℤ) →₀ ℂ) : Continuous (trigPoly c) :=
   continuous_finsetSum _ fun n _ => continuous_const.mul (mFourier n).continuous
 
 theorem continuous_torusMultiplier (m : (ι → ℤ) → ℂ) (c : (ι → ℤ) →₀ ℂ) :
     Continuous (torusMultiplier m c) :=
   continuous_finsetSum _ fun n _ => continuous_const.mul (mFourier n).continuous
-
-private lemma trigPoly_eq_sum (c : (ι → ℤ) →₀ ℂ) :
-    trigPoly c = ⇑(∑ n ∈ c.support, c n • mFourier n) := by
-  funext x
-  simp [trigPoly, Finsupp.sum, ContinuousMap.sum_apply]
-
-/-- The bound defining `torusMultiplierNorm`, for one mean-zero trigonometric polynomial. -/
-theorem eLpNorm_torusMultiplier_le (m : (ι → ℤ) → ℂ) {p : ℝ} (hp : 0 < p)
-    (c : (ι → ℤ) →₀ ℂ) (hc0 : c 0 = 0) :
-    eLpNorm (torusMultiplier m c) (ENNReal.ofReal p) volume ≤
-      torusMultiplierNorm m p * eLpNorm (trigPoly c) (ENNReal.ofReal p) volume := by
-  by_cases hy : eLpNorm (trigPoly c) (ENNReal.ofReal p) volume = 0
-  · have hae := (eLpNorm_eq_zero_iff (ENNReal.ofReal_pos.2 hp).ne').1 hy
-    rw [trigPoly_eq_sum] at hae
-    have hc := eq_zero_of_hasSum_mFourier (hasSum_sum_of_ne_finset_zero
-      (f := fun n => c n • mFourier n) fun n hn => by simp [Finsupp.notMem_support_iff.1 hn]) hae
-    obtain rfl : c = 0 := Finsupp.ext (congrFun hc)
-    have : torusMultiplier m (0 : (ι → ℤ) →₀ ℂ) = 0 := funext fun x => by simp [torusMultiplier]
-    simp [this]
-  have hy' : eLpNorm (trigPoly c) (ENNReal.ofReal p) volume ≠ ⊤ := by
-    rw [trigPoly_eq_sum]
-    exact (eLpNorm_le_norm _ _).trans_lt ENNReal.ofReal_lt_top |>.ne
-  calc eLpNorm (torusMultiplier m c) (ENNReal.ofReal p) volume
-      = eLpNorm (torusMultiplier m c) (ENNReal.ofReal p) volume /
-          eLpNorm (trigPoly c) (ENNReal.ofReal p) volume *
-          eLpNorm (trigPoly c) (ENNReal.ofReal p) volume := (ENNReal.div_mul_cancel hy hy').symm
-    _ ≤ _ := by
-      gcongr
-      exact le_iSup₂ (f := fun (c : (ι → ℤ) →₀ ℂ) (_ : c 0 = 0) =>
-        eLpNorm (torusMultiplier m c) (ENNReal.ofReal p) volume /
-          eLpNorm (trigPoly c) (ENNReal.ofReal p) volume) c hc0
 
 /-- The measure of the torus, of total mass one, is the product of the Haar probability measures. -/
 private lemma volume_eq_pi_haarAddCircle : (volume : Measure (UnitAddTorus ι)) =
@@ -140,31 +77,6 @@ private lemma volume_eq_pi_haarAddCircle : (volume : Measure (UnitAddTorus ι)) 
   congr 1
   funext i
   rw [AddCircle.volume_eq_smul_haarAddCircle, ENNReal.ofReal_one, one_smul]
-
-/-- `‖e_n‖_p = 1` on the torus, of total mass one. -/
-private lemma eLpNorm_mFourier (n : ι → ℤ) {p : ℝ} (hp : 0 < p) :
-    eLpNorm (mFourier n) (ENNReal.ofReal p) (volume : Measure (UnitAddTorus ι)) = 1 := by
-  have hμ : (volume : Measure (UnitAddTorus ι)) ≠ 0 := by
-    rw [volume_eq_pi_haarAddCircle]
-    exact IsProbabilityMeasure.ne_zero _
-  rw [eLpNorm_congr_norm_ae (g := fun _ => (1 : ℂ)) (mFourier n).continuous.aestronglyMeasurable
-      aestronglyMeasurable_const (ae_of_all _ fun x => by simp [norm_mFourier_apply]),
-    eLpNorm_const _ (by simpa using hp) hμ, volume_eq_pi_haarAddCircle, measure_univ]
-  simp
-
-/-- The values of the symbol off `0` are at most the multiplier norm: `|m (n)| ≤ ‖T_m‖_{L^p_0}` for
-`n ≠ 0`, by `T_m e_n = m (n) e_n`. -/
-theorem enorm_le_torusMultiplierNorm (m : (ι → ℤ) → ℂ) {p : ℝ} (hp : 0 < p) {n : ι → ℤ}
-    (hn : n ≠ 0) : ‖m n‖ₑ ≤ torusMultiplierNorm m p := by
-  classical
-  have h := eLpNorm_torusMultiplier_le m hp (Finsupp.single n 1) (by simp [hn])
-  have h1 : trigPoly (Finsupp.single n 1) = mFourier n := by
-    funext x
-    simp [trigPoly]
-  have h2 : torusMultiplier m (Finsupp.single n 1) = m n • ⇑(mFourier n) := by
-    funext x
-    simp [torusMultiplier]
-  rwa [h1, h2, eLpNorm_const_smul, eLpNorm_mFourier n hp, mul_one, mul_one] at h
 
 /-! ### Orthogonality -/
 
@@ -201,5 +113,76 @@ theorem integral_torusMultiplier_mul_trigPoly (m : (ι → ℤ) → ℂ) (c d : 
   split_ifs with h
   · rfl
   · rw [Finsupp.notMem_support_iff.1 h, mul_zero]
+
+/-- A trigonometric polynomial determines its coefficients: if `Σ_n c_n e_n` vanishes almost
+everywhere, then `c = 0`, by `c_k = ∫ (Σ_n c_n e_n) e_{−k}`. -/
+private lemma eq_zero_of_trigPoly_ae_eq_zero {c : (ι → ℤ) →₀ ℂ} (h : trigPoly c =ᵐ[volume] 0) :
+    c = 0 := by
+  classical
+  ext k
+  have h1 := integral_torusMultiplier_mul_trigPoly (fun _ => 1) c (Finsupp.single (-k) 1)
+  have h2 : torusMultiplier (fun _ => 1) c = trigPoly c := by
+    funext x
+    simp [torusMultiplier, trigPoly]
+  have h3 : ∫ x, trigPoly c x * trigPoly (Finsupp.single (-k) 1) x = 0 := by
+    refine integral_eq_zero_of_ae ?_
+    filter_upwards [h] with x hx
+    simp [hx]
+  rw [h2, h3, Finsupp.sum, Finset.sum_eq_single k] at h1
+  · simpa using h1.symm
+  · intro n _ hn
+    simp [hn]
+  · intro hk
+    simp [Finsupp.notMem_support_iff.1 hk]
+
+/-! ### The multiplier norm -/
+
+/-- The bound defining `torusMultiplierNorm`, for one mean-zero trigonometric polynomial. -/
+theorem eLpNorm_torusMultiplier_le (m : (ι → ℤ) → ℂ) {p : ℝ} (hp : 0 < p)
+    (c : (ι → ℤ) →₀ ℂ) (hc0 : c 0 = 0) :
+    eLpNorm (torusMultiplier m c) (ENNReal.ofReal p) volume ≤
+      torusMultiplierNorm m p * eLpNorm (trigPoly c) (ENNReal.ofReal p) volume := by
+  by_cases hy : eLpNorm (trigPoly c) (ENNReal.ofReal p) volume = 0
+  · obtain rfl := eq_zero_of_trigPoly_ae_eq_zero
+      ((eLpNorm_eq_zero_iff (ENNReal.ofReal_pos.2 hp).ne').1 hy)
+    have : torusMultiplier m (0 : (ι → ℤ) →₀ ℂ) = 0 := funext fun x => by simp [torusMultiplier]
+    simp [this]
+  have hy' : eLpNorm (trigPoly c) (ENNReal.ofReal p) volume ≠ ⊤ :=
+    ((continuous_trigPoly c).memLp_of_hasCompactSupport
+      (HasCompactSupport.of_compactSpace _)).eLpNorm_lt_top.ne
+  calc eLpNorm (torusMultiplier m c) (ENNReal.ofReal p) volume
+      = eLpNorm (torusMultiplier m c) (ENNReal.ofReal p) volume /
+          eLpNorm (trigPoly c) (ENNReal.ofReal p) volume *
+          eLpNorm (trigPoly c) (ENNReal.ofReal p) volume := (ENNReal.div_mul_cancel hy hy').symm
+    _ ≤ _ := by
+      gcongr
+      exact le_iSup₂ (f := fun (c : (ι → ℤ) →₀ ℂ) (_ : c 0 = 0) =>
+        eLpNorm (torusMultiplier m c) (ENNReal.ofReal p) volume /
+          eLpNorm (trigPoly c) (ENNReal.ofReal p) volume) c hc0
+
+/-- `‖e_n‖_p = 1` on the torus, of total mass one. -/
+private lemma eLpNorm_mFourier (n : ι → ℤ) {p : ℝ} (hp : 0 < p) :
+    eLpNorm (mFourier n) (ENNReal.ofReal p) (volume : Measure (UnitAddTorus ι)) = 1 := by
+  have hμ : (volume : Measure (UnitAddTorus ι)) ≠ 0 := by
+    rw [volume_eq_pi_haarAddCircle]
+    exact IsProbabilityMeasure.ne_zero _
+  rw [eLpNorm_congr_norm_ae (g := fun _ => (1 : ℂ)) (mFourier n).continuous.aestronglyMeasurable
+      aestronglyMeasurable_const (ae_of_all _ fun x => by simp [norm_mFourier_apply]),
+    eLpNorm_const _ (by simpa using hp) hμ, volume_eq_pi_haarAddCircle, measure_univ]
+  simp
+
+/-- The values of the symbol off `0` are at most the multiplier norm: `|m (n)| ≤ ‖T_m‖_{L^p_0}` for
+`n ≠ 0`, by `T_m e_n = m (n) e_n`. -/
+theorem enorm_le_torusMultiplierNorm (m : (ι → ℤ) → ℂ) {p : ℝ} (hp : 0 < p) {n : ι → ℤ}
+    (hn : n ≠ 0) : ‖m n‖ₑ ≤ torusMultiplierNorm m p := by
+  classical
+  have h := eLpNorm_torusMultiplier_le m hp (Finsupp.single n 1) (by simp [hn])
+  have h1 : trigPoly (Finsupp.single n 1) = mFourier n := by
+    funext x
+    simp [trigPoly]
+  have h2 : torusMultiplier m (Finsupp.single n 1) = m n • ⇑(mFourier n) := by
+    funext x
+    simp [torusMultiplier]
+  rwa [h1, h2, eLpNorm_const_smul, eLpNorm_mFourier n hp, mul_one, mul_one] at h
 
 end HarmonicAnalysis

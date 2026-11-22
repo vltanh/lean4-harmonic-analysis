@@ -101,6 +101,17 @@ theorem integral_fourierInv_mul_conj {φ g : V → ℂ} (hφ : Integrable φ) (h
   simp only [smul_eq_mul, hflip] at h
   exact h
 
+/-- Hölder's inequality for the pairing: `|∫ u v| ≤ ‖u‖_P ‖v‖_Q` for conjugate exponents. -/
+theorem enorm_integral_mul_le {α : Type*} [MeasurableSpace α] {μ : Measure α} {u v : α → ℂ}
+    (hu : AEStronglyMeasurable u μ) (hv : AEStronglyMeasurable v μ) (P Q : ℝ≥0∞)
+    [ENNReal.HolderConjugate P Q] : ‖∫ x, u x * v x ∂μ‖ₑ ≤ eLpNorm u P μ * eLpNorm v Q μ := by
+  calc ‖∫ x, u x * v x ∂μ‖ₑ ≤ eLpNorm (fun x => u x * v x) 1 μ :=
+        (enorm_integral_le_lintegral_enorm _).trans lintegral_enorm_le_eLpNorm_one
+    _ ≤ 1 * eLpNorm u P μ * eLpNorm v Q μ :=
+        eLpNorm_le_eLpNorm_mul_eLpNorm_of_enorm (fun a b : ℂ => a * b) 1
+          (fun hf hg => hf.mul hg) hu hv (ae_of_all _ fun x => by simp)
+    _ = _ := by rw [one_mul]
+
 /-- `∫ 𝓕⁻¹ φ · g = ∫ φ · 𝓕⁻¹ g` for integrable `φ` and `g`. -/
 theorem integral_fourierInv_mul {φ g : V → ℂ} (hφ : Integrable φ) (hg : Integrable g) :
     ∫ x, 𝓕⁻ φ x * g x = ∫ ξ, φ ξ * 𝓕⁻ g ξ := by
@@ -161,15 +172,11 @@ private theorem multiplierNorm_le_conj_conjExponent {m : V → ℂ} (hm : Measur
   rw [integral_fourierMultiplier_mul_conj hm hmb f g]
   set T := fourierMultiplier (fun ξ => conj (m ξ)) g
   have hT : Continuous T := continuous_fourierMultiplier _ g
-  calc ‖∫ x, f x * conj (T x)‖ₑ ≤ eLpNorm (fun x => f x * conj (T x)) 1 volume :=
-        (enorm_integral_le_lintegral_enorm _).trans lintegral_enorm_le_eLpNorm_one
-    _ ≤ 1 * eLpNorm f (ENNReal.ofReal p) volume *
+  calc ‖∫ x, f x * conj (T x)‖ₑ ≤ eLpNorm f (ENNReal.ofReal p) volume *
           eLpNorm (fun x => conj (T x)) (ENNReal.ofReal (p / (p - 1))) volume :=
-        eLpNorm_le_eLpNorm_mul_eLpNorm_of_enorm (fun a b : ℂ => a * b) 1
-          (fun hf hg => hf.mul hg) f.continuous.aestronglyMeasurable
-          (Complex.continuous_conj.comp hT).aestronglyMeasurable (ae_of_all _ fun x => by simp)
+        enorm_integral_mul_le f.continuous.aestronglyMeasurable
+          (Complex.continuous_conj.comp hT).aestronglyMeasurable _ _
     _ = eLpNorm f (ENNReal.ofReal p) volume * eLpNorm T (ENNReal.ofReal (p / (p - 1))) volume := by
-        rw [one_mul]
         congr 1
         exact eLpNorm_conj _ _ _
     _ ≤ eLpNorm f (ENNReal.ofReal p) volume * (multiplierNorm (fun ξ => conj (m ξ)) (p / (p - 1)) *

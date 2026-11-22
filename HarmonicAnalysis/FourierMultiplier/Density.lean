@@ -23,7 +23,8 @@ import Mathlib.MeasureTheory.Integral.MeanInequalities
 ## Main results
 
 * `HarmonicAnalysis.lintegral_rpow_lintegral_mul_le`: Hölder's inequality for the measure `w dν`
-  and Tonelli's theorem, the computation of Young's inequality (HNVW, Lemma 1.2.30).
+  and Tonelli's theorem, the computation of Young's inequality (HNVW, Lemma 1.2.30);
+  `HarmonicAnalysis.lintegral_rpow_lintegral_le`: Minkowski's integral inequality.
 * `HarmonicAnalysis.mollify ϕ f t`, the mollification `ϕ_t ∗ f` with `ϕ_t (x) = t^{−d} ϕ (x / t)`:
   `𝓕 (ϕ_t ∗ f) = 𝓕 ϕ (t ·) 𝓕 f` (`HarmonicAnalysis.fourier_mollify`),
   `(ϕ_t ∗ f) (x) = ∫ ϕ (y) f (x − t y) dy` (`HarmonicAnalysis.mollify_apply`).
@@ -41,10 +42,10 @@ That of HNVW, p. 118: `f_j = (ϕ_{δ_j} − ϕ_{R_j}) ∗ f`, where `δ_j ↓ 0`
 bump function equal to `1` near `0`, so that `𝓕 f_j = (𝓕 ϕ (δ_j ·) − 𝓕 ϕ (R_j ·)) 𝓕 f`. The
 preliminary truncation `φ (ε ·) f` of HNVW, which makes the Fourier transform smooth, is not needed
 for a Schwartz function. HNVW states the limits without proof. `ϕ_t ∗ f → f` in `L^p` is their
-Proposition 1.2.32, proved here as there: Young's computation, continuity of the translations in
-`L^p` and dominated convergence. `‖ϕ_R ∗ f‖_p → 0` is Young's inequality
-`‖ϕ_R ∗ f‖_p ≤ ‖ϕ_R‖_p ‖f‖_1` with `‖ϕ_R‖_p = R^{−d (1 − 1/p)} ‖ϕ‖_p`. The limits on the Fourier
-side are by dominated convergence.
+Proposition 1.2.32, proved here as there: Minkowski's integral inequality, the continuity of the
+translations in `L^p` (in Mathlib) and dominated convergence. `‖ϕ_R ∗ f‖_p → 0` is Young's
+inequality `‖ϕ_R ∗ f‖_p ≤ ‖ϕ_R‖_p ‖f‖_1` with `‖ϕ_R‖_p = R^{−d (1 − 1/p)} ‖ϕ‖_p`. The limits on the
+Fourier side are by dominated convergence.
 
 ## A correction to the source
 
@@ -124,6 +125,55 @@ theorem lintegral_rpow_lintegral_mul_le {α β : Type*} [MeasurableSpace α] [Me
         refine lintegral_congr fun y => ?_
         exact lintegral_const_mul _ ((hh.comp measurable_prodMk_right).pow_const p)
 
+/-- Minkowski's integral inequality, for `1 ≤ p` and a finite left side:
+`(∫ (∫ h (x, y) dy)^p dx)^{1/p} ≤ ∫ (∫ h (x, y)^p dx)^{1/p} dy`. With `F (x) = ∫ h (x, y) dy`, by
+Tonelli's theorem and Hölder's inequality, `∫ F^p = ∫ ∫ h (x, y) F (x)^{p − 1} dx dy` is at most the
+right side times `(∫ F^p)^{1 − 1/p}`. -/
+theorem lintegral_rpow_lintegral_le {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
+    {μ : Measure α} {ν : Measure β} [SFinite μ] [SFinite ν] {h : α → β → ℝ≥0∞}
+    (hh : Measurable (Function.uncurry h)) {p : ℝ} (hp : 1 ≤ p)
+    (hI : ∫⁻ x, (∫⁻ y, h x y ∂ν) ^ p ∂μ ≠ ⊤) :
+    (∫⁻ x, (∫⁻ y, h x y ∂ν) ^ p ∂μ) ^ (1 / p) ≤ ∫⁻ y, (∫⁻ x, h x y ^ p ∂μ) ^ (1 / p) ∂ν := by
+  rcases hp.eq_or_lt with rfl | hp1
+  · simp only [ENNReal.rpow_one, div_one]
+    rw [lintegral_lintegral_swap hh.aemeasurable]
+  have hp0 : 0 < p := by linarith
+  have hpq : p.HolderConjugate (p / (p - 1)) :=
+    (Real.holderConjugate_iff_eq_conjExponent hp1).2 rfl
+  set q := p / (p - 1)
+  set F : α → ℝ≥0∞ := fun x => ∫⁻ y, h x y ∂ν
+  have hF : Measurable F := hh.lintegral_prod_right'
+  set I := ∫⁻ x, F x ^ p ∂μ
+  set S := ∫⁻ y, (∫⁻ x, h x y ^ p ∂μ) ^ (1 / p) ∂ν
+  have hy : ∀ y, Measurable fun x => h x y := fun y => hh.comp measurable_prodMk_right
+  have hle : I ≤ S * I ^ (1 / q) := by
+    calc I = ∫⁻ x, ∫⁻ y, h x y * F x ^ (p - 1) ∂ν ∂μ := by
+          refine lintegral_congr fun x => ?_
+          have hhx : Measurable (h x) := hh.comp measurable_prodMk_left
+          rw [lintegral_mul_const _ hhx]
+          conv_lhs => rw [show p = 1 + (p - 1) by ring,
+            ENNReal.rpow_add_of_nonneg _ _ zero_le_one (by linarith), ENNReal.rpow_one]
+      _ = ∫⁻ y, ∫⁻ x, h x y * F x ^ (p - 1) ∂μ ∂ν :=
+          lintegral_lintegral_swap
+            (hh.mul ((hF.comp measurable_fst).pow_const (p - 1))).aemeasurable
+      _ ≤ ∫⁻ y, (∫⁻ x, h x y ^ p ∂μ) ^ (1 / p) * I ^ (1 / q) ∂ν := by
+          refine lintegral_mono fun y => ?_
+          have hH := ENNReal.lintegral_mul_le_Lp_mul_Lq μ hpq (f := fun x => h x y)
+            (g := fun x => F x ^ (p - 1)) (hy y).aemeasurable (hF.pow_const _).aemeasurable
+          have hFq : ∀ x, (F x ^ (p - 1)) ^ q = F x ^ p := fun x => by
+            rw [← ENNReal.rpow_mul, hpq.sub_one_mul_conj]
+          simpa only [Pi.mul_apply, hFq] using hH
+      _ = S * I ^ (1 / q) :=
+          lintegral_mul_const _ ((hh.pow_const p).lintegral_prod_left'.pow_const _)
+  rcases eq_or_ne I 0 with h0 | h0
+  · rw [h0, ENNReal.zero_rpow_of_pos (by positivity)]
+    exact zero_le
+  have hq0 : I ^ (1 / q) ≠ 0 := (ENNReal.rpow_pos (pos_iff_ne_zero.2 h0) hI).ne'
+  have hqt : I ^ (1 / q) ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg hpq.symm.one_div_nonneg hI
+  rw [← ENNReal.mul_le_mul_iff_left hq0 hqt, ← ENNReal.rpow_add _ _ h0 hI,
+    hpq.one_div_add_one_div, div_one, ENNReal.rpow_one]
+  exact hle
+
 /-! ### Mollification -/
 
 variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
@@ -180,12 +230,17 @@ theorem mollify_apply (ϕ f : 𝓢(V, ℂ)) (t : ℝ) (x : V) :
   simp only [SchwartzMap.smulLeftCLM_apply_apply hg, G, Circle.smul_def, smul_eq_mul]
   ring
 
+/-- `‖g‖_p = (∫ |g|^p)^{1/p}` for continuous `g` and `0 < p < ∞`. -/
+private theorem eLpNorm_eq_lintegral_rpow {g : V → ℂ} (hg : Continuous g) {p : ℝ} (hp : 0 < p) :
+    eLpNorm g (ENNReal.ofReal p) volume = (∫⁻ x, ‖g x‖ₑ ^ p) ^ (1 / p) := by
+  rw [eLpNorm_eq_lintegral_rpow_enorm_toReal (by simpa using hp) ENNReal.ofReal_ne_top
+    hg.aestronglyMeasurable, ENNReal.toReal_ofReal hp.le]
+
 /-- `‖g‖_p^p = ∫ |g|^p` for continuous `g` and `0 < p < ∞`. -/
 private theorem eLpNorm_rpow_eq_lintegral {g : V → ℂ} (hg : Continuous g) {p : ℝ} (hp : 0 < p) :
     eLpNorm g (ENNReal.ofReal p) volume ^ p = ∫⁻ x, ‖g x‖ₑ ^ p := by
-  rw [eLpNorm_eq_lintegral_rpow_enorm_toReal (by simpa using hp) ENNReal.ofReal_ne_top
-    hg.aestronglyMeasurable, ENNReal.toReal_ofReal hp.le, ← ENNReal.rpow_mul,
-    one_div_mul_cancel hp.ne', ENNReal.rpow_one]
+  rw [eLpNorm_eq_lintegral_rpow hg hp, ← ENNReal.rpow_mul, one_div_mul_cancel hp.ne',
+    ENNReal.rpow_one]
 
 /-- `‖g_t‖_p → 0` if `‖g_t‖_p^p → 0`. -/
 private theorem tendsto_eLpNorm_of_rpow {ι : Type*} {l : Filter ι} {g : ι → V → ℂ} {p : ℝ}
@@ -218,84 +273,95 @@ theorem tendsto_eLpNorm_translate_sub (f : 𝓢(V, ℂ)) {p : ℝ} (hp : 1 ≤ p
 
 /-- Mollifiers (HNVW, Proposition 1.2.32, for Schwartz functions): if `∫ ϕ = 1`, then
 `‖ϕ_t ∗ f − f‖_p → 0` as `t → 0`, for `1 ≤ p < ∞`. By
-`(ϕ_t ∗ f) (x) − f (x) = ∫ ϕ (y) (f (x − t y) − f (x)) dy` and Young's computation,
-`‖ϕ_t ∗ f − f‖_p^p ≤ ‖ϕ‖_1^{p − 1} ∫ |ϕ (y)| ‖f (· − t y) − f‖_p^p dy`, which tends to `0` by
-dominated convergence. -/
+`(ϕ_t ∗ f) (x) − f (x) = ∫ ϕ (y) (f (x − t y) − f (x)) dy` and Minkowski's integral inequality,
+`‖ϕ_t ∗ f − f‖_p ≤ ∫ |ϕ (y)| ‖f (· − t y) − f‖_p dy`, which tends to `0` by the continuity of the
+translations in `L^p` and dominated convergence, `‖f (· − t y) − f‖_p ≤ 2 ‖f‖_p`. -/
 theorem tendsto_eLpNorm_mollify_sub {ϕ : 𝓢(V, ℂ)} (hϕ : ∫ y, ϕ y = 1) (f : 𝓢(V, ℂ)) {p : ℝ}
     (hp : 1 ≤ p) :
     Tendsto (fun t => eLpNorm (fun x => mollify ϕ f t x - f x) (ENNReal.ofReal p) volume) (𝓝 0)
       (𝓝 0) := by
   have hp0 : 0 < p := by linarith
-  have hP0 : ENNReal.ofReal p ≠ 0 := by simpa using hp0
   have hP : 1 ≤ ENNReal.ofReal p := by simpa using hp
-  set D : V → ℝ≥0∞ := fun h => ∫⁻ x, ‖f (x - h) - f x‖ₑ ^ p
-  have hD : ∀ h, D h = eLpNorm (fun x => f (x - h) - f x) (ENNReal.ofReal p) volume ^ p :=
-    fun h => (eLpNorm_rpow_eq_lintegral (by fun_prop) hp0).symm
-  have hDlim : Tendsto D (𝓝 0) (𝓝 0) := by
-    rw [funext hD]
-    have := (tendsto_eLpNorm_translate_sub f hp).ennrpow_const p
-    rwa [ENNReal.zero_rpow_of_pos hp0] at this
-  set M : ℝ≥0∞ := (2 * eLpNorm f (ENNReal.ofReal p) volume) ^ p
-  have hM : M ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg hp0.le
-    (ENNReal.mul_ne_top ENNReal.ofNat_ne_top (f.memLp _).eLpNorm_lt_top.ne)
-  have hDM : ∀ h, D h ≤ M := by
+  have hϕ1 : ∫⁻ y, ‖ϕ y‖ₑ ≠ ⊤ := ϕ.integrable.2.ne
+  set N : V → ℝ≥0∞ := fun h => eLpNorm (fun x => f (x - h) - f x) (ENNReal.ofReal p) volume
+  set M : ℝ≥0∞ := 2 * eLpNorm f (ENNReal.ofReal p) volume
+  have hM : M ≠ ⊤ := ENNReal.mul_ne_top ENNReal.ofNat_ne_top (f.memLp _).eLpNorm_lt_top.ne
+  have hNM : ∀ h, N h ≤ M := by
     intro h
-    rw [hD]
-    refine ENNReal.rpow_le_rpow ?_ hp0.le
     refine (eLpNorm_sub_le hP (f := fun x => f (x - h)) (g := f)).trans_eq ?_
     have h1 := eLpNorm_comp_measurePreserving (p := ENNReal.ofReal p)
       f.continuous.aestronglyMeasurable (measurePreserving_sub_right (volume : Measure V) h)
-    rw [two_mul]
+    simp only [M, two_mul]
     exact congrArg (· + _) h1
-  have hϕ1 : ∫⁻ y, ‖ϕ y‖ₑ ≠ ⊤ := ϕ.integrable.2.ne
-  -- The `p`-th power of the norm, by Young's computation.
-  have hle : ∀ t, eLpNorm (fun x => mollify ϕ f t x - f x) (ENNReal.ofReal p) volume ^ p ≤
-      (∫⁻ y, ‖ϕ y‖ₑ) ^ (p - 1) * ∫⁻ y, ‖ϕ y‖ₑ * D (t • y) := by
+  -- The integrand `h (x, y) = |ϕ (y)| |f (x − t y) − f (x)|`.
+  have hmeas : ∀ t : ℝ, Measurable (Function.uncurry fun x y : V =>
+      ‖ϕ y‖ₑ * ‖f (x - t • y) - f x‖ₑ) := fun t =>
+    (by fun_prop : Continuous fun z : V × V => ‖ϕ z.2‖ₑ).measurable.mul
+      (by fun_prop : Continuous fun z : V × V => ‖f (z.1 - t • z.2) - f z.1‖ₑ).measurable
+  have hnorm : ∀ (t : ℝ) (y : V), (∫⁻ x, (‖ϕ y‖ₑ * ‖f (x - t • y) - f x‖ₑ) ^ p) ^ (1 / p) =
+      ‖ϕ y‖ₑ * N (t • y) := by
+    intro t y
+    simp_rw [ENNReal.mul_rpow_of_nonneg _ _ hp0.le]
+    rw [lintegral_const_mul _ ((by fun_prop : Continuous fun x =>
+      ‖f (x - t • y) - f x‖ₑ).measurable.pow_const p),
+      ENNReal.mul_rpow_of_nonneg _ _ (by positivity),
+      ← ENNReal.rpow_mul, mul_one_div_cancel hp0.ne', ENNReal.rpow_one,
+      ← eLpNorm_eq_lintegral_rpow (g := fun x => f (x - t • y) - f x) (by fun_prop) hp0]
+  have hle : ∀ t : ℝ, eLpNorm (fun x => mollify ϕ f t x - f x) (ENNReal.ofReal p) volume ≤
+      ∫⁻ y, ‖ϕ y‖ₑ * N (t • y) := by
     intro t
-    rw [eLpNorm_rpow_eq_lintegral (by fun_prop) hp0]
-    refine le_trans (lintegral_mono fun x => ?_) (lintegral_rpow_lintegral_mul_le
-      (w := fun y => ‖ϕ y‖ₑ) (h := fun x y => ‖f (x - t • y) - f x‖ₑ)
-      ϕ.continuous.enorm.measurable ?_ hp)
-    · refine ENNReal.rpow_le_rpow ?_ hp0.le
-      have hi : Integrable fun y => ϕ y * f (x - t • y) := by
-        refine (ϕ.integrable.mul_const (SchwartzMap.seminorm ℝ 0 0 f : ℂ)).mono
-          (by fun_prop : Continuous fun y => ϕ y * f (x - t • y)).aestronglyMeasurable
-          (ae_of_all _ fun y => ?_)
-        rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg (apply_nonneg _ _)]
-        exact mul_le_mul_of_nonneg_left (f.norm_le_seminorm ℝ _) (norm_nonneg _)
-      have hsub : mollify ϕ f t x - f x = ∫ y, ϕ y * (f (x - t • y) - f x) := by
-        simp_rw [mul_sub]
-        rw [integral_sub hi (ϕ.integrable.mul_const _), integral_mul_const, hϕ, one_mul,
-          mollify_apply]
-      rw [hsub]
-      refine (enorm_integral_le_lintegral_enorm _).trans_eq ?_
-      simp_rw [enorm_mul]
-    · exact (by fun_prop : Continuous fun z : V × V => ‖f (z.1 - t • z.2) - f z.1‖ₑ).measurable
-  have hlim : Tendsto (fun t : ℝ => ∫⁻ y, ‖ϕ y‖ₑ * D (t • y)) (𝓝 0) (𝓝 0) := by
+    -- Finiteness, by Young's computation.
+    have hI : ∫⁻ x, (∫⁻ y, ‖ϕ y‖ₑ * ‖f (x - t • y) - f x‖ₑ) ^ p ≠ ⊤ := by
+      refine ne_top_of_le_ne_top ?_ (lintegral_rpow_lintegral_mul_le (w := fun y => ‖ϕ y‖ₑ)
+        (h := fun x y => ‖f (x - t • y) - f x‖ₑ) ϕ.continuous.enorm.measurable
+        (by fun_prop : Continuous fun z : V × V => ‖f (z.1 - t • z.2) - f z.1‖ₑ).measurable hp)
+      refine ENNReal.mul_ne_top (ENNReal.rpow_ne_top_of_nonneg (by linarith) hϕ1)
+        (ne_top_of_le_ne_top (b := (∫⁻ y, ‖ϕ y‖ₑ) * M ^ p) (ENNReal.mul_ne_top hϕ1
+          (ENNReal.rpow_ne_top_of_nonneg hp0.le hM)) ?_)
+      rw [← lintegral_mul_const _ ϕ.continuous.enorm.measurable]
+      gcongr with y
+      rw [← eLpNorm_rpow_eq_lintegral (g := fun x => f (x - t • y) - f x) (by fun_prop) hp0]
+      exact ENNReal.rpow_le_rpow (hNM _) hp0.le
+    have hmin := lintegral_rpow_lintegral_le (hmeas t) hp hI
+    simp_rw [hnorm] at hmin
+    refine le_trans ?_ hmin
+    rw [eLpNorm_eq_lintegral_rpow (by fun_prop) hp0]
+    refine ENNReal.rpow_le_rpow (lintegral_mono fun x => ENNReal.rpow_le_rpow ?_ hp0.le)
+      (by positivity)
+    have hi : Integrable fun y => ϕ y * f (x - t • y) := by
+      refine (ϕ.integrable.mul_const (SchwartzMap.seminorm ℝ 0 0 f : ℂ)).mono
+        (by fun_prop : Continuous fun y => ϕ y * f (x - t • y)).aestronglyMeasurable
+        (ae_of_all _ fun y => ?_)
+      rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg (apply_nonneg _ _)]
+      exact mul_le_mul_of_nonneg_left (f.norm_le_seminorm ℝ _) (norm_nonneg _)
+    have hsub : mollify ϕ f t x - f x = ∫ y, ϕ y * (f (x - t • y) - f x) := by
+      simp_rw [mul_sub]
+      rw [integral_sub hi (ϕ.integrable.mul_const _), integral_mul_const, hϕ, one_mul,
+        mollify_apply]
+    rw [hsub]
+    refine (enorm_integral_le_lintegral_enorm _).trans_eq ?_
+    simp_rw [enorm_mul]
+  -- Dominated convergence.
+  have hlim : Tendsto (fun t : ℝ => ∫⁻ y, ‖ϕ y‖ₑ * N (t • y)) (𝓝 0) (𝓝 0) := by
     have h0 : ∫⁻ _ : V, (0 : ℝ≥0∞) = 0 := lintegral_zero
     rw [← h0]
     refine tendsto_lintegral_filter_of_dominated_convergence (fun y => ‖ϕ y‖ₑ * M)
       (Eventually.of_forall fun t => ?_) (Eventually.of_forall fun t => ae_of_all _ fun y => ?_) ?_
       (ae_of_all _ fun y => ?_)
-    · refine ϕ.continuous.enorm.measurable.mul ?_
-      exact Measurable.lintegral_prod_left' (f := fun z : V × V => ‖f (z.1 - t • z.2) - f z.1‖ₑ ^ p)
-        ((by fun_prop : Continuous fun z : V × V =>
-          ‖f (z.1 - t • z.2) - f z.1‖ₑ).measurable.pow_const p)
+    · simp_rw [← hnorm]
+      exact ((hmeas t).pow_const p).lintegral_prod_left'.pow_const _
     · gcongr
-      exact hDM _
+      exact hNM _
     · rw [lintegral_mul_const _ ϕ.continuous.enorm.measurable]
       exact ENNReal.mul_ne_top hϕ1 hM
     · have h1 : Tendsto (fun t : ℝ => t • y) (𝓝 0) (𝓝 0) := by
         have : Tendsto (fun t : ℝ => t • y) (𝓝 0) (𝓝 ((0 : ℝ) • y)) :=
           (by fun_prop : Continuous fun t : ℝ => t • y).tendsto 0
         rwa [zero_smul] at this
-      have := ENNReal.Tendsto.const_mul (hDlim.comp h1) (a := ‖ϕ y‖ₑ) (Or.inr enorm_ne_top)
+      have := ENNReal.Tendsto.const_mul ((tendsto_eLpNorm_translate_sub f hp).comp h1)
+        (a := ‖ϕ y‖ₑ) (Or.inr enorm_ne_top)
       rwa [mul_zero] at this
-  refine tendsto_eLpNorm_of_rpow hp0 (tendsto_of_tendsto_of_tendsto_of_le_of_le
-    tendsto_const_nhds ?_ (fun _ => zero_le) hle)
-  have := ENNReal.Tendsto.const_mul hlim (a := (∫⁻ y, ‖ϕ y‖ₑ) ^ (p - 1))
-    (Or.inr (ENNReal.rpow_ne_top_of_nonneg (by linarith) hϕ1))
-  rwa [mul_zero] at this
+  exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hlim (fun _ => zero_le) hle
 
 /-- The change of variables `w = R y`: `∫ F (R y) dy = R^{−d} ∫ F`, `R > 0`. -/
 private theorem lintegral_comp_smul {F : V → ℝ≥0∞} (hF : Measurable F) {R : ℝ} (hR : 0 < R) :

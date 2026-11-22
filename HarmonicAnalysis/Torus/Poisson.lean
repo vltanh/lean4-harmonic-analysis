@@ -29,9 +29,10 @@ For a Schwartz function `f` on `ℂ ≅ ℝ²` and `R > 0`:
 * `HarmonicAnalysis.tendsto_eLpNorm_tsum_fourier_mul_mFourier`, Lemma 5.7.5 of
   Hytönen–van Neerven–Veraar–Weis (HNVW) for `ℝ² ≅ ℂ` and scalar functions, with `ε = 1 / R`: for
   `1 ≤ p < ∞`, `R^{2/p} ‖Σ_n R⁻² 𝓕 f (n / R) e_n‖_{L^p (𝕋²)} → ‖f‖_{L^p (ℂ)}` as `R → ∞`.
-* `HarmonicAnalysis.limsup_eLpNorm_sampledCoeff_le`, the upper bound with the mean removed: for
-  `1 < p < ∞`, `limsup_{R → ∞} R^{2/p} ‖Σ_n sampledCoeff R f (n) e_n‖_{L^p (𝕋²)} ≤ ‖f‖_{L^p (ℂ)}`.
-  The mean `R⁻² 𝓕 f (0)` removed at `n = 0` contributes `O (R^{2/p − 2})`.
+* `HarmonicAnalysis.limsup_eLpNorm_sampledCoeff_le`, a corollary for mean-zero series (the mean
+  removed), when `𝓕 f (0)` need not vanish: for `1 < p < ∞`,
+  `limsup_{R → ∞} R^{2/p} ‖Σ_n sampledCoeff R f (n) e_n‖_{L^p (𝕋²)} ≤ ‖f‖_{L^p (ℂ)}`. The mean
+  `R⁻² 𝓕 f (0)` removed at `n = 0` contributes `O (R^{2/p − 2})`.
 
 ## Proofs
 
@@ -52,9 +53,11 @@ turns the norm over `𝕋²` into the norm over the cell `R · (−½, ½]²`
 inequality; and the norms of `f` over the cells, which tend to `‖f‖_p`. HNVW sums the norms of the
 terms `f (· + R j)`, `j ≠ 0`; here they are summed pointwise first.
 
-A correction to the source: the decay bound holds on the centred cell, not on the cell `R · [0, 1)²`
-(with which HNVW identifies the dilated torus in Lemma 5.7.3), where `x + R j` can be near `0` for
-`j ≠ 0`.
+A correction to the source: HNVW does not say which cell of `R ℤ²` represents the dilated torus, and
+the proof needs the centred one. On `R · [0, 1)²` (the book writes `𝕋^d = [0, 1]^d` on p. 113 and
+integrates over `[0, 1)^d` in Lemma 5.7.3) the decay bound fails, as `x + R j` can be near `0` for
+`j ≠ 0`, and the norms of `f` over these cells tend to its norm over `[0, ∞)²`. HNVW does not state
+the range of `p` either; its `N > d > d / p` is for `p > 1`, and `N > d ≥ d / p` does for `p = 1`.
 
 ## References
 

@@ -32,7 +32,7 @@ every `p` and `α` in the range given.
 
 ## Main results, for `n = 2`
 
-* On the punctured unit disc (proof of Theorem 1.1, p. 466):
+* On the punctured unit disc (proof of Theorem 1.1, pp. 466–467):
   `∂²f = (2 − α)(1 − α) |z|^{−2α}` and `∂̄²f = (−α)(−α − 1) (z / z̄)² |z|^{−2α}`
   (`dz_dz_testFun_of_norm_lt_one`, `dzbar_dzbar_testFun_of_norm_lt_one`), so that, for
   `0 < α < 1/p`, `∫_Δ |∂²f|^p = π / (1 − αp) ((2 − α)(1 − α))^p` and

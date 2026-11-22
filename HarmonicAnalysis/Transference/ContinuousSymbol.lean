@@ -30,7 +30,8 @@ That of HNVW, pp. 461–462.
    (`HarmonicAnalysis.HasCompactFourierSupportOffZero`).
 2. Pairing: `∫ T_m f · g = ∫ m 𝓕 f 𝓕⁻¹ g`.
 3. The integrand is continuous with compact support, so the integral is the limit of its lattice
-   Riemann sums `Σ_n R⁻² (m 𝓕 f 𝓕⁻¹ g) (n / R)` (`HarmonicAnalysis.tendsto_riemannSum_real`).
+   Riemann sums `Σ_n R⁻² (m 𝓕 f 𝓕⁻¹ g) (n / R)` (`HarmonicAnalysis.tendsto_riemannSum_real`; the
+   Riemann integrability HNVW refers to is there dominated convergence for step functions).
 4. Orthogonality on `𝕋²` (`HarmonicAnalysis.integral_torusMultiplier_mul_trigPoly`): the Riemann
    sum is `R²` times the pairing of `T_{m (· / R)} P` and `Q`, where `P = Σ_n R⁻² 𝓕 f (n / R) e_n`
    and `Q = Σ_n R⁻² 𝓕 g (n / R) e_n` are trigonometric polynomials, and `P` has mean zero because
@@ -43,28 +44,32 @@ That of HNVW, pp. 461–462.
 7. Density (Proposition 2.4.23 (ii),
    `HarmonicAnalysis.exists_tendsto_hasCompactFourierSupportOffZero`) extends this to all Schwartz
    functions `f` and `g`, and duality (`HarmonicAnalysis.eLpNorm_le_of_forall_schwartz`) concludes.
+   HNVW leaves this step to the reader. As in its §5.3 (p. 401), the density of the `f` is used in
+   `L^p` and for `𝓕 f_j → 𝓕 f` in `L^1`, so that `T_m f_j → T_m f`; the limit is taken here in the
+   pairing, before duality, and there in `L^p`, after it.
 
 ## Corrections to the source
 
 * The statement of Proposition 5.7.4 is printed without its first hypotheses (`X`, `Y` Banach
-  spaces, `1 < p < ∞`), and says "multiplier for `L^p (ℝ^d; X)`" for "from `L^p (ℝ^d; X)` to
-  `L^p (ℝ^d; Y)`".
+  spaces, `1 < p < ∞`), says "multiplier for `L^p (ℝ^d; X)`" for "from `L^p (ℝ^d; X)` to
+  `L^p (ℝ^d; Y)`", and has a superfluous `ℒ (` in its display.
 * It does not say that `m` is bounded, which the definition of `T_m` (HNVW, Definition 5.3.1) asks
   for. Where the `liminf` is finite, this follows from the values `|m (n / R)|`, `n ≠ 0`, at most
   the torus norms (`HarmonicAnalysis.enorm_le_torusMultiplierNorm`), and from the density of the
   lattices `R⁻¹ ℤ²` as `R → ∞`.
 * The factors `ε^{d/p}` and `ε^{d/p'}` of the last display are interchanged (compare Lemma 5.7.5;
   their product is the same), and `X*` there should be `Y*`.
-* HNVW quotes the density of the `g` in `L^{p'}` only. That does not norm `T_m f`, which is not yet
-  known to be in `L^p`. The density in `L^{p'}` together with `𝓕 g_j → 𝓕 g` in `L^1`, which
-  Proposition 2.4.23 gives as well, carries the bound to every Schwartz function `g`, and these norm
-  the `L^p` norm of every continuous function.
+* HNVW quotes the density of the `g` in `L^{p'}` only. That alone does not norm `T_m f`, which is
+  not yet known to be in `L^p`: the constant function `1`, for instance, pairs to `𝓕 g (0) = 0` with
+  each of these `g`. Here Proposition 2.4.23 is used as stated, with `𝓕 g_j → 𝓕 g` in `L^1` as well;
+  it carries the bound to every Schwartz function `g`, and these norm the `L^p` norm of every
+  continuous function.
 
 ## References
 
 * T. Hytönen, J. van Neerven, M. Veraar, L. Weis, *Analysis in Banach Spaces, Volume I*, Ergebnisse
-  der Mathematik 63, Springer, 2016: Proposition 5.7.4, Lemma 5.7.5 (pp. 460–462), Proposition
-  2.4.23 (p. 118).
+  der Mathematik 63, Springer, 2016: Proposition 5.7.4, Lemma 5.7.5 (pp. 460–462), Definition 5.3.1
+  and §5.3.a (pp. 400–401), Proposition 2.4.23 (p. 118).
 -/
 
 @[expose] public section
@@ -86,47 +91,15 @@ theorem measurable_of_continuousAt_ne_zero {m : ℂ → ℂ} (hmc : ∀ ξ ≠ 0
     (fun ξ hξ => (hmc ξ hξ).continuousWithinAt) (measurableSet_singleton 0)
   rwa [Set.piecewise_same] at h
 
-/-- The symbol is bounded off `0` by `liminf_j ‖T_{m (· / R_j)}‖`: its values are limits of values
-at points of the lattices `R_j⁻¹ ℤ²`, off `0`. -/
-private theorem enorm_le_liminf {m : ℂ → ℂ} (hmc : ∀ ξ ≠ 0, ContinuousAt m ξ) {R : ℕ → ℝ}
-    (hR : Tendsto R atTop atTop) {p : ℝ} (hp : 0 < p) {ξ : ℂ} (hξ : ξ ≠ 0) :
-    ‖m ξ‖ₑ ≤ liminf (fun j => torusMultiplierNorm (fun n => m (latticePoint n / R j)) p) atTop := by
-  obtain ⟨n, hn⟩ := exists_tendsto_latticePoint_div ξ
-  have hv := hn.comp hR
-  have hm := ((hmc ξ hξ).tendsto.comp hv).enorm
-  rw [← hm.liminf_eq]
-  refine liminf_le_liminf ?_
-  filter_upwards [hv.eventually_ne hξ] with j hj
-  refine enorm_le_torusMultiplierNorm (fun k => m (latticePoint k / R j)) hp (n := n (R j)) ?_
-  intro h0
-  refine hj ?_
-  simp [h0]
-
 /-! ### The pairing -/
 
-/-- The pairing (step 2): `∫ T_m f · g = ∫ m 𝓕 f 𝓕⁻¹ g` for Schwartz functions `f` and `g` and a
-measurable symbol that is bounded off `0`. -/
-private theorem integral_fourierMultiplier_mul {m : ℂ → ℂ} (hm : Measurable m) {M : ℝ≥0∞}
-    (hM : M ≠ ⊤) (hmM : ∀ ξ ≠ 0, ‖m ξ‖ₑ ≤ M) (f g : 𝓢(ℂ, ℂ)) :
+/-- The pairing (step 2): `∫ T_m f · g = ∫ m 𝓕 f 𝓕⁻¹ g` for Schwartz functions `f` and `g`, when
+`m 𝓕 f` is integrable. -/
+private theorem integral_fourierMultiplier_mul {m : ℂ → ℂ} {f : 𝓢(ℂ, ℂ)}
+    (hmf : Integrable fun ξ => m ξ * 𝓕 (f : ℂ → ℂ) ξ) (g : 𝓢(ℂ, ℂ)) :
     ∫ x, fourierMultiplier m f x * g x =
-      ∫ ξ, m ξ * 𝓕 (f : ℂ → ℂ) ξ * 𝓕⁻ (g : ℂ → ℂ) ξ := by
-  have hmf : Integrable fun ξ => m ξ • 𝓕 (f : ℂ → ℂ) ξ := by
-    refine (𝓕 f).integrable.bdd_mul (c := M.toReal) hm.aestronglyMeasurable ?_
-    filter_upwards [Measure.ae_ne volume 0] with ξ hξ
-    rw [← toReal_enorm, ENNReal.toReal_le_toReal enorm_ne_top hM]
-    exact hmM ξ hξ
-  simpa only [smul_eq_mul, fourierMultiplier] using integral_fourierInv_mul hmf g.integrable
-
-/-- Hölder's inequality for the pairing `∫ u v`, for conjugate exponents. -/
-private theorem enorm_integral_mul_le {α : Type*} [MeasurableSpace α] {μ : Measure α} {u v : α → ℂ}
-    (hu : AEStronglyMeasurable u μ) (hv : AEStronglyMeasurable v μ) (P Q : ℝ≥0∞)
-    [ENNReal.HolderConjugate P Q] : ‖∫ x, u x * v x ∂μ‖ₑ ≤ eLpNorm u P μ * eLpNorm v Q μ := by
-  calc ‖∫ x, u x * v x ∂μ‖ₑ ≤ eLpNorm (fun x => u x * v x) 1 μ :=
-        (enorm_integral_le_lintegral_enorm _).trans lintegral_enorm_le_eLpNorm_one
-    _ ≤ 1 * eLpNorm u P μ * eLpNorm v Q μ :=
-        eLpNorm_le_eLpNorm_mul_eLpNorm_of_enorm (fun a b : ℂ => a * b) 1
-          (fun hf hg => hf.mul hg) hu hv (ae_of_all _ fun x => by simp)
-    _ = _ := by rw [one_mul]
+      ∫ ξ, m ξ * 𝓕 (f : ℂ → ℂ) ξ * 𝓕⁻ (g : ℂ → ℂ) ξ :=
+  integral_fourierInv_mul hmf g.integrable
 
 /-! ### The trigonometric polynomials `Σ_n R⁻² 𝓕 f (n / R) e_n` -/
 
@@ -242,8 +215,11 @@ private theorem enorm_integral_fourierMultiplier_mul_le {m : ℂ → ℂ}
       liminf (fun j => torusMultiplierNorm (fun n => m (latticePoint n / R j)) p) atTop *
         (eLpNorm (f : ℂ → ℂ) (ENNReal.ofReal p) volume *
           eLpNorm (g : ℂ → ℂ) (ENNReal.ofReal (p / (p - 1))) volume) := by
-  rw [integral_fourierMultiplier_mul (measurable_of_continuousAt_ne_zero hmc) hM
-    (fun ξ hξ => enorm_le_liminf hmc hR (by linarith) hξ)]
+  -- `m 𝓕 f` is continuous with compact support.
+  have hmfc : Continuous fun ξ => m ξ * 𝓕 (f : ℂ → ℂ) ξ :=
+    continuous_mul_of_notMem_tsupport hmc (𝓕 f).continuous hf.2
+  have hmfs : HasCompactSupport fun ξ => m ξ * 𝓕 (f : ℂ → ℂ) ξ := hf.1.mul_left (f := m)
+  rw [integral_fourierMultiplier_mul (hmfc.integrable_of_hasCompactSupport hmfs) g]
   have hpq : p.HolderConjugate (p / (p - 1)) :=
     (Real.holderConjugate_iff_eq_conjExponent hp).2 rfl
   set q := p / (p - 1)
@@ -252,9 +228,8 @@ private theorem enorm_integral_fourierMultiplier_mul_le {m : ℂ → ℂ}
   have hgc : Continuous (𝓕⁻ (g : ℂ → ℂ)) := by
     rw [← SchwartzMap.fourierInv_coe]
     exact (𝓕⁻ g).continuous
-  have hφc : Continuous φ :=
-    (continuous_mul_of_notMem_tsupport hmc (𝓕 f).continuous hf.2).mul hgc
-  have hφs : HasCompactSupport φ := (hf.1.mul_left (f := m)).mul_right
+  have hφc : Continuous φ := hmfc.mul hgc
+  have hφs : HasCompactSupport φ := hmfs.mul_right
   obtain ⟨C, hC⟩ := (hφs.mul_left
     (f := fun ξ => ((1 + ‖ξ‖ : ℝ) : ℂ) ^ 3)).exists_bound_of_continuous (by fun_prop)
   have hφb : ∀ ξ, ‖φ ξ‖ ≤ C * (1 + ‖ξ‖) ^ (-3 : ℝ) := fun ξ => by
@@ -291,6 +266,22 @@ private theorem enorm_integral_fourierMultiplier_mul_le {m : ℂ → ℂ}
     _ = _ := by rw [hNlim, mul_comm]
 
 /-! ### Density -/
+
+/-- The symbol is bounded off `0` by `liminf_j ‖T_{m (· / R_j)}‖`: its values are limits of values
+at points of the lattices `R_j⁻¹ ℤ²`, off `0`. -/
+private theorem enorm_le_liminf {m : ℂ → ℂ} (hmc : ∀ ξ ≠ 0, ContinuousAt m ξ) {R : ℕ → ℝ}
+    (hR : Tendsto R atTop atTop) {p : ℝ} (hp : 0 < p) {ξ : ℂ} (hξ : ξ ≠ 0) :
+    ‖m ξ‖ₑ ≤ liminf (fun j => torusMultiplierNorm (fun n => m (latticePoint n / R j)) p) atTop := by
+  obtain ⟨n, hn⟩ := exists_tendsto_latticePoint_div ξ
+  have hv := hn.comp hR
+  have hm := ((hmc ξ hξ).tendsto.comp hv).enorm
+  rw [← hm.liminf_eq]
+  refine liminf_le_liminf ?_
+  filter_upwards [hv.eventually_ne hξ] with j hj
+  refine enorm_le_torusMultiplierNorm (fun k => m (latticePoint k / R j)) hp (n := n (R j)) ?_
+  intro h0
+  refine hj ?_
+  simp [h0]
 
 /-- A bound `|∫ h 𝓕 φ| ≤ A ‖φ‖_p`, with `h` bounded, passes to the limit when `φ_j → f` in `L^p`
 and `𝓕 φ_j → 𝓕 f` in `L^1`. -/
@@ -338,7 +329,12 @@ private theorem enorm_integral_fourierMultiplier_mul_le_of_forall {m : ℂ → �
         eLpNorm (g : ℂ → ℂ) (ENNReal.ofReal q) volume)) (f g : 𝓢(ℂ, ℂ)) :
     ‖∫ x, fourierMultiplier m f x * g x‖ₑ ≤ M * (eLpNorm (f : ℂ → ℂ) (ENNReal.ofReal p) volume *
       eLpNorm (g : ℂ → ℂ) (ENNReal.ofReal q) volume) := by
-  simp only [integral_fourierMultiplier_mul hm hM hmM] at H ⊢
+  have hmf : ∀ f : 𝓢(ℂ, ℂ), Integrable fun ξ => m ξ * 𝓕 (f : ℂ → ℂ) ξ := fun f => by
+    refine (𝓕 f).integrable.bdd_mul (c := M.toReal) hm.aestronglyMeasurable ?_
+    filter_upwards [Measure.ae_ne volume 0] with ξ hξ
+    rw [← toReal_enorm, ENNReal.toReal_le_toReal enorm_ne_top hM]
+    exact hmM ξ hξ
+  simp only [integral_fourierMultiplier_mul (hmf _)] at H ⊢
   have hbdd : ∀ u : 𝓢(ℂ, ℂ), ∃ K : ℝ≥0∞, K ≠ ⊤ ∧ ∀ ξ, ‖u ξ‖ₑ ≤ K := fun u =>
     ⟨ENNReal.ofReal (SchwartzMap.seminorm ℝ 0 0 u), ENNReal.ofReal_ne_top, fun ξ => by
       rw [← ofReal_norm]
