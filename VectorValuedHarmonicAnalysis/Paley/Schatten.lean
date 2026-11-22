@@ -48,11 +48,10 @@ Departures from the source:
   boundedness of single frequencies (`eLpNormRad_singleFrequency_le`): the blocks `[2^{k−1}, 2^k]`
   and `(2^{k−1}, 2^k]` of the source differ from the dyadic blocks `[2^{k−1}, 2^k)` by one and two
   frequencies. The source treats general multipliers `H¹ → ℓ²`; here only the sequence `2^k` occurs.
-* That `C_{2p}` is UMD is proved in the source (p. 251) by Cotlar's identity, interpolation, duality
-  and the equivalence of UMD and the boundedness of the Hilbert transform. Here
-  `BanachProbability.umdConst_two_complexSchattenSpace_le` is used, which is proved from the weak
-  type `(1, 1)` inequality for noncommutative martingale transforms (N. Randrianantoanina, J. Funct.
-  Anal. 194 (2002)).
+* The source recalls (p. 251) that `C_{2p}` is UMD, with Cotlar's trick, interpolation and duality as a
+  known argument. The fact is proved in BanachProbability by Randrianantoanina's theorem on
+  noncommutative martingale transforms (`BanachProbability.umdConst_two_complexSchattenSpace_le`;
+  J. Funct. Anal. 194 (2002)).
 * In place of the equality (β), p. 252, `exists_riesz_factorization` gives
   `∫ ‖g‖_{S_{2p}}² ≤ ∫ ‖f‖_{S_p}` and `∫ ‖h‖_{S_{2p}}² ≤ 2 ∫ ‖f‖_{S_p}`.
 * The case `p = 1` is covered by the proof of Theorem III.1. The proof of Theorem II.1, with
