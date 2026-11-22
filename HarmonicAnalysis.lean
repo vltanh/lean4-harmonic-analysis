@@ -13,11 +13,14 @@ public import HarmonicAnalysis.FourierMultiplier.Duality
 public import HarmonicAnalysis.FourierMultiplier.Norming
 public import HarmonicAnalysis.Torus.TrigPoly
 public import HarmonicAnalysis.Torus.Cube
+public import HarmonicAnalysis.Torus.Lattice
 public import HarmonicAnalysis.Torus.Poisson
 public import HarmonicAnalysis.Transference.RiemannSum
 public import HarmonicAnalysis.Transference.Homogeneous
 public import HarmonicAnalysis.BeurlingAhlfors.Basic
 public import HarmonicAnalysis.BeurlingAhlfors.Duality
+public import HarmonicAnalysis.BeurlingAhlfors.TestFunctions.Profile
+public import HarmonicAnalysis.BeurlingAhlfors.TestFunctions.Approx
 public import HarmonicAnalysis.BeurlingAhlfors.TestFunctions
 public import HarmonicAnalysis.BeurlingAhlfors.LowerBound
 public import HarmonicAnalysis.BeurlingAhlfors.Transference

@@ -8,6 +8,8 @@ import all HarmonicAnalysis.BeurlingAhlfors.Basic
 import all HarmonicAnalysis.BeurlingAhlfors.Duality
 import all HarmonicAnalysis.BeurlingAhlfors.LowerBound
 import all HarmonicAnalysis.BeurlingAhlfors.TestFunctions
+import all HarmonicAnalysis.BeurlingAhlfors.TestFunctions.Approx
+import all HarmonicAnalysis.BeurlingAhlfors.TestFunctions.Profile
 import all HarmonicAnalysis.BeurlingAhlfors.Transference
 import all HarmonicAnalysis.Complex.RadialIntegral
 import all HarmonicAnalysis.Complex.Wirtinger
@@ -16,6 +18,7 @@ import all HarmonicAnalysis.FourierMultiplier.Basic
 import all HarmonicAnalysis.FourierMultiplier.Duality
 import all HarmonicAnalysis.FourierMultiplier.Norming
 import all HarmonicAnalysis.Torus.Cube
+import all HarmonicAnalysis.Torus.Lattice
 import all HarmonicAnalysis.Torus.Poisson
 import all HarmonicAnalysis.Torus.TrigPoly
 import all HarmonicAnalysis.Transference.Homogeneous
