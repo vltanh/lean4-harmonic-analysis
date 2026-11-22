@@ -36,8 +36,7 @@ A shorter transference: if `m` is constant near each frequency `k` of `f = Σ_k 
 Schwartz function `θ` whose Fourier transform has compact support. Then, for small `ε`,
 `T_m (θ (ε ·) f) = θ (ε ·) Σ_k m (k) a_k e_k` exactly, and Lemma 5.7.3 on both sides gives the
 inequality without duality. This is the argument of HNVW I, Proposition 5.2.5 and Lemma 5.2.6, pp.
-391–393, for the Hilbert transform. (It was checked in Lean in an earlier version, for the
-Littlewood–Paley inequality.)
+391–393, for the Hilbert transform.
 -/
 
 @[expose] public section

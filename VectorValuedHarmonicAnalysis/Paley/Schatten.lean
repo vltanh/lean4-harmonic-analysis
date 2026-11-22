@@ -42,8 +42,8 @@ Departures from the source:
 
 * (III.3) is proved only on average over the signs, which is all that (III.2) uses
   (`exists_avg_integral_paleyBlockClosed_le`, `exists_avg_integral_paleyBlockOpen_le`). The source
-  proves it for every choice of the signs, by Bourgain's multiplier theorem ([B2, Theorem 4] there;
-  that paper was not available). Here it follows from the Littlewood–Paley inequality
+  proves it for every choice of the signs, by Bourgain's multiplier theorem ([B2, Theorem 4] there,
+  a paper that was not consulted). Here it follows from the Littlewood–Paley inequality
   (Hytönen–van Neerven–Veraar–Weis, *Analysis in Banach spaces I* (2016), Theorem 5.7.10;
   `eLpNormRad_dyadicBlock_succ_le`) and the randomised boundedness of single frequencies
   (`eLpNormRad_singleFrequency_le`): the blocks `[2^{k−1}, 2^k]` and `(2^{k−1}, 2^k]` of the source
