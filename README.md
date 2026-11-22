@@ -1,6 +1,6 @@
 # Harmonic analysis in Lean: Fourier multipliers, transference, the Beurling–Ahlfors transform
 
-<!-- PLACEHOLDER: CI badge, once the repository has a public URL. -->
+[![Lean Action CI](https://github.com/vltanh/lean4-harmonic-analysis/actions/workflows/lean_action_ci.yml/badge.svg)](https://github.com/vltanh/lean4-harmonic-analysis/actions/workflows/lean_action_ci.yml)
 
 Lean 4 with Mathlib `v4.36.0-rc2`, on `ℂ ≅ ℝ²`, the torus `𝕋² = (ℝ/ℤ)²` and the tori `𝕋^ι`:
 
@@ -112,12 +112,10 @@ Here `beurlingKappa n p = (1/q)_n / (1/p)_n`, `1/q = 1 − 1/p`, with the Pochha
 
 ## Using it from another Lake project
 
-<!-- PLACEHOLDER: the repository URL and a published commit. -->
-
 ```toml
 [[require]]
 name = "HarmonicAnalysis"
-git = "<repository URL>"
+git = "https://github.com/vltanh/lean4-harmonic-analysis"
 rev = "<commit>"
 ```
 
@@ -171,7 +169,7 @@ lake env lean scripts/Audit.lean   # axioms: fails on any `sorry` or non-standar
 
 - Maintained by The-Anh Vu-Le.
 - Written by Claude (Opus 5.5, model `claude-opus-5-5`) in Claude Code.
-- No person has reviewed the statements or the proofs.
+- No person has reviewed the proofs; Lean has checked them.
 
 ## License
 
