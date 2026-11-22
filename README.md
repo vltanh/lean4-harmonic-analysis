@@ -43,7 +43,7 @@ the operator norms are suprema in `ℝ≥0∞`.
 | `f_{2,α} ∈ W^{2,p}`: Schwartz `φ_k` with `∂̄²φ_k → ∂̄²f_{2,α}`, `∂²φ_k → ∂²f_{2,α}` (`1 ≤ p`) | `BeurlingAhlfors.exists_schwartz_tendsto_testFun` | [D-LN, Ex. 4.1] (for `p > 2`) |
 | `‖∂²f_{2,α}‖_p / ‖∂̄²f_{2,α}‖_p → κ₂(p)` as `α → 1/p⁻` | `tendsto_eLpNorm_div_testFun` | [D, Thm 1.1], [D-LN, Prop. 4.2] |
 | `κ₂(p) ≤ ‖𝓑²‖_p` for `1 < p` | `beurlingKappa_two_le_beurlingPowNorm_two` | [D, Thm 1.1], [D-LN, Prop. 4.2] |
-| `κ₂(p*) ≤ ‖𝓑²‖_p` for `1 < p` | `beurlingKappa_two_pStar_le_beurlingPowNorm_two` | [D-LN, Cor. 4.8]; [CDK, §1.3.1] |
+| `κ₂(p*) ≤ ‖𝓑²‖_p` for `1 < p` | `beurlingKappa_two_pStar_le_beurlingPowNorm_two` | [D-LN, Prop. 4.2]; [CDK, §1.3.1] |
 | `p* − 1 < ‖𝓑²‖_p` for `p ≠ 2`; `21/5 ≤ ‖𝓑²‖₄` | `pStar_sub_one_lt_beurlingPowNorm_two`, `twentyOne_div_five_le_beurlingPowNorm_two_four` | |
 
 All names are in the namespace `HarmonicAnalysis`. Two of them in Lean:
@@ -72,11 +72,11 @@ Here `beurlingKappa n p = (1/q)_n / (1/p)_n`, `1/q = 1 − 1/p`, with the Pochha
   [D-LN, Ex. 2.19] does ("first consider smooth `h` and then approximate"). The approximation
   is the standard one: `z²(|z|² + ε)^{−α}` near `0`, the cutoff smoothed near `|z| = 1` (where
   `g₂` is only `C¹`) and truncated at infinity, and dominated convergence. The source states the
-  bound for `p > 2`, and with `p*` for all `p` [D-LN, Cor. 4.8]; the case `p < 2` comes from
-  `‖𝓑^n‖_p = ‖𝓑^n‖_{p'}`, by `𝓑^{−n} = (𝓑^n)^*` and `𝓑^{−n} f = conj(𝓑^n(conj f))`
+  bound for `p > 2` (and its asymptotic form with `p*` for all `p` [D-LN, Cor. 4.8]); the case
+  `p < 2` comes from `‖𝓑^n‖_p = ‖𝓑^n‖_{p'}`, by `𝓑^{−n} = (𝓑^n)^*` and `𝓑^{−n} f = conj(𝓑^n(conj f))`
   [CDK, §1.3.1, for `R^k`, `𝓑 = R²`], as here (for bounded multipliers, by the standard duality
   argument: the adjoint of `T_m` is `T_{m̄}`, and Schwartz functions norm `L^p`).
-- **Transference** follows de Leeuw [dL]: sample `𝓕f` on `R⁻¹ℤ²` with the mean removed; the
+- **Transference**, by the standard argument for this direction of de Leeuw's theorem [dL]: sample `𝓕f` on `R⁻¹ℤ²` with the mean removed; the
   periodisation and Poisson summation bound the torus norms (`limsup R^{2/p} ‖·‖_{L^p(𝕋²)} ≤ ‖f‖_p`);
   by homogeneity the multiplied series are lattice Riemann sums of `T_m f`, and Fatou's lemma
   concludes, through the extension of the torus bound to absolutely summable coefficients.
@@ -133,7 +133,9 @@ lake env lean scripts/Audit.lean   # axioms: fails on any `sorry` or non-standar
 - [CDK] A. Carbonaro, O. Dragičević, V. Kovač, *Sharp `L^p` estimates of powers of the complex
   Riesz transform*, Math. Ann. 386 (2023), 1081–1125,
   [arXiv:2109.08369](https://arxiv.org/abs/2109.08369): §1.3.1 (duality), §2.1.
-- [dL] K. de Leeuw, *On `L_p` multipliers*, Ann. of Math. 81 (1965), 364–379.
+- [dL] K. de Leeuw, *On `L_p` multipliers*, Ann. of Math. 81 (1965), 364–379. Not consulted: the
+  proof is the standard argument for this direction of transference, described in
+  [`Transference/Homogeneous.lean`](HarmonicAnalysis/Transference/Homogeneous.lean).
 
 ## Credits
 

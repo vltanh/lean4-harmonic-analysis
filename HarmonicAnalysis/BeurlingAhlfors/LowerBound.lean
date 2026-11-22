@@ -27,9 +27,9 @@ constant is `κ_n (p) = (1/q)_n / (1/p)_n` (`HarmonicAnalysis.beurlingKappa`); f
 * `HarmonicAnalysis.beurlingKappa_two_le_beurlingPowNorm_two` (Dragičević's theorem, `n = 2`):
   `κ₂ (p) ≤ ‖𝓑²‖_p` for `1 < p < ∞`.
 * `HarmonicAnalysis.beurlingKappa_two_pStar_le_beurlingPowNorm_two`: `κ₂ (p*) ≤ ‖𝓑²‖_p` for
-  `1 < p < ∞` (the lecture notes' Corollary 4.8 states the bound with `p*`), by `‖𝓑²‖_p = ‖𝓑²‖_q`
-  for `p < 2` (`HarmonicAnalysis.beurlingPowNorm_conjExponent`; Carbonaro–Dragičević–Kovač
-  §1.3.1, for `R^k`, `𝓑 = R²`).
+  `1 < p < ∞`, by `‖𝓑²‖_p = ‖𝓑²‖_q` for `p < 2` (`HarmonicAnalysis.beurlingPowNorm_conjExponent`),
+  the reduction to `p ≥ 2` of Carbonaro–Dragičević–Kovač §1.3.1 (for `R^k`, `𝓑 = R²`). The
+  lecture notes' Corollary 4.8 states the weaker asymptotic form `‖T^n‖_p ≳ n^{1−2/p*}(p* − 1)`.
 * Corollaries: `p* − 1 < ‖𝓑²‖_p` for `p ≠ 2`
   (`HarmonicAnalysis.pStar_sub_one_lt_beurlingPowNorm_two`), since
   `κ₂ (p*) − (p* − 1) = (p* − 1)(p* − 2) / (p* + 1) > 0`; and `21/5 = κ₂ (4) ≤ ‖𝓑²‖₄`
@@ -43,8 +43,8 @@ The proof is the source's (lecture notes, Proposition 4.2), with its test functi
 (`HarmonicAnalysis.BeurlingAhlfors.testFun`): explicit integrals over the unit disc, of order
 `(1 − αp)⁻¹`, and integrals outside it that stay bounded. The norm `‖𝓑²‖_p` is a supremum over
 Schwartz functions, and `f_{2,α}` is not one; the source's `𝓑² (∂̄²f) = ∂²f` for `f ∈ W^{2,p}`
-(§4.1, after Exercise 4.1, from Exercise 2.19, whose hint is to approximate by smooth functions)
-enters through
+(§4.1, after Exercise 4.1: "this ensures that `T^n (∂̄^n f) = ∂^n f`"; for `n = 1` this is
+Exercise 2.19, whose hint is to approximate by smooth functions) enters through
 the density step `HarmonicAnalysis.div_le_beurlingPowNorm_of_tendsto`, applied to Schwartz
 approximations of `f_{2,α}` in `W^{2,p}`
 (`HarmonicAnalysis.BeurlingAhlfors.exists_schwartz_tendsto_testFun`).

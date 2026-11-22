@@ -23,11 +23,12 @@ For `n ∈ ℕ` and `α ∈ ℝ`, Dragičević's test functions (lecture notes, 
 `g_n (x) = 1` for `x ≤ 1` and `g_n (x) = exp (−(x − 1)^n)` for `x > 1`
 (`HarmonicAnalysis.BeurlingAhlfors.testCutoff`; the source's example of a sufficiently smooth,
 rapidly decaying `g_n` equal to `1` on `[0, 1]`). Only `n = 2` is used below. The derivatives are
-the pointwise Wirtinger derivatives `HarmonicAnalysis.dz`, `HarmonicAnalysis.dzbar`. For `α < 1`
-they agree almost everywhere with the weak ones: `f_{2,α}` is `C¹` off `0` (`g₂` is `C¹` at `1`)
-and `C²` off `0` and the unit circle, and near `0`, `f = O (|z|^{2−2α})`,
-`∇f = O (|z|^{1−2α})`. (For `α = 1`, `f = z / z̄` and the distribution `∂²f` has a Dirac mass at
-`0`.) The source takes `p > 2`; the statements below hold for every `p` in the range given.
+the pointwise Wirtinger derivatives `HarmonicAnalysis.dz`, `HarmonicAnalysis.dzbar`. A remark, not
+used or proved here: for `α < 1` they agree almost everywhere with the weak ones, since `f_{2,α}`
+is `C¹` off `0` (`g₂` is `C¹` at `1`) and `C²` off `0` and the unit circle, and near `0`,
+`f = O (|z|^{2−2α})`, `∇f = O (|z|^{1−2α})` (for `α = 1`, `f = z / z̄` and the distribution `∂²f`
+has a Dirac mass at `0`). The source takes `p > 2`; the statements below hold for every `p` in the
+range given.
 
 ## Main results, for `n = 2`
 
