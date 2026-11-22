@@ -16,6 +16,7 @@ import all HarmonicAnalysis.Complex.RadialIntegral
 import all HarmonicAnalysis.Complex.Wirtinger
 import all HarmonicAnalysis.Complex.WirtingerRadial
 import all HarmonicAnalysis.FourierMultiplier.Basic
+import all HarmonicAnalysis.FourierMultiplier.Density
 import all HarmonicAnalysis.FourierMultiplier.Duality
 import all HarmonicAnalysis.FourierMultiplier.Norming
 import all HarmonicAnalysis.Torus.Cube
@@ -52,6 +53,8 @@ meta def mainResults : List Name :=
    ``HarmonicAnalysis.div_le_multiplierNorm_of_tendsto,
    ``HarmonicAnalysis.multiplierNorm_conj_conjExponent,
    ``HarmonicAnalysis.multiplierNorm_conj_comp_neg,
+   ``HarmonicAnalysis.tendsto_eLpNorm_mollify_sub,
+   ``HarmonicAnalysis.exists_tendsto_hasCompactFourierSupportOffZero,
    ``HarmonicAnalysis.eLpNorm_tsum_le_torusMultiplierNorm,
    ``HarmonicAnalysis.hasSum_periodize,
    ``HarmonicAnalysis.limsup_eLpNorm_sampledCoeff_le,

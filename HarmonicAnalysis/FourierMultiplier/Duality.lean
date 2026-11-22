@@ -24,7 +24,8 @@ For `1 < p < ∞` and `q = p / (p − 1)`:
 Together: `‖T_m‖_p = ‖T_{m (−·)}‖_q`; for an even symbol, `‖T_m‖_p = ‖T_m‖_q`.
 
 The adjoint identity holds because both sides equal `∫ m · 𝓕 f · conj (𝓕 g)`
-(`HarmonicAnalysis.integral_fourierInv_mul_conj`, Fubini). With Hölder's inequality and the bound
+(`HarmonicAnalysis.integral_fourierInv_mul_conj`, Fubini; the bilinear form is
+`HarmonicAnalysis.integral_fourierInv_mul`). With Hölder's inequality and the bound
 `‖T_{m̄} g‖_q ≤ ‖T_{m̄}‖_q ‖g‖_q`, it gives `|∫ T_m f · ḡ| ≤ ‖f‖_p ‖T_{m̄}‖_q ‖g‖_q` for every
 Schwartz function `g`, hence `‖T_m f‖_p ≤ ‖T_{m̄}‖_q ‖f‖_p`, because Schwartz functions norm `L^p`
 (`HarmonicAnalysis.eLpNorm_le_of_forall_schwartz`). Conjugation rests on
@@ -99,6 +100,14 @@ theorem integral_fourierInv_mul_conj {φ g : V → ℂ} (hφ : Integrable φ) (h
     simp_rw [real_inner_comm ξ]
   simp only [smul_eq_mul, hflip] at h
   exact h
+
+/-- `∫ 𝓕⁻¹ φ · g = ∫ φ · 𝓕⁻¹ g` for integrable `φ` and `g`. -/
+theorem integral_fourierInv_mul {φ g : V → ℂ} (hφ : Integrable φ) (hg : Integrable g) :
+    ∫ x, 𝓕⁻ φ x * g x = ∫ ξ, φ ξ * 𝓕⁻ g ξ := by
+  have hg' : Integrable (fun x => conj (g x)) := by
+    simpa using (Complex.conjCLE : ℂ →L[ℝ] ℂ).integrable_comp hg
+  have h := integral_fourierInv_mul_conj hφ hg'
+  simpa only [← fourierInv_conj, Complex.conj_conj] using h
 
 private theorem integrable_smul_fourier {m : V → ℂ} (hm : Measurable m)
     (hmb : ∃ C, ∀ ξ, ‖m ξ‖ ≤ C) (f : 𝓢(V, ℂ)) :
