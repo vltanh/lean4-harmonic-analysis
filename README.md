@@ -128,9 +128,43 @@ Here `beurlingKappa n p = (1/q)_n / (1/p)_n`, `1/q = 1 − 1/p`, with the Pochha
 
 Arguments shorter than the sources' that the proofs here do not use:
 
-- [HNVW, Cor. 5.7.6], `I ≤ II`: the torus series with coefficients `R⁻² m(n) 𝓕f(n/R)`, `n ≠ 0`, at `x/R` are, up to the term `n = 0`, Riemann sums of `T_m f(x)`, and Fatou's lemma concludes, with no second test function, duality or density on `ℝ²`; the torus bound is extended to absolutely summable coefficients instead (checked in Lean at commit `bf215c5`).
+- [HNVW, Cor. 5.7.6], `I ≤ II`: the torus series with coefficients `R⁻² m(n) 𝓕f(n/R)`, `n ≠ 0`, at `x/R` are, up to the term `n = 0`, Riemann sums of `T_m f(x)`, and Fatou's lemma concludes, with no second test function, duality or density on `ℝ²`; the torus bound is extended to absolutely summable coefficients instead. This is Igari's proof of his Theorem 2 [I], there for `f ∈ C_c^∞(ℝ)` and the full norm on `𝕋`; here for Schwartz `f` and mean-zero polynomials (checked in Lean at commit `bf215c5`).
 - [HNVW, Prop. 5.7.4]: `g` can be any Schwartz function, since `m 𝓕f 𝓕⁻¹g` is already continuous with compact support and the mean of the (then infinite, absolutely convergent) sum `Σ_n 𝓕g(n/R) e_n` plays no role; this removes the density step for `g` and the correction on norming (on paper).
 - [HNVW, Prop. 2.4.23 (ii)]: `‖h‖_p ≤ ‖h‖_1^{1/p} ‖h‖_∞^{1−1/p}` gives the `L^p` limits from `‖𝓕f_j − 𝓕f‖_1 → 0` and `‖ϕ_t ∗ f‖_1 ≤ ‖ϕ‖_1 ‖f‖_1` (on paper).
+
+## Literature
+
+As of 22 November 2026; preprints are reported as claimed.
+
+- **Transference.** Restriction from `ℝ` to `𝕋` is de Leeuw's (1965, Prop. 3.3). The converse used
+  here, `‖m‖_{M_p(ℝ)} ≤ lim_{λ→0} ‖(m(λn))_n‖_{M_p(ℤ)}`, is Igari's (1969, Thm 2, by Riemann sums and Fatou's
+  lemma), and Jodeit (1970, p. 215) states that a symbol continuous off `0` and homogeneous of
+  degree `0` is a multiplier on `ℝ^N` iff its restriction to `ℤ^N` is one. Equality of the norms,
+  mean-zero functions included, is Geiss–Montgomery-Smith–Saksman (2010, Lemma 2.2; smooth symbols,
+  vector-valued) and [HNVW, Cor. 5.7.6] (operator-valued symbols, continuous off `0`).
+- **`‖𝓑‖_p`.** `≥ p* − 1` is Lehto's (1965); Iwaniec (1982) conjectured equality. Uniform upper
+  bounds: `4(p* − 1)` (Bañuelos–Wang 1995), `2(p* − 1)` (Nazarov–Volberg 2003), `1.575(p* − 1)`
+  (Bañuelos–Janakiraman 2008). The preprint arXiv:2609.28311 (v2, October 2026) claims the conjecture.
+- **`‖𝓑^n‖_p`.** Of order `n^{1−2/p*}(p* − 1)` (Dragičević–Petermichl–Volberg 2006); `≥ κ_n(p)` for
+  `p > 2` ([D], 2011); the same for all powers of the complex Riesz transform ([CDK], 2023). The
+  conjecture `‖𝓑^n‖_p = κ_n(p)`, `p ≥ 2`, is open for `n ≥ 2` as far as we found;
+  arXiv:2609.28311 concerns `n = 1`.
+- **Other formalizations of `𝓑`** (all Lean 4). Bounded on `L^p`, `1 < p < ∞`:
+  `will1491/no-wandering-domains` (arXiv:2609.16027; the singular integral, through the Carleson
+  project's Calderón–Zygmund theory) and `TauCetiProject/TauCeti` (the multiplier, through
+  Mihlin–Hörmander; it also has `𝓑∂̄ = ∂` and the Fourier symbols of `∂`, `∂̄` on Schwartz functions).
+  `L²` isometry: `openai/math`, `Tencent-Hunyuan/Hyra-results`. Lehto's bound and Iwaniec's
+  conjecture are stated, not proved, in `facebookresearch/atlas-lean`.
+- **Other overlaps.** Poisson summation on lattices of `ℝ^n` for Schwartz functions: at least five
+  Lean projects of 2026, among them `CBirkbeck/AINTLIB`, `anthropics/fermats-last-theorem` and TauCeti
+  (Mathlib: only on `ℝ`). Fourier series and `∂̄` of smooth functions on tori, and `L²` multipliers:
+  TauCeti. Mathlib has Fourier multipliers with smooth symbols of temperate growth, on Schwartz
+  functions and tempered distributions, and no `L^p` theory. The Isabelle AFP, MathComp-Analysis and
+  HOL Light have no multiplier theory that we found.
+- **New here, as far as we found:** `L^p` transference of Fourier multipliers; lower bounds for
+  `‖𝓑²‖_p`; the isometric duality `‖T_m‖_p = ‖T_{m̄}‖_{p'}`; the `L^p` asymptotics of periodisations
+  [HNVW, Lemma 5.7.5] and the density of the Schwartz functions with Fourier transform in
+  `C_c^∞(ℝ^d∖{0})` [HNVW, Prop. 2.4.23 (ii)]; the corrections to HNVW listed under Method.
 
 ## Using it from another Lake project
 
@@ -184,6 +218,27 @@ lake env lean scripts/Audit.lean   # axioms: fails on any `sorry` or non-standar
   series) are the standard ones.
 - [K] Y. Katznelson, *An Introduction to Harmonic Analysis*, 3rd ed., Cambridge University Press,
   2004: Chapter I (Fourier series on `𝕋`). Not consulted, as for [G].
+
+Cited in the section on the literature, and for the first of the shorter proofs, only:
+
+- [I] S. Igari, *Functions of `L^p`-multipliers*, Tôhoku Math. J. (2) 21 (1969), 304–320.
+- K. de Leeuw, *On `L_p` multipliers*, Ann. of Math. (2) 81 (1965), 364–379.
+- M. Jodeit, Jr., *Restrictions and extensions of Fourier multipliers*, Studia Math. 34 (1970),
+  215–226.
+- S. Geiss, S. Montgomery-Smith, E. Saksman, *On singular integral and martingale transforms*, Trans.
+  Amer. Math. Soc. 362 (2010), 553–575.
+- O. Lehto, *Remarks on the integrability of the derivatives of quasiconformal mappings*, Ann. Acad.
+  Sci. Fenn. A I 371 (1965).
+- T. Iwaniec, *Extremal inequalities in Sobolev spaces and quasiconformal mappings*, Z. Anal. Anwend.
+  1 (1982), no. 6, 1–16.
+- R. Bañuelos, G. Wang, *Sharp inequalities for martingales with applications to the
+  Beurling–Ahlfors and Riesz transforms*, Duke Math. J. 80 (1995), 575–600.
+- F. Nazarov, A. Volberg, *Heating of the Ahlfors–Beurling operator, and estimates of its norm*, St.
+  Petersburg Math. J. 15 (2004), 563–573.
+- R. Bañuelos, P. Janakiraman, *`L^p`-bounds for the Beurling–Ahlfors transform*, Trans. Amer. Math.
+  Soc. 360 (2008), 3603–3613.
+- O. Dragičević, S. Petermichl, A. Volberg, *A rotation method which gives linear `L^p` estimates
+  for powers of the Ahlfors–Beurling operator*, J. Math. Pures Appl. 86 (2006), 492–509.
 
 ## Credits
 
