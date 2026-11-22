@@ -75,6 +75,7 @@ meta def mainResults : List Name :=
    ``HarmonicAnalysis.exists_norm_le_of_liminf_torusMultiplierNorm_ne_top,
    ``HarmonicAnalysis.beurlingPow_dzbarCLM_pow,
    ``HarmonicAnalysis.beurlingPow_dzbar_iterate,
+   ``HarmonicAnalysis.iterate_beurlingPow_one_dzbar_iterate,
    ``HarmonicAnalysis.div_le_beurlingPowNorm_of_tendsto,
    ``HarmonicAnalysis.beurlingPowNorm_conjExponent,
    ``HarmonicAnalysis.beurlingPowNorm_le_torusBeurlingPowNorm,

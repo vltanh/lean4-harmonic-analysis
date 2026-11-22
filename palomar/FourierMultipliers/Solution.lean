@@ -67,8 +67,8 @@ theorem transference_homogeneous {m : ℂ → ℂ} (hm : ∀ ξ ≠ 0, Continuou
   · exact hh t ht ξ hξ
 
 theorem beurlingPow_dzbar_iterate (k : ℕ) (F : 𝓢(ℂ, ℂ)) :
-    beurlingPow k (dzbar^[k] F) = dz^[k] F :=
-  HarmonicAnalysis.beurlingPow_dzbar_iterate k F
+    beurlingPow k (dzbar^[k] F) = dz^[k] F ∧ (beurlingPow 1)^[k] (dzbar^[k] F) = dz^[k] F :=
+  ⟨HarmonicAnalysis.beurlingPow_dzbar_iterate k F, iterate_beurlingPow_one_dzbar_iterate k F⟩
 
 theorem beurlingPowNorm_conjExponent (k : ℕ) {p : ℝ} (hp : 1 < p) :
     beurlingPowNorm k p = beurlingPowNorm k (p / (p - 1)) :=

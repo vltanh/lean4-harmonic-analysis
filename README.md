@@ -10,7 +10,7 @@ Lean 4 with Mathlib `v4.36.0-rc2`, on `ℂ ≅ ℝ²`, the torus `𝕋² = (ℝ/
   extension of `T_m` to `L^p` (`1 ≤ p < ∞`), and there is duality (`1 < p < ∞`):
   `‖T_m‖_p = ‖T_m‖_{p'}`, `‖T_m‖_p = ‖T_{m̄}‖_{p'}`; also `‖T_{m̄(−·)}‖_p = ‖T_{m(−·)}‖_p = ‖T_m‖_p`.
 - **Transference from `𝕋²` to `ℝ²`** [HNVW, Prop. 5.7.4, Cor. 5.7.6], `1 < p < ∞`: for `m` continuous
-  off `0` and `R_j → ∞`, `‖T_m‖_{L^p(ℝ²)} ≤ liminf_j ‖T_{m(·/R_j)}‖_{L^p_0(𝕋²)}`; for symbols
+  off `0` and `R_j → ∞`, `‖T_m‖_{L^p(ℝ²)} ≤ liminf_j ‖T_{m(·/R_j)}‖_{L^p_0(𝕋²)}`; if `m` is moreover
   homogeneous of degree `0`, `‖T_m‖_{L^p(ℝ²)} ≤ ‖T_m‖_{L^p_0(𝕋²)}`. Through the density of the Schwartz
   functions with Fourier transform in `C_c^∞(ℝ^d∖{0})`, Poisson summation on `ℤ²` and lattice Riemann
   sums.
@@ -47,7 +47,7 @@ the operator norms are suprema in `ℝ≥0∞`.
 | `‖T_m‖_p = ‖T_{m̄}‖_{p'}` (`m` bounded measurable, `1 < p`) | `multiplierNorm_conj_conjExponent` | duality; [CDK, §1.3.1] for `R^k` |
 | `‖T_{m̄(−·)}‖_p = ‖T_m‖_p` | `multiplierNorm_conj_comp_neg` | conjugation; [CDK, §1.3.1] for `R^k` |
 | `ϕ_t ∗ f → f` in `L^p` as `t → 0` for Schwartz `f`, `ϕ`, `∫ϕ = 1` (`1 ≤ p`) | `tendsto_eLpNorm_mollify_sub` | [HNVW, Prop. 1.2.32] |
-| For Schwartz `f`: Schwartz `f_j → f` in every `L^p`, `1 < p < ∞`, `𝓕f_j → 𝓕f` in `L¹`, with `𝓕f_j ∈ C_c^∞(V∖{0})` | `exists_tendsto_hasCompactFourierSupportOffZero` | [HNVW, Prop. 2.4.23 (ii)] |
+| For Schwartz `f`, `dim V > 0`: Schwartz `f_j → f` in every `L^p`, `1 < p < ∞`, `𝓕f_j → 𝓕f` in `L¹`, with `𝓕f_j ∈ C_c^∞(V∖{0})` | `exists_tendsto_hasCompactFourierSupportOffZero` | [HNVW, Prop. 2.4.23 (ii)] |
 | `∫_{𝕋^ι} T_m(Σ c_k e_k) (Σ d_ℓ e_ℓ) = Σ_k m(k) c_k d_{−k}` | `integral_torusMultiplier_mul_trigPoly` | orthogonality |
 | `Σ_j f(R(y+j)) = Σ_n R⁻² 𝓕f(n/R) e^{2πi⟨n,y⟩}` on `ℤ²`, for Schwartz `f` | `hasSum_periodize` | Poisson summation |
 | `R^{2/p} ‖Σ_n R⁻² 𝓕f(n/R) e_n‖_{L^p(𝕋²)} → ‖f‖_{L^p(ℝ²)}` as `R → ∞`, for Schwartz `f` (`1 ≤ p`) | `tendsto_eLpNorm_tsum_fourier_mul_mFourier` | [HNVW, Lemma 5.7.5] |
@@ -55,11 +55,11 @@ the operator norms are suprema in `ℝ≥0∞`.
 | `‖T_m‖_{L^p(ℝ²)} ≤ liminf_j ‖T_{m(·/R_j)}‖_{L^p_0(𝕋²)}`, `R_j → ∞`, `m` continuous off `0` (`1 < p`) | `multiplierNorm_le_liminf_torusMultiplierNorm` | [HNVW, Prop. 5.7.4] |
 | `m` is bounded if that `liminf` is finite | `exists_norm_le_of_liminf_torusMultiplierNorm_ne_top` | |
 | `‖T_m‖_{L^p(ℝ²)} ≤ ‖T_m‖_{L^p_0(𝕋²)}`, `m` homogeneous of degree `0`, continuous off `0` (`1 < p`) | `multiplierNorm_le_torusMultiplierNorm` | [HNVW, Cor. 5.7.6] (`I ≤ II`) |
-| `𝓑^k(∂̄^k F) = ∂^k F` for Schwartz `F` | `beurlingPow_dzbarCLM_pow`, `beurlingPow_dzbar_iterate` | [D, p. 465]; [D-LN, §4.1, and Ex. 2.19 for `k = 1`] |
+| `𝓑^k(∂̄^k F) = ∂^k F` for Schwartz `F`; the same for the `k`-fold iterate of `𝓑` | `beurlingPow_dzbarCLM_pow`, `iterate_beurlingPow_one_dzbar_iterate` | [D, p. 465]; [D-LN, §4.1, and Ex. 2.19 for `k = 1`] |
 | `‖v‖_p / ‖u‖_p ≤ ‖𝓑^k‖_p` if Schwartz `∂̄^k φ_j → u`, `∂^k φ_j → v` in `L^p` | `div_le_beurlingPowNorm_of_tendsto` | density; [D, p. 465]; [D-LN, Ex. 2.19, §4.1] |
 | `‖𝓑^k‖_p = ‖𝓑^k‖_{p'}` (`1 < p`) | `beurlingPowNorm_conjExponent` | [CDK, §1.3.1] |
 | `‖𝓑^k‖_{L^p(ℝ²)} ≤ ‖𝓑^k‖_{L^p_0(𝕋²)}` (`1 < p`) | `beurlingPowNorm_le_torusBeurlingPowNorm` | [HNVW, Cor. 5.7.6] (`I ≤ II`) |
-| `f_{2,α} ∈ W^{2,p}`: Schwartz `φ_k` with `∂̄²φ_k → ∂̄²f_{2,α}`, `∂²φ_k → ∂²f_{2,α}` (`1 ≤ p`) | `BeurlingAhlfors.exists_schwartz_tendsto_testFun` | asserted in [D, p. 465], [D-LN, Ex. 4.1] (for `p > 2`) |
+| `f_{2,α}`, what is used of `f_{2,α} ∈ W^{2,p}`: Schwartz `φ_k` with `∂̄²φ_k → ∂̄²f_{2,α}`, `∂²φ_k → ∂²f_{2,α}` in `L^p` (`1 ≤ p`, `0 < α < 1/p`) | `BeurlingAhlfors.exists_schwartz_tendsto_testFun` | asserted in [D, p. 465], [D-LN, Ex. 4.1] (for `p > 2`) |
 | `‖∂²f_{2,α}‖_p / ‖∂̄²f_{2,α}‖_p → κ₂(p)` as `α → 1/p⁻` | `tendsto_eLpNorm_div_testFun` | [D, Thm 1.1] (for `p > 2`) |
 | `κ₂(p) ≤ ‖𝓑²‖_p` for `1 < p` | `beurlingKappa_two_le_beurlingPowNorm_two` | [D, Thm 1.1] (for `p > 2`) |
 | `κ₂(p*) ≤ ‖𝓑²‖_p` for `1 < p` | `beurlingKappa_two_pStar_le_beurlingPowNorm_two` | [D, Thm 1.1] for `p > 2`; [CDK, §1.3.1] for `p < 2` |
@@ -106,10 +106,10 @@ bound with `p*`, and `‖𝓑²‖_p > p* − 1`.
 ## Method
 
 - **Dragičević's lower bound** follows his proof [D, pp. 466–467], which [D-LN, Prop. 4.2] repeats,
-  with his test functions `f_{2,α}(z) = z² |z|^{−2α} g₂(|z|)`, `g₂ = 1` on `[0, 1]`,
-  `g₂(x) = exp(−(x−1)²)` for `x > 1`, `0 < α < 1/p`: `𝓑²(∂̄²f) = ∂²f`, explicit integrals over the
-  disc, of order `(1 − αp)⁻¹`, a bounded contribution outside it, and `α → 1/p`. The norms here are
-  suprema over Schwartz functions, which `f_{2,α}` is not; that `f_{2,α} ∈ W^{2,p}`, "which ensures
+  with his test functions `f_{2,α}(z) = z² |z|^{−2α} g₂(|z|)` (here `0 < α < 1/p`, and his example of a
+  cutoff, `g₂ = 1` on `[0, 1]`, `g₂(x) = exp(−(x−1)²)` for `x > 1`): `𝓑²(∂̄²f) = ∂²f`, explicit
+  integrals over the disc, of order `(1 − αp)⁻¹`, a bounded contribution outside it, and `α → 1/p`. The
+  norms here are suprema over Schwartz functions, which `f_{2,α}` is not; that `f_{2,α} ∈ W^{2,p}`, "which ensures
   that `T^n(∂̄^n f) = ∂^n f`", is asserted without proof in [D, p. 465] (and is [D-LN, Ex. 4.1]).
   What is used of it is proved here: `f_{2,α}` is approximated by Schwartz functions, and the density
   statements carry the bound over, as the hint of [D-LN, Ex. 2.19] does ("first consider smooth `h`
@@ -122,7 +122,7 @@ bound with `p*`, and `‖𝓑²‖_p > p* − 1`.
   `T_m` is `T_{m̄}`, and Schwartz functions norm `L^p`).
 - **Duality** `‖T_m‖_p = ‖T_m‖_{p'}` follows [HNVW, Prop. 5.3.7], for scalar symbols:
   `∫ T_m f · g = ∫ T_{m(−·)} g · f`, Hölder's inequality, the norming of `L^p` by Schwartz functions,
-  and the reflection `T_{m(−·)} f(−·) = (T_m f)(−·)`.
+  and the reflection `T_{m(−·)}(f(−·)) = (T_m f)(−·)`.
 - **Transference** follows [HNVW, Prop. 5.7.4 and Cor. 5.7.6], for scalar symbols on `ℝ² ≅ ℂ` and the
   inequality from `𝕋²` to `ℝ²`: for Schwartz `f`, `g` with Fourier transforms in `C_c^∞(ℂ∖{0})`,
   `∫ T_m f g = ∫ m 𝓕f 𝓕⁻¹g` is a limit of Riemann sums over `R⁻¹ℤ²`, which by orthogonality are

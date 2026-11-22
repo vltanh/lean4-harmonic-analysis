@@ -112,6 +112,16 @@ theorem fourier_dzCLM (f : 𝓢(ℂ, F)) (ξ : ℂ) :
     Complex.conj_im]
   apply Complex.ext <;> simp <;> ring
 
+/-- `∂` and `∂̄` commute on the Schwartz space: their Fourier symbols do. -/
+theorem commute_dzCLM_dzbarCLM : Commute (dzCLM : 𝓢(ℂ, ℂ) →L[ℂ] 𝓢(ℂ, ℂ)) dzbarCLM := by
+  refine ContinuousLinearMap.ext fun f => ?_
+  have h : 𝓕 (dzCLM (dzbarCLM f)) = 𝓕 (dzbarCLM (dzCLM f)) := by
+    ext ξ
+    rw [SchwartzMap.fourier_coe, SchwartzMap.fourier_coe, fourier_dzCLM, fourier_dzbarCLM,
+      fourier_dzbarCLM, fourier_dzCLM, smul_smul, smul_smul, mul_comm]
+  have hinv : ∀ g : 𝓢(ℂ, ℂ), 𝓕⁻ (𝓕 g) = g := FourierTransform.fourierInv_fourier_eq
+  rw [mul_apply_eq_comp, mul_apply_eq_comp, ← hinv (dzCLM (dzbarCLM f)), h, hinv]
+
 theorem measurable_dz (g : ℂ → ℂ) : Measurable (dz g) := by
   unfold dz
   fun_prop

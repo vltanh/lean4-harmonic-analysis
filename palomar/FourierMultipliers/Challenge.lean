@@ -36,13 +36,16 @@ Scalar Fourier multipliers `T_m f = 𝓕⁻¹ (m · 𝓕 f)` on `L^p`, `1 < p < 
   space of the `f ∈ L^p` that are inverse Fourier transforms of integrable functions. That this
   gives the same extension is [HNVW, p. 401 and Proposition 2.4.23], not formalized here.)
 * `torusMultiplierNorm m p` is the supremum of `‖T_m f‖_p / ‖f‖_p` over the trigonometric
-  polynomials `f` of mean zero, the norm of `T_m` on `L^p_0 (𝕋^ι)` as [HNVW, pp. 457–458] define it.
+  polynomials `f` of mean zero, by which [HNVW, pp. 457–458] define multipliers on `L^p_0 (𝕋^ι)`.
+  (They are dense in `L^p_0`, so that this is the norm of the extension of `T_m` to `L^p_0`; that is
+  not formalized, and the bounds below do not need it, as the supremum is at most that norm.)
 * The Beurling–Ahlfors transform `𝓑` is the Fourier multiplier with symbol `ξ̄ / ξ`, and `𝓑^k` the
   one with symbol `(ξ̄ / ξ)^k`. [D] defines `𝓑` (there `T`) as the singular integral
-  `−(1/π) p.v. ∫ f (ζ) (z − ζ)^{−2} dA (ζ)`, which has this symbol, a classical fact that is not
-  formalized here; `beurlingPow_dzbar_iterate` is the property `𝓑^k (∂̄^k F) = ∂^k F` by which [D]
-  uses it. That `𝓑^k` is bounded on `L^p` (Calderón–Zygmund) is neither assumed nor proved: the
-  statements about `‖𝓑^k‖_p` hold in `[0, ∞]`.
+  `−(1/π) p.v. ∫ f (ζ) (z − ζ)^{−2} dA (ζ)`, which has this symbol [CDK, (1.1)–(1.3)], a classical
+  fact that is not formalized here, and `𝓑^k` as its `k`-th power; `beurlingPow_dzbar_iterate` is
+  the property `𝓑^k (∂̄^k F) = ∂^k F` by which [D] uses it, for both meanings of `𝓑^k`. That `𝓑` is
+  bounded on `L^p` (Calderón–Zygmund) is neither assumed nor proved: the statements about
+  `‖𝓑^k‖_p` hold in `[0, ∞]`.
 
 ## Statements
 
@@ -53,12 +56,13 @@ Scalar Fourier multipliers `T_m f = 𝓕⁻¹ (m · 𝓕 f)` on `L^p`, `1 < p < 
 * `transference_homogeneous` ([HNVW, Corollary 5.7.6], scalar, `d = 2`, only the inequality
   `I ≤ II` of its three equal norms): `‖T_m‖_{L^p (ℝ²)} ≤ ‖T_m‖_{L^p_0 (𝕋²)}` if `m` is moreover
   homogeneous of degree `0`.
-* `beurlingPow_dzbar_iterate`: `𝓑^k (∂̄^k F) = ∂^k F` for Schwartz functions `F`.
+* `beurlingPow_dzbar_iterate`: `𝓑^k (∂̄^k F) = ∂^k F` for Schwartz functions `F`, also with the
+  `k`-fold iterate of `𝓑` for `𝓑^k`.
 * `beurlingPowNorm_conjExponent` ([CDK, §1.3.1], for the even powers `R^{2k} = 𝓑^k` of the complex
   Riesz transform `R`): `‖𝓑^k‖_p = ‖𝓑^k‖_{p'}`.
-* `dragicevic_limit`, `dragicevic_lower_bound` ([D, Theorem 1.1] for `n = 2` only; there for every
-  `n`, and `p > 2`): `‖∂² f_{2,α}‖_p / ‖∂̄² f_{2,α}‖_p → κ₂ (p)` as `α ↑ 1/p`, and
-  `‖𝓑²‖_p ≥ κ₂ (p)`. `beurlingKappa_two`: `κ₂ (p) = (p − 1)(2p − 1) / (p + 1)`.
+* `dragicevic_limit`, `dragicevic_lower_bound` ([D, Theorem 1.1] for `n = 2` and one cutoff `g₂`
+  only; there for every `n`, and `p > 2`): `‖∂² f_{2,α}‖_p / ‖∂̄² f_{2,α}‖_p → κ₂ (p)` as `α ↑ 1/p`,
+  and `‖𝓑²‖_p ≥ κ₂ (p)`. `beurlingKappa_two`: `κ₂ (p) = (p − 1)(2p − 1) / (p + 1)`.
 * `dragicevic_lower_bound_pStar`, `pStar_sub_one_lt_beurlingPowNorm_two`: for `1 < p < ∞` and
   `p* = max (p, p')`, `‖𝓑²‖_p ≥ κ₂ (p*)`, and so `‖𝓑²‖_p > p* − 1` if `p ≠ 2`. For `p < 2`, the
   first is the bound for `p'` and [CDK, §1.3.1].
@@ -173,10 +177,12 @@ def beurlingKappa (n : ℕ) (p : ℝ) : ℝ :=
 /-- `p* = max (p, p / (p − 1))`. -/
 def pStar (p : ℝ) : ℝ := max p (p / (p - 1))
 
-/-- Dragičević's cutoff `g_n (x) = 1` for `x ≤ 1`, `exp (−(x − 1)^n)` for `x > 1`. -/
+/-- The cutoff `g_n (x) = 1` for `x ≤ 1`, `exp (−(x − 1)^n)` for `x > 1`, which Dragičević (2011,
+p. 465) gives as an example of a sufficiently smooth, rapidly decaying `g_n` equal to `1` on
+`[0, 1]`. -/
 def BeurlingAhlfors.testCutoff (n : ℕ) (x : ℝ) : ℝ := if x ≤ 1 then 1 else Real.exp (-(x - 1) ^ n)
 
-/-- Dragičević's test function `f_{n,α} (z) = z^n |z|^{−2α} g_n (|z|)`. -/
+/-- Dragičević's test function `f_{n,α} (z) = z^n |z|^{−2α} g_n (|z|)`, with this cutoff `g_n`. -/
 def BeurlingAhlfors.testFun (n : ℕ) (α : ℝ) (z : ℂ) : ℂ :=
   z ^ n * ((‖z‖ ^ (-2 * α) * testCutoff n ‖z‖ : ℝ) : ℂ)
 
@@ -240,10 +246,10 @@ theorem transference_homogeneous {m : ℂ → ℂ} (hm : ∀ ξ ≠ 0, Continuou
     multiplierNorm m p ≤ torusMultiplierNorm (fun k => m (latticePoint k)) p := by
   sorry
 
-/-- `𝓑^k (∂̄^k F) = ∂^k F` for every Schwartz function `F` ([D, p. 465], there for functions of
-`W^{k,p}`). -/
+/-- `𝓑^k (∂̄^k F) = ∂^k F` for every Schwartz function `F` ([D, p. 465] states it for `F = f_{k,α}`,
+because `f_{k,α} ∈ W^{k,p}`); and so does the `k`-fold iterate of `𝓑 = 𝓑^1`. -/
 theorem beurlingPow_dzbar_iterate (k : ℕ) (F : 𝓢(ℂ, ℂ)) :
-    beurlingPow k (dzbar^[k] F) = dz^[k] F := by
+    beurlingPow k (dzbar^[k] F) = dz^[k] F ∧ (beurlingPow 1)^[k] (dzbar^[k] F) = dz^[k] F := by
   sorry
 
 /-- `‖𝓑^k‖_p = ‖𝓑^k‖_{p'}`, `p' = p / (p − 1)`, for `1 < p < ∞` ([CDK, §1.3.1], for the powers
@@ -259,7 +265,8 @@ theorem beurlingKappa_two {p : ℝ} (hp : 0 < p) :
 
 /-- **Dragičević's limit** ([D, Theorem 1.1], `n = 2`; there for `p > 2`):
 `‖∂² f_{2,α}‖_p / ‖∂̄² f_{2,α}‖_p → κ₂ (p)` as `α → 1/p` from below, for `1 < p < ∞`. The
-derivatives are pointwise; `f_{2,α}` is smooth off `0` and the unit circle, a null set. -/
+derivatives are pointwise; `f_{2,α}` is smooth off `0` and the unit circle, a null set. (For
+`α < 1/p` they are almost everywhere the weak derivatives; this is not formalized.) -/
 theorem dragicevic_limit {p : ℝ} (hp : 1 < p) :
     Tendsto (fun α : ℝ => eLpNorm (dz^[2] (testFun 2 α)) (ENNReal.ofReal p) volume /
         eLpNorm (dzbar^[2] (testFun 2 α)) (ENNReal.ofReal p) volume)
@@ -267,7 +274,8 @@ theorem dragicevic_limit {p : ℝ} (hp : 1 < p) :
   sorry
 
 /-- **Dragičević's lower bound** ([D, Theorem 1.1], `n = 2`; there for `p > 2`):
-`‖𝓑²‖_{L^p (ℝ²)} ≥ κ₂ (p)` for `1 < p < ∞`. -/
+`‖𝓑²‖_{L^p (ℝ²)} ≥ κ₂ (p)` for `1 < p < ∞`. (For `p ≤ 2`, `κ₂ (p) ≤ 1`, and the bound says little;
+see `dragicevic_lower_bound_pStar`.) -/
 theorem dragicevic_lower_bound {p : ℝ} (hp : 1 < p) :
     ENNReal.ofReal (beurlingKappa 2 p) ≤ beurlingPowNorm 2 p := by
   sorry

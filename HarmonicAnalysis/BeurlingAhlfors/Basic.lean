@@ -25,7 +25,8 @@ With `ℂ ≅ ℝ²` by `x + iy ↦ (x, y)` and Mathlib's Fourier transform
 * `HarmonicAnalysis.beurlingPow_dzbarCLM_pow`: `𝓑^k (∂̄^k F) = ∂^k F` for every Schwartz `F`
   (on the Fourier side, `m^k (π i ξ)^k = (π i ξ̄)^k`). For `k = 1` this is the characterisation
   `𝓑 (∂̄h) = ∂h` of the Beurling–Ahlfors transform. With the pointwise derivatives:
-  `HarmonicAnalysis.beurlingPow_dzbar_iterate`.
+  `HarmonicAnalysis.beurlingPow_dzbar_iterate`. The `k`-fold iterate of `𝓑` is `𝓑^k` on the
+  functions `∂̄^k F` (`HarmonicAnalysis.iterate_beurlingPow_one_dzbar_iterate`).
 * `HarmonicAnalysis.div_le_beurlingPowNorm_of_tendsto` (density): if Schwartz functions `φ_k`
   satisfy `∂̄^k φ_k → u` and `∂^k φ_k → v` in `L^p`, then `‖v‖_p / ‖u‖_p ≤ ‖𝓑^k‖_p`. For
   `f ∈ W^{k,p}` with `u = ∂̄^k f`, `v = ∂^k f`, this is `𝓑^k (∂̄^k f) = ∂^k f` (Dragičević 2011,
@@ -109,6 +110,22 @@ theorem beurlingPow_dzbar_iterate (k : ℕ) (F : 𝓢(ℂ, ℂ)) :
     beurlingPow k (dzbar^[k] F) = dz^[k] F := by
   rw [← coe_dzbarCLM_pow, ← coe_dzCLM_pow]
   exact beurlingPow_dzbarCLM_pow k F
+
+/-- `𝓑^k` is the `k`-fold iterate of `𝓑` on the functions `∂̄^k F`, `F` Schwartz: applying `𝓑` to
+`∂̄^k F` gives `∂̄^{k−1} (∂F)`, then `∂̄^{k−2} (∂²F)`, and so on to `∂^k F`. -/
+theorem iterate_beurlingPow_one_dzbar_iterate (k : ℕ) (F : 𝓢(ℂ, ℂ)) :
+    (beurlingPow 1)^[k] (dzbar^[k] F) = dz^[k] F := by
+  rw [← coe_dzbarCLM_pow, ← coe_dzCLM_pow]
+  induction k generalizing F with
+  | zero => rfl
+  | succ k ih =>
+    have h : beurlingPow 1 ((dzbarCLM ^ (k + 1)) F : ℂ → ℂ) =
+        ((dzbarCLM ^ k) (dzCLM F) : ℂ → ℂ) := by
+      have h1 := beurlingPow_dzbarCLM_pow 1 ((dzbarCLM ^ k) F)
+      have h2 := congrArg (fun T => T F) (commute_dzCLM_dzbarCLM.pow_right k).eq
+      simp only [pow_one, mul_apply_eq_comp] at h1 h2
+      rw [pow_succ', mul_apply_eq_comp, h1, h2]
+    rw [Function.iterate_succ_apply, h, ih, pow_succ, mul_apply_eq_comp]
 
 /-- Density: if Schwartz functions `φ_k` satisfy `∂̄^k φ_k → u` and `∂^k φ_k → v` in `L^p`,
 `1 ≤ p`, then `‖v‖_p / ‖u‖_p ≤ ‖𝓑^k‖_p`. -/

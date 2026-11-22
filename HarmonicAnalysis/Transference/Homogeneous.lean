@@ -33,7 +33,7 @@ constant, `0` is not one, and the choice of `m (0)` has to be used instead.)
 ## References
 
 * T. Hytönen, J. van Neerven, M. Veraar, L. Weis, *Analysis in Banach Spaces, Volume I*, Ergebnisse
-  der Mathematik 63, Springer, 2016: Corollary 5.7.6 (pp. 462–463), Proposition 5.7.1 (p. 457).
+  der Mathematik 63, Springer, 2016: Corollary 5.7.6 (pp. 462–463), Proposition 5.7.1 (p. 458).
 -/
 
 @[expose] public section

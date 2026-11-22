@@ -137,10 +137,12 @@ def beurlingKappa (n : ℕ) (p : ℝ) : ℝ :=
 /-- `p* = max (p, p / (p − 1))`. -/
 def pStar (p : ℝ) : ℝ := max p (p / (p - 1))
 
-/-- Dragičević's cutoff `g_n (x) = 1` for `x ≤ 1`, `exp (−(x − 1)^n)` for `x > 1`. -/
+/-- The cutoff `g_n (x) = 1` for `x ≤ 1`, `exp (−(x − 1)^n)` for `x > 1`, which Dragičević (2011,
+p. 465) gives as an example of a sufficiently smooth, rapidly decaying `g_n` equal to `1` on
+`[0, 1]`. -/
 def BeurlingAhlfors.testCutoff (n : ℕ) (x : ℝ) : ℝ := if x ≤ 1 then 1 else Real.exp (-(x - 1) ^ n)
 
-/-- Dragičević's test function `f_{n,α} (z) = z^n |z|^{−2α} g_n (|z|)`. -/
+/-- Dragičević's test function `f_{n,α} (z) = z^n |z|^{−2α} g_n (|z|)`, with this cutoff `g_n`. -/
 def BeurlingAhlfors.testFun (n : ℕ) (α : ℝ) (z : ℂ) : ℂ :=
   z ^ n * ((‖z‖ ^ (-2 * α) * testCutoff n ‖z‖ : ℝ) : ℂ)
 
