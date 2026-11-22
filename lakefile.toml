@@ -13,7 +13,7 @@ maxSynthPendingDepth = 3
 [[require]]
 name = "BanachProbability"
 git = "https://github.com/vltanh/lean4-banach-probability"
-rev = "422b8a00311e840b1d9544d516445576e2efd641"
+rev = "89b3cc6bdbe36fcc8455026f165e8ab6563beca9"
 
 [[require]]
 name = "mathlib"
