@@ -33,9 +33,9 @@ Prints the axioms on which the main theorems depend, then checks that they and e
 of the library, including private and auxiliary ones, depend only on Lean's standard axioms
 `propext`, `Classical.choice` and `Quot.sound`. A `sorry` shows up as the axiom `sorryAx`.
 
-While proofs are still open, `allowSorry` is `true`: the audit then lists the declarations whose
-own proof contains a `sorry`, and fails only on other axioms. Set it to `false` before publishing,
-so that any `sorry` fails the audit.
+`allowSorry` is `false`, so any `sorry` (the axiom `sorryAx`) fails the audit. Setting it to `true`
+while proofs are open lists the declarations whose own proof contains a `sorry` and fails only on
+other axioms.
 -/
 
 open Lean Elab Command
@@ -69,9 +69,8 @@ meta def mainResults : List Name :=
 /-- Lean's standard axioms. -/
 meta def standardAxioms : List Name := [``propext, ``Classical.choice, ``Quot.sound]
 
-/-- While proofs are open, `sorryAx` is listed instead of rejected. Set to `false` before
-publishing. -/
-meta def allowSorry : Bool := true
+/-- Whether `sorryAx` is listed instead of rejected (`true` only while proofs are open). -/
+meta def allowSorry : Bool := false
 
 /-- Whether `m` is a module of the library. -/
 meta def isLibraryModule (m : Name) : Bool := (`HarmonicAnalysis).isPrefixOf m

@@ -20,8 +20,7 @@ jobs:
         run: >-
           diff <(find HarmonicAnalysis -name '*.lean' | sed 's/\.lean$//; s#/#.#g' | sort)
           <(grep -E '^import all HarmonicAnalysis\.' scripts/Audit.lean | sed 's/^import all //' | sort)
-      # While proofs are open the audit lists the declarations with a `sorry`
-      # (`Audit.allowSorry`); it fails on any other axiom.
+      # Fails on any `sorry` and on any axiom beyond propext, Classical.choice, Quot.sound.
       - name: Audit axioms
         run: lake env lean scripts/Audit.lean
       - name: Check that no line exceeds 100 characters

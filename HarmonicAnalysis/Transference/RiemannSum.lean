@@ -6,6 +6,7 @@ Authors: The-Anh Vu-Le
 module
 
 public import HarmonicAnalysis.Torus.Cube
+import HarmonicAnalysis.Torus.Lattice
 import Mathlib.Analysis.SpecialFunctions.JapaneseBracket
 import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 import Mathlib.MeasureTheory.Function.Floor
@@ -37,12 +38,6 @@ private theorem measurable_cellIndex (R : ℕ) : Measurable (cellIndex R) :=
   measurable_pi_iff.mpr <| Fin.forall_fin_two.mpr
     ⟨(measurable_const.mul Complex.measurable_re).floor,
       (measurable_const.mul Complex.measurable_im).floor⟩
-
-private theorem latticePoint_re (n : Fin 2 → ℤ) : (latticePoint n).re = n 0 := by
-  simp [latticePoint]
-
-private theorem latticePoint_im (n : Fin 2 → ℤ) : (latticePoint n).im = n 1 := by
-  simp [latticePoint]
 
 /-- `|⌊R x⌋ / R − x| ≤ R⁻¹`. -/
 private theorem abs_floor_div_sub_le {R : ℝ} (hR : 0 < R) (x : ℝ) :

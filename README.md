@@ -16,9 +16,9 @@ Lean 4 with Mathlib `v4.36.0-rc2`, on `ℂ ≅ ℝ²` and the torus `𝕋² = (�
   `‖𝓑²‖_p ≥ κ₂(p*) = (p*−1)(2p*−1)/(p*+1)`, `p* = max(p, p')`; hence `‖𝓑²‖_p > p* − 1` for
   `p ≠ 2` and `‖𝓑²‖₄ ≥ 21/5`.
 
-**Status: statements only.** Every definition has its body; most theorems are stated with
-`sorry` proofs, which the [audit](scripts/Audit.lean) lists. The corollaries that follow from the
-main statements by algebra are proved. No `axiom`, no `native_decide`.
+**Status: complete.** Every statement is proved. The [audit](scripts/Audit.lean) checks that every
+declaration of the library depends only on Lean's standard axioms (`propext`, `Classical.choice`,
+`Quot.sound`): no `sorry`, no `axiom`, no `native_decide`.
 
 ## Main statements
 
@@ -29,10 +29,12 @@ the operator norms are suprema in `ℝ≥0∞`.
 | --- | --- | --- |
 | `𝓕(∂̄f)(ξ) = πiξ 𝓕f(ξ)`, `𝓕(∂f)(ξ) = πiξ̄ 𝓕f(ξ)` | `fourier_dzbarCLM`, `fourier_dzCLM` | |
 | `‖v‖_p / ‖u‖_p ≤ ‖T_m‖_p` if Schwartz `φ_k → u`, `T_m φ_k → v` in `L^p` | `div_le_multiplierNorm_of_tendsto` | density |
+| `∫ T_m f · ḡ = ∫ f · conj(T_{m̄} g)` for Schwartz `f, g` (`m` bounded measurable) | `integral_fourierMultiplier_mul_conj` | |
+| `‖h‖_p ≤ A` if `\|∫ h ḡ\| ≤ A ‖g‖_{p'}` for all Schwartz `g` (`h` continuous, `1 < p`) | `eLpNorm_le_of_forall_schwartz` | duality |
 | `‖T_m‖_p = ‖T_{m̄}‖_{p'}` (`m` bounded measurable, `1 < p`) | `multiplierNorm_conj_conjExponent` | duality; [CDK, §1.3.1] for `R^k` |
 | `‖T_{m̄(−·)}‖_p = ‖T_m‖_p` | `multiplierNorm_conj_comp_neg` | conjugation; [CDK, §1.3.1] for `R^k` |
 | `Σ_j f(R(y+j)) = Σ_n R⁻² 𝓕f(n/R) e^{2πi⟨n,y⟩}` on `ℤ²` | `hasSum_periodize` | Poisson summation |
-| `Σ_n R⁻² φ(n/R) → ∫ φ` for `φ` continuous off `0`, `|φ| ≤ C(1+|ξ|)^{−3}` | `tendsto_riemannSum` | |
+| `Σ_n R⁻² φ(n/R) → ∫ φ` for `φ` continuous off `0`, `\|φ\| ≤ C(1+\|ξ\|)^{−3}` | `tendsto_riemannSum` | |
 | `‖T_m‖_{L^p(ℝ²)} ≤ ‖T_m‖_{L^p_0(𝕋²)}`, `m` homogeneous of degree `0`, continuous off `0` | `multiplierNorm_le_torusMultiplierNorm` | [dL] |
 | `𝓑^k(∂̄^k F) = ∂^k F` for Schwartz `F` | `beurlingPow_dzbarCLM_pow` | [D-LN, Ex. 2.19] for `k = 1`; §4.1 |
 | `‖v‖_p / ‖u‖_p ≤ ‖𝓑^k‖_p` if Schwartz `∂̄^k φ_j → u`, `∂^k φ_j → v` in `L^p` | `div_le_beurlingPowNorm_of_tendsto` | density; [D-LN, Ex. 2.19, §4.1] |
@@ -67,11 +69,13 @@ Here `beurlingKappa n p = (1/q)_n / (1/p)_n`, `1/q = 1 − 1/p`, with the Pochha
   bounded contribution outside it, and `α → 1/p`. The norms here are suprema over Schwartz
   functions, which `f_{2,α}` is not; `f_{2,α} ∈ W^{2,p}` [D-LN, Ex. 4.1] is approximated by
   Schwartz functions, and the density statements carry the bound over, as the hint of
-  [D-LN, Ex. 2.19] does ("first consider smooth `h` and then approximate"). The source states the
+  [D-LN, Ex. 2.19] does ("first consider smooth `h` and then approximate"). The approximation
+  is the standard one: `z²(|z|² + ε)^{−α}` near `0`, the cutoff smoothed near `|z| = 1` (where
+  `g₂` is only `C¹`) and truncated at infinity, and dominated convergence. The source states the
   bound for `p > 2`, and with `p*` for all `p` [D-LN, Cor. 4.8]; the case `p < 2` comes from
   `‖𝓑^n‖_p = ‖𝓑^n‖_{p'}`, by `𝓑^{−n} = (𝓑^n)^*` and `𝓑^{−n} f = conj(𝓑^n(conj f))`
   [CDK, §1.3.1, for `R^k`, `𝓑 = R²`], as here (for bounded multipliers, by the standard duality
-  argument).
+  argument: the adjoint of `T_m` is `T_{m̄}`, and Schwartz functions norm `L^p`).
 - **Transference** follows de Leeuw [dL]: sample `𝓕f` on `R⁻¹ℤ²` with the mean removed; the
   periodisation and Poisson summation bound the torus norms (`limsup R^{2/p} ‖·‖_{L^p(𝕋²)} ≤ ‖f‖_p`);
   by homogeneity the multiplied series are lattice Riemann sums of `T_m f`, and Fatou's lemma
@@ -103,18 +107,18 @@ your project should use the same Mathlib version.
 ```sh
 lake exe cache get                 # Mathlib's compiled files
 lake build
-lake env lean scripts/Audit.lean   # axioms; lists the `sorry`s while proofs are open
+lake env lean scripts/Audit.lean   # axioms: fails on any `sorry` or non-standard axiom
 ```
 
 ## Layout
 
 | Path | Content |
 | --- | --- |
-| [`HarmonicAnalysis/Complex/`](HarmonicAnalysis/Complex) | `Wirtinger` (`∂`, `∂̄` on functions and on `𝓢(ℂ, F)`, symbols, conjugation), `WirtingerRadial` (`∂`, `∂̄` of `z^a z̄^b K(|z|²)`), `RadialIntegral` (radial integrals) |
-| [`HarmonicAnalysis/FourierMultiplier/`](HarmonicAnalysis/FourierMultiplier) | `Basic` (`fourierMultiplier`, `multiplierNorm`, density), `Duality` |
-| [`HarmonicAnalysis/Torus/`](HarmonicAnalysis/Torus) | `Cube` (periodic functions, the unit cube, `𝕋² ↔ ℂ`), `TrigPoly` (trigonometric polynomials, `torusMultiplierNorm`, the `ℓ¹` extension), `Poisson` (periodisation, Poisson summation on `ℤ²`) |
+| [`HarmonicAnalysis/Complex/`](HarmonicAnalysis/Complex) | `Wirtinger` (`∂`, `∂̄` on functions and on `𝓢(ℂ, F)`, symbols, conjugation), `WirtingerRadial` (`∂`, `∂̄` of `z^a z̄^b K(\|z\|²)`), `RadialIntegral` (radial integrals) |
+| [`HarmonicAnalysis/FourierMultiplier/`](HarmonicAnalysis/FourierMultiplier) | `Basic` (`fourierMultiplier`, `multiplierNorm`, density), `Norming` (`L^p` norms by Schwartz test functions), `Duality` |
+| [`HarmonicAnalysis/Torus/`](HarmonicAnalysis/Torus) | `Cube` (periodic functions, the unit cube, `𝕋² ↔ ℂ`), `Lattice` (the lattice `ℤ + iℤ`, the tiling of `ℂ` by cells, periodic functions on `𝕋²`), `TrigPoly` (trigonometric polynomials, `torusMultiplierNorm`, the `ℓ¹` extension), `Poisson` (periodisation, Poisson summation on `ℤ²`) |
 | [`HarmonicAnalysis/Transference/`](HarmonicAnalysis/Transference) | `RiemannSum`, `Homogeneous` (de Leeuw) |
-| [`HarmonicAnalysis/BeurlingAhlfors/`](HarmonicAnalysis/BeurlingAhlfors) | `Basic` (symbol, `𝓑^k`, `𝓑^k ∂̄^k = ∂^k`, density), `Duality`, `TestFunctions` (Dragičević's `f_{2,α}`), `LowerBound` (Dragičević, `n = 2`), `Transference` (`𝓑^k` on `𝕋²`) |
+| [`HarmonicAnalysis/BeurlingAhlfors/`](HarmonicAnalysis/BeurlingAhlfors) | `Basic` (symbol, `𝓑^k`, `𝓑^k ∂̄^k = ∂^k`, density), `Duality`, `TestFunctions` (Dragičević's `f_{2,α}`; with `TestFunctions/Profile`, one-variable calculus, and `TestFunctions/Approx`, its Schwartz approximations), `LowerBound` (Dragičević, `n = 2`), `Transference` (`𝓑^k` on `𝕋²`) |
 | [`scripts/Audit.lean`](scripts/Audit.lean) | the axiom audit |
 | [`.github/workflows/`](.github/workflows) | CI: build, audit, import list of the audit, line lengths |
 
