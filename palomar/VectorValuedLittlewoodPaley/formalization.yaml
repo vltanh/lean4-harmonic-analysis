@@ -73,13 +73,31 @@ sources:
     location: "https://doi.org/10.1007/978-1-4419-7245-3_26"
     relationship: "formalizes"
     note: >-
-      Lemmas 2 and 3 and (33) (pp. 278-283) by the paper's proofs; Lemma 4 (p. 283), for which the
-      paper refers to M. Riesz and Zygmund; Lemma 1 (decoupling) is in BanachProbability.
-      Zeta-convexity is replaced by a UMD_p constant, (8), with explicit constants. Theorem 2 (the
-      limits of singular integrals) and Theorem 1 (zeta-convexity) are not formalized; the
-      departures are in fidelity.divergences. Read in the reprint in "Selected Works of Donald L.
-      Burkholder" (2011). The origin of the boundedness of the Hilbert transform on UMD spaces.
+      Lemmas 2 and 3 and (33) (pp. 278-283) by the paper's proofs, with the square function
+      inequality (9) for real martingales, which p. 275 asserts without proof, by the argument of
+      Lemma 1 (pp. 277-278) for the real line and Khintchine's inequality; Lemma 4 (p. 283), for
+      which the paper refers to M. Riesz and Zygmund, by M. Riesz's argument; Lemma 1 (decoupling)
+      is in BanachProbability. Zeta-convexity is replaced by a UMD_p constant, (8), with explicit
+      constants. Theorem 2 (the limits of singular integrals) and Theorem 1 (zeta-convexity) are not
+      formalized; for (8) for the real line, which (9) takes from Theorem 1, BanachProbability's
+      inequality with the constant p* - 1 is used. The departures are in fidelity.divergences. Read
+      in the reprint in "Selected Works of Donald L. Burkholder" (2011). The origin of the
+      boundedness of the Hilbert transform on UMD spaces.
     author_endorsement: "not-contacted"
+  - title: "Sur les fonctions conjuguées"
+    authors:
+      - "Marcel Riesz"
+    id: "Math. Z. 27 (1928), 218-244"
+    type: "paper"
+    location: "https://doi.org/10.1007/BF01171098"
+    relationship: "background"
+    note: >-
+      Section 18 (pp. 234-235), the passage from the circle to the line, to which Burkholder refers
+      for Lemma 4: read, and followed for the truncated conjugate functions. The step that Riesz
+      leaves out, the pointwise limit of the dilated conjugate functions, is proved by dominated
+      convergence. Departures: (38) for |x| + eps < n pi; Fatou's lemma also as m -> infinity, for
+      which Riesz gives no reason ("en faisant tendre m vers l'infini"). The origin of the
+      boundedness of the Hilbert transform on L^p (scalar case).
   - title: "On Fourier multiplier transformations of Banach-valued functions"
     authors:
       - "Terry R. McConnell"
@@ -121,9 +139,9 @@ related_formalizations:
     relationship: "builds-on"
     note: >-
       Lean 4, same maintainer. The Solution uses it: the randomised UMD property, UMD constants of
-      Hilbert spaces, the contraction principle. The definition of a UMD constant is restated in the
-      Challenge and is equal by definition to the one of that package (isUMDBound_iff in the
-      Solution). No theorem of its entries is restated.
+      Hilbert spaces, the contraction principle, the Kahane-Khintchine inequality. The definition of
+      a UMD constant is restated in the Challenge and is equal by definition to the one of that
+      package (isUMDBound_iff in the Solution). No theorem of its entries is restated.
   - id: "https://github.com/TauCetiProject/TauCeti"
     relationship: "independent"
     note: >-
@@ -200,11 +218,14 @@ automation:
         Lean v4.36.0-rc2, Mathlib v4.36.0-rc2.
       cost:
         wall_time: >-
-          about 5 hours between the first and the last commit of the vector-valued part of the
-          library (22 November 2026, git log), with other work in parallel, and about 1 hour for the
-          three entries of this part together, with the additions to the library that they needed
-          and the review, about 2 hours for McConnell's theorems, and about 1 hour for Burkholder's;
-          agent time not tracked
+          about 12 hours from the first commit of the vector-valued part of the library (f3b4bc0,
+          10:12) to the commit that redoes the proofs of Burkholder's (9) and Lemma 4 (about 22:20),
+          all on 22 November 2026, by the commit times in git log, with other work in parallel;
+          within it, about 1 hour for the three entries of this part together, with the additions to
+          the library that they needed and the review, about 2 hours for McConnell's theorems, and
+          about 3 hours and 20 minutes for Burkholder's, from its first commit (c8182f9, 19:02) to
+          that last commit. These are spans between commit times, not working time; agent time not
+          tracked
         spend_usd: "not tracked"
         hardware: "local machine (20 cores, 62 GB RAM) and API"
       prompting_notes: >-
@@ -280,7 +301,19 @@ fidelity:
     induction on k. The two equidistributed sequences of signs on pp. 281-282 are compared by one
     change of the signs. The kernel K_r of p. 283, whose existence the paper asserts, is the modulus
     of the difference of the two kernels, and its integral is computed. Lemma 4, for which the paper
-    refers to M. Riesz and Zygmund (not consulted), is proved by periodization and dilation. The
+    refers to M. Riesz and Zygmund, is proved by M. Riesz's argument (Section 18), applied to the
+    truncations, with the pointwise limit that Riesz leaves out written out (Zygmund's book was not
+    consulted); (38) for |x| + eps < n pi; Fatou's lemma also as m -> infinity, where Riesz gives no
+    reason. The square function inequality (9) for real martingales, which the paper asserts on p.
+    275 without proof where Khintchine's inequality holds, is proved by the argument of Lemma 1
+    (pp. 277-278) for the real line: (8) for constant signs, both ways, integration over the signs,
+    then Khintchine's inequality at each point, without Lemma 1's equidistribution step; (8) for the
+    real line, which the paper takes from its Theorem 1 (Theorems 2.1 and 3.1 of Burkholder, Ann.
+    Probab. 9 (1981); (8) from zeta-convexity is Theorem 3.1, since (8) is UMD), is
+    BanachProbability's inequality with the constant p* - 1 (Burkholder's
+    inequality, by Osękowski's proof), and Khintchine's inequality is BanachProbability's
+    Kahane-Khintchine inequality. The constants of (9) are then those of Khintchine's inequality
+    times p* - 1; (20), stated with 2 (p* - 1), is derived for p < 2 from the case p = 2. The
     case beta = infinity, which the paper does not have, is treated apart. Corrections to the paper:
     the strict inequality in the Taylor estimate (p. 279); the bound k^2 delta^2 on p. 280, which is
     N^2 delta^2 w_k.
@@ -316,7 +349,10 @@ review:
     corrected entry again, with a few further remarks on the new text, none on a statement, which
     were followed. The two statements after McConnell, and the sentences on him, were added later
     and compared with the paper by another agent, whose remarks were followed; so were the three
-    statements after Burkholder, the constants that depend on them, and the sentences on him.
+    statements after Burkholder, the constants that depend on them, and the sentences on him. The
+    proofs of (9) and of Lemma 4, redone after Burkholder and M. Riesz (Section 18), and the
+    sentences on them, were compared with the two sources by another agent, whose remarks were
+    followed.
 
 alignment:
   namespace: "VectorValuedLittlewoodPaleyChallenge"

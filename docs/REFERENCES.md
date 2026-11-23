@@ -33,11 +33,20 @@ In alphabetical order. Entries that the [README](../README.md) cites by a key be
   1–16, [doi:10.1007/PL00004425](https://doi.org/10.1007/PL00004425); *Optimal constants in Khintchine
   type inequalities for fermions, Rademachers and `q`-Gaussian operators*, Bull. Pol. Acad. Sci. Math.
   53 (2005), 315–321, [doi:10.4064/ba53-3-9](https://doi.org/10.4064/ba53-3-9).
+- D. L. Burkholder, *A geometrical characterization of Banach spaces in which martingale difference
+  sequences are unconditional*, Ann. Probab. 9 (1981), 997–1011,
+  [doi:10.1214/aop/1176994270](https://doi.org/10.1214/aop/1176994270): Theorems 2.1 (p. 1001) and
+  3.1 (p. 1003), which together are Theorem 1 of [B83]; (8) of [B83] from ζ-convexity is Theorem 3.1,
+  since (8) is UMD. [B83] gives no reference for the proof of its Theorem 1; it says the theorem
+  extends results of its [4] and points to [3], this paper, for "other such extensions" (p. 275), and
+  to "[3 and 5]", this paper and Burkholder's *Martingale transforms and the geometry of Banach
+  spaces* (LNM 860, 1981), for "other properties and all the proofs" of the ζ-condition (p. 272).
+  [MC] cites it for (2.1). Not followed here (see the README).
 - [B83] D. L. Burkholder, *A geometric condition that implies the existence of certain singular integrals
   of Banach-space-valued functions*, in: Conference on harmonic analysis in honor of Antoni Zygmund
   (Chicago, 1981), Wadsworth (1983), 270–286, reprinted in *Selected Works of Donald L. Burkholder* (2011),
   396–412, [doi:10.1007/978-1-4419-7245-3_26](https://doi.org/10.1007/978-1-4419-7245-3_26): Lemmas 1–4,
-  (33).
+  (9), (33).
 - L. Cadilhac, *Noncommutative Khintchine inequalities in interpolation spaces of `L_p`-spaces*, Adv.
   Math. 352 (2019), 265–296, [doi:10.1016/j.aim.2019.06.002](https://doi.org/10.1016/j.aim.2019.06.002).
 - [CDK] A. Carbonaro, O. Dragičević, V. Kovač, *Sharp `L^p` estimates of powers of the complex
@@ -141,6 +150,9 @@ In alphabetical order. Entries that the [README](../README.md) cites by a key be
 - [NV] F. Nazarov, A. Volberg, *Heating of the Ahlfors–Beurling operator, and estimates of its norm*,
   St. Petersburg Math. J. 15 (2004), 563–573,
   [doi:10.1090/S1061-0022-04-00822-2](https://doi.org/10.1090/S1061-0022-04-00822-2).
+- A. Osękowski, *Sharp martingale and semimartingale inequalities*, Monografie Matematyczne 72,
+  Birkhäuser (2012), [doi:10.1007/978-3-0348-0370-0](https://doi.org/10.1007/978-3-0348-0370-0):
+  Theorems 3.5 and 8.6, through BanachProbability.
 - R. E. A. C. Paley, *On the lacunary coefficients of power series*, Ann. of Math. 34 (1933), 615–616,
   [doi:10.2307/1968183](https://doi.org/10.2307/1968183).
 - S. Petermichl, *Dyadic shifts and a logarithmic estimate for Hankel operators with matrix symbol*,
@@ -162,8 +174,8 @@ In alphabetical order. Entries that the [README](../README.md) cites by a key be
   [doi:10.1006/jfan.2002.3952](https://doi.org/10.1006/jfan.2002.3952).
 - F. Riesz, *Über die Randwerte einer analytischen Funktion*, Math. Z. 18 (1923), 87–95,
   [doi:10.1007/bf01192397](https://doi.org/10.1007/bf01192397).
-- M. Riesz, *Sur les fonctions conjuguées*, Math. Z. 27 (1928), 218–244,
-  [doi:10.1007/BF01171098](https://doi.org/10.1007/BF01171098).
+- [R] M. Riesz, *Sur les fonctions conjuguées*, Math. Z. 27 (1928), 218–244,
+  [doi:10.1007/BF01171098](https://doi.org/10.1007/BF01171098): §18, pp. 234–235.
 - [S] D. Sarason, *Generalized interpolation in `H^∞`*, Trans. Amer. Math. Soc. 127 (1967), 179–203,
   [doi:10.1090/s0002-9947-1967-0208383-8](https://doi.org/10.1090/s0002-9947-1967-0208383-8): §10, Theorem 4
   and Lemmas 10.1, 10.3 and 10.4.

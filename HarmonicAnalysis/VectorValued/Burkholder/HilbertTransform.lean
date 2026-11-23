@@ -7,6 +7,7 @@ module
 
 public import HarmonicAnalysis.VectorValued.Burkholder.ConjugateFunction
 public import HarmonicAnalysis.VectorValued.HilbertTransform.Fourier
+import Mathlib.Analysis.Real.Pi.Bounds
 
 /-!
 # The Hilbert transform on UMD spaces, after Burkholder
@@ -21,22 +22,29 @@ Lemma 4, p. 283 (`eLpNorm_hilbertTrunc_le`): if `X` has a `UMD_p` constant `β`,
 `hilbertBound β` of the inequality (33) for the truncated conjugate function `f̃_ε` on the circle.
 
 The whole proof in the paper is: "This follows from (33) just as it does in the real case; see [14]
-or [18]" (M. Riesz, *Sur les fonctions conjuguées*, Math. Z. 27 (1928), 218–244; A. Zygmund,
-*Trigonometric Series*, 2nd ed., 1959). A standard argument is written out here (the two works were
-not consulted). Let first `f` vanish off `[−A, A]`, and for `R > ε` let `g_R (θ) = f (Rθ)`,
-`−π < θ ≤ π`, be extended periodically (`periodize`).
+or [18]", that is, M. Riesz, *Sur les fonctions conjuguées*, Math. Z. 27 (1928), 218–244, and
+A. Zygmund, *Trigonometric Series*. Riesz's §18 (pp. 234–235), which was read, passes from his
+Theorem II on the circle to his Theorem VII on the line in one pass, for every `f ∈ L^p`. His
+argument is followed here, applied to the truncated conjugate functions, as the paper's "follows
+from (33)" indicates. For `n ≥ 1` let `g_n (θ) = f (nθ)`, `−π < θ ≤ π`, be extended periodically
+(`periodize`), and `f̃_n (x) = (g_n)~_{ε/n} (x / n)`.
 
-* For `|x| + A < πR` the substitution `t = s / R` gives (`truncatedConj_periodize`)
-  `(g_R)~_{ε/R} (x / R) = π⁻¹ ∫_{ε < |s| < πR} (2R)⁻¹ cot (s / (2R)) f (x − s) ds`.
-* As `(2R)⁻¹ cot (s / (2R)) → s⁻¹`, with the bound `|s|⁻¹` for `|s| < πR`, this tends to `H_ε f (x)`
-  as `R → ∞` (`tendsto_truncatedConj_periodize`).
-* By (33), the norm of `x ↦ (g_R)~_{ε/R} (x / R)` in `L^p ((−πR, πR])` is at most
-  `(2 β² + 1) ‖f‖_p` (`eLpNorm_truncatedConj_periodize_le`): the dilation by `R` multiplies both
-  sides of (33) by the same power of `R`.
-* Fatou's lemma, as `R → ∞`, gives (34) for `f` (`eLpNorm_hilbertTrunc_le_of_support`).
-* For `f ∈ L^p`, `1_{[−A, A]} f` is as above, `H_ε (1_{[−A, A]} f) → H_ε f` pointwise as `A → ∞`,
-  since `t ↦ f (x − t) / t` is integrable over `|t| > ε` by Hölder's inequality, and Fatou's lemma
-  gives (34).
+* Riesz's (38), truncated: for `|x| + ε < nπ`,
+  `f̃_n (x) = π⁻¹ ∫_{y ∈ (−nπ, nπ], |x − y| > ε} (2n)⁻¹ cot ((x − y) / (2n)) f (y) dy`
+  (`truncatedConj_periodize`).
+* "`lim f̃_n (x) = f̃ (x)`", here `f̃_n (x) → H_ε f (x)`, for every `x`
+  (`tendsto_truncatedConj_periodize`). Riesz writes "on démontre très facilement" and leaves the
+  proof out ("Nous ne nous y arrêtons pas"); it is written out here, by dominated convergence:
+  `|(2n)⁻¹ cot (v / (2n))| ≤ |v|⁻¹` for `|v| ≤ 4n`, from `|cot u| ≤ |u|⁻¹` for `|u| ≤ 2`
+  (`abs_cot_le`), and `y ↦ f (y) / (x − y)` is integrable over `|x − y| > ε` by Hölder's inequality
+  (`integrableOn_inv_smul`).
+* Theorem II, here (33), and the dilation: `‖1_{(−nπ, nπ]} f̃_n‖_p ≤ (2 β² + 1) ‖f‖_p`
+  (`eLpNorm_truncatedConj_periodize_le`), the norm of `f` on `(−nπ, nπ]` bounded by `‖f‖_p`.
+* For `m ≤ n` the same bound holds on `(−mπ, mπ]`; for fixed `m`, Fatou's lemma as `n → ∞` bounds
+  `‖1_{(−mπ, mπ]} H_ε f‖_p` (Riesz: "par le théorème cité de M. Fatou"), and `m → ∞` gives (34)
+  (Riesz: "en faisant tendre m vers l'infini", without a reason; here Fatou's lemma again).
+
+Zygmund's book was not consulted; the paper's "or" allows either reference.
 
 The paper then states, without proof (Theorem 2, p. 284), that `lim T_ε f` exists, with bounds for
 the maximal function `T* f`; this is not carried out here. Instead, for `f = 𝓕⁻ G ∈ L^p` with
@@ -76,18 +84,62 @@ private theorem inv_mul_cot {R : ℝ} (hR : R ≠ 0) (s : ℝ) :
   · rw [Real.cot_eq_cos_div_sin, Real.sinc_of_ne_zero (by positivity)]
     field_simp
 
-/-- `|(2R)⁻¹ cot (s / (2R))| ≤ |s|⁻¹` for `|s| < πR`, as `y cos y ≤ sin y` for `0 ≤ y < π / 2`. -/
-private theorem abs_inv_mul_cot_le {R : ℝ} (hR : 0 < R) {s : ℝ} (hs : |s| < π * R) :
-    |(2 * R)⁻¹ * Real.cot (s / (2 * R))| ≤ |s|⁻¹ := by
-  have hy : |s / (2 * R)| < π / 2 := by
-    rw [abs_div, abs_of_pos (by positivity : 0 < 2 * R), div_lt_iff₀ (by positivity)]
+/-- `cot (u + π) = cot u`. -/
+private theorem cot_add_pi (u : ℝ) : Real.cot (u + π) = Real.cot u := by
+  rw [Real.cot_eq_cos_div_sin, Real.cot_eq_cos_div_sin, Real.cos_add_pi, Real.sin_add_pi,
+    neg_div_neg_eq]
+
+/-- `w |cos w| ≤ sin w` for `0 ≤ w ≤ 2`: for `w < π / 2` this is `w cos w ≤ sin w`; for
+`π / 2 ≤ w ≤ 2`, with `v = w − π / 2 ≤ 0.43`, `w sin v ≤ 2 v ≤ 1 − v² / 2 ≤ cos v`. -/
+private theorem mul_abs_cos_le_sin {w : ℝ} (hw0 : 0 ≤ w) (hw : w ≤ 2) :
+    w * |Real.cos w| ≤ Real.sin w := by
+  rcases lt_or_ge w (π / 2) with h | h
+  · have hcos : 0 ≤ Real.cos w :=
+      Real.cos_nonneg_of_neg_pi_div_two_le_of_le (by linarith [Real.pi_pos]) h.le
+    rw [abs_of_nonneg hcos]
+    rcases hw0.eq_or_lt with h0 | h0
+    · rw [← h0, zero_mul, Real.sin_zero]
+    · have h1 := Real.cos_le_sinc (x := w) (by rw [abs_of_pos h0]; exact h)
+      rw [Real.sinc_of_ne_zero h0.ne', le_div_iff₀ h0] at h1
+      linarith
+  · set v := w - π / 2 with hv
+    have hv0 : 0 ≤ v := by linarith
+    have hv1 : v ≤ 0.43 := by linarith [Real.pi_gt_d2]
+    have hcos : Real.cos w = -Real.sin v := by
+      rw [show w = v + π / 2 by ring, Real.cos_add_pi_div_two]
+    have hsin : Real.sin w = Real.cos v := by
+      rw [show w = v + π / 2 by ring, Real.sin_add_pi_div_two]
+    have hs0 : 0 ≤ Real.sin v :=
+      Real.sin_nonneg_of_nonneg_of_le_pi hv0 (by linarith [Real.pi_gt_three])
+    rw [hcos, hsin, abs_neg, abs_of_nonneg hs0]
+    nlinarith [Real.sin_le hv0, Real.one_sub_sq_div_two_le_cos (x := v),
+      mul_nonneg (by linarith : (0 : ℝ) ≤ 2 - w) hs0, mul_le_mul_of_nonneg_left hv1 hv0]
+
+/-- `|cot u| ≤ |u|⁻¹` for `|u| ≤ 2`. -/
+private theorem abs_cot_le {u : ℝ} (hu : |u| ≤ 2) : |Real.cot u| ≤ |u|⁻¹ := by
+  have hodd : |Real.cot u| = |Real.cot (|u|)| := by
+    rcases le_total 0 u with h | h
+    · rw [abs_of_nonneg h]
+    · rw [abs_of_nonpos h, Real.cot_eq_cos_div_sin, Real.cot_eq_cos_div_sin, Real.cos_neg,
+        Real.sin_neg, div_neg, abs_neg]
+  rw [hodd]
+  rcases (abs_nonneg u).eq_or_lt with h0 | h0
+  · rw [← h0, Real.cot_eq_cos_div_sin, Real.sin_zero, div_zero, abs_zero, inv_zero]
+  have hs : 0 < Real.sin |u| := Real.sin_pos_of_pos_of_lt_pi h0 (by linarith [Real.pi_gt_three])
+  rw [Real.cot_eq_cos_div_sin, abs_div, abs_of_pos hs, div_le_iff₀ hs, inv_mul_eq_div,
+    le_div_iff₀ h0, mul_comm]
+  exact mul_abs_cos_le_sin h0.le hu
+
+/-- `|(2R)⁻¹ cot (v / (2R))| ≤ |v|⁻¹` for `|v| ≤ 4R` (`abs_cot_le`). -/
+private theorem abs_inv_mul_cot_le {R : ℝ} (hR : 0 < R) {v : ℝ} (hv : |v| ≤ 4 * R) :
+    |(2 * R)⁻¹ * Real.cot (v / (2 * R))| ≤ |v|⁻¹ := by
+  have h2R : 0 < 2 * R := by positivity
+  have hu : |v / (2 * R)| ≤ 2 := by
+    rw [abs_div, abs_of_pos h2R, div_le_iff₀ h2R]
     linarith
-  have hcos : 0 ≤ Real.cos (s / (2 * R)) :=
-    Real.cos_nonneg_of_neg_pi_div_two_le_of_le (abs_lt.1 hy).1.le (abs_lt.1 hy).2.le
-  rw [inv_mul_cot hR.ne', abs_mul, abs_inv]
-  refine mul_le_of_le_one_left (by positivity) ?_
-  rw [abs_of_nonneg (div_nonneg hcos (hcos.trans (Real.cos_le_sinc hy)))]
-  exact div_le_one_of_le₀ (Real.cos_le_sinc hy) (hcos.trans (Real.cos_le_sinc hy))
+  rw [abs_mul, abs_of_pos (inv_pos.2 h2R)]
+  refine (mul_le_mul_of_nonneg_left (abs_cot_le hu) (inv_nonneg.2 h2R.le)).trans_eq ?_
+  rw [abs_div, abs_of_pos h2R, inv_div, mul_div_assoc', inv_mul_cancel₀ h2R.ne', one_div]
 
 /-- `(2R)⁻¹ cot (s / (2R)) → s⁻¹` as `R → ∞`. -/
 private theorem tendsto_inv_mul_cot (s : ℝ) :
@@ -124,23 +176,6 @@ private theorem periodize_coe_div {R : ℝ} (hR : 0 < R) (f : ℝ → X) {y : �
   rw [Set.mem_Ioc, lt_div_iff₀ hR, div_le_iff₀ hR]
   constructor <;> linarith
 
-omit [NormedSpace ℝ X] in
-/-- If `f` vanishes off `[−A, A]`, then `g_R (y / R) = f y` for `|y| < 2πR − A`: where `y / R` is
-not in `(−π, π]`, both sides vanish. -/
-private theorem periodize_coe_div_of_abs_lt {R : ℝ} (hR : 0 < R) {f : ℝ → X} {A : ℝ} (hA0 : 0 ≤ A)
-    (hA : ∀ y, A < |y| → f y = 0) (hAR : A < π * R) {y : ℝ} (hy : |y| + A < 2 * (π * R)) :
-    periodize R f ((y / R : ℝ) : AddCircle (2 * π)) = f y := by
-  obtain ⟨hy1, hy2⟩ := abs_lt.1 (lt_sub_iff_add_lt.2 hy)
-  rcases lt_or_ge (-(π * R)) y with h1 | h1
-  · rcases le_or_gt y (π * R) with h2 | h2
-    · exact periodize_coe_div hR f h1 h2
-    · rw [show y / R = (y - 2 * (π * R)) / R + 2 * π by field_simp; ring, AddCircle.coe_add_period,
-        periodize_coe_div hR f (by linarith) (by linarith), hA _ (by rw [abs_of_neg] <;> linarith),
-        hA _ ((hAR.trans h2).trans_le (le_abs_self y))]
-  · rw [← AddCircle.coe_add_period, show y / R + 2 * π = (y + 2 * (π * R)) / R by field_simp,
-      periodize_coe_div hR f (by linarith) (by linarith), hA _ (by rw [abs_of_pos] <;> linarith),
-      hA _ (by rw [abs_of_neg] <;> linarith)]
-
 /-- `{ε < |s| < b}` is measurable. -/
 private theorem measurableSet_annulus (ε b : ℝ) : MeasurableSet {s : ℝ | ε < |s| ∧ |s| < b} :=
   (measurableSet_lt measurable_const measurable_norm).inter
@@ -150,74 +185,142 @@ private theorem measurableSet_annulus (ε b : ℝ) : MeasurableSet {s : ℝ | ε
 private theorem measurableSet_lt_abs (ε : ℝ) : MeasurableSet {s : ℝ | ε < |s|} :=
   measurableSet_lt measurable_const measurable_norm
 
-/-- For `f` that vanishes off `[−A, A]` and `|x| + A < πR`, the substitution `t = s / R` gives
-`(g_R)~_{ε/R} (x / R) = π⁻¹ ∫_{ε < |s| < πR} (2R)⁻¹ cot (s / (2R)) f (x − s) ds`. -/
-private theorem truncatedConj_periodize {f : ℝ → X} {A : ℝ} (hA0 : 0 ≤ A)
-    (hA : ∀ y, A < |y| → f y = 0) {R : ℝ} (hR : 0 < R) (ε : ℝ) {x : ℝ} (hx : |x| + A < π * R) :
-    truncatedConj (ε / R) (periodize R f) ((x / R : ℝ) : AddCircle (2 * π)) =
-      π⁻¹ • ∫ s, {s : ℝ | ε < |s| ∧ |s| < π * R}.indicator
-        (fun s => ((2 * R)⁻¹ * Real.cot (s / (2 * R))) • f (x - s)) s := by
-  have h : ∀ s : ℝ, {t : ℝ | ε / R < |t| ∧ |t| < π}.indicator (fun t => Real.cot (t / 2) •
-      periodize R f ((x / R : ℝ) - (t : ℝ) : AddCircle (2 * π))) (s / R) =
-      (2 * R) • {s : ℝ | ε < |s| ∧ |s| < π * R}.indicator
-        (fun s => ((2 * R)⁻¹ * Real.cot (s / (2 * R))) • f (x - s)) s := by
-    intro s
-    have hmem : s / R ∈ {t : ℝ | ε / R < |t| ∧ |t| < π} ↔
-        s ∈ {s : ℝ | ε < |s| ∧ |s| < π * R} := by
-      simp only [Set.mem_ofPred_eq, abs_div, abs_of_pos hR, div_lt_iff₀ hR,
-        div_mul_cancel₀ _ hR.ne']
-    by_cases hs : s ∈ {s : ℝ | ε < |s| ∧ |s| < π * R}
-    · have hxs := abs_sub x s
-      have hs2 := hs.2
-      rw [Set.indicator_of_mem hs, Set.indicator_of_mem (hmem.2 hs), ← AddCircle.coe_sub,
-        ← sub_div, periodize_coe_div_of_abs_lt hR hA0 hA (by linarith [abs_nonneg x])
-          (by linarith), smul_smul, mul_inv_cancel_left₀ (by positivity), div_div, mul_comm R 2]
-    · rw [Set.indicator_of_notMem hs, Set.indicator_of_notMem (mt hmem.1 hs), smul_zero]
-  rw [truncatedConj, ← integral_indicator (measurableSet_annulus _ _)]
-  have hsub := Measure.integral_comp_div ({t : ℝ | ε / R < |t| ∧ |t| < π}.indicator fun t =>
-    Real.cot (t / 2) • periodize R f ((x / R : ℝ) - (t : ℝ) : AddCircle (2 * π))) R
-  rw [abs_of_pos hR] at hsub
-  rw [← inv_smul_smul₀ hR.ne' (∫ t, _), ← hsub]
-  simp_rw [h]
-  rw [integral_smul, smul_smul, smul_smul]
+/-- The kernel `1_{ε < |t|} cot (t / 2)` of `f̃_ε` on `(−π, π]`, extended periodically. -/
+private noncomputable def perCot (ε t : ℝ) : ℝ :=
+  AddCircle.liftIoc (2 * π) (-π) ({t : ℝ | ε < |t|}.indicator fun t => Real.cot (t / 2))
+    (t : AddCircle (2 * π))
+
+/-- The periodic kernel has the period `2π`. -/
+private theorem perCot_periodic (ε : ℝ) : Function.Periodic (perCot ε) (2 * π) := fun t => by
+  simp only [perCot, AddCircle.coe_add_period]
+
+/-- On `(−π, π]` the periodic kernel is `1_{ε < |t|} cot (t / 2)`. -/
+private theorem perCot_of_mem (ε : ℝ) {t : ℝ} (ht : t ∈ Set.Ioc (-π) π) :
+    perCot ε t = {t : ℝ | ε < |t|}.indicator (fun t => Real.cot (t / 2)) t := by
+  rw [perCot, AddCircle.liftIoc_coe_apply]
+  rwa [show -π + 2 * π = π by ring]
+
+/-- The kernel of `f̃_ε`, `1_{ε < |t| < π} cot (t / 2)`, is the periodic kernel on `(−π, π]`; at
+`t = π` both vanish, as `cot (π / 2) = 0`. -/
+private theorem indicator_annulus_eq (ε : ℝ) (w : ℝ → X) (t : ℝ) :
+    {t : ℝ | ε < |t| ∧ |t| < π}.indicator (fun t => Real.cot (t / 2) • w t) t =
+      (Set.Ioc (-π) π).indicator (fun t => perCot ε t • w t) t := by
+  by_cases ht : t ∈ Set.Ioc (-π) π
+  · rw [Set.indicator_of_mem ht, perCot_of_mem ε ht]
+    by_cases h1 : ε < |t|
+    · rw [Set.indicator_of_mem (show t ∈ {t : ℝ | ε < |t|} from h1)]
+      rcases (abs_le.2 ⟨ht.1.le, ht.2⟩).lt_or_eq with h2 | h2
+      · rw [Set.indicator_of_mem (show t ∈ {t : ℝ | ε < |t| ∧ |t| < π} from ⟨h1, h2⟩)]
+      · have hπ : t = π := by
+          rcases (abs_eq Real.pi_pos.le).1 h2 with h | h
+          · exact h
+          · exact absurd ht.1 (by rw [h]; exact lt_irrefl _)
+        rw [Set.indicator_of_notMem (fun (h : t ∈ {t : ℝ | ε < |t| ∧ |t| < π}) => h.2.ne h2), hπ,
+          Real.cot_eq_cos_div_sin, Real.cos_pi_div_two, zero_div, zero_smul]
+    · rw [Set.indicator_of_notMem (show t ∉ {t : ℝ | ε < |t|} from h1),
+        Set.indicator_of_notMem (fun (h : t ∈ {t : ℝ | ε < |t| ∧ |t| < π}) => h1 h.1), zero_smul]
+  · rw [Set.indicator_of_notMem ht,
+      Set.indicator_of_notMem fun (h : t ∈ {t : ℝ | ε < |t| ∧ |t| < π}) =>
+        ht ⟨(abs_lt.1 h.2).1, (abs_lt.1 h.2).2.le⟩]
+
+/-- For `y ∈ (−nπ, nπ]` and `|x| + ε < nπ`, the periodic kernel at `(x − y) / n` is
+`1_{ε < |x − y|} cot ((x − y) / (2n))`: the distance of `(x − y) / n` to `2πℤ` exceeds `ε / n`
+exactly when `|x − y| > ε`, since `|x − y| < 2nπ − ε`. -/
+private theorem perCot_div {n ε x y : ℝ} (hn : 0 < n) (hε : 0 < ε) (hx : |x| + ε < π * n)
+    (hy : y ∈ Set.Ioc (-(π * n)) (π * n)) :
+    perCot (ε / n) ((x - y) / n) =
+      {y : ℝ | ε < |x - y|}.indicator (fun y => Real.cot ((x - y) / (2 * n))) y := by
+  set t := (x - y) / n with ht
+  have hy' : |y| ≤ π * n := abs_le.2 ⟨hy.1.le, hy.2⟩
+  have hxy : |x - y| < 2 * (π * n) - ε := by linarith [abs_sub x y]
+  have htn : |t| = |x - y| / n := by rw [ht, abs_div, abs_of_pos hn]
+  have hiff : ε / n < |t| ↔ ε < |x - y| := by rw [htn, div_lt_div_iff_of_pos_right hn]
+  have hcot : Real.cot (t / 2) = Real.cot ((x - y) / (2 * n)) := by rw [ht, div_div, mul_comm n]
+  have hεn : 0 < ε / n := div_pos hε hn
+  have ht2 : |t| < 2 * π - ε / n := by
+    rw [htn, div_lt_iff₀ hn, sub_mul, div_mul_cancel₀ _ hn.ne']
+    linarith
+  have hfar : π ≤ |t| → y ∈ {y : ℝ | ε < |x - y|} := fun h => by
+    rw [htn, le_div_iff₀ hn] at h
+    rw [Set.mem_ofPred_eq]
+    linarith [abs_nonneg x]
+  obtain ⟨ht3, ht4⟩ := abs_lt.1 ht2
+  rcases le_or_gt t π with h1 | h1
+  · rcases lt_or_ge (-π) t with h2 | h2
+    · -- `t ∈ (−π, π]`
+      rw [perCot_of_mem _ ⟨h2, h1⟩, Set.indicator_apply, Set.indicator_apply]
+      simp only [Set.mem_ofPred_eq, hiff, hcot]
+    · -- `t ≤ −π`: `t + 2π ∈ (0, π]`
+      rw [← (perCot_periodic _) t, perCot_of_mem _ ⟨by linarith, by linarith⟩,
+        Set.indicator_of_mem (show t + 2 * π ∈ {t : ℝ | ε / n < |t|} by
+          rw [Set.mem_ofPred_eq, abs_of_pos (by linarith)]
+          linarith),
+        Set.indicator_of_mem (hfar (by rw [abs_of_neg (by linarith [Real.pi_pos])]; linarith)),
+        show (t + 2 * π) / 2 = t / 2 + π by ring, cot_add_pi, hcot]
+  · -- `t > π`: `t − 2π ∈ (−π, 0)`
+    rw [← (perCot_periodic _).sub_eq t, perCot_of_mem _ ⟨by linarith, by linarith⟩,
+      Set.indicator_of_mem (show t - 2 * π ∈ {t : ℝ | ε / n < |t|} by
+        rw [Set.mem_ofPred_eq, abs_of_neg (by linarith)]
+        linarith),
+      Set.indicator_of_mem (hfar (by rw [abs_of_pos (by linarith [Real.pi_pos])]; linarith)),
+      ← cot_add_pi ((t - 2 * π) / 2), show (t - 2 * π) / 2 + π = t / 2 by ring, hcot]
+
+/-- **Riesz's (38)**, truncated (§18): for `|x| + ε < nπ`,
+`(g_n)~_{ε/n} (x / n) = π⁻¹ ∫_{y ∈ (−nπ, nπ], |x − y| > ε} (2n)⁻¹ cot ((x − y) / (2n)) f (y) dy`.
+The substitution `t = x / n − φ` and the periodicity of the integrand in `φ` move the integral to
+`φ ∈ (−π, π]`, where `g_n (φ) = f (nφ)`; then `φ = y / n` (`perCot_div`). No support condition on
+`f` is needed. -/
+private theorem truncatedConj_periodize (f : ℝ → X) {n : ℝ} (hn : 0 < n) {ε : ℝ} (hε : 0 < ε)
+    {x : ℝ} (hx : |x| + ε < π * n) :
+    truncatedConj (ε / n) (periodize n f) ((x / n : ℝ) : AddCircle (2 * π)) =
+      π⁻¹ • ∫ y in Set.Ioc (-(π * n)) (π * n), {y : ℝ | ε < |x - y|}.indicator
+        (fun y => ((2 * n)⁻¹ * Real.cot ((x - y) / (2 * n))) • f y) y := by
+  set G : ℝ → X := fun φ => perCot (ε / n) (x / n - φ) • periodize n f φ with hG
+  have hπ : -π ≤ π := by linarith [Real.pi_pos]
+  -- the integral over `{ε / n < |t| < π}` as an integral over `(−π, π]`
+  have h1 : truncatedConj (ε / n) (periodize n f) ((x / n : ℝ) : AddCircle (2 * π)) =
+      (2 * π)⁻¹ • ∫ t in (-π)..π, G (x / n - t) := by
+    rw [truncatedConj, intervalIntegral.integral_of_le hπ,
+      ← integral_indicator (measurableSet_annulus _ _), ← integral_indicator measurableSet_Ioc]
+    congr 2 with t
+    rw [indicator_annulus_eq (ε / n) (fun t => periodize n f (((x / n : ℝ) : AddCircle (2 * π)) -
+      (t : AddCircle (2 * π)))) t]
+    simp only [hG, sub_sub_cancel, AddCircle.coe_sub]
+  -- `t = x / n − φ`, and the periodicity in `φ`
+  have hGp : Function.Periodic G (2 * π) := fun φ => by
+    simp only [hG, sub_add_eq_sub_sub, (perCot_periodic _).sub_eq, AddCircle.coe_add_period]
+  have h2 : ∫ t in (-π)..π, G (x / n - t) = ∫ φ in (-π)..π, G φ := by
+    rw [intervalIntegral.integral_comp_sub_left G (x / n),
+      show x / n - -π = x / n - π + 2 * π by ring, hGp.intervalIntegral_add_eq (x / n - π) (-π),
+      show -π + 2 * π = π by ring]
+  -- `g_n (φ) = f (nφ)` on `(−π, π]`
+  have h3 : ∫ φ in (-π)..π, G φ = ∫ φ in (-π)..π, perCot (ε / n) (x / n - φ) • f (n * φ) := by
+    rw [intervalIntegral.integral_of_le hπ, intervalIntegral.integral_of_le hπ]
+    refine setIntegral_congr_fun measurableSet_Ioc fun φ hφ => ?_
+    simp only [hG, periodize]
+    rw [AddCircle.liftIoc_coe_apply (by rwa [show -π + 2 * π = π by ring])]
+  -- `φ = y / n`
+  have h4 : ∫ φ in (-π)..π, perCot (ε / n) (x / n - φ) • f (n * φ) =
+      n⁻¹ • ∫ y in (-(π * n))..(π * n), perCot (ε / n) ((x - y) / n) • f y := by
+    have h := intervalIntegral.integral_comp_div
+      (fun φ => perCot (ε / n) (x / n - φ) • f (n * φ)) (a := -(π * n)) (b := π * n) hn.ne'
+    rw [show -(π * n) / n = -π by field_simp, show π * n / n = π by field_simp] at h
+    have h' : ∫ y in (-(π * n))..(π * n), perCot (ε / n) ((x - y) / n) • f y =
+        ∫ y in (-(π * n))..(π * n), perCot (ε / n) (x / n - y / n) • f (n * (y / n)) :=
+      intervalIntegral.integral_congr fun y _ => by rw [sub_div, mul_div_cancel₀ _ hn.ne']
+    rw [h', h, inv_smul_smul₀ hn.ne']
+  have h5 : ∫ y in (-(π * n))..(π * n), perCot (ε / n) ((x - y) / n) • f y =
+      (2 * n) • ∫ y in Set.Ioc (-(π * n)) (π * n), {y : ℝ | ε < |x - y|}.indicator
+        (fun y => ((2 * n)⁻¹ * Real.cot ((x - y) / (2 * n))) • f y) y := by
+    rw [intervalIntegral.integral_of_le (by nlinarith [Real.pi_pos]), ← integral_smul]
+    refine setIntegral_congr_fun measurableSet_Ioc fun y hy => ?_
+    rw [perCot_div hn hε hx hy, Set.indicator_apply, Set.indicator_apply]
+    split_ifs
+    · rw [smul_smul, ← mul_assoc, mul_inv_cancel₀ (by positivity), one_mul]
+    · rw [zero_smul, smul_zero]
+  rw [h1, h2, h3, h4, h5, smul_smul, smul_smul]
   congr 1
   field_simp
-
-/-- For `f ∈ L¹` that vanishes off `[−A, A]`, and every `x`, `(g_R)~_{ε/R} (x / R) → H_ε f (x)` as
-`R = n → ∞`, by dominated convergence: the integrands are bounded by `ε⁻¹ ‖f (x − s)‖`. -/
-private theorem tendsto_truncatedConj_periodize {f : ℝ → X} (hf : Integrable f) {A : ℝ}
-    (hA0 : 0 ≤ A) (hA : ∀ y, A < |y| → f y = 0) {ε : ℝ} (hε : 0 < ε) (x : ℝ) :
-    Tendsto (fun n : ℕ => truncatedConj (ε / n) (periodize n f)
-      ((x / n : ℝ) : AddCircle (2 * π))) atTop (𝓝 (hilbertTrunc ε f x)) := by
-  have hlarge : ∀ B : ℝ, ∀ᶠ n : ℕ in atTop, B < π * n := fun B =>
-    (tendsto_natCast_atTop_atTop.const_mul_atTop Real.pi_pos).eventually_gt_atTop B
-  have hlim : Tendsto (fun n : ℕ => ∫ s, {s : ℝ | ε < |s| ∧ |s| < π * n}.indicator
-      (fun s => ((2 * (n : ℝ))⁻¹ * Real.cot (s / (2 * n))) • f (x - s)) s) atTop
-      (𝓝 (∫ s, {s : ℝ | ε < |s|}.indicator (fun s => s⁻¹ • f (x - s)) s)) := by
-    refine tendsto_integral_filter_of_dominated_convergence (fun s => ε⁻¹ * ‖f (x - s)‖) ?_ ?_
-      ((hf.comp_sub_left x).norm.const_mul _) (ae_of_all _ fun s => ?_)
-    · exact Eventually.of_forall fun n => ((measurable_inv_mul_cot n).aestronglyMeasurable.smul
-        (hf.comp_sub_left x).aestronglyMeasurable).indicator (measurableSet_annulus _ _)
-    · filter_upwards [eventually_gt_atTop 0] with n hn
-      refine ae_of_all _ fun s => ?_
-      by_cases hs : s ∈ {s : ℝ | ε < |s| ∧ |s| < π * n}
-      · rw [Set.indicator_of_mem hs, norm_smul, Real.norm_eq_abs]
-        exact mul_le_mul_of_nonneg_right ((abs_inv_mul_cot_le (by positivity) hs.2).trans
-          (inv_anti₀ hε hs.1.le)) (norm_nonneg _)
-      · rw [Set.indicator_of_notMem hs, norm_zero]
-        positivity
-    · by_cases hs : ε < |s|
-      · rw [Set.indicator_of_mem (by exact hs)]
-        refine ((tendsto_inv_mul_cot s).smul_const (f (x - s))).congr' ?_
-        filter_upwards [hlarge |s|] with n hn
-        rw [Set.indicator_of_mem (show s ∈ {s : ℝ | ε < |s| ∧ |s| < π * n} from ⟨hs, hn⟩)]
-      · rw [Set.indicator_of_notMem (by exact hs)]
-        refine tendsto_const_nhds.congr fun n => ?_
-        rw [Set.indicator_of_notMem (fun h : s ∈ {s : ℝ | ε < |s| ∧ |s| < π * n} => hs h.1)]
-  rw [integral_indicator (measurableSet_lt_abs ε)] at hlim
-  refine (hlim.const_smul π⁻¹).congr' ?_
-  filter_upwards [hlarge (|x| + A), eventually_gt_atTop 0] with n hn hn0
-  exact (truncatedConj_periodize hA0 hA (by positivity) ε hn).symm
 
 /-! ### Measurability -/
 
@@ -333,41 +436,6 @@ private theorem eLpNorm_truncatedConj_periodize_le [CompleteSpace X] {p : ℝ} (
         rw [mul_left_comm]
         gcongr
 
-/-- (34) for a function `f ∈ L^p` that vanishes off `[−A, A]`, by Fatou's lemma. -/
-private theorem eLpNorm_hilbertTrunc_le_of_support [CompleteSpace X] {p : ℝ} (hp : 1 < p)
-    {β : ℝ≥0∞} (hβ : IsUMDBound X p β) {f : ℝ → X} (hfm : StronglyMeasurable f)
-    (hf : MemLp f (ENNReal.ofReal p) volume) {A : ℝ} (hA0 : 0 ≤ A)
-    (hA : ∀ y, A < |y| → f y = 0) {ε : ℝ} (hε : 0 < ε) :
-    eLpNorm (hilbertTrunc ε f) (ENNReal.ofReal p) volume ≤
-      hilbertBound β * eLpNorm f (ENNReal.ofReal p) volume := by
-  have hfint : Integrable f := by
-    have h1 : IntegrableOn f (Set.Icc (-A) A) :=
-      memLp_one_iff_integrable.1 ((hf.restrict _).mono_exponent
-        (ENNReal.one_le_ofReal.2 hp.le))
-    refine (integrableOn_iff_integrable_of_support_subset fun y hy => ?_).1 h1
-    exact abs_le.1 (not_lt.1 (mt (hA y) hy))
-  have hlim : ∀ x, Tendsto (fun n : ℕ => (Set.Ioc (-π) π).indicator
-      (fun θ : ℝ => truncatedConj (ε / n) (periodize n f) θ) (x / n)) atTop
-      (𝓝 (hilbertTrunc ε f x)) := by
-    intro x
-    refine (tendsto_truncatedConj_periodize hfint hA0 hA hε x).congr' ?_
-    filter_upwards [(tendsto_natCast_atTop_atTop.const_mul_atTop Real.pi_pos).eventually_gt_atTop
-      |x|, eventually_gt_atTop 0] with n hn hn0
-    have hn0' : (0 : ℝ) < n := Nat.cast_pos.2 hn0
-    have hx := abs_lt.1 hn
-    rw [Set.indicator_of_mem]
-    rw [Set.mem_Ioc, lt_div_iff₀ hn0', div_le_iff₀ hn0']
-    constructor <;> linarith
-  refine (Lp.eLpNorm_lim_le_liminf_eLpNorm (fun n : ℕ => ?_) _
-    (stronglyMeasurable_hilbertTrunc hfm ε).aestronglyMeasurable (ae_of_all _ hlim)).trans ?_
-  · exact (((stronglyMeasurable_truncatedConj
-      (stronglyMeasurable_periodize hfm n).aestronglyMeasurable _).comp_measurable
-      AddCircle.measurable_mk').indicator measurableSet_Ioc).comp_measurable
-      (measurable_div_const _) |>.aestronglyMeasurable
-  · refine (liminf_le_liminf ?_).trans (liminf_const _).le
-    filter_upwards [tendsto_natCast_atTop_atTop.eventually_gt_atTop ε] with n hn
-    exact eLpNorm_truncatedConj_periodize_le hp hβ hfm hf hε hn
-
 /-! ### The truncated kernel -/
 
 /-- `t⁻¹ ∈ L^q` on `{|t| > ε}`, for `q > 1`. -/
@@ -403,16 +471,101 @@ private theorem integrableOn_inv_smul {p : ℝ} (hp : 1 < p) {f : ℝ → X}
     hf.comp_measurePreserving (volume.measurePreserving_sub_left x)
   exact memLp_one_iff_integrable.1 ((memLp_inv hpq.symm.lt hε).smul (hfx.restrict _))
 
+/-! ### The limit `n → ∞` -/
+
+/-- "`lim f̃_n (x) = f̃ (x)`", which Riesz leaves out (§18, "on démontre très facilement … Nous ne
+nous y arrêtons pas"), for every `x` and `f ∈ L^p`, `f̃_n (x) = (g_n)~_{ε/n} (x / n)`: by (38)
+(`truncatedConj_periodize`) and dominated convergence. For `|x| + πn ≤ 4n` and `y ∈ (−nπ, nπ]`,
+`|x − y| ≤ 4n`, so `|(2n)⁻¹ cot ((x − y) / (2n))| ≤ |x − y|⁻¹` (`abs_inv_mul_cot_le`); the bound
+`y ↦ 1_{|x − y| > ε} |f (y)| / |x − y|` is integrable by Hölder's inequality
+(`integrableOn_inv_smul`); and `(2n)⁻¹ cot (v / (2n)) → v⁻¹`. -/
+private theorem tendsto_truncatedConj_periodize {p : ℝ} (hp : 1 < p) {f : ℝ → X}
+    (hf : MemLp f (ENNReal.ofReal p) volume) {ε : ℝ} (hε : 0 < ε) (x : ℝ) :
+    Tendsto (fun n : ℕ => truncatedConj (ε / n) (periodize n f)
+      ((x / n : ℝ) : AddCircle (2 * π))) atTop (𝓝 (hilbertTrunc ε f x)) := by
+  have hlarge : ∀ B : ℝ, ∀ᶠ n : ℕ in atTop, B < π * n := fun B =>
+    (tendsto_natCast_atTop_atTop.const_mul_atTop Real.pi_pos).eventually_gt_atTop B
+  have h4 : ∀ᶠ n : ℕ in atTop, |x| + π * n ≤ 4 * n := by
+    have h4π : 0 < 4 - π := by linarith [Real.pi_lt_d2]
+    filter_upwards [(tendsto_natCast_atTop_atTop.const_mul_atTop h4π).eventually_ge_atTop |x|]
+      with n hn
+    linarith
+  have hS : MeasurableSet {y : ℝ | ε < |x - y|} :=
+    measurableSet_lt measurable_const (measurable_const.sub measurable_id).norm
+  -- the limit: `π H_ε f (x) = ∫_{|x − y| > ε} f (y) / (x − y) dy`
+  have hint : Integrable fun y => {y : ℝ | ε < |x - y|}.indicator (fun y => (x - y)⁻¹ • f y) y := by
+    refine (((integrableOn_inv_smul hp hf hε x).integrable_indicator
+      (measurableSet_lt_abs ε)).comp_sub_left x).congr (ae_of_all _ fun y => ?_)
+    simp only [Set.indicator_apply, Set.mem_ofPred_eq, sub_sub_cancel]
+  have hH : hilbertTrunc ε f x =
+      π⁻¹ • ∫ y, {y : ℝ | ε < |x - y|}.indicator (fun y => (x - y)⁻¹ • f y) y := by
+    rw [hilbertTrunc, ← integral_indicator (measurableSet_lt_abs ε),
+      ← integral_sub_left_eq_self _ volume x]
+    congr 2 with y
+    simp only [Set.indicator_apply, Set.mem_ofPred_eq, sub_sub_cancel]
+  have hlim : Tendsto (fun n : ℕ => ∫ y, (Set.Ioc (-(π * n)) (π * n)).indicator
+      ({y : ℝ | ε < |x - y|}.indicator
+        fun y => ((2 * (n : ℝ))⁻¹ * Real.cot ((x - y) / (2 * n))) • f y) y) atTop
+      (𝓝 (∫ y, {y : ℝ | ε < |x - y|}.indicator (fun y => (x - y)⁻¹ • f y) y)) := by
+    refine tendsto_integral_filter_of_dominated_convergence
+      (fun y => ‖{y : ℝ | ε < |x - y|}.indicator (fun y => (x - y)⁻¹ • f y) y‖) ?_ ?_ hint.norm
+      (ae_of_all _ fun y => ?_)
+    · exact Eventually.of_forall fun n => ((((measurable_inv_mul_cot n).comp
+        (measurable_const_sub x)).aestronglyMeasurable.smul hf.aestronglyMeasurable).indicator
+          hS).indicator
+          measurableSet_Ioc
+    · filter_upwards [h4, eventually_gt_atTop 0] with n hn hn0
+      have hn0' : (0 : ℝ) < n := Nat.cast_pos.2 hn0
+      refine ae_of_all _ fun y => ?_
+      by_cases hy : y ∈ Set.Ioc (-(π * n)) (π * n) ∧ ε < |x - y|
+      · rw [Set.indicator_of_mem hy.1, Set.indicator_of_mem (show y ∈ {y : ℝ | ε < |x - y|} from
+          hy.2), Set.indicator_of_mem (show y ∈ {y : ℝ | ε < |x - y|} from hy.2), norm_smul,
+          norm_smul, Real.norm_eq_abs, norm_inv, Real.norm_eq_abs]
+        refine mul_le_mul_of_nonneg_right (abs_inv_mul_cot_le hn0' ?_) (norm_nonneg _)
+        linarith [abs_sub x y, abs_le.2 ⟨hy.1.1.le, hy.1.2⟩]
+      · have h0 : (Set.Ioc (-(π * n)) (π * n)).indicator ({y : ℝ | ε < |x - y|}.indicator
+            fun y => ((2 * (n : ℝ))⁻¹ * Real.cot ((x - y) / (2 * n))) • f y) y = 0 := by
+          by_cases h1 : y ∈ Set.Ioc (-(π * n)) (π * n)
+          · rw [Set.indicator_of_mem h1, Set.indicator_of_notMem (fun h2 => hy ⟨h1, h2⟩)]
+          · rw [Set.indicator_of_notMem h1]
+        rw [h0, norm_zero]
+        exact norm_nonneg _
+    · by_cases hy : ε < |x - y|
+      · rw [Set.indicator_of_mem (show y ∈ {y : ℝ | ε < |x - y|} from hy)]
+        refine ((tendsto_inv_mul_cot (x - y)).smul_const (f y)).congr' ?_
+        filter_upwards [hlarge |y|] with n hn
+        rw [Set.indicator_of_mem (show y ∈ Set.Ioc (-(π * n)) (π * n) from
+          ⟨by linarith [neg_abs_le y], (le_abs_self y).trans hn.le⟩),
+          Set.indicator_of_mem (show y ∈ {y : ℝ | ε < |x - y|} from hy)]
+      · rw [Set.indicator_of_notMem (show y ∉ {y : ℝ | ε < |x - y|} from hy)]
+        refine tendsto_const_nhds.congr fun n => ?_
+        by_cases h1 : y ∈ Set.Ioc (-(π * n)) (π * n)
+        · rw [Set.indicator_of_mem h1,
+            Set.indicator_of_notMem (show y ∉ {y : ℝ | ε < |x - y|} from hy)]
+        · rw [Set.indicator_of_notMem h1]
+  rw [hH]
+  refine (hlim.const_smul π⁻¹).congr' ?_
+  filter_upwards [hlarge (|x| + ε), eventually_gt_atTop 0] with n hn hn0
+  rw [truncatedConj_periodize f (Nat.cast_pos.2 hn0) hε hn, integral_indicator measurableSet_Ioc]
+
 /-! ### Lemma 4 -/
 
 /-- **Lemma 4** of Burkholder (1983), (34): `‖H_ε f‖_p ≤ (2 β² + 1) ‖f‖_p` for `f ∈ L^p (ℝ; X)` and
 `ε > 0`.
 
-The paper says that (34) "follows from (33) just as it does in the real case" and refers to M. Riesz
-(1928) and to Zygmund's *Trigonometric Series*. The argument is written out here: it is the passage
-from the circle to the line by periodization and dilation, for functions that vanish off a bounded
-interval (`eLpNorm_hilbertTrunc_le_of_support`), followed by Fatou's lemma for `1_{[−n, n]} f`,
-`n → ∞`. -/
+The paper says that (34) "follows from (33) just as it does in the real case" and refers to
+M. Riesz (1928) and to Zygmund's *Trigonometric Series*. This is Riesz's argument (§18), applied to
+the truncations: for `g_n (θ) = f (nθ)`, `−π < θ ≤ π`, extended periodically, and
+`f̃_n (x) = (g_n)~_{ε/n} (x / n)`,
+
+* `f̃_n (x) → H_ε f (x)` for every `x` (`tendsto_truncatedConj_periodize`; stated by Riesz without
+  proof, here by dominated convergence);
+* by (33) and the dilation, `‖1_{(−nπ, nπ]} f̃_n‖_p ≤ (2 β² + 1) ‖f‖_p`
+  (`eLpNorm_truncatedConj_periodize_le`), so `‖1_{(−mπ, mπ]} f̃_n‖_p ≤ (2 β² + 1) ‖f‖_p` for
+  `m ≤ n`;
+* for fixed `m`, Fatou's lemma as `n → ∞` gives `‖1_{(−mπ, mπ]} H_ε f‖_p ≤ (2 β² + 1) ‖f‖_p`, and
+  `m → ∞` gives (34) (Riesz: "en faisant tendre m vers l'infini", without a reason; here Fatou's
+  lemma again). -/
 theorem eLpNorm_hilbertTrunc_le [CompleteSpace X] {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞}
     (hβ : IsUMDBound X p β) {f : ℝ → X} (hf : MemLp f (ENNReal.ofReal p) volume) {ε : ℝ}
     (hε : 0 < ε) :
@@ -423,30 +576,55 @@ theorem eLpNorm_hilbertTrunc_le [CompleteSpace X] {p : ℝ} (hp : 1 < p) {β : �
   · have hae := hf.aestronglyMeasurable.ae_eq_mk
     rw [hilbertTrunc_congr_ae hae, eLpNorm_congr_ae hae]
     exact this (hf.ae_eq hae) hf.aestronglyMeasurable.stronglyMeasurable_mk
-  have hind : ∀ n : ℕ, StronglyMeasurable ((Set.Icc (-n : ℝ) n).indicator f) := fun n =>
-    hfm.indicator measurableSet_Icc
-  have hlim : ∀ x, Tendsto (fun n : ℕ => hilbertTrunc ε ((Set.Icc (-n : ℝ) n).indicator f) x)
-      atTop (𝓝 (hilbertTrunc ε f x)) := by
-    refine fun x => Tendsto.const_smul (tendsto_integral_of_dominated_convergence
-      (fun t => ‖t⁻¹ • f (x - t)‖) (fun n => ?_) (integrableOn_inv_smul hp hf hε x).norm
-      (fun n => ae_of_all _ fun t => ?_) (ae_of_all _ fun t => ?_)) _
-    · exact (measurable_inv.stronglyMeasurable.smul
-        ((hind n).comp_measurable (measurable_const_sub x))).aestronglyMeasurable
-    · rw [norm_smul, norm_smul]
-      exact mul_le_mul_of_nonneg_left (norm_indicator_le_norm_self f _) (norm_nonneg _)
-    · refine tendsto_const_nhds.congr' ?_
-      filter_upwards [tendsto_natCast_atTop_atTop.eventually_ge_atTop |x - t|] with n hn
-      rw [Set.indicator_of_mem (show x - t ∈ Set.Icc (-n : ℝ) n from abs_le.1 hn)]
-  refine (Lp.eLpNorm_lim_le_liminf_eLpNorm (fun n : ℕ =>
-    (stronglyMeasurable_hilbertTrunc (hind n) ε).aestronglyMeasurable) _
-    (stronglyMeasurable_hilbertTrunc hfm ε).aestronglyMeasurable (ae_of_all _ hlim)).trans ?_
-  refine (liminf_le_liminf (Eventually.of_forall fun n => ?_)).trans (liminf_const _).le
-  refine (eLpNorm_hilbertTrunc_le_of_support hp hβ (hind n) (hf.indicator
-    measurableSet_Icc.nullMeasurableSet)
-    (A := n) n.cast_nonneg (fun y hy => Set.indicator_of_notMem (fun h => ?_) _) hε).trans ?_
-  · exact hy.not_ge (abs_le.2 h)
-  · gcongr
-    exact eLpNorm_indicator_le f measurableSet_Icc.nullMeasurableSet
+  have hH := stronglyMeasurable_hilbertTrunc hfm ε
+  -- `f̃_n (x) = (g_n)~_{ε/n} (x / n)`
+  have hm : ∀ n : ℕ, StronglyMeasurable fun x : ℝ =>
+      truncatedConj (ε / n) (periodize n f) ((x / n : ℝ) : AddCircle (2 * π)) := fun n =>
+    (stronglyMeasurable_truncatedConj (stronglyMeasurable_periodize hfm n).aestronglyMeasurable
+      _).comp_measurable (AddCircle.measurable_mk'.comp (measurable_div_const _))
+  -- for `m ≤ n`, `‖1_{(−mπ, mπ]} f̃_n‖_p ≤ ‖1_{(−nπ, nπ]} f̃_n‖_p ≤ (2 β² + 1) ‖f‖_p`
+  have hmn : ∀ m n : ℕ, m ≤ n → ε < n →
+      eLpNorm ((Set.Ioc (-(π * m)) (π * m)).indicator fun x : ℝ =>
+        truncatedConj (ε / n) (periodize n f) ((x / n : ℝ) : AddCircle (2 * π)))
+          (ENNReal.ofReal p) volume ≤ hilbertBound β * eLpNorm f (ENNReal.ofReal p) volume := by
+    intro m n hmn hn
+    have hn0 : (0 : ℝ) < n := hε.trans hn
+    have hmn' : (m : ℝ) ≤ n := Nat.cast_le.2 hmn
+    refine (eLpNorm_mono ?_ fun x => ?_).trans
+      (eLpNorm_truncatedConj_periodize_le hp hβ hfm hf hε hn)
+    · exact ((hm n).indicator measurableSet_Ioc).aestronglyMeasurable
+    by_cases hx : x ∈ Set.Ioc (-(π * m)) (π * m)
+    · rw [Set.indicator_of_mem hx, Set.indicator_of_mem]
+      rw [Set.mem_Ioc, lt_div_iff₀ hn0, div_le_iff₀ hn0]
+      constructor <;> nlinarith [hx.1, hx.2, Real.pi_pos]
+    · rw [Set.indicator_of_notMem hx, norm_zero]
+      exact norm_nonneg _
+  -- fix `m` and let `n → ∞` (Fatou's lemma)
+  have hFm : ∀ m : ℕ, eLpNorm ((Set.Ioc (-(π * m)) (π * m)).indicator (hilbertTrunc ε f))
+      (ENNReal.ofReal p) volume ≤ hilbertBound β * eLpNorm f (ENNReal.ofReal p) volume := by
+    intro m
+    have hI : MeasurableSet (Set.Ioc (-(π * m)) (π * m)) := measurableSet_Ioc
+    refine (Lp.eLpNorm_lim_le_liminf_eLpNorm (fun n => ((hm n).indicator hI).aestronglyMeasurable)
+      _ (hH.indicator hI).aestronglyMeasurable (ae_of_all _ fun x => ?_)).trans ?_
+    · by_cases hx : x ∈ Set.Ioc (-(π * m)) (π * m)
+      · simp only [Set.indicator_of_mem hx]
+        exact tendsto_truncatedConj_periodize hp hf hε x
+      · simp only [Set.indicator_of_notMem hx]
+        exact tendsto_const_nhds
+    · refine (liminf_le_liminf ?_).trans (liminf_const _).le
+      filter_upwards [eventually_ge_atTop m, tendsto_natCast_atTop_atTop.eventually_gt_atTop ε]
+        with n hn hn'
+      exact hmn m n hn hn'
+  -- let `m → ∞` (Fatou's lemma)
+  refine (Lp.eLpNorm_lim_le_liminf_eLpNorm (fun m : ℕ => (hH.indicator
+    measurableSet_Ioc).aestronglyMeasurable) _ hH.aestronglyMeasurable
+    (ae_of_all _ fun x => ?_)).trans ((liminf_le_liminf (Eventually.of_forall hFm)).trans
+      (liminf_const _).le)
+  refine tendsto_const_nhds.congr' ?_
+  filter_upwards [(tendsto_natCast_atTop_atTop.const_mul_atTop Real.pi_pos).eventually_gt_atTop |x|]
+    with m hm
+  rw [Set.indicator_of_mem (show x ∈ Set.Ioc (-(π * m)) (π * m) from
+    ⟨by linarith [neg_abs_le x], (le_abs_self x).trans hm.le⟩)]
 
 /-! ### The limit as `ε → 0` -/
 

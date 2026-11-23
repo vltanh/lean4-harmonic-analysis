@@ -7,7 +7,8 @@ module
 
 public import HarmonicAnalysis.VectorValued.Burkholder.HarmonicPolynomial
 public import BanachProbability.UMD.Decoupling
-public import BanachProbability.Martingale.Burkholder.Inequality
+public import BanachProbability.UMD.Hilbert
+import BanachProbability.KahaneKhintchine.Basic
 
 /-!
 # A random walk stopped at the exit from the unit disc
@@ -18,8 +19,9 @@ Rademacher functions `r_1, r_2, …` and `0 < δ < 1/2` let `d_k = δ r_{2k−1}
 `Z_n = X_n + i Y_n = Σ_{k=1}^n (d_k + i e_k)` (`walk`), `τ = inf {n : |Z_n| ≥ 1}` (`exitTime` is
 `τ ∧ n`), and `w_k = ∏_{j=0}^{k−1} χ (Z_j)`, the characteristic function of `{τ ≥ k}`.
 
-* `lpNorm_sqrt_exitTime_le`: (20), `δ ‖(τ ∧ n)^{1/2}‖_p ≤ 2 c_p`. The martingale `f = X_{τ ∧ n}`
-  with the differences `w_k d_k` is bounded by `2` and has the square function `δ (τ ∧ n)^{1/2}`.
+* `lpNorm_sqrt_exitTime_le`: (20), `δ ‖(τ ∧ n)^{1/2}‖_p ≤ 2 c_p`, `c_p = p* − 1`. The martingale
+  `f = X_{τ ∧ n}` with the differences `w_k d_k` is bounded by `2` and has the square function
+  `δ (τ ∧ n)^{1/2}`.
 * `norm_walk_exitTime_le`: (22), `|Z_{τ ∧ n}| ≤ 1 + 2δ`.
 * `exists_lpNorm_harmPoly_sub_le`: (27), `‖u (Z_{τ ∧ n}) − U‖_p ≤ C_p γ δ` for a harmonic polynomial
   `u` with coefficients in a Banach space and `U = Σ_{k=1}^n w_k [u_x (Z_{k−1}) d_k + u_y (Z_{k−1})
@@ -33,17 +35,54 @@ Rademacher functions `r_1, r_2, …` and `0 < δ < 1/2` let `d_k = δ r_{2k−1}
 * `exists_lpNorm_conjHarmPoly_walk_le`: `‖v (Z_{τ ∧ n})‖_p ≤ β² ‖u (Z_{τ ∧ n})‖_p +
   (β² + 1) C_p γ δ`, from (27), (28), (29).
 
+## The square function inequality
+
+The square function inequality (9) for real martingales (`squareFunction_cube`). On p. 275 the
+source asserts, without proof, that "(9) implies (8) and if `B` is a Banach space in which the
+Khintchine inequality is valid, then (8) implies (9)", and that (8) holds for such `B` by Theorem 1.
+The proof here is that of Lemma 1 (pp. 277–278) for `B = ℝ`, followed by Khintchine's inequality in
+`s` at each `ε`. For a real Paley–Walsh martingale `f = Σ d_k` on the cube and fixed signs `s`, the
+transform `g_s = Σ s_k d_k` of `f` by `s` satisfies `‖g_s‖_p ≤ c_p ‖f‖_p` and
+`‖f‖_p ≤ c_p ‖g_s‖_p`, since `f` is the transform of `g_s` by `s` ("g … is the transform of f by ε
+… and f is the transform of the martingale g by ε. Therefore, by Theorem 1, ‖g_n‖_p ≈ ‖f_n‖_p",
+p. 277); the `p`-th powers are integrated over `s` (p. 278), with Fubini's theorem on the product
+of the two cubes, and Khintchine's inequality is applied to `Σ s_k d_k (ε)` for each `ε`. The step
+of Lemma 1 in which `s ↦ (r_k (t) r_k (s))_k` has the law of `s ↦ (r_k (s))_k` is not needed, as
+Khintchine's inequality is applied to the coefficients `d_k (ε)` directly. This gives
+`‖S (f)‖_p ≤ a_p ‖f‖_p` and `‖f‖_p ≤ b_p ‖S (f)‖_p` with `a_p = κ_{2,p} c_p`, `b_p = κ_{p,2} c_p`,
+where `κ_{p,q} = max (1, √((p − 1) / (q − 1)))` is the Kahane–Khintchine constant
+(`BanachProbability.kahaneKhintchine`, Hytönen–van Neerven–Veraar–Weis II, Theorem 6.2.4, between
+`p` and `2`, with `‖Σ s_k a_k‖_2 = (Σ a_k²)^{1/2}`).
+
+Substitution: the source takes (8) for `ℝ` from its Theorem 1 (ζ-convexity implies (8)), which
+combines Theorems 2.1 (p. 1001) and 3.1 (p. 1003) of Burkholder, *A geometrical characterization of
+Banach spaces in which martingale difference sequences are unconditional*, Ann. Probab. 9 (1981),
+its reference [3]; (8) from ζ-convexity is Theorem 3.1, since (8) is the UMD property. The source
+gives no reference for the proof of Theorem 1: it says that the theorem extends results of [4] and
+points to [3] for "other such extensions" (p. 275), and to "[3 and 5]" for "other properties and all
+the proofs" of the ζ-condition (p. 272); it cites `ℝ ∈ UMD` to [4], Burkholder (1966) (p. 271).
+Here (8) for `ℝ`, with the
+constant `c_p = p* − 1`, `p* = max (p, p / (p − 1))`, is BanachProbability's
+`BanachProbability.dyadicUMDConst_le_of_innerProductSpace` (Burkholder's inequality, by Osękowski's
+proof, *Sharp martingale and semimartingale inequalities* (2012), Theorem 3.5). Osękowski's
+Theorem 8.6, also in BanachProbability
+(`BanachProbability.Burkholder.squareFunction_of_martingale`), gives (9) directly, with the
+constant `c_p` on both sides; it is not used here.
+
 Differences from the source. The signs are the coordinates of the cube `{−1, 1}^{2n}`, `n` fixed,
 and only the stopped times `τ ∧ n` are considered; the limit `n → ∞`, (21) and (23), comes later. In
-the source `c_p`, `c_p (B)` change from line to line; here the constant of the square function
-inequality, (9) in the source, is `c_p = p* − 1`, `p* = max (p, p / (p − 1))`, and that of (27) is
-`2 c_p² + 4 c_{2p}²`. Lemma 1 with the constant `β` is `BanachProbability.decoupling_dyadic`, proved
-as in the source: the transforms of a Paley–Walsh martingale by fixed signs, averaged over the
-signs. For (29) the source says that the transformations `(−r_1, r_2, −r_3, r_4, …)` and
-`(r_2, r_1, r_4, r_3, …)` of the signs have the same distribution; here the average over the signs
-is invariant under their composition `(r_2, −r_1, r_4, −r_3, …)` (`swapSigns`). The hypothesis of
-the source is (8): the inequality for constant signs, and martingales with any start; `IsUMDBound`
-has predictable signs and martingales started at `0`, with the same constant
+the source `c_p`, `c_p (B)` change from line to line; here (20) has the constant `2 a_p`, (25) the
+constant `4 a_{2p}²`, the estimate of `W` the constant `2 a_p b_p`, and (27) the constant
+`2 a_p b_p + 4 a_{2p}²`. The public form of (20), `lpNorm_sqrt_exitTime_le`, has the constant
+`2 c_p`: for `p ≥ 2`, `a_p = c_p` (the lower Khintchine constant is `1`); for `p < 2`, where the
+source's argument gives `2 a_p > 2 c_p`, it is derived from the case `p = 2` and `‖·‖_p ≤ ‖·‖_2`.
+Lemma 1 with the constant `β` is `BanachProbability.decoupling_dyadic`, proved as in the source:
+the transforms of a Paley–Walsh martingale by fixed signs, averaged over the signs. For (29) the
+source says that the transformations `(−r_1, r_2, −r_3, r_4, …)` and `(r_2, r_1, r_4, r_3, …)` of
+the signs have the same distribution; here the average over the signs is invariant under their
+composition `(r_2, −r_1, r_4, −r_3, …)` (`swapSigns`). The hypothesis of the source is (8): the
+inequality for constant signs, and martingales with any start; `IsUMDBound` has predictable signs
+and martingales started at `0`, with the same constant
 (`BanachProbability.isUMDBound_iff_isDeterministicUMDBound`).
 
 Correction to the source: on p. 280 the `k`-th term of the martingale difference sequence of `W^j`
@@ -295,36 +334,180 @@ private theorem lpNorm_sum_le [NormedSpace ℝ E] {p : ℝ} (hp : 1 ≤ p) {ι :
   rw [he]
   exact h
 
-/-- The constant `c_p = p* − 1` of the square function inequality is nonnegative. -/
+/-- `c_p = p* − 1` is nonnegative. -/
 private theorem sqConst_nonneg {p : ℝ} (hp : 1 < p) : 0 ≤ max p (p / (p - 1)) - 1 := by
   linarith [le_max_left p (p / (p - 1))]
 
-/-- The square function inequality, (9) in the source, for a real Paley–Walsh martingale on the
-cube, with the constant `c_p = p* − 1`. -/
+/-- The constant `κ_{2,q}` of the lower Khintchine inequality is `1` for `q ≥ 2`. -/
+private theorem kahaneKhintchineConst_two_left {q : ℝ} (hq : 2 ≤ q) :
+    kahaneKhintchineConst 2 q = 1 :=
+  max_eq_left (Real.sqrt_le_one.2 ((div_le_one (by linarith)).2 (by linarith)))
+
+/-- The constant `a_p = κ_{2,p} (p* − 1)` of `‖S (f)‖_p ≤ a_p ‖f‖_p` in the square function
+inequality. -/
+private noncomputable def sqLower (p : ℝ) : ℝ :=
+  kahaneKhintchineConst 2 p * (max p (p / (p - 1)) - 1)
+
+/-- The constant `b_p = κ_{p,2} (p* − 1)` of `‖f‖_p ≤ b_p ‖S (f)‖_p` in the square function
+inequality. -/
+private noncomputable def sqUpper (p : ℝ) : ℝ :=
+  kahaneKhintchineConst p 2 * (max p (p / (p - 1)) - 1)
+
+/-- `a_p ≥ 0`. -/
+private theorem sqLower_nonneg {p : ℝ} (hp : 1 < p) : 0 ≤ sqLower p :=
+  mul_nonneg (kahaneKhintchineConst_pos 2 p).le (sqConst_nonneg hp)
+
+/-- `b_p ≥ 0`. -/
+private theorem sqUpper_nonneg {p : ℝ} (hp : 1 < p) : 0 ≤ sqUpper p :=
+  mul_nonneg (kahaneKhintchineConst_pos p 2).le (sqConst_nonneg hp)
+
+/-- `a_q = q* − 1` for `q ≥ 2`. -/
+private theorem sqLower_of_two_le {q : ℝ} (hq : 2 ≤ q) : sqLower q = max q (q / (q - 1)) - 1 := by
+  rw [sqLower, kahaneKhintchineConst_two_left hq, one_mul]
+
+/-- `‖Σ s_i a_i‖_2 = (Σ a_i²)^{1/2}` for real `a_i`: the signs are orthonormal. -/
+private theorem lpNorm_two_sum_coin (a : Fin N → ℝ) :
+    SignCube.lpNorm (fun x => ‖x‖) 2 (fun s : Fin N → Bool => ∑ i, coin (s i) • a i) =
+      √(∑ i, a i ^ 2) := by
+  have e : ∀ s : Fin N → Bool, ‖∑ i, coin (s i) • a i‖ ^ (2 : ℝ) =
+      ∑ i, ∑ j, a i * a j * (coin (s i) * coin (s j)) := fun s => by
+    rw [Real.rpow_two, Real.norm_eq_abs, sq_abs, sq, Finset.sum_mul_sum]
+    refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
+    simp only [smul_eq_mul]
+    ring
+  have h : (avg fun s : Fin N → Bool => ‖∑ i, coin (s i) • a i‖ ^ (2 : ℝ)) = ∑ i, a i ^ 2 := by
+    simp only [e, avg_sum, avg_const_mul, avg_coin_mul_coin, mul_ite, mul_one, mul_zero,
+      Finset.sum_ite_eq, Finset.mem_univ, ite_true, sq]
+  rw [SignCube.lpNorm, h, Real.sqrt_eq_rpow]
+
+/-- **Khintchine's inequality** for real Rademacher sums, from the Kahane–Khintchine inequality
+(`BanachProbability.kahaneKhintchine`) between the exponents `p` and `2`, and `lpNorm_two_sum_coin`:
+`(Σ a_i²)^{1/2} ≤ κ_{2,p} ‖Σ s_i a_i‖_p` and `‖Σ s_i a_i‖_p ≤ κ_{p,2} (Σ a_i²)^{1/2}`. -/
+private theorem khintchine_real {p : ℝ} (hp : 1 < p) (a : Fin N → ℝ) :
+    √(∑ i, a i ^ 2) ≤ kahaneKhintchineConst 2 p *
+        SignCube.lpNorm (fun x => ‖x‖) p (fun s : Fin N → Bool => ∑ i, coin (s i) • a i) ∧
+      SignCube.lpNorm (fun x => ‖x‖) p (fun s : Fin N → Bool => ∑ i, coin (s i) • a i) ≤
+        kahaneKhintchineConst p 2 * √(∑ i, a i ^ 2) := by
+  rw [← lpNorm_two_sum_coin a]
+  exact ⟨kahaneKhintchine (normSeminorm ℝ ℝ) one_lt_two hp a,
+    kahaneKhintchine (normSeminorm ℝ ℝ) hp one_lt_two a⟩
+
+/-- (8) (p. 274) for `B = ℝ` and fixed signs `s`, as in the proof of Lemma 1 (p. 277): the transform
+`g_s = Σ s_k d_k` of a real Paley–Walsh martingale `f = Σ d_k`, `d_k = ε_k ξ_k`, satisfies
+`‖g_s‖_p ≤ (p* − 1) ‖f‖_p` and `‖f‖_p ≤ (p* − 1) ‖g_s‖_p`; the second inequality is the first one
+for the martingale `g_s`, whose transform by `s` is `f`. The constant `p* − 1` for `ℝ` is
+BanachProbability's (`BanachProbability.dyadicUMDConst_le_of_innerProductSpace`), in place of
+Theorem 1 of the source. -/
+private theorem lpNorm_transform_const_le {p : ℝ} (hp : 1 < p) {ξ : Fin N → (Fin N → Bool) → ℝ}
+    (hξ : IsPredictable ξ) (s : Fin N → Bool) :
+    SignCube.lpNorm (fun x => ‖x‖) p (paleyWalsh (fun k ε => coin (s k) • ξ k ε) N) ≤
+        (max p (p / (p - 1)) - 1) * SignCube.lpNorm (fun x => ‖x‖) p (paleyWalsh ξ N) ∧
+      SignCube.lpNorm (fun x => ‖x‖) p (paleyWalsh ξ N) ≤ (max p (p / (p - 1)) - 1) *
+        SignCube.lpNorm (fun x => ‖x‖) p (paleyWalsh (fun k ε => coin (s k) • ξ k ε) N) := by
+  have hc := sqConst_nonneg hp
+  have hβ : IsDyadicUMDBound ℝ p (ENNReal.ofReal (max p (p / (p - 1)) - 1)) :=
+    (isDyadicUMDBound_dyadicUMDConst (by linarith)).mono
+      (dyadicUMDConst_le_of_innerProductSpace hp)
+  have hs : IsPredictable fun (k : Fin N) (_ : Fin N → Bool) => coin (s k) := fun _ _ _ _ => rfl
+  have hs1 : ∀ (k : Fin N) (_ : Fin N → Bool), coin (s k) = 1 ∨ coin (s k) = -1 := fun _ _ =>
+    coin_eq_one_or_eq_neg_one _
+  have h1 := hβ N ξ _ hξ hs hs1 N
+  have h2 := hβ N _ _ (hs.smul hξ) hs hs1 N
+  simp only [smul_smul, coin_mul_self, one_smul] at h2
+  rw [← ENNReal.ofReal_mul hc] at h1 h2
+  have h0 : ∀ g : (Fin N → Bool) → ℝ, 0 ≤ (max p (p / (p - 1)) - 1) *
+      SignCube.lpNorm (fun x => ‖x‖) p g := fun g =>
+    mul_nonneg hc (lpNorm_nonneg (fun x => norm_nonneg x) _ _)
+  exact ⟨(ENNReal.ofReal_le_ofReal_iff (h0 _)).1 h1, (ENNReal.ofReal_le_ofReal_iff (h0 _)).1 h2⟩
+
+/-- Fubini's theorem on the product of the two cubes, for the integration over `s` in the proof of
+Lemma 1 (p. 278): `E_s ‖g_s‖_p^p` is the average over `ε` of `E_s |Σ s_k d_k (ε)|^p`,
+`d_k (ε) = ε_k ξ_k (ε)`. -/
+private theorem avg_lpNorm_transform_rpow {p : ℝ} (hp : 0 < p) (ξ : Fin N → (Fin N → Bool) → ℝ) :
+    (avg fun s : Fin N → Bool => SignCube.lpNorm (fun x => ‖x‖) p
+        (paleyWalsh (fun k ε => coin (s k) • ξ k ε) N) ^ p) =
+      avg fun ε : Fin N → Bool => SignCube.lpNorm (fun x => ‖x‖) p
+        (fun s : Fin N → Bool => ∑ i, coin (s i) • (coin (ε i) * ξ i ε)) ^ p := by
+  have e : ∀ s ε : Fin N → Bool, paleyWalsh (fun k ε => coin (s k) • ξ k ε) N ε =
+      ∑ i, coin (s i) • (coin (ε i) * ξ i ε) := fun s ε => by
+    rw [paleyWalsh_of_le _ le_rfl]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    simp only [smul_eq_mul]
+    ring
+  simp only [lpNorm_rpow (fun x : ℝ => norm_nonneg x) hp, e, avg, ← Finset.sum_div]
+  rw [Finset.sum_comm]
+
+/-- The square function inequality, (9) in the source, for a real Paley–Walsh martingale
+`f = Σ d_k`, `d_k = ε_k ξ_k`, on the cube. The source asserts on p. 275, without proof, that (8)
+implies (9) where Khintchine's inequality holds. The proof is that of Lemma 1 (pp. 277–278) for
+`B = ℝ`, followed by Khintchine's inequality in `s` at each `ε`: for fixed signs `s`,
+`g_s = Σ s_k d_k` and `f` are transforms of each other (`lpNorm_transform_const_le`); the
+integration over `s` (Fubini's theorem, `avg_lpNorm_transform_rpow`) and Khintchine's inequality for
+each `ε` (`khintchine_real`) give
+`‖S (f)‖_p ≤ a_p ‖f‖_p` and `‖f‖_p ≤ b_p ‖S (f)‖_p`, `a_p = κ_{2,p} (p* − 1)`,
+`b_p = κ_{p,2} (p* − 1)`. -/
 private theorem squareFunction_cube {p : ℝ} (hp : 1 < p) {ξ : Fin N → (Fin N → Bool) → ℝ}
     (hξ : IsPredictable ξ) :
-    SignCube.lpNorm (fun x => ‖x‖) p (fun ε => √(∑ i, ξ i ε ^ 2)) ≤ (max p (p / (p - 1)) - 1) *
-        SignCube.lpNorm (fun x => ‖x‖) p (fun ε => ∑ i, coin (ε i) • ξ i ε) ∧
+    SignCube.lpNorm (fun x => ‖x‖) p (fun ε => √(∑ i, ξ i ε ^ 2)) ≤
+        sqLower p * SignCube.lpNorm (fun x => ‖x‖) p (fun ε => ∑ i, coin (ε i) • ξ i ε) ∧
       SignCube.lpNorm (fun x => ‖x‖) p (fun ε => ∑ i, coin (ε i) • ξ i ε) ≤
-        (max p (p / (p - 1)) - 1) *
-          SignCube.lpNorm (fun x => ‖x‖) p (fun ε => √(∑ i, ξ i ε ^ 2)) := by
+        sqUpper p * SignCube.lpNorm (fun x => ‖x‖) p (fun ε => √(∑ i, ξ i ε ^ 2)) := by
   have hp0 : 0 < p := one_pos.trans hp
   have hc := sqConst_nonneg hp
-  have h0 : ∀ f : (Fin N → Bool) → ℝ, 0 ≤ SignCube.lpNorm (fun x => ‖x‖) p f := fun f =>
-    lpNorm_nonneg (fun x => norm_nonneg x) p f
-  have hsum : (fun ε => ∑ i, coin (ε i) • ξ i ε) = paleyWalsh ξ N :=
-    funext fun ε => (paleyWalsh_of_le ξ le_rfl ε).symm
-  have hsq : ∀ ε, ∑ k ∈ Finset.range N, ‖paleyWalsh ξ (k + 1) ε - paleyWalsh ξ k ε‖ ^ 2 =
-      ∑ i, ξ i ε ^ 2 := fun ε => by
-    rw [← Fin.sum_univ_eq_sum_range (fun k => ‖paleyWalsh ξ (k + 1) ε - paleyWalsh ξ k ε‖ ^ 2)]
-    exact Finset.sum_congr rfl fun i _ => by
-      rw [norm_paleyWalsh_succ_sub, Real.norm_eq_abs, sq_abs]
-  have h := Burkholder.squareFunction_of_martingale hp (martingale_paleyWalsh ξ hξ)
-    (fun ε => paleyWalsh_zero ξ ε) N
-  simp only [hsq, eLpNorm_uniformOn _ hp0, ← ENNReal.ofReal_mul hc] at h
-  rw [hsum]
-  exact ⟨(ENNReal.ofReal_le_ofReal_iff (mul_nonneg hc (h0 _))).1 h.1,
-    (ENNReal.ofReal_le_ofReal_iff (mul_nonneg hc (h0 _))).1 h.2⟩
+  have hnn : ∀ g : (Fin N → Bool) → ℝ, 0 ≤ SignCube.lpNorm (fun x => ‖x‖) p g := fun g =>
+    lpNorm_nonneg (fun x => norm_nonneg x) p g
+  have hκ : 0 ≤ kahaneKhintchineConst 2 p := (kahaneKhintchineConst_pos 2 p).le
+  have hκ' : 0 ≤ kahaneKhintchineConst p 2 := (kahaneKhintchineConst_pos p 2).le
+  have hf : paleyWalsh ξ N = fun ε => ∑ i, coin (ε i) • ξ i ε :=
+    funext fun ε => paleyWalsh_of_le ξ le_rfl ε
+  -- `Σ_k d_k (ε)² = Σ_k ξ_k (ε)²`
+  have hsq : ∀ ε : Fin N → Bool, ∑ i, (coin (ε i) * ξ i ε) ^ 2 = ∑ i, ξ i ε ^ 2 := fun ε =>
+    Finset.sum_congr rfl fun i _ => by rw [mul_pow, sq (coin _), coin_mul_self, one_mul]
+  have hK := fun ε : Fin N → Bool => khintchine_real hp fun i => coin (ε i) * ξ i ε
+  simp only [hsq] at hK
+  have hS : SignCube.lpNorm (fun x => ‖x‖) p (fun ε => √(∑ i, ξ i ε ^ 2)) ^ p =
+      avg fun ε => √(∑ i, ξ i ε ^ 2) ^ p := by
+    rw [lpNorm_rpow (fun x : ℝ => norm_nonneg x) hp0]
+    simp only [Real.norm_of_nonneg (Real.sqrt_nonneg _)]
+  have hfix := fun s => lpNorm_transform_const_le hp hξ s
+  rw [hf] at hfix
+  have hF := avg_lpNorm_transform_rpow hp0 ξ
+  constructor
+  · rw [← Real.rpow_le_rpow_iff (hnn _) (mul_nonneg (sqLower_nonneg hp) (hnn _)) hp0, hS]
+    calc (avg fun ε => √(∑ i, ξ i ε ^ 2) ^ p)
+        ≤ avg fun ε => (kahaneKhintchineConst 2 p * SignCube.lpNorm (fun x => ‖x‖) p
+            (fun s : Fin N → Bool => ∑ i, coin (s i) • (coin (ε i) * ξ i ε))) ^ p :=
+          avg_mono fun ε => Real.rpow_le_rpow (Real.sqrt_nonneg _) (hK ε).1 hp0.le
+      _ = kahaneKhintchineConst 2 p ^ p * avg fun s => SignCube.lpNorm (fun x => ‖x‖) p
+            (paleyWalsh (fun k ε => coin (s k) • ξ k ε) N) ^ p := by
+          simp only [Real.mul_rpow hκ (hnn _), avg_const_mul, hF]
+      _ ≤ kahaneKhintchineConst 2 p ^ p * avg fun _ : Fin N → Bool =>
+            ((max p (p / (p - 1)) - 1) *
+              SignCube.lpNorm (fun x => ‖x‖) p (fun ε => ∑ i, coin (ε i) • ξ i ε)) ^ p :=
+          mul_le_mul_of_nonneg_left (avg_mono fun s =>
+            Real.rpow_le_rpow (hnn _) (hfix s).1 hp0.le) (Real.rpow_nonneg hκ _)
+      _ = (sqLower p *
+            SignCube.lpNorm (fun x => ‖x‖) p (fun ε => ∑ i, coin (ε i) • ξ i ε)) ^ p := by
+          rw [avg_const, sqLower, mul_assoc, Real.mul_rpow hκ (mul_nonneg hc (hnn _))]
+  · rw [← Real.rpow_le_rpow_iff (hnn _) (mul_nonneg (sqUpper_nonneg hp) (hnn _)) hp0]
+    calc SignCube.lpNorm (fun x => ‖x‖) p (fun ε => ∑ i, coin (ε i) • ξ i ε) ^ p
+        = avg fun _ : Fin N → Bool =>
+            SignCube.lpNorm (fun x => ‖x‖) p (fun ε => ∑ i, coin (ε i) • ξ i ε) ^ p :=
+          (avg_const _).symm
+      _ ≤ avg fun s => ((max p (p / (p - 1)) - 1) * SignCube.lpNorm (fun x => ‖x‖) p
+            (paleyWalsh (fun k ε => coin (s k) • ξ k ε) N)) ^ p :=
+          avg_mono fun s => Real.rpow_le_rpow (hnn _) (hfix s).2 hp0.le
+      _ = (max p (p / (p - 1)) - 1) ^ p * avg fun ε => SignCube.lpNorm (fun x => ‖x‖) p
+            (fun s : Fin N → Bool => ∑ i, coin (s i) • (coin (ε i) * ξ i ε)) ^ p := by
+          simp only [Real.mul_rpow hc (hnn _), avg_const_mul, hF]
+      _ ≤ (max p (p / (p - 1)) - 1) ^ p *
+            avg fun ε => (kahaneKhintchineConst p 2 * √(∑ i, ξ i ε ^ 2)) ^ p :=
+          mul_le_mul_of_nonneg_left (avg_mono fun ε =>
+            Real.rpow_le_rpow (hnn _) (hK ε).2 hp0.le) (Real.rpow_nonneg hc _)
+      _ = (sqUpper p * SignCube.lpNorm (fun x => ‖x‖) p (fun ε => √(∑ i, ξ i ε ^ 2))) ^ p := by
+          simp only [Real.mul_rpow hκ' (Real.sqrt_nonneg _), avg_const_mul, ← hS]
+          rw [sqUpper, mul_comm (kahaneKhintchineConst p 2), mul_assoc,
+            Real.mul_rpow hc (mul_nonneg hκ' (hnn _)), Real.mul_rpow hκ' (hnn _)]
 
 end Norms
 
@@ -352,13 +535,12 @@ private theorem abs_re_walk_exitTime_le {δ : ℝ} (hδ0 : 0 < δ) (hδ : δ < 1
     linarith [abs_add_le (walk δ ω k).re (δ * coin (ω (2 * k))),
       Complex.abs_re_le_norm (walk δ ω k)]
 
-/-- (20), `δ ‖τ^{1/2}‖_p = ‖S (f)‖_p ≤ c_p ‖f‖_p ≤ 2 c_p`, with the constant `c_p = p* − 1` of the
+/-- (20), `δ ‖τ^{1/2}‖_p = ‖S (f)‖_p ≤ a_p ‖f‖_p ≤ 2 a_p` (p. 279), with the constant `a_p` of the
 square function inequality, for `τ ∧ n` in place of `τ`, uniformly in `n`. -/
-theorem lpNorm_sqrt_exitTime_le {p : ℝ} (hp : 1 < p) {δ : ℝ} (hδ0 : 0 < δ) (hδ : δ < 1 / 2)
-    (n : ℕ) :
+private theorem lpNorm_sqrt_exitTime_le_sqLower {p : ℝ} (hp : 1 < p) {δ : ℝ} (hδ0 : 0 < δ)
+    (hδ : δ < 1 / 2) (n : ℕ) :
     δ * SignCube.lpNorm (fun x => ‖x‖) p
-        (fun ε : Fin (2 * n) → Bool => √(exitTime δ (extendSigns ε) n)) ≤
-      2 * (max p (p / (p - 1)) - 1) := by
+        (fun ε : Fin (2 * n) → Bool => √(exitTime δ (extendSigns ε) n)) ≤ 2 * sqLower p := by
   have hp0 : 0 < p := one_pos.trans hp
   -- the martingale differences `w_k d_k`, at the places of the signs of the `d_k`
   set A : ℕ → (ℕ → Bool) → ℝ := fun k ω => weight δ ω k * δ with hA
@@ -384,8 +566,30 @@ theorem lpNorm_sqrt_exitTime_le {p : ℝ} (hp : 1 < p) {δ : ℝ} (hδ0 : 0 < δ
   simp only [hS, hf] at h
   rw [lpNorm_smul_const hp0, Real.norm_of_nonneg hδ0.le, mul_comm] at h
   -- `‖f‖_p ≤ ‖f‖_∞ ≤ 2`
-  refine h.trans ((mul_le_mul_of_nonneg_left ?_ (sqConst_nonneg hp)).trans_eq (mul_comm _ _))
+  refine h.trans ((mul_le_mul_of_nonneg_left ?_ (sqLower_nonneg hp)).trans_eq (mul_comm _ _))
   exact lpNorm_le_of_norm_le hp0 zero_le_two fun ε => abs_re_walk_exitTime_le hδ0 hδ _ n
+
+/-- (20), `δ ‖τ^{1/2}‖_p ≤ 2 c_p`, `c_p = p* − 1`, for `τ ∧ n` in place of `τ`, uniformly in `n`.
+For `p ≥ 2` this is the source's argument (`a_p = c_p`: the lower Khintchine constant is `1` for
+`p ≥ 2`). For `p < 2` the source's argument gives `2 a_p`, `a_p = κ_{2,p} c_p > c_p`; the constant
+`2 c_p` follows from the case `p = 2`, `2 a_2 = 2`, as `‖·‖_p ≤ ‖·‖_2` and `c_p > 1`. -/
+theorem lpNorm_sqrt_exitTime_le {p : ℝ} (hp : 1 < p) {δ : ℝ} (hδ0 : 0 < δ) (hδ : δ < 1 / 2)
+    (n : ℕ) :
+    δ * SignCube.lpNorm (fun x => ‖x‖) p
+        (fun ε : Fin (2 * n) → Bool => √(exitTime δ (extendSigns ε) n)) ≤
+      2 * (max p (p / (p - 1)) - 1) := by
+  rcases le_total 2 p with h2 | h2
+  · rw [← sqLower_of_two_le h2]
+    exact lpNorm_sqrt_exitTime_le_sqLower hp hδ0 hδ n
+  · have h := lpNorm_sqrt_exitTime_le_sqLower one_lt_two hδ0 hδ n
+    rw [sqLower_of_two_le le_rfl] at h
+    have hmono := lpNorm_mono_exponent (fun x : ℝ => norm_nonneg x) (one_pos.trans hp) h2
+      (fun ε : Fin (2 * n) → Bool => √(exitTime δ (extendSigns ε) n))
+    -- `p* ≥ p / (p − 1) ≥ 2`
+    have hq : 2 ≤ p / (p - 1) := (le_div_iff₀ (by linarith)).2 (by linarith)
+    have h22 : max (2 : ℝ) (2 / (2 - 1)) - 1 = 1 := by norm_num
+    rw [h22] at h
+    nlinarith [le_max_right p (p / (p - 1)), mul_le_mul_of_nonneg_left hmono hδ0.le]
 
 /-- (22), `|Z_{τ ∧ n}| ≤ 1 + 2δ < 2`: either `τ ∧ n = 0`, or `|Z_{τ ∧ n − 1}| < 1` and the last step
 has length at most `2δ`. -/
@@ -441,13 +645,13 @@ private theorem norm_harmPoly_walk_sub_le (N : ℕ) (a b : ℕ → X) {δ : ℝ}
   rw [walk_succ, ← sub_sub]
   exact h
 
-/-- (25): `δ² ‖τ ∧ n‖_p ≤ 4 c_{2p}²`, which is (20) with `2p` in place of `p`. -/
+/-- (25): `δ² ‖τ ∧ n‖_p ≤ 4 a_{2p}²`, which is (20) with `2p` in place of `p`. -/
 private theorem lpNorm_exitTime_le {p : ℝ} (hp : 1 < p) {δ : ℝ} (hδ0 : 0 < δ) (hδ : δ < 1 / 2)
     (n : ℕ) :
     δ ^ 2 * SignCube.lpNorm (fun x => ‖x‖) p
         (fun ε : Fin (2 * n) → Bool => (exitTime δ (extendSigns ε) n : ℝ)) ≤
-      4 * (max (2 * p) (2 * p / (2 * p - 1)) - 1) ^ 2 := by
-  have h := lpNorm_sqrt_exitTime_le (p := 2 * p) (by linarith) hδ0 hδ n
+      4 * sqLower (2 * p) ^ 2 := by
+  have h := lpNorm_sqrt_exitTime_le_sqLower (p := 2 * p) (by linarith) hδ0 hδ n
   rw [lpNorm_eq_sq_lpNorm_sqrt (one_pos.trans hp) fun ε => Nat.cast_nonneg _, ← mul_pow]
   refine (pow_le_pow_left₀ (mul_nonneg hδ0.le ?_) h 2).trans_eq (by ring)
   exact lpNorm_nonneg (fun x => norm_nonneg x) _ _
@@ -472,16 +676,16 @@ private theorem sum_sq_correction_le {δ : ℝ} (ω : ℕ → Bool) (n : ℕ) {G
 
 /-- The estimate of `W^j` (pp. 280–281), for a real function `G` (in the source `u^j_{xy}`) that is
 bounded by `M` (in the source by `N²`) in the disc: `‖Σ_{k=1}^n w_k G (Z_{k−1}) d_k e_k‖_p ≤
-c_p M δ² ‖(τ ∧ n)^{1/2}‖_p ≤ 2 c_p² M δ`. The summands are martingale differences: `e_k` is
+b_p M δ² ‖(τ ∧ n)^{1/2}‖_p ≤ 2 a_p b_p M δ`. The summands are martingale differences: `e_k` is
 independent of the other factors. -/
 private theorem lpNorm_real_correction_le {p : ℝ} (hp : 1 < p) {δ : ℝ} (hδ0 : 0 < δ)
     (hδ : δ < 1 / 2) (n : ℕ) {G : ℂ → ℝ} {M : ℝ} (hM : 0 ≤ M) (hG : ∀ z, ‖z‖ < 1 → |G z| ≤ M) :
     SignCube.lpNorm (fun x => ‖x‖) p (fun ε : Fin (2 * n) → Bool =>
       ∑ k ∈ Finset.range (exitTime δ (extendSigns ε) n), δ * coin (extendSigns ε (2 * k)) *
         (δ * coin (extendSigns ε (2 * k + 1))) * G (walk δ (extendSigns ε) k)) ≤
-      2 * (max p (p / (p - 1)) - 1) ^ 2 * M * δ := by
+      2 * (sqLower p * sqUpper p) * M * δ := by
   have hp0 : 0 < p := one_pos.trans hp
-  have hc := sqConst_nonneg hp
+  have hc := sqUpper_nonneg hp
   set B : ℕ → (ℕ → Bool) → ℝ := fun k ω =>
     weight δ ω k * (δ * coin (ω (2 * k)) * δ * G (walk δ ω k)) with hB
   have hpred : IsPredictable (pairFamily n (fun _ _ => 0) B) := by
@@ -508,12 +712,12 @@ private theorem lpNorm_real_correction_le {p : ℝ} (hp : 1 < p) {δ : ℝ} (hδ
     rw [Real.sqrt_mul (Nat.cast_nonneg _), Real.sqrt_sq hM']
   have h := (squareFunction_cube hp hpred).2
   simp only [hf] at h
-  have h20 := lpNorm_sqrt_exitTime_le hp hδ0 hδ n
+  have h20 := lpNorm_sqrt_exitTime_le_sqLower hp hδ0 hδ n
   refine h.trans ((mul_le_mul_of_nonneg_left (lpNorm_mono hp0 hS) hc).trans ?_)
   rw [lpNorm_smul_const hp0, Real.norm_of_nonneg (by positivity)]
-  calc _ = (max p (p / (p - 1)) - 1) * (δ * M) * (δ * SignCube.lpNorm (fun x => ‖x‖) p
+  calc _ = sqUpper p * (δ * M) * (δ * SignCube.lpNorm (fun x => ‖x‖) p
         fun ε : Fin (2 * n) → Bool => √(exitTime δ (extendSigns ε) n)) := by ring
-    _ ≤ (max p (p / (p - 1)) - 1) * (δ * M) * (2 * (max p (p / (p - 1)) - 1)) := by gcongr
+    _ ≤ sqUpper p * (δ * M) * (2 * sqLower p) := by gcongr
     _ = _ := by ring
 
 /-- `|u^j_{xy} (z)| ≤ N²` for `|z| < 1` (p. 280), where `u^j` is the real or the imaginary part of
@@ -543,17 +747,17 @@ private theorem walkCorrection_eq (N : ℕ) (a b : ℕ → X) (δ : ℝ) (ω : �
     ← Finset.sum_add_distrib]
   exact Finset.sum_comm
 
-/-- (26) and the estimate of `W` (p. 281): `‖W‖_p ≤ 2 c_p² γ δ`. -/
+/-- (26) and the estimate of `W` (p. 281): `‖W‖_p ≤ 2 a_p b_p γ δ`. -/
 private theorem lpNorm_walkCorrection_le {p : ℝ} (hp : 1 < p) (N : ℕ) (a b : ℕ → X) {δ : ℝ}
     (hδ0 : 0 < δ) (hδ : δ < 1 / 2) (n : ℕ) :
     SignCube.lpNorm (fun x => ‖x‖) p (fun ε : Fin (2 * n) → Bool =>
       walkCorrection N a b δ (extendSigns ε) n) ≤
-      2 * (max p (p / (p - 1)) - 1) ^ 2 * harmConst N a b * δ := by
+      2 * (sqLower p * sqUpper p) * harmConst N a b * δ := by
   have hp0 : 0 < p := one_pos.trans hp
   have hN0 : (0 : ℝ) ≤ N ^ 2 := by positivity
   simp only [walkCorrection_eq]
   refine (lpNorm_sum_le hp.le _ _).trans ((Finset.sum_le_sum (g := fun j =>
-    2 * (max p (p / (p - 1)) - 1) ^ 2 * N ^ 2 * δ * (‖a j‖ + ‖b j‖)) fun j hj => ?_).trans ?_)
+    2 * (sqLower p * sqUpper p) * N ^ 2 * δ * (‖a j‖ + ‖b j‖)) fun j hj => ?_).trans ?_)
   · refine (lpNorm_add_le' hp.le _ _).trans ?_
     rw [lpNorm_smul_const hp0, lpNorm_smul_const hp0, mul_add]
     gcongr
@@ -572,19 +776,20 @@ private theorem lpNorm_walkCorrection_le {p : ℝ} (hp : 1 < p) (N : ℕ) (a b :
           (le_mul_of_one_le_right (by positivity) (one_le_pow₀ one_le_two))
     have hs : 0 ≤ ∑ j ∈ Finset.Icc 1 N, (‖a j‖ + ‖b j‖) :=
       Finset.sum_nonneg fun j _ => by positivity
+    have hK : 0 ≤ 2 * (sqLower p * sqUpper p) :=
+      mul_nonneg zero_le_two (mul_nonneg (sqLower_nonneg hp) (sqUpper_nonneg hp))
     rw [← Finset.mul_sum, harmConst]
-    calc _ = 2 * (max p (p / (p - 1)) - 1) ^ 2 * (N ^ 2 * ∑ j ∈ Finset.Icc 1 N,
+    calc _ = 2 * (sqLower p * sqUpper p) * (N ^ 2 * ∑ j ∈ Finset.Icc 1 N,
           (‖a j‖ + ‖b j‖)) * δ := by ring
       _ ≤ _ := by gcongr
 
-/-- (27), with the constant `2 c_p² + 4 c_{2p}²`. -/
+/-- (27), with the constant `2 a_p b_p + 4 a_{2p}²`. -/
 private theorem lpNorm_harmPoly_sub_le {p : ℝ} (hp : 1 < p) (N : ℕ) (a b : ℕ → X) {δ : ℝ}
     (hδ0 : 0 < δ) (hδ : δ < 1 / 2) (n : ℕ) :
     SignCube.lpNorm (fun x => ‖x‖) p (fun ε : Fin (2 * n) → Bool =>
       harmPoly N a b (walk δ (extendSigns ε) (exitTime δ (extendSigns ε) n)) -
         walkMartingale N a b δ (extendSigns ε) n) ≤
-      (2 * (max p (p / (p - 1)) - 1) ^ 2 + 4 * (max (2 * p) (2 * p / (2 * p - 1)) - 1) ^ 2) *
-        harmConst N a b * δ := by
+      (2 * (sqLower p * sqUpper p) + 4 * sqLower (2 * p) ^ 2) * harmConst N a b * δ := by
   have hp0 : 0 < p := one_pos.trans hp
   have hγ : 0 ≤ harmConst N a b := mul_nonneg (by positivity)
     (Finset.sum_nonneg fun j _ => add_nonneg (norm_nonneg _) (norm_nonneg _))
@@ -616,8 +821,10 @@ theorem exists_lpNorm_harmPoly_sub_le {p : ℝ} (hp : 1 < p) : ∃ C : ℝ, 0 �
         SignCube.lpNorm (fun x => ‖x‖) p (fun ε : Fin (2 * n) → Bool =>
           harmPoly N a b (walk δ (extendSigns ε) (exitTime δ (extendSigns ε) n)) -
             walkMartingale N a b δ (extendSigns ε) n) ≤ C * harmConst N a b * δ :=
-  ⟨2 * (max p (p / (p - 1)) - 1) ^ 2 + 4 * (max (2 * p) (2 * p / (2 * p - 1)) - 1) ^ 2,
-    by positivity, fun _ _ _ N a b _ hδ0 hδ n => lpNorm_harmPoly_sub_le hp N a b hδ0 hδ n⟩
+  ⟨2 * (sqLower p * sqUpper p) + 4 * sqLower (2 * p) ^ 2,
+    add_nonneg (mul_nonneg zero_le_two (mul_nonneg (sqLower_nonneg hp) (sqUpper_nonneg hp)))
+      (mul_nonneg zero_le_four (sq_nonneg _)),
+    fun _ _ _ N a b _ hδ0 hδ n => lpNorm_harmPoly_sub_le hp N a b hδ0 hδ n⟩
 
 /-! ### (29) -/
 
