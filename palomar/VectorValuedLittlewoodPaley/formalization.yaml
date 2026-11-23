@@ -5,15 +5,21 @@ project:
   name: "Littlewood-Paley theory for functions with values in UMD spaces, in Lean"
   description: >-
     Lean 4 proofs of results of vector-valued harmonic analysis from Hytönen, van Neerven, Veraar
-    and Weis, "Analysis in Banach Spaces I", and from McConnell (1984), for functions with values in
-    a UMD Banach space X with UMD_p constant beta (real signs), 1 < p < infinity, with constants
-    explicit in beta (for McConnell's theorems up to an absolute constant).
+    and Weis, "Analysis in Banach Spaces I", from Burkholder (1983) and from McConnell (1984), for
+    functions with values in a UMD Banach space X with UMD_p constant beta (real signs),
+    1 < p < infinity, with constants explicit in beta (for McConnell's theorems up to an absolute
+    constant).
 
 
-    The Hilbert transform (Theorem 5.1.13, Proposition 5.2.2): the truncated Hilbert transforms
-    H_{eps, 2^n eps} are bounded on L^p(R; X) by 4 beta^2 + 11, uniformly; for f = F^{-1} G with G
-    integrable, H_{eps,R} f converges pointwise to the Fourier multiplier with symbol -i sgn, which
-    satisfies the same bound if f is in L^p.
+    Burkholder's theorem: conjugate harmonic polynomials on the circle are bounded by beta^2 (Lemma
+    2); the truncated conjugate functions on the circle ((33)) and the truncated Hilbert transforms
+    H_eps on L^p(R; X) (Lemma 4) are bounded by 2 beta^2 + 1, uniformly in eps.
+
+
+    The Hilbert transform in the book (Theorem 5.1.13, Proposition 5.2.2): the truncated Hilbert
+    transforms H_{eps, 2^n eps} are bounded on L^p(R; X) by 4 beta^2 + 11, uniformly; for f = F^{-1}
+    G with G integrable, H_{eps,R} f converges pointwise to the Fourier multiplier with symbol
+    -i sgn. If f is in L^p, this multiplier satisfies Burkholder's bound 2 beta^2 + 1.
 
 
     The right-hand Littlewood-Paley inequalities with sharp cut-offs and random signs, for finite
@@ -50,8 +56,7 @@ sources:
     location: "https://doi.org/10.1007/978-3-319-48520-1"
     relationship: "formalizes"
     note: >-
-      Theorem 5.1.13 (pp. 385-386, the bound, for the truncations R = 2^n eps and for the limit on
-      the functions F^{-1} G in L^p, G integrable), Proposition 5.2.2 (p. 389), Corollary 5.3.25
+      Theorem 5.1.13 (pp. 385-386, the bound, for the truncations R = 2^n eps), Proposition 5.2.2 (p. 389), Corollary 5.3.25
       (pp. 419-420, right-hand inequality, finite sums, with dilations), Proposition 5.7.1 (pp.
       458-460, d = 1), Theorem 5.7.10 (2) (pp. 465-466, right-hand inequality). Proved along the
       book's arguments (Sections 5.1 to 5.3 and 5.7), which also use Propositions 5.1.4, 5.1.5 and
@@ -59,6 +64,21 @@ sources:
       5.7.3, and Propositions 1.2.22, 1.3.1, 3.2.10 and 4.2.3 and Lemma 2.4.8; the departures are in
       fidelity.divergences. The case of Hilbert spaces uses Corollary 4.5.15 (pp. 346-347), whose
       statement on UMD constants is proved in BanachProbability (real signs).
+    author_endorsement: "not-contacted"
+  - title: "A geometric condition that implies the existence of certain singular integrals of Banach-space-valued functions"
+    authors:
+      - "Donald L. Burkholder"
+    id: "Conference on harmonic analysis in honor of Antoni Zygmund (Chicago, 1981), Wadsworth (1983), 270-286"
+    type: "paper"
+    location: "https://doi.org/10.1007/978-1-4419-7245-3_26"
+    relationship: "formalizes"
+    note: >-
+      Lemmas 2, 3 and 4 with (33) (pp. 278-283), by the paper's proofs; Lemma 1 (decoupling) is in
+      BanachProbability. Zeta-convexity is replaced by a UMD_p constant, (8), with explicit
+      constants. Theorem 2 (the limits of singular integrals) and Theorem 1 (zeta-convexity) are not
+      formalized; the departures are in fidelity.divergences. Read in the reprint in "Selected Works
+      of Donald L. Burkholder" (2011). The origin of the boundedness of the Hilbert transform on UMD
+      spaces.
     author_endorsement: "not-contacted"
   - title: "On Fourier multiplier transformations of Banach-valued functions"
     authors:
@@ -142,8 +162,10 @@ related_formalizations:
 
 status:
   scope: >-
-    Formalized (the 10 theorems that Comparator checks): the uniform bound of the truncated Hilbert
-    transforms H_{eps, 2^n eps} on L^p(R; X); the pointwise convergence of H_{eps,R} f to the
+    Formalized (the 13 theorems that Comparator checks): Burkholder's inequalities for conjugate
+    harmonic polynomials and for the truncated conjugate functions on the circle, and for the
+    truncated Hilbert transforms H_eps on L^p(R; X); the uniform bound of the truncated Hilbert
+    transforms H_{eps, 2^n eps} by the book's method; the pointwise convergence of H_{eps,R} f to the
     Fourier multiplier -i sgn for f = F^{-1} G, G integrable; the bound of that multiplier on these
     f in L^p, for UMD spaces and, with the constant p* - 1, for Hilbert spaces; the right-hand
     Littlewood-Paley inequality on the line for finitely many dyadic intervals, their dilates and
@@ -157,7 +179,8 @@ status:
     the limits of the truncated Hilbert transforms in L^p and almost everywhere for all f in L^p,
     and the extension of the multipliers from the functions F^{-1} G in L^p to all of L^p (density);
     infinite sums of random signs; Mihlin's theorem with first derivatives (Theorem 5.3.18) and
-    Theorem 5.7.10 (1) (operator-valued coefficients); McConnell's Theorem 1.2; dimensions d > 1;
+    Theorem 5.7.10 (1) (operator-valued coefficients); Burkholder's Theorems 1 and 2; McConnell's
+    Theorem 1.2; dimensions d > 1;
     integers that are only Lebesgue points in the transference; complex Rademacher variables; the
     constants of the book; the converse (the bounds imply that X is a UMD space).
   sorry_count: 0
@@ -180,7 +203,8 @@ automation:
           about 5 hours between the first and the last commit of the vector-valued part of the
           library (22 November 2026, git log), with other work in parallel, and about 1 hour for
           the three entries of this part together, with the additions to the library that they
-          needed and the review, and about 2 hours for McConnell's theorems; agent time not tracked
+          needed and the review, about 2 hours for McConnell's theorems, and about 2 hours for
+          Burkholder's; agent time not tracked
         spend_usd: "not tracked"
         hardware: "local machine (20 cores, 62 GB RAM) and API"
       prompting_notes: >-
@@ -203,9 +227,12 @@ fidelity:
     variables are real signs, also for complex spaces, where the book has complex ones; by the
     contraction principle this changes the norms by at most a constant factor (not formalized). The
     functions on the line are f = F^{-1} G in L^p with G integrable (the book's L^p with the space
-    L^1-check, on which it defines multipliers), not all of L^p. Theorem 5.1.13: the uniform bound
-    of the truncations with R = 2^n eps on L^p, and the bound of the limit on these f; the
-    convergence in L^p and almost everywhere, and the formula for Hf as an integral of convolutions,
+    L^1-check, on which it defines multipliers), not all of L^p, except for the truncations.
+    Burkholder: UMD_p constants in place of zeta-convexity; (17) is an inequality of p-th powers
+    with a constant c_p(B), here beta^(2p); (33) and (34) with 2 beta^2 + 1; in (33) and (34) all f
+    in L^p, as in the paper; the limit of the truncated Hilbert transforms, in L^p and almost
+    everywhere (his Theorem 2), only for the f above, pointwise, as the multiplier -i sgn. Theorem
+    5.1.13: the uniform bound of the truncations with R = 2^n eps on L^p; the convergence in L^p and almost everywhere, and the formula for Hf as an integral of convolutions,
     are not stated. Proposition 5.2.2: the pointwise limit; that Hf is in L^1-check is contained in
     the formula. Corollary 5.3.25: only the right-hand inequality, for finite sums, with all
     dilations of the intervals, which gives the finite sums of Theorem 5.3.24 by dropping terms.
@@ -220,12 +247,12 @@ fidelity:
     on R minus 0, where the paper has real m of class C^2 on R and applies the theorem on p. 755 to
     functions that are not continuous at 0; f = F^{-1} G with G integrable, in place of test
     functions with values in finite-dimensional subspaces, and no extension to L^p by density; the
-    constants are C c beta^2 and C beta^8 (4 beta^2 + 11)^2 with absolute C, where the paper only
+    constants are C c beta^2 and C beta^8 (2 beta^2 + 1)^2 with absolute C, where the paper only
     says on what they depend; in Theorem 1.3 the dyadic intervals are those of p. 755, on both
     half-lines (p. 741 speaks of all dyadic rectangles), both inequalities of (1.13), and not the
-    converse (that the inequalities imply UMD). The Hilbert space case is not stated in the book in
-    this form: it is the bound with the UMD constant p* - 1 of a nonzero Hilbert space (Corollary
-    4.5.15, Burkholder's theorem).
+    converse (that the inequalities imply UMD). The Hilbert space case is not stated in the sources
+    in this form: it is the bound with the UMD constant p* - 1 of a nonzero Hilbert space (Corollary
+    4.5.15 of the book, Burkholder's theorem).
 
 
     Proofs. The book's, with these departures, recorded in the docstrings of the modules.
@@ -245,12 +272,25 @@ fidelity:
     which are self-contained, replace it.
 
 
+    Burkholder's lemmas: the paper's proofs, with these departures, recorded in the docstrings. The
+    Rademacher functions are the coordinates of a cube and of an infinite product of two-point
+    spaces. The integration over the rotations uses Minkowski's inequality, which keeps the constant
+    beta^2, where the paper integrates p-th powers. The Taylor estimate for z^k is proved by
+    induction on k. The two equidistributed sequences of signs on p. 282 are compared by one change
+    of the signs. The kernel K_r of p. 283, whose existence the paper asserts, is the modulus of the
+    difference of the two kernels, and its integral is computed. Lemma 4, for which the paper refers
+    to M. Riesz and Zygmund, is proved by periodization and dilation. The case beta = infinity, which
+    the paper does not have, is treated apart. Corrections to the paper: the strict inequality in
+    the Taylor estimate (p. 279); the bound k^2 delta^2 on p. 280, which is N^2 delta^2 w_k.
+
+
     McConnell's theorems: the paper's proofs, with these departures, recorded in the docstrings. The
     process X(y), the place where a Brownian motion first hits the height y, is represented by its
     finite-dimensional distributions, chains with independent Cauchy increments, which are all that
     the proof uses; (2.3) with (2.6) becomes a reversal of these chains, and Lemma 2.2, (2.7), is
-    proved on the Fourier side; (2.4) is not needed. Poisson
-    integrals are defined by their Fourier transforms, and (3.4) is proved on the Fourier side.
+    proved on the Fourier side; (2.4) is not needed. The boundedness of the Hilbert transform (p.
+    741) is Burkholder's theorem, above. Poisson integrals are defined by their Fourier transforms,
+    and (3.4) is proved on the Fourier side.
     Lemma 3.1 for n = 1 without separating the cases |s| < y and |s| >= y. The reduction to smooth m
     by mollification is not needed. The error estimate (3.6), sketched in the paper with a mean
     value theorem that fails for vector-valued functions, is made after the integration in s.
@@ -273,11 +313,27 @@ review:
     remarks on attributions, page numbers, divergences and wording were followed, and it checked the
     corrected entry again, with a few further remarks on the new text, none on a statement, which
     were followed. The two statements after McConnell, and the sentences on him, were added later
-    and compared with the paper by another agent, whose remarks were followed.
+    and compared with the paper by another agent, whose remarks were followed; so were the three
+    statements after Burkholder, the constants that depend on them, and the sentences on him.
 
 alignment:
   namespace: "VectorValuedLittlewoodPaleyChallenge"
   statements:
+    - source: "Burkholder 1983, Lemma 2"
+      lean: "VectorValuedLittlewoodPaleyChallenge.conjugate_polynomial"
+      module: "VectorValuedLittlewoodPaley.Challenge"
+      status: "proved"
+      note: "With the constant beta^2 for the norms; UMD constant in place of zeta-convexity."
+    - source: "Burkholder 1983, (33)"
+      lean: "VectorValuedLittlewoodPaleyChallenge.conjugate_truncated"
+      module: "VectorValuedLittlewoodPaley.Challenge"
+      status: "proved"
+      note: "With the constant 2 beta^2 + 1; UMD constant in place of zeta-convexity."
+    - source: "Burkholder 1983, Lemma 4"
+      lean: "VectorValuedLittlewoodPaleyChallenge.hilbertTruncation_bounded"
+      module: "VectorValuedLittlewoodPaley.Challenge"
+      status: "proved"
+      note: "With the constant 2 beta^2 + 1; UMD constant in place of zeta-convexity."
     - source: "HNVW I, Theorem 5.1.13 (truncations)"
       lean: "VectorValuedLittlewoodPaleyChallenge.truncatedHilbert_bounded"
       module: "VectorValuedLittlewoodPaley.Challenge"
@@ -292,12 +348,12 @@ alignment:
       note: >-
         For every complex Banach space; the Hilbert transform as a pointwise limit and as the
         multiplier -i sgn.
-    - source: "HNVW I, Theorem 5.1.13 with Proposition 5.2.2"
+    - source: "Burkholder 1983, Lemma 4, with HNVW I, Proposition 5.2.2"
       lean: "VectorValuedLittlewoodPaleyChallenge.hilbert_bounded"
       module: "VectorValuedLittlewoodPaley.Challenge"
       status: "partial"
       note: >-
-        On the functions F^{-1} G in L^p, G integrable, with the constant 4 beta^2 + 11.
+        On the functions F^{-1} G in L^p, G integrable, with the constant 2 beta^2 + 1.
     - source: "HNVW I, Corollary 5.3.25 (right-hand inequality)"
       lean: "VectorValuedLittlewoodPaleyChallenge.littlewoodPaley_line"
       module: "VectorValuedLittlewoodPaley.Challenge"
@@ -317,7 +373,7 @@ alignment:
       note: >-
         d = 1; the integers are points of continuity instead of Lebesgue points. The multiplier
         bound on the line is assumed on Schwartz functions only.
-    - source: "HNVW I, Theorem 5.1.13 with Corollary 4.5.15"
+    - source: "Burkholder 1983, Lemma 4, with HNVW I, Corollary 4.5.15"
       lean: "VectorValuedLittlewoodPaleyChallenge.hilbert_bounded_innerProductSpace"
       module: "VectorValuedLittlewoodPaley.Challenge"
       status: "adapted"

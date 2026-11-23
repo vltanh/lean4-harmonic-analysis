@@ -37,15 +37,19 @@ from the line to the circle; after
   `β^ℝ_{p,X}` of [HNVW, p. 285], whose definition has deterministic signs and σ-finite measure
   spaces: predictable and deterministic signs give the same constants by [HNVW, Theorem 4.2.25], and
   the dyadic martingales on `[0, 1)` suffice by [HNVW, Corollary 4.2.6]; not formalized here.)
+  [B83] and [MC] have ζ-convex spaces, which are the UMD spaces by [B83, Theorem 1].
   Every bound below is explicit in `β` (in `mihlin_multiplier` and `littlewoodPaley_signs` up to an
   absolute constant).
 * On the line, `𝓕⁻ G (x) = ∫ G (ξ) e^{2πi x ξ} dξ` (Mathlib's inverse Fourier transform). The
-  functions are `f = 𝓕⁻ G ∈ L^p (ℝ; X)` with `G ∈ L¹ (ℝ; X)`, that is, `f ∈ L^p ∩ Ľ¹`, the class on
-  which [HNVW, p. 401] define the boundedness of Fourier multipliers, dense in `L^p` (the density is
-  not formalized); a symbol `m` acts by `T_m f = 𝓕⁻ (m G)` [HNVW, Definition 5.3.1].
+  functions, except in the theorems on truncations, are `f = 𝓕⁻ G ∈ L^p (ℝ; X)` with
+  `G ∈ L¹ (ℝ; X)`, that is, `f ∈ L^p ∩ Ľ¹`, the class on which [HNVW, p. 401] define the
+  boundedness of Fourier multipliers, dense in `L^p` (the density is not formalized); a symbol `m`
+  acts by `T_m f = 𝓕⁻ (m G)` [HNVW, Definition 5.3.1].
 * The circle is `𝕋 = ℝ / ℤ` (`UnitAddCircle`) with its Haar probability measure `haarAddCircle`,
   `fourier n` is `e_n (t) = e^{2πi n t}`, and `circPoly c = Σ_n c_n e_n` is the trigonometric
-  polynomial with finitely supported coefficients `c_n ∈ X`.
+  polynomial with finitely supported coefficients `c_n ∈ X`. In the two theorems on conjugate
+  functions, which follow [B83], functions on the circle are functions of `θ ∈ ℝ` on an interval of
+  length `2π`, with the measure `dθ`.
 * `eLpNormRad f p μ` is `‖Σ_k ε_k f_k‖_{L^p (μ × P)}`, `ε_k` independent fair real signs on the sign
   cube with its uniform probability `P` (`eLpNormRad_rpow`). [HNVW] has complex Rademacher variables
   for complex `X`.

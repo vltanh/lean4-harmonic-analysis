@@ -33,10 +33,11 @@ In alphabetical order. Entries that the [README](../README.md) cites by a key be
   1–16, [doi:10.1007/PL00004425](https://doi.org/10.1007/PL00004425); *Optimal constants in Khintchine
   type inequalities for fermions, Rademachers and `q`-Gaussian operators*, Bull. Pol. Acad. Sci. Math.
   53 (2005), 315–321, [doi:10.4064/ba53-3-9](https://doi.org/10.4064/ba53-3-9).
-- D. L. Burkholder, *A geometric condition that implies the existence of certain singular integrals of
-  Banach-space-valued functions*, in: Conference on harmonic analysis in honor of Antoni Zygmund
+- [B83] D. L. Burkholder, *A geometric condition that implies the existence of certain singular integrals
+  of Banach-space-valued functions*, in: Conference on harmonic analysis in honor of Antoni Zygmund
   (Chicago, 1981), Wadsworth (1983), 270–286, reprinted in *Selected Works of Donald L. Burkholder* (2011),
-  396–412, [doi:10.1007/978-1-4419-7245-3_26](https://doi.org/10.1007/978-1-4419-7245-3_26).
+  396–412, [doi:10.1007/978-1-4419-7245-3_26](https://doi.org/10.1007/978-1-4419-7245-3_26): Lemmas 1–4,
+  (33).
 - L. Cadilhac, *Noncommutative Khintchine inequalities in interpolation spaces of `L_p`-spaces*, Adv.
   Math. 352 (2019), 265–296, [doi:10.1016/j.aim.2019.06.002](https://doi.org/10.1016/j.aim.2019.06.002).
 - [CDK] A. Carbonaro, O. Dragičević, V. Kovač, *Sharp `L^p` estimates of powers of the complex

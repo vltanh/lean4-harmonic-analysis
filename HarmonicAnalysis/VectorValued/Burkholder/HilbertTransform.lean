@@ -24,7 +24,7 @@ Lemma 4, p. 283 (`eLpNorm_hilbertTrunc_le`): if `X` has a `UMD_p` constant `β`,
 `hilbertBound β` of the inequality (33) for the truncated conjugate function `f̃_ε` on the circle.
 
 The whole proof in the paper is: "This follows from (33) just as it does in the real case; see [14]
-or [18]" (M. Riesz, *Sur les fonctions conjuguées*, Math. Z. 27 (1927), 218–244; A. Zygmund,
+or [18]" (M. Riesz, *Sur les fonctions conjuguées*, Math. Z. 27 (1928), 218–244; A. Zygmund,
 *Trigonometric Series*, 2nd ed., 1959). The classical argument is written out here. Let first `f`
 vanish off `[−A, A]`, and for `R > ε` let `g_R (θ) = f (Rθ)`, `−π < θ ≤ π`, be extended
 periodically (`periodize`).

@@ -72,3 +72,13 @@ elsewhere"; "on paper" (written out or sketched, not compiled). References are i
 | 37 | [MC, Thm 1.3], the reduction to `f̂ = 0` on `λ < 0` | one-sided bumps `φ (2^{2j} ·)`: no reduction, one factor `ħ` less | on paper |
 | 38 | [MC, Thm 1.3] | from both inequalities of [HNVW, Thm 5.3.24]: the random signs absorb the `ε_j`, without Theorem 1.1 (only the right-hand inequality is in the library) | on paper |
 | 39 | [MC, p. 751], the last step | let the sum in (3.11) run to `j = 2N − 1` and start at `z_{2N} = 2A`, so that the chain need not be cut at `z_{2N−1}`; take the `x`-integral first: translation invariance and `‖u (·, y)‖_p ≤ ‖f‖_p` | history (`beab475`) |
+
+## Burkholder's theorem
+
+| # | Result | Shorter proof | Status |
+| --- | --- | --- | --- |
+| 40 | [B83, Lemmas 1–4], the Hilbert transform on UMD spaces | the dyadic shifts of [HNVW, Section 5.1]: about 1 840 lines (`VectorValued/Dyadic/`, `VectorValued/HilbertTransform/Truncated`, `ec00cb2`) in place of about 3 490 (`VectorValued/Burkholder/`, `c8182f9`); for the multiplier `sgn` both need [HNVW, Lemma 5.2.1] (`VectorValued/HilbertTransform/Fourier`, 600 lines). The constant is `4 β² + 11` in place of `2 β² + 1` | in the library (the first for the Littlewood–Paley inequalities of [HNVW], the second for [MC]) |
+| 41 | [B83, Lemmas 3, 4] and the multiplier `sgn` | no truncations: on the circle of length `2πR`, (32) for `f − f̂ (0)` and `r = 1 − y / R`; as `R → ∞` the mean tends to `0` and `‖v (·, y)‖_p ≤ β² ‖f‖_p` for the conjugate Poisson integral `v (x, y) = π⁻¹ ∫ t (t² + y²)⁻¹ f (x − t) dt` on the line, whose symbol is `−i sgn (ξ) e^{−2π\|ξ\|y}`; `y → 0` with Fatou's lemma: `ħ ≤ β²`, without `K_r`, (33), `H_ε` and [HNVW, Lemma 5.2.1] | on paper |
+| 42 | [B83, Lemma 4], the constant | `‖v‖_p ≤ β² ‖u − u (0)‖_p` in (33), and the mean of the dilated function tends to `0` (in `L^p`, with the dilation): `β² + 1` in (34) | on paper |
+| 43 | [B83, (21)–(23)], `τ < ∞` | orthogonality, `2 δ² E (τ ∧ n) = E \|Z_{τ ∧ n}\|² ≤ 4`, or a run of about `2 / δ` equal signs, instead of (20); (27) still needs (20) | on paper |
+| 44 | [B83, Lemma 2], the limits `n → ∞`, `δ → 0` | for each `δ` an `n` with `P (τ > n) ≤ δ`, on the cube `{±1}^{2n}`: `1 ≤ \|Z_{τ ∧ n}\| ≤ 1 + 2δ` off a set of probability `δ`, and `\|Z_{τ ∧ n}\| ≤ 2`; no infinite sequence of signs, no `Z_τ` | on paper (about 250 lines less) |
