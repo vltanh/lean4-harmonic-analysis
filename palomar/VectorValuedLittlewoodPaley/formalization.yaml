@@ -203,8 +203,8 @@ automation:
           about 5 hours between the first and the last commit of the vector-valued part of the
           library (22 November 2026, git log), with other work in parallel, and about 1 hour for the
           three entries of this part together, with the additions to the library that they needed
-          and the review, about 2 hours for McConnell's theorems, and about 2 hours for
-          Burkholder's; agent time not tracked
+          and the review, about 2 hours for McConnell's theorems, and about 1 hour for Burkholder's;
+          agent time not tracked
         spend_usd: "not tracked"
         hardware: "local machine (20 cores, 62 GB RAM) and API"
       prompting_notes: >-
