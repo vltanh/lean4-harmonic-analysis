@@ -124,7 +124,7 @@ theorem conjHarmPoly_eq (N : ℕ) (a b : ℕ → X) (z : ℂ) :
   simp only [Pi.neg_apply, smul_neg]
   abel
 
-/-- `u_x` is the derivative of `u` in the direction of the real axis. -/
+/-- `u_x` is the derivative of `u` in the direction of the real axis (a check of the definition). -/
 theorem hasDerivAt_harmPoly_re (N : ℕ) (a b : ℕ → X) (z : ℂ) :
     HasDerivAt (fun t : ℝ => harmPoly N a b (z + t)) (harmDx N a b z) 0 := by
   refine hasDerivAt_reSum N a b (g := fun t k => (z + (t : ℂ)) ^ k) fun k => ?_
@@ -137,14 +137,16 @@ private theorem hasDerivAt_pow_add_mul_I (z : ℂ) (k : ℕ) :
       ((0 : ℝ) : ℂ) := by
   simpa using (((hasDerivAt_id ((0 : ℝ) : ℂ)).mul_const Complex.I).const_add z).fun_pow k
 
-/-- `u_y` is the derivative of `u` in the direction of the imaginary axis. -/
+/-- `u_y` is the derivative of `u` in the direction of the imaginary axis (a check of the
+definition). -/
 theorem hasDerivAt_harmPoly_im (N : ℕ) (a b : ℕ → X) (z : ℂ) :
     HasDerivAt (fun t : ℝ => harmPoly N a b (z + t * Complex.I)) (harmDy N a b z) 0 := by
   refine hasDerivAt_reSum N a b (g := fun t k => (z + t * Complex.I) ^ k) fun k => ?_
   convert (hasDerivAt_pow_add_mul_I z k).comp_ofReal using 1
   ring
 
-/-- `u_{xy}` is the derivative of `u_x` in the direction of the imaginary axis. -/
+/-- `u_{xy}` is the derivative of `u_x` in the direction of the imaginary axis (a check of the
+definition). -/
 theorem hasDerivAt_harmDx_im (N : ℕ) (a b : ℕ → X) (z : ℂ) :
     HasDerivAt (fun t : ℝ => harmDx N a b (z + t * Complex.I)) (harmDxy N a b z) 0 := by
   refine hasDerivAt_reSum N a b (g := fun t k => k * (z + t * Complex.I) ^ (k - 1)) fun k => ?_
@@ -289,16 +291,14 @@ theorem continuous_harmPoly (N : ℕ) (a b : ℕ → X) : Continuous (harmPoly N
   unfold harmPoly
   fun_prop
 
-/-- A bound of `u` on the disc `|z| ≤ 2`. -/
-theorem norm_harmPoly_le (N : ℕ) (a b : ℕ → X) {z : ℂ} (hz : ‖z‖ ≤ 2) :
-    ‖harmPoly N a b z‖ ≤ 2 ^ N * ∑ k ∈ Finset.Icc 1 N, (‖a k‖ + ‖b k‖) := by
-  refine norm_reSum_le N a b (g := fun k => z ^ k) fun k hk => ?_
-  rw [norm_pow]
-  exact (pow_le_pow_left₀ (norm_nonneg z) hz k).trans
-    (pow_le_pow_right₀ one_le_two (Finset.mem_Icc.1 hk).2)
+/-- The functions (19) are continuous. -/
+theorem continuous_conjHarmPoly (N : ℕ) (a b : ℕ → X) : Continuous (conjHarmPoly N a b) := by
+  rw [funext (conjHarmPoly_eq N a b)]
+  exact continuous_harmPoly N (-b) a
 
 /-- The rotation `u^α (z) = u (e^{iα} z)` is of the form (18), with the coefficients
-`a_k cos kα + b_k sin kα` and `b_k cos kα − a_k sin kα` (`ζ = e^{iα}`). -/
+`a_k cos kα + b_k sin kα` and `b_k cos kα − a_k sin kα` (`ζ = e^{iα}`); so is `u (ζ z)` for every
+`ζ ∈ ℂ`, and `ζ = r` gives the case of the radius `r`. -/
 theorem harmPoly_rotate (N : ℕ) (a b : ℕ → X) (ζ z : ℂ) :
     harmPoly N a b (ζ * z) = harmPoly N (fun k => (ζ ^ k).re • a k + (ζ ^ k).im • b k)
       (fun k => (ζ ^ k).re • b k - (ζ ^ k).im • a k) z := by
@@ -306,7 +306,7 @@ theorem harmPoly_rotate (N : ℕ) (a b : ℕ → X) (ζ z : ℂ) :
   rw [mul_pow, Complex.mul_re, Complex.mul_im]
   module
 
-/-- The conjugate of the rotated function is the rotated conjugate. -/
+/-- The conjugate of the rotated function is the rotated conjugate; the same for every `ζ ∈ ℂ`. -/
 theorem conjHarmPoly_rotate (N : ℕ) (a b : ℕ → X) (ζ z : ℂ) :
     conjHarmPoly N a b (ζ * z) = conjHarmPoly N (fun k => (ζ ^ k).re • a k + (ζ ^ k).im • b k)
       (fun k => (ζ ^ k).re • b k - (ζ ^ k).im • a k) z := by

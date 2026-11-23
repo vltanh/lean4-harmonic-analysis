@@ -92,8 +92,8 @@ sources:
     relationship: "background"
     note: >-
       Theorem 1.3 (with Theorem 1.1), the second reference of Lust-Piquard and Pisier for (III.3),
-      proved in the library along the paper (the entry VectorValuedLittlewoodPaley of this
-      repository).
+      proved in the library along the paper, with Burkholder's theorem of 1983 on the Hilbert
+      transform (the entry VectorValuedLittlewoodPaley of this repository).
   - title: "Generalized interpolation in H^infinity"
     authors:
       - "Donald Sarason"

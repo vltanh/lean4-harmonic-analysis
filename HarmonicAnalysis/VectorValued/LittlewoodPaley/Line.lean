@@ -488,7 +488,8 @@ private theorem fourierInv_sign_sub_one (a : ℝ) (G : ℝ → X) :
 variable [CompleteSpace X]
 
 omit [CompleteSpace X] in
-/-- The randomised bound for the Hilbert transform, with the bound `B` for each choice of signs. -/
+/-- The randomised bound for the multiplier `sgn`, from a bound `B` on the functions `𝓕⁻ G ∈ L^p`,
+`G ∈ L¹`, applied for each choice of the signs. -/
 theorem eLpNormRad_fourierInv_sign_le {p : ℝ} (hp : 1 < p) {B : ℝ≥0∞}
     (hB : ∀ G : ℝ → X, Integrable G → MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume →
       eLpNorm (𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G ξ) (ENNReal.ofReal p) volume ≤

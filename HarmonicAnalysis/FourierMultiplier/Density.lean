@@ -134,6 +134,38 @@ theorem lintegral_rpow_lintegral_mul_le {α β : Type*} [MeasurableSpace α] [Me
         refine lintegral_congr fun y => ?_
         exact lintegral_const_mul _ ((hh.comp measurable_prodMk_right).pow_const p)
 
+/-- Minkowski's integral inequality, in the form of Young's inequality:
+`‖∫ w (s) F (·, s) dν (s)‖_p ≤ ‖w‖_1 C` when `‖F (·, s)‖_p ≤ C` for almost every `s`. -/
+theorem eLpNorm_integral_smul_le {X α β : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
+    [MeasurableSpace α] [MeasurableSpace β] {μ : Measure α} {ν : Measure β} [SFinite μ] [SFinite ν]
+    {p : ℝ} (hp : 1 ≤ p) {w : β → ℝ} (hw : Measurable w) {F : α → β → X}
+    (hF : StronglyMeasurable (Function.uncurry F)) {C : ℝ≥0∞}
+    (hC : ∀ᵐ s ∂ν, eLpNorm (fun x => F x s) (ENNReal.ofReal p) μ ≤ C) :
+    eLpNorm (fun x => ∫ s, w s • F x s ∂ν) (ENNReal.ofReal p) μ ≤ (∫⁻ s, ‖w s‖ₑ ∂ν) * C := by
+  have hp0 : 0 < p := by linarith
+  have hwF : StronglyMeasurable fun x => ∫ s, w s • F x s ∂ν :=
+    ((hw.comp measurable_snd).stronglyMeasurable.smul hF).integral_prod_right
+  set A := ∫⁻ s, ‖w s‖ₑ ∂ν
+  rw [← ENNReal.rpow_le_rpow_iff hp0, eLpNorm_ofReal_rpow_eq_lintegral hp0 hwF.aestronglyMeasurable]
+  calc ∫⁻ x, ‖∫ s, w s • F x s ∂ν‖ₑ ^ p ∂μ
+      ≤ ∫⁻ x, (∫⁻ s, ‖w s‖ₑ * ‖F x s‖ₑ ∂ν) ^ p ∂μ := by
+        refine lintegral_mono fun x => ENNReal.rpow_le_rpow ?_ hp0.le
+        refine (enorm_integral_le_lintegral_enorm _).trans_eq ?_
+        simp_rw [enorm_smul]
+    _ ≤ A ^ (p - 1) * ∫⁻ s, ‖w s‖ₑ * (∫⁻ x, ‖F x s‖ₑ ^ p ∂μ) ∂ν :=
+        lintegral_rpow_lintegral_mul_le hw.enorm hF.enorm hp
+    _ ≤ A ^ (p - 1) * ∫⁻ s, ‖w s‖ₑ * C ^ p ∂ν := by
+        refine mul_le_mul' le_rfl (lintegral_mono_ae ?_)
+        filter_upwards [hC] with s hs
+        rw [← eLpNorm_ofReal_rpow_eq_lintegral hp0
+          (hF.comp_measurable measurable_prodMk_right).aestronglyMeasurable (f := fun x => F x s)]
+        gcongr
+    _ = (A * C) ^ p := by
+        rw [lintegral_mul_const _ hw.enorm, ← mul_assoc, ENNReal.mul_rpow_of_nonneg _ _ hp0.le]
+        congr 1
+        conv_lhs => rw [show ∫⁻ s, ‖w s‖ₑ ∂ν = A ^ (1 : ℝ) from (ENNReal.rpow_one A).symm]
+        rw [← ENNReal.rpow_add_of_nonneg _ _ (by linarith) zero_le_one, sub_add_cancel]
+
 /-- Minkowski's integral inequality, for `1 ≤ p` and a finite left side:
 `(∫ (∫ h (x, y) dy)^p dx)^{1/p} ≤ ∫ (∫ h (x, y)^p dx)^{1/p} dy`. With `F (x) = ∫ h (x, y) dy`, by
 Tonelli's theorem and Hölder's inequality, `∫ F^p = ∫ ∫ h (x, y) F (x)^{p − 1} dx dy` is at most the

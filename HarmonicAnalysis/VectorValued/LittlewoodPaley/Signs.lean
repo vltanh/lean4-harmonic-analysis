@@ -22,9 +22,9 @@ a complex UMD space with a `UMD_p` constant `β`, `1 < p < ∞`. For all signs `
 the multiplier `m = Σ_j ε_j 1_{[2^j, 2^{j+1})} + Σ_j ε'_j 1_{(−2^{j+1}, −2^j]}` satisfies (1.13):
 `c⁻¹ ‖f‖_p ≤ ‖T_m f‖_p ≤ c ‖f‖_p`, with `c = C β⁸ ħ²`, where `C` is an absolute constant and `ħ` is
 the bound of the Hilbert transform (`hilbertBound β = 2 β² + 1`, by Burkholder's theorem, which the
-source recalls on p. 741). Here `f = 𝓕⁻ G ∈ L^p` with `G ∈ L¹` (the
-source has Schwartz functions in (3.18)). The converse, which the source deduces from a result of
-Bourgain (p. 756), is not treated.
+source cites on p. 741; its own second proof, Remark 3.1, is not followed). Here `f = 𝓕⁻ G ∈ L^p`
+with `G ∈ L¹` (the source has Schwartz functions in (3.18)). The converse, which the source deduces
+from a result of Bourgain (p. 756), is not treated.
 
 ## The proof
 

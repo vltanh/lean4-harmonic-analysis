@@ -7,9 +7,6 @@ module
 
 public import HarmonicAnalysis.VectorValued.Burkholder.ConjugateFunction
 public import HarmonicAnalysis.VectorValued.HilbertTransform.Fourier
-import Mathlib.Analysis.SpecialFunctions.JapaneseBracket
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Sinc
-import Mathlib.MeasureTheory.Integral.IntervalIntegral.Periodic
 
 /-!
 # The Hilbert transform on UMD spaces, after Burkholder
@@ -25,9 +22,9 @@ Lemma 4, p. 283 (`eLpNorm_hilbertTrunc_le`): if `X` has a `UMD_p` constant `β`,
 
 The whole proof in the paper is: "This follows from (33) just as it does in the real case; see [14]
 or [18]" (M. Riesz, *Sur les fonctions conjuguées*, Math. Z. 27 (1928), 218–244; A. Zygmund,
-*Trigonometric Series*, 2nd ed., 1959). The classical argument is written out here. Let first `f`
-vanish off `[−A, A]`, and for `R > ε` let `g_R (θ) = f (Rθ)`, `−π < θ ≤ π`, be extended
-periodically (`periodize`).
+*Trigonometric Series*, 2nd ed., 1959). A standard argument is written out here (the two works were
+not consulted). Let first `f` vanish off `[−A, A]`, and for `R > ε` let `g_R (θ) = f (Rθ)`,
+`−π < θ ≤ π`, be extended periodically (`periodize`).
 
 * For `|x| + A < πR` the substitution `t = s / R` gives (`truncatedConj_periodize`)
   `(g_R)~_{ε/R} (x / R) = π⁻¹ ∫_{ε < |s| < πR} (2R)⁻¹ cot (s / (2R)) f (x − s) ds`.
@@ -41,10 +38,11 @@ periodically (`periodize`).
   since `t ↦ f (x − t) / t` is integrable over `|t| > ε` by Hölder's inequality, and Fatou's lemma
   gives (34).
 
-The paper goes on to the limits `lim_{ε → 0} T_ε f` (Theorem 2, p. 284), by the maximal function
-`T* f`; this is not carried out here. Instead, for `f = 𝓕⁻ G ∈ L^p` with `G ∈ L¹`, where `X` is a
-complex space, `H_ε f (x) → 𝓕⁻ (−i sgn · G) (x)` for every `x` (`tendsto_hilbertTrunc_fourierInv`,
-from the computation of the symbols in `HilbertTransform.Fourier`). By Fatou's lemma,
+The paper then states, without proof (Theorem 2, p. 284), that `lim T_ε f` exists, with bounds for
+the maximal function `T* f`; this is not carried out here. Instead, for `f = 𝓕⁻ G ∈ L^p` with
+`G ∈ L¹`, where `X` is a complex space, `H_ε f (x) → 𝓕⁻ (−i sgn · G) (x)` for every `x`
+(`tendsto_hilbertTrunc_fourierInv`, from the computation of the symbols in
+`HilbertTransform.Fourier`). By Fatou's lemma,
 
 `‖𝓕⁻ (−i sgn · G)‖_p = ‖𝓕⁻ (sgn · G)‖_p ≤ (2 β² + 1) ‖𝓕⁻ G‖_p`
 (`eLpNorm_fourierInv_neg_I_sign_le`, `eLpNorm_fourierInv_sign_le`).
@@ -250,21 +248,6 @@ private theorem hilbertTrunc_congr_ae {f g : ℝ → X} (h : f =ᵐ[volume] g) (
 /-! ### The norms of the periodized functions -/
 
 omit [NormedSpace ℝ X] in
-/-- The change of variables `y = x / R` in the `L^p` norm. -/
-private theorem eLpNorm_comp_div {p : ℝ≥0∞} (hp : p ≠ ⊤) {g : ℝ → X}
-    (hg : StronglyMeasurable g) {R : ℝ} (hR : 0 < R) :
-    eLpNorm (fun x => g (x / R)) p volume =
-      ENNReal.ofReal R ^ (1 / p).toReal * eLpNorm g p volume := by
-  have hmap := Real.map_volume_mul_left (inv_ne_zero hR.ne')
-  rw [inv_inv, abs_of_pos hR] at hmap
-  have h := eLpNorm_map_measure (p := p) (μ := volume) (f := fun x : ℝ => R⁻¹ * x) (g := g)
-    hg.aestronglyMeasurable (measurable_const_mul R⁻¹).aemeasurable
-  rw [hmap, eLpNorm_smul_measure_of_ne_top hp _ _ hg.aestronglyMeasurable, smul_eq_mul] at h
-  rw [h]
-  congr 1 with x
-  simp [div_eq_inv_mul]
-
-omit [NormedSpace ℝ X] in
 /-- The `L^p` norm over the circle, with the measure `dθ`, as a norm over `(−π, π]`. -/
 private theorem eLpNorm_indicator_comp_coe {p : ℝ≥0∞} {g : AddCircle (2 * π) → X}
     (hg : StronglyMeasurable g) :
@@ -281,9 +264,11 @@ private theorem eLpNorm_indicator_comp_coe_div {p : ℝ≥0∞} (hp : p ≠ ⊤)
     (hh : StronglyMeasurable h) {R : ℝ} (hR : 0 < R) :
     eLpNorm (fun x : ℝ => (Set.Ioc (-π) π).indicator (fun θ : ℝ => h θ) (x / R)) p volume =
       ENNReal.ofReal R ^ (1 / p).toReal * eLpNorm h p volume := by
-  rw [eLpNorm_comp_div (g := (Set.Ioc (-π) π).indicator fun θ : ℝ => h θ) hp
-    ((hh.comp_measurable AddCircle.measurable_mk').indicator measurableSet_Ioc) hR,
-    eLpNorm_indicator_comp_coe hh]
+  have h := eLpNorm_comp_mul (g := (Set.Ioc (-π) π).indicator fun θ : ℝ => h θ) hp
+    ((hh.comp_measurable AddCircle.measurable_mk').indicator
+      measurableSet_Ioc).aestronglyMeasurable (inv_pos.2 hR)
+  rw [inv_inv, eLpNorm_indicator_comp_coe hh] at h
+  simpa only [div_eq_inv_mul] using h
 
 omit [NormedSpace ℝ X] in
 /-- `R^{1/p} ‖g_R‖_p ≤ ‖f‖_p`. -/
@@ -424,7 +409,7 @@ private theorem integrableOn_inv_smul {p : ℝ} (hp : 1 < p) {f : ℝ → X}
 `ε > 0`.
 
 The paper says that (34) "follows from (33) just as it does in the real case" and refers to M. Riesz
-(1927) and to Zygmund's *Trigonometric Series*. The argument is written out here: it is the passage
+(1928) and to Zygmund's *Trigonometric Series*. The argument is written out here: it is the passage
 from the circle to the line by periodization and dilation, for functions that vanish off a bounded
 interval (`eLpNorm_hilbertTrunc_le_of_support`), followed by Fatou's lemma for `1_{[−n, n]} f`,
 `n → ∞`. -/

@@ -8,7 +8,6 @@ module
 public import HarmonicAnalysis.VectorValued.Burkholder.HarmonicPolynomial
 public import BanachProbability.UMD.Decoupling
 public import BanachProbability.Martingale.Burkholder.Inequality
-public import BanachProbability.SignCube.Bridge
 
 /-!
 # A random walk stopped at the exit from the unit disc
@@ -86,14 +85,14 @@ private theorem walk_succ (δ : ℝ) (ω : ℕ → Bool) (n : ℕ) :
   Finset.sum_range_succ _ _
 
 /-- `Z_k` is a function of the first `2k` signs. -/
-private theorem walk_congr (δ : ℝ) {ω ω' : ℕ → Bool} {k : ℕ} (h : ∀ j < 2 * k, ω j = ω' j) :
+theorem walk_congr (δ : ℝ) {ω ω' : ℕ → Bool} {k : ℕ} (h : ∀ j < 2 * k, ω j = ω' j) :
     walk δ ω k = walk δ ω' k := by
   refine Finset.sum_congr rfl fun j hj => ?_
   have hj' := Finset.mem_range.1 hj
   rw [h (2 * j) (by omega), h (2 * j + 1) (by omega)]
 
 /-- `τ ∧ n ≤ n`. -/
-private theorem exitTime_le (δ : ℝ) (ω : ℕ → Bool) (n : ℕ) : exitTime δ ω n ≤ n :=
+theorem exitTime_le (δ : ℝ) (ω : ℕ → Bool) (n : ℕ) : exitTime δ ω n ≤ n :=
   Nat.find_min' _ (Or.inl rfl)
 
 /-- `|Z_k| < 1` for `k < τ ∧ n`. -/
@@ -471,7 +470,7 @@ private theorem sum_sq_correction_le {δ : ℝ} (ω : ℕ → Bool) (n : ℕ) {G
     gcongr
   · rw [Finset.card_range, nsmul_eq_mul]
 
-/-- The estimate of `W^j` (p. 280–281), for a real function `G` (in the source `u^j_{xy}`) that is
+/-- The estimate of `W^j` (pp. 280–281), for a real function `G` (in the source `u^j_{xy}`) that is
 bounded by `M` (in the source by `N²`) in the disc: `‖Σ_{k=1}^n w_k G (Z_{k−1}) d_k e_k‖_p ≤
 c_p M δ² ‖(τ ∧ n)^{1/2}‖_p ≤ 2 c_p² M δ`. The summands are martingale differences: `e_k` is
 independent of the other factors. -/
@@ -623,7 +622,7 @@ theorem exists_lpNorm_harmPoly_sub_le {p : ℝ} (hp : 1 < p) : ∃ C : ℝ, 0 �
 /-! ### (29) -/
 
 /-- The bijection `(r_1, r_2, r_3, r_4, …) ↦ (r_2, −r_1, r_4, −r_3, …)` of the cube, with which the
-two transformations of p. 281–282 are compared. -/
+two transformations of pp. 281–282 are compared. -/
 private def swapSigns (n : ℕ) : (Fin (2 * n) → Bool) ≃ (Fin (2 * n) → Bool) where
   toFun ε i := if h : i.val % 2 = 0 then ε ⟨i + 1, by omega⟩ else !ε ⟨i - 1, by omega⟩
   invFun ε i := if h : i.val % 2 = 0 then !ε ⟨i + 1, by omega⟩ else ε ⟨i - 1, by omega⟩

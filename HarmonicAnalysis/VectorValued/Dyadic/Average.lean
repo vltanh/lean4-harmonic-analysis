@@ -100,39 +100,8 @@ theorem stronglyMeasurable_dilateConv {φ : ℝ → ℝ} (hφ : Measurable φ) (
   exact (stronglyMeasurable_uncurry_dilateConv hφ hf.stronglyMeasurable_mk).comp_measurable
     (measurable_id.prodMk measurable_const)
 
-/-- Minkowski's integral inequality, in the form of Young's inequality:
-`‖∫ w (s) F (·, s) dν (s)‖_p ≤ ‖w‖_1 C` when `‖F (·, s)‖_p ≤ C` for almost every `s`. -/
-theorem eLpNorm_integral_smul_le {p : ℝ} (hp : 1 ≤ p) {ν : Measure ℝ} [SFinite ν]
-    {w : ℝ → ℝ} (hw : Measurable w) {F : ℝ → ℝ → X} (hF : StronglyMeasurable (Function.uncurry F))
-    {C : ℝ≥0∞} (hC : ∀ᵐ s ∂ν, eLpNorm (fun x => F x s) (ENNReal.ofReal p) volume ≤ C) :
-    eLpNorm (fun x => ∫ s, w s • F x s ∂ν) (ENNReal.ofReal p) volume ≤
-      (∫⁻ s, ‖w s‖ₑ ∂ν) * C := by
-  have hp0 : 0 < p := by linarith
-  have hwF : StronglyMeasurable fun x => ∫ s, w s • F x s ∂ν :=
-    ((hw.comp measurable_snd).stronglyMeasurable.smul hF).integral_prod_right
-  set A := ∫⁻ s, ‖w s‖ₑ ∂ν
-  rw [← ENNReal.rpow_le_rpow_iff hp0, eLpNorm_ofReal_rpow_eq_lintegral hp0 hwF.aestronglyMeasurable]
-  calc ∫⁻ x, ‖∫ s, w s • F x s ∂ν‖ₑ ^ p
-      ≤ ∫⁻ x, (∫⁻ s, ‖w s‖ₑ * ‖F x s‖ₑ ∂ν) ^ p := by
-        refine lintegral_mono fun x => ENNReal.rpow_le_rpow ?_ hp0.le
-        refine (enorm_integral_le_lintegral_enorm _).trans_eq ?_
-        simp_rw [enorm_smul]
-    _ ≤ A ^ (p - 1) * ∫⁻ s, ‖w s‖ₑ * (∫⁻ x, ‖F x s‖ₑ ^ p) ∂ν :=
-        HarmonicAnalysis.lintegral_rpow_lintegral_mul_le hw.enorm hF.enorm hp
-    _ ≤ A ^ (p - 1) * ∫⁻ s, ‖w s‖ₑ * C ^ p ∂ν := by
-        refine mul_le_mul' le_rfl (lintegral_mono_ae ?_)
-        filter_upwards [hC] with s hs
-        rw [← eLpNorm_ofReal_rpow_eq_lintegral hp0
-          (hF.comp_measurable measurable_prodMk_right).aestronglyMeasurable (f := fun x => F x s)]
-        gcongr
-    _ = (A * C) ^ p := by
-        rw [lintegral_mul_const _ hw.enorm, ← mul_assoc, ENNReal.mul_rpow_of_nonneg _ _ hp0.le]
-        congr 1
-        conv_lhs => rw [show ∫⁻ s, ‖w s‖ₑ ∂ν = A ^ (1 : ℝ) from (ENNReal.rpow_one A).symm]
-        rw [← ENNReal.rpow_add_of_nonneg _ _ (by linarith) zero_le_one, sub_add_cancel]
-
 /-- The change of variables `y = a x` in the `L^p` norm. -/
-private theorem eLpNorm_comp_mul {E : Type*} [NormedAddCommGroup E] {p : ℝ≥0∞} (hp : p ≠ ⊤)
+theorem eLpNorm_comp_mul {E : Type*} [NormedAddCommGroup E] {p : ℝ≥0∞} (hp : p ≠ ⊤)
     {g : ℝ → E} (hg : AEStronglyMeasurable g volume) {a : ℝ} (ha : 0 < a) :
     eLpNorm (fun x => g (a * x)) p volume =
       ENNReal.ofReal a⁻¹ ^ (1 / p).toReal * eLpNorm g p volume := by

@@ -75,9 +75,14 @@ end Algebra
 
 section Normed
 
+/-- `e_k = e_1^k`. -/
+theorem fourier_natCast {T : ℝ} (k : ℕ) (t : AddCircle T) :
+    (fourier (k : ℤ) t : ℂ) = fourier 1 t ^ k := by
+  rw [fourier_apply, fourier_one, natCast_zsmul, toCircle_nsmul, Circle.coe_pow]
+
 /-- Continuous functions on the circle are integrable. -/
-theorem integrable_haar_of_continuous {E : Type*} [NormedAddCommGroup E] {u : UnitAddCircle → E}
-    (hu : Continuous u) : Integrable u haarAddCircle :=
+theorem integrable_haar_of_continuous {T : ℝ} [Fact (0 < T)] {E : Type*} [NormedAddCommGroup E]
+    {u : AddCircle T → E} (hu : Continuous u) : Integrable u haarAddCircle :=
   hu.integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
 
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace ℂ X]

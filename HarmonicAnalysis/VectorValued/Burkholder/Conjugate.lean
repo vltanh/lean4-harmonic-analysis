@@ -8,14 +8,16 @@ module
 public import HarmonicAnalysis.VectorValued.Burkholder.RandomWalk
 public import HarmonicAnalysis.VectorValued.CircPoly
 public import Mathlib.Probability.ProductMeasure
+import BanachProbability.SignCube.Bridge
 import BanachProbability.UMD.Hilbert
+import HarmonicAnalysis.FourierMultiplier.Density
 import Mathlib.Algebra.BigOperators.Group.Finset.Interval
 
 /-!
 # Conjugate trigonometric polynomials on UMD spaces
 
 D. L. Burkholder, *A geometric condition that implies the existence of certain singular integrals of
-Banach-space-valued functions* (1983), pp. 278–279 and 281–282: the end of the proof of Lemma 2. For
+Banach-space-valued functions* (1983), pp. 278, 279 and 282: the end of the proof of Lemma 2. For
 `u`, `v` of (18), (19) with coefficients in a Banach space with the `UMD_p` constant `β`,
 `1 < p < ∞`,
 
@@ -45,7 +47,7 @@ complex space on `ℝ / ℤ`, the conjugate of which is `Σ_n (−i sgn n) c_n e
 * The paper takes a finite constant. For `β = ∞` the inequality says that `v` vanishes on the circle
   when `u` does, which follows from the case of `X = ℝ`, by the functionals `φ ∈ X*`
   (`conjHarmPoly_fourier_eq_zero`).
-* The paper writes the signs as Rademacher functions on `[0, 1]`.
+* The paper writes the signs as Rademacher functions on `[0, 1)`.
 -/
 
 @[expose] public section
@@ -104,15 +106,6 @@ private theorem measurePreserving_restrict_signLaw (N : ℕ) :
     Measure.count_singleton]
   simp [ENNReal.inv_pow]
 
-/-- A function of the first `N` signs is measurable. -/
-private theorem measurable_of_dependsOn {E : Type*} [MeasurableSpace E] {N : ℕ}
-    {F : (ℕ → Bool) → E} (hF : ∀ ω, F (extendSigns fun i : Fin N => ω i) = F ω) :
-    Measurable F := by
-  have h : F = (fun ε : Fin N → Bool => F (extendSigns ε)) ∘ fun ω i => ω i :=
-    funext fun ω => (hF ω).symm
-  rw [h]
-  exact Measurable.of_discrete.comp (measurePreserving_restrict_signLaw N).measurable
-
 /-- A function of the first `N` signs is strongly measurable. -/
 private theorem stronglyMeasurable_of_dependsOn {E : Type*} [TopologicalSpace E] {N : ℕ}
     {F : (ℕ → Bool) → E} (hF : ∀ ω, F (extendSigns fun i : Fin N => ω i) = F ω) :
@@ -135,28 +128,23 @@ private theorem eLpNorm_signLaw {E : Type*} [NormedAddCommGroup E] {N : ℕ}
 
 /-- `Z_m`, `m ≤ n`, depends only on the first `2n` signs. -/
 private theorem walk_extendSigns (δ : ℝ) (ω : ℕ → Bool) {m n : ℕ} (hmn : m ≤ n) :
-    walk δ (extendSigns fun i : Fin (2 * n) => ω i) m = walk δ ω m := by
-  refine Finset.sum_congr rfl fun k hk => ?_
-  have hk' := Finset.mem_range.1 hk
-  have h1 : 2 * k < 2 * n := by omega
-  have h2 : 2 * k + 1 < 2 * n := by omega
-  simp [extendSigns, h1, h2]
+    walk δ (extendSigns fun i : Fin (2 * n) => ω i) m = walk δ ω m :=
+  walk_congr δ fun j hj => by simp [extendSigns, show j < 2 * n by omega]
 
 /-- `τ ∧ n` depends only on the first `2n` signs. -/
 private theorem exitTime_extendSigns (δ : ℝ) (ω : ℕ → Bool) (n : ℕ) :
     exitTime δ (extendSigns fun i : Fin (2 * n) => ω i) n = exitTime δ ω n := by
   classical
-  have hle : ∀ ω' : ℕ → Bool, exitTime δ ω' n ≤ n := fun ω' => Nat.find_min' _ (Or.inl rfl)
   refine le_antisymm ?_ ?_
   · refine Nat.find_min' _ ?_
     have h := Nat.find_spec (p := fun m => m = n ∨ 1 ≤ ‖walk δ ω m‖) ⟨n, Or.inl rfl⟩
-    rw [walk_extendSigns δ ω (hle ω)]
+    rw [walk_extendSigns δ ω (exitTime_le δ ω n)]
     exact h
   · refine Nat.find_min' _ ?_
     have h := Nat.find_spec
       (p := fun m => m = n ∨ 1 ≤ ‖walk δ (extendSigns fun i : Fin (2 * n) => ω i) m‖)
       ⟨n, Or.inl rfl⟩
-    rw [← walk_extendSigns δ ω (hle (extendSigns fun i : Fin (2 * n) => ω i))]
+    rw [← walk_extendSigns δ ω (exitTime_le δ _ n)]
     exact h
 
 /-- `Z_{τ ∧ n}` depends only on the first `2n` signs. -/
@@ -164,8 +152,7 @@ private theorem walk_exitTime_extendSigns (δ : ℝ) (ω : ℕ → Bool) (n : �
     walk δ (extendSigns fun i : Fin (2 * n) => ω i)
       (exitTime δ (extendSigns fun i : Fin (2 * n) => ω i) n) =
         walk δ ω (exitTime δ ω n) := by
-  rw [exitTime_extendSigns, walk_extendSigns]
-  exact Nat.find_min' _ (Or.inl rfl)
+  rw [exitTime_extendSigns, walk_extendSigns δ ω (exitTime_le δ ω n)]
 
 /-! ### The exit time is finite almost everywhere -/
 
@@ -191,8 +178,9 @@ theorem ae_exists_one_le_norm_walk {δ : ℝ} (hδ0 : 0 < δ) (hδ : δ < 1 / 2)
     ∀ᵐ ω ∂signLaw, ∃ n, 1 ≤ ‖walk δ ω n‖ := by
   have hA : MeasurableSet {ω | ¬ ∃ n, 1 ≤ ‖walk δ ω n‖} := by
     rw [show {ω | ¬ ∃ n, 1 ≤ ‖walk δ ω n‖} = (⋃ n, {ω | 1 ≤ ‖walk δ ω n‖})ᶜ by ext; simp]
-    exact (MeasurableSet.iUnion fun n => measurableSet_le measurable_const (measurable_of_dependsOn
-      (N := 2 * n) fun ω => walk_extendSigns δ ω le_rfl).norm).compl
+    exact (MeasurableSet.iUnion fun n => measurableSet_le measurable_const
+      (stronglyMeasurable_of_dependsOn (N := 2 * n)
+        fun ω => walk_extendSigns δ ω le_rfl).measurable.norm).compl
   rw [ae_iff]
   set A : Set (ℕ → Bool) := {ω | ¬ ∃ n, 1 ≤ ‖walk δ ω n‖}
   -- `n^{1/2} P (τ = ∞)^{1/2} ≤ ‖(τ ∧ n)^{1/2}‖_2 ≤ 2 / δ`
@@ -253,8 +241,10 @@ theorem ae_norm_exitPlace_mem {δ : ℝ} (hδ0 : 0 < δ) (hδ : δ < 1 / 2) :
 /-- `Z_τ` is measurable (outside a null set). -/
 private theorem aemeasurable_exitPlace {δ : ℝ} (hδ0 : 0 < δ) (hδ : δ < 1 / 2) :
     AEMeasurable (exitPlace δ) signLaw :=
-  aemeasurable_of_tendsto_metrizable_ae atTop (fun n => (measurable_of_dependsOn (N := 2 * n)
-    fun ω => walk_exitTime_extendSigns δ ω n).aemeasurable) (ae_tendsto_walk_exitTime hδ0 hδ)
+  aemeasurable_of_tendsto_metrizable_ae atTop (fun n =>
+    (stronglyMeasurable_of_dependsOn (N := 2 * n)
+      fun ω => walk_exitTime_extendSigns δ ω n).measurable.aemeasurable)
+    (ae_tendsto_walk_exitTime hδ0 hδ)
 
 /-! ### Bounded convergence -/
 
@@ -320,12 +310,6 @@ private theorem tendsto_lpNorm_walk {E : Type*} [NormedAddCommGroup E] {F : ℂ 
 
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
 
-/-- The functions (19) are continuous. -/
-private theorem continuous_conjHarmPoly (N : ℕ) (a b : ℕ → X) :
-    Continuous (conjHarmPoly N a b) := by
-  rw [funext (conjHarmPoly_eq N a b)]
-  exact continuous_harmPoly N (-b) a
-
 /-- `‖v (Z_τ)‖_p ≤ β² ‖u (Z_τ)‖_p + (β² + 1) C_p γ δ` (p. 282). -/
 private theorem exists_eLpNorm_conjHarmPoly_exitPlace_le {p : ℝ} (hp : 1 < p) : ∃ C : ℝ, 0 ≤ C ∧
     ∀ (X : Type*) [NormedAddCommGroup X] [NormedSpace ℝ X] [CompleteSpace X] (β : ℝ≥0∞),
@@ -358,20 +342,12 @@ private theorem exists_eLpNorm_conjHarmPoly_rotate_le {p : ℝ} (hp : 1 < p) : �
 
 /-! ### Rotations -/
 
-/-- The `p`-th power of the `L^p` norm, as an integral. -/
-private theorem eLpNorm_rpow_eq_lintegral {Ω E : Type*} {mΩ : MeasurableSpace Ω}
-    [NormedAddCommGroup E] {μ : Measure Ω} {p : ℝ} (hp : 0 < p) {u : Ω → E}
-    (hu : AEStronglyMeasurable u μ) :
-    eLpNorm u (ENNReal.ofReal p) μ ^ p = ∫⁻ ω, ‖u ω‖ₑ ^ p ∂μ := by
-  rw [eLpNorm_eq_lintegral_rpow_enorm_toReal (by simpa using hp) ENNReal.ofReal_ne_top hu,
-    ENNReal.toReal_ofReal hp.le, ← ENNReal.rpow_mul, one_div_mul_cancel hp.ne', ENNReal.rpow_one]
-
 /-- The `L^p` norm as the power `1 / p` of an integral. -/
 private theorem eLpNorm_eq_rpow_lintegral {Ω E : Type*} {mΩ : MeasurableSpace Ω}
     [NormedAddCommGroup E] {μ : Measure Ω} {p : ℝ} (hp : 0 < p) {u : Ω → E}
     (hu : AEStronglyMeasurable u μ) :
     eLpNorm u (ENNReal.ofReal p) μ = (∫⁻ ω, ‖u ω‖ₑ ^ p ∂μ) ^ (1 / p) := by
-  rw [← eLpNorm_rpow_eq_lintegral hp hu, ← ENNReal.rpow_mul, mul_one_div_cancel hp.ne',
+  rw [← eLpNorm_ofReal_rpow_eq_lintegral hp hu, ← ENNReal.rpow_mul, mul_one_div_cancel hp.ne',
     ENNReal.rpow_one]
 
 /-- The integration in `α`: if `‖v (α, ·)‖_p ≤ K ‖u (α, ·)‖_p + c` for every `α`, then
@@ -395,7 +371,7 @@ private theorem eLpNorm_prod_le_of_forall {A Ω E : Type*} {mA : MeasurableSpace
     rw [lintegral_prod _ (hv.enorm.pow_const p)]
     refine lintegral_mono_ae ?_
     filter_upwards [hu.prodMk_left, hv.prodMk_left] with α hα hα'
-    rw [← eLpNorm_rpow_eq_lintegral hp0 hα']
+    rw [← eLpNorm_ofReal_rpow_eq_lintegral hp0 hα']
     refine ENNReal.rpow_le_rpow ((h α).trans ?_) hp0.le
     rw [eLpNorm_eq_rpow_lintegral hp0 hα]
     rfl
@@ -685,11 +661,6 @@ private theorem smul_add_conj_smul' {V : Type*} [AddCommGroup V] [Module ℂ V] 
   have hconj : (starRingEnd ℂ) (-Complex.I * w) = Complex.I * (starRingEnd ℂ) w := by simp
   rw [hre, him, hconj, neg_smul, ← sub_eq_add_neg] at h
   rw [← h, smul_smul, smul_smul, mul_comm w, mul_comm Complex.I]
-
-/-- `e_k (t) = e_1 (t)^k`. -/
-private theorem fourier_natCast (k : ℕ) (t : UnitAddCircle) :
-    (fourier (k : ℤ) t : ℂ) = fourier 1 t ^ k := by
-  rw [fourier_apply, fourier_one, natCast_zsmul, toCircle_nsmul, Circle.coe_pow]
 
 /-- **Lemma 2** for a complex space, in terms of the functions `e_n (t) = e^{2πi n t}` on `ℝ / ℤ` (a
 reformulation that is not in the source): if `c_0 = 0`,

@@ -14,7 +14,8 @@ import HarmonicAnalysis.FourierMultiplier.Density
 
 D. L. Burkholder, *A geometric condition that implies the existence of certain singular integrals of
 Banach-space-valued functions* (1983), Lemma 3 and (33) (pp. 282–283). Let `X` be a real Banach
-space, `1 < p < ∞`, `β` a `UMD_p` constant of `X`, and `f ∈ L^p (𝕋; X)`, `𝕋 = ℝ / 2πℤ`. The
+space, `1 < p < ∞`, `β` a `UMD_p` constant of `X`, and `f ∈ L^p (𝕋; X)`, `𝕋 = ℝ / 2πℤ`, with the
+measure `dθ / 2π` (in the source `dθ`, which does not affect the constants). The
 functions (30) and (31) are `u (r e^{iθ})` (`discPoissonInt r f θ`) and `v (r e^{iθ})`
 (`discConjPoissonInt r f θ`), written with `f (θ − t)` (the kernels are periodic), and the truncated
 conjugate function is `f̃_ε` (`truncatedConj ε f`).
@@ -240,37 +241,20 @@ private theorem eLpNorm_circConv_le {p : ℝ} (hp : 1 ≤ p) {k : ℝ → ℝ} (
     eLpNorm (circConv k f) (ENNReal.ofReal p) haarAddCircle ≤
       (∫⁻ t in Set.Ioc (-π) π, ‖(2 * π)⁻¹ * k t‖ₑ) *
         eLpNorm f (ENNReal.ofReal p) haarAddCircle := by
-  have hp0 : 0 < p := by linarith
   have hg : StronglyMeasurable (hf.mk f) := hf.stronglyMeasurable_mk
   rw [eLpNorm_congr_ae hf.ae_eq_mk, circConv_congr k hf.ae_eq_mk]
   set g := hf.mk f
   have hF : StronglyMeasurable
       (Function.uncurry fun (θ : AddCircle (2 * π)) (t : ℝ) => g (θ - t)) :=
     hg.comp_measurable (measurable_fst.sub (AddCircle.measurable_mk'.comp measurable_snd))
-  have hw : Measurable fun t => ‖(2 * π)⁻¹ * k t‖ₑ := (hk.const_mul _).enorm
-  set A := ∫⁻ t in Set.Ioc (-π) π, ‖(2 * π)⁻¹ * k t‖ₑ
-  rw [← ENNReal.rpow_le_rpow_iff hp0, eLpNorm_ofReal_rpow_eq_lintegral hp0
-    (stronglyMeasurable_circConv hk hg.aestronglyMeasurable).aestronglyMeasurable]
-  calc ∫⁻ θ, ‖circConv k g θ‖ₑ ^ p ∂haarAddCircle
-      ≤ ∫⁻ θ : AddCircle (2 * π), (∫⁻ t : ℝ in Set.Ioc (-π) π,
-          ‖(2 * π)⁻¹ * k t‖ₑ * ‖g (θ - t)‖ₑ) ^ p ∂haarAddCircle := by
-        refine lintegral_mono fun θ => ENNReal.rpow_le_rpow ?_ hp0.le
-        rw [circConv, ← integral_smul]
-        refine (enorm_integral_le_lintegral_enorm _).trans_eq ?_
-        simp_rw [smul_smul, enorm_smul]
-    _ ≤ A ^ (p - 1) * ∫⁻ t : ℝ in Set.Ioc (-π) π, ‖(2 * π)⁻¹ * k t‖ₑ *
-          (∫⁻ θ : AddCircle (2 * π), ‖g (θ - t)‖ₑ ^ p ∂haarAddCircle) :=
-        lintegral_rpow_lintegral_mul_le hw hF.enorm hp
-    _ = A ^ (p - 1) * ∫⁻ t in Set.Ioc (-π) π, ‖(2 * π)⁻¹ * k t‖ₑ *
-          eLpNorm g (ENNReal.ofReal p) haarAddCircle ^ p := by
-        simp_rw [lintegral_sub_right_eq_self (μ := haarAddCircle) fun θ => ‖g θ‖ₑ ^ p,
-          eLpNorm_ofReal_rpow_eq_lintegral hp0 hg.aestronglyMeasurable]
-    _ = (A * eLpNorm g (ENNReal.ofReal p) haarAddCircle) ^ p := by
-        rw [lintegral_mul_const _ hw, ← mul_assoc, ENNReal.mul_rpow_of_nonneg _ _ hp0.le]
-        congr 1
-        conv_lhs => rw [show ∫⁻ t in Set.Ioc (-π) π, ‖(2 * π)⁻¹ * k t‖ₑ = A ^ (1 : ℝ) from
-          (ENNReal.rpow_one A).symm]
-        rw [← ENNReal.rpow_add_of_nonneg _ _ (by linarith) zero_le_one, sub_add_cancel]
+  have h : circConv k g = fun θ : AddCircle (2 * π) =>
+      ∫ t in Set.Ioc (-π) π, ((2 * π)⁻¹ * k t) • g (θ - t) := funext fun θ => by
+    rw [circConv, ← integral_smul]
+    simp_rw [smul_smul]
+  rw [h]
+  refine eLpNorm_integral_smul_le hp (hk.const_mul _) hF (ae_of_all _ fun t => ?_)
+  exact (eLpNorm_comp_measurePreserving hg.aestronglyMeasurable
+    (measurePreserving_sub_right haarAddCircle (t : AddCircle (2 * π)))).le
 
 /-- For a kernel `k` that comes from a function `K` on the circle, `circConv k f θ` is the integral
 of `K (θ − s) f (s)` over the circle. -/
@@ -387,9 +371,7 @@ private theorem mul_fourier_sub_pow (r : ℝ) (k : ℕ) (θ s : AddCircle (2 * �
   have h1 : fourier 1 (θ - s) = fourier 1 θ * (starRingEnd ℂ) (fourier 1 s) := by
     rw [← fourier_neg, fourier_one, fourier_apply, fourier_apply, one_zsmul, neg_one_zsmul,
       sub_eq_add_neg, toCircle_add, Circle.coe_mul]
-  have h2 : fourier (k : ℤ) s = (fourier 1 s : ℂ) ^ k := by
-    rw [fourier_one, fourier_apply, natCast_zsmul, toCircle_nsmul, Circle.coe_pow]
-  rw [h1, h2, map_pow]
+  rw [h1, fourier_natCast, map_pow]
   ring
 
 /-- `cos (kt)`, `sin (kt)` are continuous. -/
@@ -531,29 +513,11 @@ private theorem integral_mul_fourier_pow (r : ℝ) {k : ℕ} (hk : 1 ≤ k) :
     ∫ θ : AddCircle (2 * π), ((r : ℂ) * fourier 1 θ) ^ k ∂haarAddCircle = 0 := by
   have h2 : ∀ θ : AddCircle (2 * π), ((r : ℂ) * fourier 1 θ) ^ k =
       (r : ℂ) ^ k * fourier (k : ℤ) θ := fun θ => by
-    rw [mul_pow, fourier_one, fourier_apply, natCast_zsmul, toCircle_nsmul, Circle.coe_pow]
+    rw [mul_pow, fourier_natCast]
   have h := congrFun (fourierCoeff_fourier (T := 2 * π) (k : ℤ)) 0
   rw [Pi.single_eq_of_ne (by omega), fourierCoeff] at h
   simp only [neg_zero, fourier_zero, one_smul] at h
   simp only [h2, integral_const_mul, h, mul_zero]
-
-/-- The functions (18) and (19) are continuous. -/
-private theorem continuous_harmPoly_circle (r : ℝ) (N : ℕ) (a b : ℕ → X) :
-    Continuous (fun θ : AddCircle (2 * π) => harmPoly N a b (r * fourier 1 θ)) ∧
-      Continuous fun θ : AddCircle (2 * π) => conjHarmPoly N a b (r * fourier 1 θ) := by
-  have hz : ∀ k : ℕ, Continuous fun θ : AddCircle (2 * π) => ((r : ℂ) * fourier 1 θ) ^ k :=
-    fun k => (continuous_const.mul (map_continuous (fourier 1))).pow k
-  have hre := fun k => Complex.continuous_re.comp (hz k)
-  have him := fun k => Complex.continuous_im.comp (hz k)
-  exact ⟨continuous_finsetSum _ fun k _ =>
-      ((hre k).smul continuous_const).add ((him k).smul continuous_const),
-    continuous_finsetSum _ fun k _ =>
-      ((him k).smul continuous_const).sub ((hre k).smul continuous_const)⟩
-
-/-- Continuous functions on the circle are integrable. -/
-private theorem integrable_of_continuous {E : Type*} [NormedAddCommGroup E]
-    {g : AddCircle (2 * π) → E} (hg : Continuous g) : Integrable g haarAddCircle :=
-  hg.integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
 
 /-- The functions (18) have mean `u (0) = 0` on the circle `|z| = r`. -/
 private theorem integral_harmPoly [CompleteSpace X] (r : ℝ) (N : ℕ) (a b : ℕ → X) :
@@ -562,20 +526,20 @@ private theorem integral_harmPoly [CompleteSpace X] (r : ℝ) (N : ℕ) (a b : �
     fun k => (continuous_const.mul (map_continuous (fourier 1))).pow k
   have hre : ∀ k, Integrable (fun θ : AddCircle (2 * π) =>
       (((r : ℂ) * fourier 1 θ) ^ k).re • a k) haarAddCircle := fun k =>
-    integrable_of_continuous ((Complex.continuous_re.comp (hz k)).smul continuous_const)
+    integrable_haar_of_continuous ((Complex.continuous_re.comp (hz k)).smul continuous_const)
   have him : ∀ k, Integrable (fun θ : AddCircle (2 * π) =>
       (((r : ℂ) * fourier 1 θ) ^ k).im • b k) haarAddCircle := fun k =>
-    integrable_of_continuous ((Complex.continuous_im.comp (hz k)).smul continuous_const)
+    integrable_haar_of_continuous ((Complex.continuous_im.comp (hz k)).smul continuous_const)
   have hre0 : ∀ k : ℕ, 1 ≤ k →
       ∫ θ : AddCircle (2 * π), (((r : ℂ) * fourier 1 θ) ^ k).re ∂haarAddCircle = 0 :=
     fun k hk => by
-      have h := Complex.reCLM.integral_comp_comm (integrable_of_continuous (hz k))
+      have h := Complex.reCLM.integral_comp_comm (integrable_haar_of_continuous (hz k))
       rw [integral_mul_fourier_pow r hk, map_zero] at h
       exact h
   have him0 : ∀ k : ℕ, 1 ≤ k →
       ∫ θ : AddCircle (2 * π), (((r : ℂ) * fourier 1 θ) ^ k).im ∂haarAddCircle = 0 :=
     fun k hk => by
-      have h := Complex.imCLM.integral_comp_comm (integrable_of_continuous (hz k))
+      have h := Complex.imCLM.integral_comp_comm (integrable_haar_of_continuous (hz k))
       rw [integral_mul_fourier_pow r hk, map_zero] at h
       exact h
   simp only [harmPoly]
@@ -590,15 +554,18 @@ private theorem integral_harmPoly [CompleteSpace X] (r : ℝ) (N : ℕ) (a b : �
 private theorem integral_discPoissonInt [CompleteSpace X] {r : ℝ} (hr0 : 0 ≤ r) (hr1 : r < 1)
     {f : AddCircle (2 * π) → X} (hf : Integrable f haarAddCircle) :
     ∫ θ, discPoissonInt r f θ ∂haarAddCircle = ∫ s, f s ∂haarAddCircle := by
-  have hu := integrable_of_continuous (continuous_discPoissonInt hr0 hr1 hf)
+  have hu := integrable_haar_of_continuous (continuous_discPoissonInt hr0 hr1 hf)
   have hw : Integrable (fun θ => discPoissonInt r f θ - ∫ s, f s ∂haarAddCircle) haarAddCircle :=
     hu.sub (integrable_const _)
   have hN : ∀ N, ‖∫ θ, (discPoissonInt r f θ - ∫ s, f s ∂haarAddCircle) ∂haarAddCircle‖ ≤
       approxErr r f N := fun N => by
     have h := norm_integral_le_of_norm_le_const (μ := haarAddCircle)
       (ae_of_all _ (norm_harmPoly_coeff_sub_le hr0 hr1 hf N))
-    rw [integral_sub (integrable_of_continuous (continuous_harmPoly_circle r N _ _).1) hw,
-      integral_harmPoly, zero_sub, norm_neg] at h
+    have hc : Continuous fun θ : AddCircle (2 * π) =>
+        harmPoly N (cosCoeff f) (sinCoeff f) (r * fourier 1 θ) :=
+      (continuous_harmPoly N _ _).comp (continuous_const.mul (map_continuous (fourier 1)))
+    rw [integral_sub (integrable_haar_of_continuous hc) hw, integral_harmPoly, zero_sub,
+      norm_neg] at h
     simpa using h
   have h0 := norm_le_zero_iff.1 (ge_of_tendsto' (tendsto_approxErr hr0 hr1 f) hN)
   rw [integral_sub hu (integrable_const _), integral_const, probReal_univ, one_smul] at h0
@@ -612,7 +579,7 @@ private theorem enorm_integral_le [CompleteSpace X] {p : ℝ} (hp : 1 < p) {r : 
   rw [← integral_discPoissonInt hr0 hr1 hf]
   refine (enorm_integral_le_lintegral_enorm _).trans ?_
   rw [← eLpNorm_one_eq_lintegral_enorm
-    (integrable_of_continuous (continuous_discPoissonInt hr0 hr1 hf)).aestronglyMeasurable]
+    (integrable_haar_of_continuous (continuous_discPoissonInt hr0 hr1 hf)).aestronglyMeasurable]
   exact eLpNorm_le_eLpNorm_of_exponent_le (ENNReal.one_le_ofReal.2 hp.le)
 
 /-- Lemma 2 and the uniform convergence: `‖v (r e^{iθ})‖_p ≤ β² ‖u (r e^{iθ}) − u (0)‖_p`. -/
@@ -626,17 +593,19 @@ private theorem eLpNorm_discConjPoissonInt_le_sub [CompleteSpace X] {p : ℝ} (h
   set q := ENNReal.ofReal p
   set w : AddCircle (2 * π) → X := fun θ => discPoissonInt r f θ - ∫ s, f s ∂haarAddCircle
   set v := discConjPoissonInt r f
-  have hw := integrable_of_continuous ((continuous_discPoissonInt hr0 hr1 hf).sub
+  have hw := integrable_haar_of_continuous ((continuous_discPoissonInt hr0 hr1 hf).sub
     (continuous_const (y := ∫ s, f s ∂haarAddCircle)))
-  have hv := integrable_of_continuous (continuous_discConjPoissonInt hr0 hr1 hf)
+  have hv := integrable_haar_of_continuous (continuous_discConjPoissonInt hr0 hr1 hf)
   let uN : ℕ → AddCircle (2 * π) → X := fun N θ =>
     harmPoly N (cosCoeff f) (sinCoeff f) (r * fourier 1 θ)
   let vN : ℕ → AddCircle (2 * π) → X := fun N θ =>
     conjHarmPoly N (cosCoeff f) (sinCoeff f) (r * fourier 1 θ)
-  have huN := fun N => integrable_of_continuous
-    (continuous_harmPoly_circle r N (cosCoeff f) (sinCoeff f)).1
-  have hvN := fun N => integrable_of_continuous
-    (continuous_harmPoly_circle r N (cosCoeff f) (sinCoeff f)).2
+  have hc : Continuous fun θ : AddCircle (2 * π) => (r : ℂ) * fourier 1 θ :=
+    continuous_const.mul (map_continuous (fourier 1))
+  have huN := fun N => integrable_haar_of_continuous
+    ((continuous_harmPoly N (cosCoeff f) (sinCoeff f)).comp hc)
+  have hvN := fun N => integrable_haar_of_continuous
+    ((continuous_conjHarmPoly N (cosCoeff f) (sinCoeff f)).comp hc)
   let E : ℕ → ℝ≥0∞ := fun N => ENNReal.ofReal (approxErr r f N)
   have hbd : ∀ (g : AddCircle (2 * π) → X) (C : ℝ), AEStronglyMeasurable g haarAddCircle →
       (∀ θ, ‖g θ‖ ≤ C) → eLpNorm g q haarAddCircle ≤ ENNReal.ofReal C := fun g C hg hC => by

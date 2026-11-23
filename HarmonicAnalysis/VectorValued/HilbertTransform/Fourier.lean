@@ -525,7 +525,8 @@ theorem tendsto_truncatedHilbert_fourierInv {G : ℝ → X} (hG : Integrable G) 
 
 /-! ### The Hilbert transform on UMD spaces -/
 
-/-- The bound for the Hilbert transform in terms of a `UMD_p` constant. -/
+/-- The bound `4 β² + 11` for the Hilbert transform from the dyadic shifts (HNVW I, Theorem 5.1.13);
+`hilbertBound` is Burkholder's `2 β² + 1`. -/
 noncomputable def dyadicHilbertBound (β : ℝ≥0∞) : ℝ≥0∞ := 4 * β ^ 2 + 11
 
 /-- The truncations `ε_i = 2^{−i}`, `R_i = 2^i = 2^{2i} ε_i`. -/
