@@ -4,10 +4,15 @@ Arguments shorter than those of the sources, noticed while following them. The l
 sources up to the departures stated in the module docstrings (and, for the vector-valued part, in the
 table of sources of the [README](../README.md), "Method"); the items with the status "in the library" are
 among them. Status:
-"in the library"; "history" (proved in this repository at the commit named, replaced since by the
-source's proof; the paths there are those of the commit); "compiled" (checked by Lean, not kept); "Lean
-elsewhere"; "on paper" (written out or sketched, not compiled). References are in
-[REFERENCES.md](REFERENCES.md).
+
+- "in the library"
+- "history" (proved in this repository at the commit named, replaced since by the source's proof;
+  the paths there are those of the commit)
+- "compiled" (checked by Lean, not kept)
+- "Lean elsewhere"
+- "on paper" (written out or sketched, not compiled)
+
+References are in [REFERENCES.md](REFERENCES.md).
 
 ## Fourier multipliers and transference
 
@@ -52,11 +57,22 @@ elsewhere"; "on paper" (written out or sketched, not compiled). References are i
 | --- | --- | --- | --- |
 | 23 | noncommutative Khintchine, upper bound, real matrices, `q ≥ 2` | exchangeable pairs (Mackey–Jordan–Chen–Farrell–Tropp 2014), then the Hermitian dilation: constant `√(2 (q − 1))`, about 500 lines in place of the route of [LPP] and [Pi] | Lean elsewhere (`BanachProbability.ncKhintchine_upper`) |
 | 24 | `p = 1`: [LPP, Thm II.1 a) (i)] and the lower Khintchine inequality in `S_1` | Fournier (2014, preprint): `f = h* g` with `g, h ∈ L² (S_2)` (any factorization), and the orthogonal projections of `g` and of `h` onto nested closed spaces spanned by functions `w h b`, `w` in a block of Walsh functions (or frequencies) and `b` a bounded operator; the coefficient of `w_{2^j}` splits into two terms by the orthogonality of the projections, with the constant `2`. No analytic factorization, no Littlewood–Paley theory. Scope: `p = 1` only (the orthogonality is that of `L² (S_2)`), signs, or frequencies with `k_{j+1} > 2 k_j` (so `2^k` only after a splitting into two sequences); not compared in detail with the proofs here | on paper |
-| 25 | [LPP, Thm III.1 (i)] for the Paley projection, (III.3) | replace `e^{i 2^k t}` by independent unimodular variables `z_1, …, z_n` on `𝕋ⁿ`, with `ℤⁿ` ordered lexicographically from the last coordinate (`α > 0` if its last non-zero coordinate is `> 0`): the factorization works for an ordered dual, the coefficient of `z_k` in `g h` is `∫ z̄_k g d_k h + ∫ z̄_k d_k g h`, `d_k` the martingale differences of the filtration `σ (z_1, …, z_k)`, and (III.3) becomes the UMD inequality for `C_{2p}`. No Littlewood–Paley theory | on paper (identity checked numerically, `n = 2, 3`) |
+| 25 | [LPP, Thm III.1 (i)] for the Paley projection, (III.3) | independent unimodular variables on `𝕋ⁿ` (below) | on paper (identity checked numerically, `n = 2, 3`) |
 | 26 | [LPP, Thm III.1 (i)] for a lacunary sequence | `n_k = 2^{k+1} − 1` in place of `2^k` (the source allows any lacunary sequence, p. 242): both blocks are exactly `[2^k, 2^{k+1})`, so no single frequencies occur. Serves the Khintchine inequality | on paper |
 | 27 | [LPP, (III.1)–(III.3)] | only the average of (III.3) over the signs is needed: the Littlewood–Paley inequality [HNVW, Thm 5.7.10] with random signs for the dyadic blocks, and the randomised boundedness of single frequencies (the blocks of the source differ from the dyadic ones by one or two frequencies): about 280 lines on top of [HNVW, Thm 5.7.10], in place of [MC, Thms 1.1, 1.3] and their transference (about 4 740 lines), and of [B83] for the Hilbert transform (about 3 490 lines). Scope: the average, not each choice of the signs | history (`ec00cb2`) |
 | 28 | the duality step of the Khintchine inequality | the bilinear pairing `tr (A B)` instead of `tr (A Bᴴ)`: (I.3) is then the only inequality needed, twice, with no transposes | compiled |
 | 29 | [LPP, (I.9)] for signs, `(E ‖Σ ε_k A_k‖²_{S_p})^{1/2} ≤ ‖(Σ A_kᴴ A_k)^{1/2}‖_{S_p}`, `1 ≤ p < 2`, and hence (I.14), with adjoints for the other square function and the triangle inequality (not in the library; `p = 2` is an equality) | with `D = (Σ A_kᴴ A_k)^{1/2}`, `S = Σ ε_k A_k`, `1/p = 1/2 + 1/r` and `α = 1 − p/2`: Hölder's inequality for `S = (S D^{−α}) D^α`, where `D^{−α}` is the inverse on the range of `D` (`S` vanishes on the kernel), `E ‖S D^{−α}‖²_{S_2} = tr D^p` and `‖D^α‖_{S_r} = ‖D‖_{S_p}^{p/r}`; no duality, and not (I.6), (I.8). Scope: `S_p`, any orthonormal system in place of the signs | on paper |
+
+Item 25:
+
+- Replace `e^{i 2^k t}` by independent unimodular variables `z_1, …, z_n` on `𝕋ⁿ`, with `ℤⁿ`
+  ordered lexicographically from the last coordinate (`α > 0` if its last non-zero coordinate is
+  `> 0`):
+  - The factorization works for an ordered dual.
+  - The coefficient of `z_k` in `g h` is `∫ z̄_k g d_k h + ∫ z̄_k d_k g h`, `d_k` the martingale
+    differences of the filtration `σ (z_1, …, z_k)`.
+  - (III.3) becomes the UMD inequality for `C_{2p}`.
+- No Littlewood–Paley theory.
 
 ## McConnell's theorems
 
@@ -78,10 +94,19 @@ elsewhere"; "on paper" (written out or sketched, not compiled). References are i
 | # | Result | Shorter proof | Status |
 | --- | --- | --- | --- |
 | 40 | [B83, Lemmas 2–4], the Hilbert transform on UMD spaces | the dyadic shifts of [HNVW, Section 5.1]: about 1 840 lines ([`VectorValued/Dyadic/`](../HarmonicAnalysis/VectorValued/Dyadic), `VectorValued/HilbertTransform/Truncated`, `ec00cb2`) in place of about 3 800 ([`VectorValued/Burkholder/`](../HarmonicAnalysis/VectorValued/Burkholder), with (9) and Lemma 4 after [B83, Lemma 1] and [R, §18]; about 3 490 at `c8182f9`); for the multiplier `sgn` both need [HNVW, Lemma 5.2.1] (`VectorValued/HilbertTransform/Fourier`, 600 lines). The constant is `4 β² + 11` in place of `2 β² + 1` | in the library (the first for the Littlewood–Paley inequalities of [HNVW], the second for [MC]) |
-| 41 | [B83, Lemmas 3, 4] and the multiplier `sgn` | no truncations: on the circle of length `2πR`, Lemma 2 in the limit (`u (0) = 0`, so the constant is `β²`) for `f − f̂ (0)` and `r = 1 − y / R`; as `R → ∞` the mean tends to `0` and `‖v (·, y)‖_p ≤ β² ‖f‖_p` for the conjugate Poisson integral `v (x, y) = π⁻¹ ∫ t (t² + y²)⁻¹ f (x − t) dt` on the line, whose symbol is `−i sgn (ξ) e^{−2π\|ξ\|y}` (by Fubini for `f ψ (η ·) ∈ L¹`, a cut-off, `η → 0`); `y → 0` with Fatou's lemma: `ħ ≤ β²`, without `K_r`, (33), `H_ε` and [HNVW, Lemma 5.2.1] | on paper |
+| 41 | [B83, Lemmas 3, 4] and the multiplier `sgn` | no truncations (below) | on paper |
 | 42 | [B83, Lemma 4], the constant | `‖v‖_p ≤ β² ‖u − u (0)‖_p` in (33), and the mean of the dilated function tends to `0` (in `L^p`, with the dilation): `β² + 1` in (34) | on paper |
 | 43 | [B83, (21)–(23)], `τ < ∞` | orthogonality, `2 δ² E (τ ∧ n) = E \|Z_{τ ∧ n}\|² ≤ 4`, or a run of about `2 / δ` equal signs, instead of (20); (27) still needs (20) | on paper |
 | 44 | [B83, Lemma 2], the limits `n → ∞`, `δ → 0` | for each `δ` an `n` with `P (τ > n) ≤ δ`, on the cube `{±1}^{2n}`: `1 ≤ \|Z_{τ ∧ n}\| ≤ 1 + 2δ` off a set of probability `δ`, and `\|Z_{τ ∧ n}\| ≤ 2`; no infinite sequence of signs, no `Z_τ` | on paper (about 250 lines less) |
 | 45 | the Hilbert transform in [MC, Thm 1.3] | Theorem 1.1 of [MC] in the library's form allows `m` of class `C²` on `ℝ ∖ {0}`, hence `m = sgn` with `c = 1`: `‖𝓕⁻ (sgn · G)‖_p ≤ C β² ‖𝓕⁻ G‖_p`, about 20 lines, without [B83] and [HNVW]. Scope: the multiplier, with a large absolute `C`; no truncations, no conjugate functions. Compare [MC, Remark 3.1], a direct proof by the same method | compiled |
 | 46 | [B83, (9)] for real martingales | Osękowski's Theorem 8.6, in BanachProbability (`BanachProbability.Burkholder.squareFunction_of_martingale`), gives (9) directly, with the constant `p* − 1` on both sides: no average over the signs and no Khintchine inequality. The proof here needs both: p. 275 asserts without proof that (8) implies (9) where Khintchine's inequality holds, and the proof is that of Lemma 1 (pp. 277–278) for `ℝ`, followed by Khintchine's inequality at each point, with the constants `κ_{2,p} (p* − 1)` and `κ_{p,2} (p* − 1)`. It stays in BanachProbability as the other proof | history (`11e9e12`); Lean elsewhere (BanachProbability) |
 | 47 | [B83, Lemma 4] | first for `f` that vanishes off `[−A, A]`: then `g_R ((x − s) / R) = f (x − s)` for `\|s\| < πR` and large `R`, so (38) holds with the kernel `(2R)⁻¹ cot (s / (2R))` for `\|s\| < πR` only, where `\|cot u\| ≤ \|u\|⁻¹` for `\|u\| < π/2` is enough, and Fatou's lemma as `R → ∞`; then `1_{[−A, A]} f → f` and Fatou's lemma again. Shorter in Lean, about 400 lines against 570 (non-blank lines of the module up to the limit `ε → 0`, docstrings included), because it needs no analysis of the kernel past `π/2` and no wrap-around (`perCot`, `abs_cot_le` up to `\|u\| ≤ 2`). Replaced by M. Riesz's argument (§18), which [B83] cites | history (`11e9e12`); not used |
+
+Item 41, no truncations:
+
+1. On the circle of length `2πR`, Lemma 2 in the limit (`u (0) = 0`, so the constant is `β²`) for
+   `f − f̂ (0)` and `r = 1 − y / R`.
+2. As `R → ∞` the mean tends to `0` and `‖v (·, y)‖_p ≤ β² ‖f‖_p` for the conjugate Poisson integral
+   `v (x, y) = π⁻¹ ∫ t (t² + y²)⁻¹ f (x − t) dt` on the line, whose symbol is
+   `−i sgn (ξ) e^{−2π|ξ|y}` (by Fubini for `f ψ (η ·) ∈ L¹`, a cut-off, `η → 0`).
+3. `y → 0` with Fatou's lemma: `ħ ≤ β²`, without `K_r`, (33), `H_ε` and [HNVW, Lemma 5.2.1].
