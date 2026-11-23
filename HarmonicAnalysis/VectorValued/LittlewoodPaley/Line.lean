@@ -5,7 +5,7 @@ Authors: The-Anh Vu-Le
 -/
 module
 
-public import HarmonicAnalysis.VectorValued.HilbertTransform.Fourier
+public import HarmonicAnalysis.VectorValued.HilbertTransform.Dyadic
 import HarmonicAnalysis.VectorValued.Transference
 import Mathlib.Analysis.Fourier.Convolution
 import Mathlib.Analysis.Real.Pi.Bounds
@@ -303,103 +303,6 @@ private theorem setIntegral_haarWeightDeriv {σ : ℝ} (hσ : σ ∈ Set.Ioo (1 
 
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace ℂ X]
 
-/-- The character `e_a (x) = e^{2πi a x}` of the line. -/
-noncomputable def expChar (a x : ℝ) : ℂ :=
-  Complex.exp (((2 * Real.pi * (a * x) : ℝ) : ℂ) * Complex.I)
-
-/-- The characters `e_a` have modulus `1`. -/
-theorem norm_expChar (a x : ℝ) : ‖expChar a x‖ = 1 :=
-  Complex.norm_exp_ofReal_mul_I _
-
-/-- The characters `e_a` are continuous. -/
-theorem continuous_expChar (a : ℝ) : Continuous (expChar a) := by
-  unfold expChar
-  fun_prop
-
-private theorem expChar_add_left (a b x : ℝ) : expChar (a + b) x = expChar a x * expChar b x := by
-  rw [expChar, expChar, expChar, ← Complex.exp_add]
-  push_cast
-  ring_nf
-
-private theorem expChar_comm (a x : ℝ) : expChar a x = expChar x a := by
-  rw [expChar, expChar, mul_comm a]
-
-/-- The inverse Fourier transform `𝓕⁻ G (x) = ∫ e_v (x) G (v) dv`. -/
-theorem fourierInv_eq_expChar (G : ℝ → X) (x : ℝ) :
-    𝓕⁻ G x = ∫ v, expChar v x • G v := by
-  rw [Real.fourierInv_eq']
-  refine integral_congr_ae (ae_of_all _ fun v => ?_)
-  simp [expChar, mul_comm]
-
-/-- HNVW I, (5.35), p. 404, for the modulations: `(G (· + a))ˇ = e_{−a} Ǧ`. -/
-theorem fourierInv_smul_expChar (a : ℝ) (G : ℝ → X) (x : ℝ) :
-    𝓕⁻ (fun ξ => G (ξ + a)) x = expChar (-a) x • 𝓕⁻ G x := by
-  rw [fourierInv_eq_expChar, fourierInv_eq_expChar, ← integral_smul,
-    ← integral_add_right_eq_self (fun v => expChar (-a) x • expChar v x • G v) a]
-  refine integral_congr_ae (ae_of_all _ fun v => ?_)
-  simp only [smul_smul, ← expChar_add_left]
-  rw [neg_add_eq_sub, add_sub_cancel_right]
-
-/-- The integrand `e_v (x) G (v)` of `𝓕⁻ G (x)` is integrable. -/
-theorem integrable_expChar_smul {G : ℝ → X} (hG : Integrable G) (x : ℝ) :
-    Integrable fun v => expChar v x • G v :=
-  hG.bdd_smul 1 (by simpa only [expChar_comm] using
-    (continuous_expChar x).aestronglyMeasurable) (ae_of_all _ fun v => (norm_expChar v x).le)
-
-/-- `𝓕⁻` is linear. -/
-theorem fourierInv_const_smul (c : ℂ) (G : ℝ → X) (x : ℝ) :
-    𝓕⁻ (fun ξ => c • G ξ) x = c • 𝓕⁻ G x := by
-  rw [fourierInv_eq_expChar, fourierInv_eq_expChar, ← integral_smul]
-  exact integral_congr_ae (ae_of_all _ fun ξ => smul_comm _ _ _)
-
-/-- `𝓕⁻` is linear: sums with real coefficients. -/
-theorem fourierInv_sum_smul {K : ℕ} {G : Fin K → ℝ → X} (hG : ∀ k, Integrable (G k))
-    (c : Fin K → ℝ) (x : ℝ) :
-    𝓕⁻ (fun ξ => ∑ k, c k • G k ξ) x = ∑ k, c k • 𝓕⁻ (G k) x := by
-  simp only [fourierInv_eq_expChar]
-  simp_rw [← integral_smul, Finset.smul_sum]
-  rw [integral_finsetSum]
-  · exact Finset.sum_congr rfl fun k _ => integral_congr_ae (ae_of_all _ fun v => smul_comm _ _ _)
-  · intro k _
-    exact integrable_expChar_smul ((hG k).smul (c k)) x
-
-/-- `∫ K (s) e_v (x − s) ds = e_v (x) 𝓕 K (v)`. -/
-private theorem integral_mul_expChar_sub (K : ℝ → ℂ) (x v : ℝ) :
-    ∫ s, K s * expChar v (x - s) = expChar v x * 𝓕 K v := by
-  rw [Real.fourier_real_eq_integral_exp_smul, ← integral_const_mul]
-  refine integral_congr_ae (ae_of_all _ fun s => ?_)
-  simp only [smul_eq_mul, expChar]
-  rw [← mul_assoc (Complex.exp _), ← Complex.exp_add, mul_comm]
-  push_cast
-  ring_nf
-
-/-- The convolution `K * 𝓕⁻ H`, with `K, H ∈ L¹`, as a Fourier multiplier: HNVW I, Lemma 2.4.8
-(p. 109), in this setting. -/
-theorem integral_smul_fourierInv_sub {K : ℝ → ℂ} (hK : Integrable K) {H : ℝ → X}
-    (hH : Integrable H) (x : ℝ) :
-    ∫ s, K s • 𝓕⁻ H (x - s) = 𝓕⁻ (fun ξ => 𝓕 K ξ • H ξ) x := by
-  by_cases hX : CompleteSpace X
-  swap
-  · simp [Real.fourierInv_eq', integral, hX]
-  have hint : Integrable (Function.uncurry fun s v : ℝ => (K s * expChar v (x - s)) • H v)
-      (volume.prod volume) := by
-    have h := (hK.smul_prod hH).bdd_smul 1 (φ := fun p : ℝ × ℝ => expChar p.2 (x - p.1))
-      (by unfold expChar; fun_prop : Continuous fun p : ℝ × ℝ =>
-        expChar p.2 (x - p.1)).aestronglyMeasurable
-      (ae_of_all _ fun p => (norm_expChar _ _).le)
-    refine h.congr (ae_of_all _ fun p => ?_)
-    simp only [Pi.smul_apply', Function.uncurry, smul_smul]
-    rw [mul_comm]
-  have h1 : ∫ s, K s • 𝓕⁻ H (x - s) = ∫ s, ∫ v, (K s * expChar v (x - s)) • H v := by
-    refine integral_congr_ae (ae_of_all _ fun s => ?_)
-    simp only
-    rw [fourierInv_eq_expChar, ← integral_smul]
-    simp only [smul_smul]
-  rw [h1, integral_integral_swap hint, fourierInv_eq_expChar]
-  refine integral_congr_ae (ae_of_all _ fun v => ?_)
-  simp only
-  rw [integral_smul_const, integral_mul_expChar_sub, mul_smul]
-
 /-- The Fourier transform of `φ_t`. -/
 private theorem fourier_dilate (φ : ℝ → ℝ) {t : ℝ} (ht : 0 < t) (ξ : ℝ) :
     𝓕 (fun z : ℝ => ((t⁻¹ * φ (t⁻¹ * z) : ℝ) : ℂ)) ξ =
@@ -425,12 +328,6 @@ theorem dilateConv_fourierInv {φ : ℝ → ℝ} (hφ : Integrable φ) {t : ℝ}
   have h := integral_smul_fourierInv_sub hφt hG x
   simp only [fourier_dilate φ ht, Complex.coe_smul] at h
   rw [dilateConv_eq_integral_sub, h]
-
-/-- `sign · G`, the Hilbert transform on the Fourier side, is integrable. -/
-theorem integrable_sign_smul {G : ℝ → X} (hG : Integrable G) :
-    Integrable fun ξ => (Real.sign ξ : ℂ) • G ξ :=
-  hG.bdd_smul 1 (Complex.measurable_ofReal.comp measurable_realSign).aestronglyMeasurable
-    (ae_of_all _ fun ξ => by rcases Real.sign_apply_eq ξ with h | h | h <;> simp [h])
 
 private theorem integrable_sign_sub_smul {G : ℝ → X} (hG : Integrable G) (a : ℝ) :
     Integrable fun ξ => (Real.sign (ξ - a) : ℂ) • G ξ := by
@@ -462,23 +359,6 @@ private theorem fourierInv_indicator_Ioo {G : ℝ → X} (hG : Integrable G) {a 
         Real.sign_of_pos (by linarith), ← add_smul]
       norm_num
 
-/-- The modulations of the functions in `L^p` are in `L^p`. -/
-theorem memLp_expChar_smul {p : ℝ≥0∞} {f : ℝ → X} (hf : MemLp f p volume) (a : ℝ) :
-    MemLp (fun x => expChar a x • f x) p volume :=
-  hf.of_le ((continuous_expChar a).aestronglyMeasurable.smul hf.aestronglyMeasurable)
-    (ae_of_all _ fun x => by rw [norm_smul, norm_expChar, one_mul])
-
-/-- HNVW I, (5.35), p. 404, with a factor `s`: `T_{s sgn (· − a)} f = s e_a T_{sgn} (e_{−a} f)`,
-where `G (· + a)` is the Fourier transform of `e_{−a} f`. -/
-theorem fourierInv_sign_sub (s a : ℝ) (G : ℝ → X) :
-    (𝓕⁻ fun ξ => ((s * Real.sign (ξ - a) : ℝ) : ℂ) • G ξ) =
-      fun x => ((s : ℂ) * expChar a x) • 𝓕⁻ (fun ξ => (Real.sign ξ : ℂ) • G (ξ + a)) x := by
-  funext x
-  have h := fourierInv_smul_expChar (-a) (fun ξ => (Real.sign ξ : ℂ) • G (ξ + a)) x
-  simp only [neg_neg, ← sub_eq_add_neg, sub_add_cancel] at h
-  rw [mul_smul, ← h, ← fourierInv_const_smul]
-  simp only [Complex.ofReal_mul, mul_smul]
-
 /-- HNVW I, (5.35), p. 404: `T_{sgn (· − a)} f = e_a T_{sgn} (e_{−a} f)`. -/
 private theorem fourierInv_sign_sub_one (a : ℝ) (G : ℝ → X) :
     (𝓕⁻ fun ξ => (Real.sign (ξ - a) : ℂ) • G ξ) =
@@ -486,34 +366,6 @@ private theorem fourierInv_sign_sub_one (a : ℝ) (G : ℝ → X) :
   simpa using fourierInv_sign_sub 1 a G
 
 variable [CompleteSpace X]
-
-omit [CompleteSpace X] in
-/-- The randomised bound for the multiplier `sgn`, from a bound `B` on the functions `𝓕⁻ G ∈ L^p`,
-`G ∈ L¹`, applied for each choice of the signs. -/
-theorem eLpNormRad_fourierInv_sign_le {p : ℝ} (hp : 1 < p) {B : ℝ≥0∞}
-    (hB : ∀ G : ℝ → X, Integrable G → MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume →
-      eLpNorm (𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G ξ) (ENNReal.ofReal p) volume ≤
-        B * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume)
-    {K : ℕ} {G : Fin K → ℝ → X} (hG : ∀ k, Integrable (G k))
-    (hf : ∀ k, MemLp (𝓕⁻ (G k)) (ENNReal.ofReal p) volume) :
-    eLpNormRad (fun k => 𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G k ξ) p volume ≤
-      B * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
-  have hsG := fun k => integrable_sign_smul (hG k)
-  refine eLpNormRad_le_of_forall (by linarith)
-    (fun k => (continuous_fourierInv_of_integrable (hsG k)).aestronglyMeasurable)
-    (fun k => (continuous_fourierInv_of_integrable (hG k)).aestronglyMeasurable) fun ε => ?_
-  have h1 : (fun x => ∑ k, SignCube.coin (ε k) • 𝓕⁻ (fun ξ => (Real.sign ξ : ℂ) • G k ξ) x) =
-      𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • ∑ k, SignCube.coin (ε k) • G k ξ := by
-    funext x
-    rw [← fourierInv_sum_smul hsG]
-    simp only [Finset.smul_sum, smul_comm (_ : ℂ) (_ : ℝ)]
-  have h2 : (fun x => ∑ k, SignCube.coin (ε k) • 𝓕⁻ (G k) x) =
-      𝓕⁻ fun ξ => ∑ k, SignCube.coin (ε k) • G k ξ :=
-    funext fun x => (fourierInv_sum_smul hG _ x).symm
-  rw [h1, h2]
-  refine hB _ (integrable_finsetSum _ fun k _ => (hG k).smul (SignCube.coin (ε k))) ?_
-  rw [← h2]
-  exact memLp_finsetSum _ fun k _ => (hf k).const_smul _
 
 /-- The randomised bound for the modulated Hilbert transforms (HNVW I, p. 414, with (5.35), p. 404):
 the bound for the Hilbert transform, and the contraction principle for the modulations. -/
@@ -551,14 +403,6 @@ private theorem eLpNormRad_fourierInv_sign_sub_le {p : ℝ} (hp : 1 < p) {β : �
         gcongr
         exact h1.trans (by gcongr)
     _ = 4 * dyadicHilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by ring
-
-/-- `|± 1/2| = 1/2`, in `[0, ∞]`. -/
-theorem enorm_half {𝕜 : Type*} [RCLike 𝕜] {c : 𝕜} (hc : c = 1 / 2 ∨ c = -1 / 2) : ‖c‖ₑ = 2⁻¹ := by
-  have h : ‖(1 / 2 : 𝕜)‖ₑ = 2⁻¹ := by
-    rw [one_div, enorm_inv two_ne_zero, ← ofReal_norm, RCLike.norm_ofNat, ENNReal.ofReal_ofNat]
-  rcases hc with rfl | rfl
-  · exact h
-  · rw [neg_div, enorm_neg, h]
 
 /-- HNVW I, proof of Lemma 5.3.21, p. 414, with Lemma 5.3.9, p. 404: the randomised bound for
 intervals, from the Hilbert transform. For any `a_k ≤ b_k`,
@@ -1018,20 +862,6 @@ private theorem eLpNormRad_lineBlock_pos_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0
   rw [h]
   exact (eLpNormRad_indicator_le hp.le _ fun k => hg (σ k)).trans
     ((eLpNormRad_comp_le hp.le hσ hg).trans (eLpNormRad_fourierInv_indicator_le hp hβ hG hf _))
-
-omit [CompleteSpace X] in
-/-- Reflections of the line. -/
-theorem fourierInv_comp_neg (F : ℝ → X) (x : ℝ) : 𝓕⁻ (fun ξ => F (-ξ)) x = 𝓕⁻ F (-x) :=
-  Real.fourierInv_comp_linearIsometry (LinearIsometryEquiv.neg ℝ) F x
-
-omit [CompleteSpace X] in
-/-- Reflections of the line preserve the norm of `𝓕⁻ G`. -/
-theorem eLpNorm_fourierInv_comp_neg {G : ℝ → X} (hG : Integrable G) (P : ℝ≥0∞) :
-    eLpNorm (𝓕⁻ fun ξ => G (-ξ)) P volume = eLpNorm (𝓕⁻ G) P volume := by
-  rw [funext (fourierInv_comp_neg G)]
-  exact eLpNorm_comp_measurePreserving
-    (continuous_fourierInv_of_integrable hG).aestronglyMeasurable
-    (Measure.measurePreserving_neg volume)
 
 omit [CompleteSpace X] in
 /-- `Δ_{I_{−k}} f (x) = Δ_{I_k} (f (−·)) (−x)`. -/

@@ -5,7 +5,8 @@ Authors: The-Anh Vu-Le
 -/
 module
 
-public import HarmonicAnalysis.VectorValued.HilbertTransform.Truncated
+public import HarmonicAnalysis.VectorValued.Common
+public import HarmonicAnalysis.VectorValued.RademacherNorm
 public import Mathlib.Analysis.Fourier.Inversion
 public import Mathlib.Basic.Real.Sign
 import Mathlib.Analysis.Complex.CauchyIntegral
@@ -13,29 +14,24 @@ import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Bounds
 
 /-!
-# The Fourier multiplier `sgn` on UMD spaces
+# The Fourier multiplier `sgn` and the truncated Hilbert transforms
 
 Let `X` be a complex Banach space. For `G ∈ L¹ (ℝ; X)`, `f = 𝓕⁻ G` is a bounded continuous
 function, and a bounded measurable `m` acts on it by `T_m f = 𝓕⁻ (m G)` (HNVW's class `Ľ¹`). The
-truncated Hilbert transform acts with the symbol `−i sgn (ξ) m_{ε,R} (ξ)`, `|m_{ε,R}| ≤ 2`,
-`m_{ε,R} → 1` (`truncatedHilbert_fourierInv`, `abs_hilbertSymbol_le`, `tendsto_hilbertSymbol`), by
-Cauchy's theorem on a half annulus; by dominated convergence `H_{ε,R} f → 𝓕⁻ (−i sgn · G)` pointwise
-(`tendsto_truncatedHilbert_fourierInv`). On a UMD space `X`, with a `UMD_p` constant `β`,
-`1 < p < ∞`, and for `f = 𝓕⁻ G ∈ L^p` with `G ∈ L¹`, that is, `f ∈ L^p ∩ Ľ¹`,
+truncated Hilbert transform `H_{ε,R} f (x) = π⁻¹ ∫_{ε < |x − y| < R} f (y) / (x − y) dy`
+(`truncatedHilbert`) acts with the symbol `−i sgn (ξ) m_{ε,R} (ξ)`, `|m_{ε,R}| ≤ 2`, `m_{ε,R} → 1`
+(`truncatedHilbert_fourierInv`, `abs_hilbertSymbol_le`, `tendsto_hilbertSymbol`), by Cauchy's
+theorem on a half annulus; by dominated convergence `H_{ε,R} f → 𝓕⁻ (−i sgn · G)` pointwise
+(`tendsto_truncatedHilbert_fourierInv`). A bound for the multiplier `sgn` on the functions
+`𝓕⁻ G ∈ L^p` with `G ∈ L¹` holds for each choice of the signs, hence for the Rademacher sums
+(`eLpNormRad_fourierInv_sign_le`).
 
-`‖𝓕⁻ (−i sgn · G)‖_p = ‖𝓕⁻ (sgn · G)‖_p ≤ (4 β² + 11) ‖𝓕⁻ G‖_p`
-(`eLpNorm_fourierInv_neg_I_sign_le_dyadic`, `eLpNorm_fourierInv_sign_le_dyadic`).
-
-This is the inequality for the Hilbert transform on the class `L^p ∩ Ľ¹`; its extension to all of
-`L^p (ℝ; X)` by density is not carried out here.
+The bound of the multiplier `sgn` on UMD spaces is proved twice: by the dyadic shifts in
+`VectorValued.HilbertTransform.Dyadic`, and by Burkholder's method in
+`VectorValued.Burkholder.HilbertTransform`.
 
 Source: Hytönen–van Neerven–Veraar–Weis (HNVW), *Analysis in Banach spaces I* (2016), Lemma 5.2.1,
-pp. 388–389, and Proposition 5.2.2, p. 389, and Theorem 5.1.13, pp. 385–386, for the bound.
-
-Departure from the source: in the book the bound is that of Theorem 5.1.13 for the limit `H f` of
-the truncations in `L^p`. Here the truncations are bounded uniformly
-(`eLpNorm_truncatedHilbert_le`), the limit is the pointwise one of Proposition 5.2.2, and the bound
-passes to it by Fatou's lemma.
+pp. 388–389, and Proposition 5.2.2, p. 389.
 -/
 
 @[expose] public section
@@ -44,6 +40,16 @@ open MeasureTheory BanachProbability Filter Topology
 open scoped ENNReal FourierTransform
 
 namespace HarmonicAnalysis
+
+section TruncatedHilbert
+
+variable {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
+
+/-- The truncated Hilbert transform `H_{ε,R} f (x) = π⁻¹ ∫_{ε < |x − y| < R} f (y) / (x − y) dy`. -/
+noncomputable def truncatedHilbert (ε R : ℝ) (f : ℝ → X) (x : ℝ) : X :=
+  Real.pi⁻¹ • ∫ y in {y | ε < |x - y| ∧ |x - y| < R}, (x - y)⁻¹ • f y
+
+end TruncatedHilbert
 
 /-- HNVW I, Lemma 5.2.1: the function `m_{ε,R}`,
 `−i sgn (ξ) m_{ε,R} (ξ) = π⁻¹ ∫_{ε < |x| < R} e^{−2πi x ξ} dx / x`, that is,
@@ -523,22 +529,7 @@ theorem tendsto_truncatedHilbert_fourierInv {G : ℝ → X} (hG : Integrable G) 
     · exact ((tendsto_truncatedSymbol ξ).smul_const _).const_smul _
   exact h.congr' (hz.mono fun z hz => (congrFun (truncatedHilbert_fourierInv hG hz.1 hz.2) x).symm)
 
-/-! ### The Hilbert transform on UMD spaces -/
-
-/-- The bound `4 β² + 11` for the Hilbert transform from the dyadic shifts (HNVW I, Theorem 5.1.13);
-`hilbertBound` is Burkholder's `2 β² + 1`. -/
-noncomputable def dyadicHilbertBound (β : ℝ≥0∞) : ℝ≥0∞ := 4 * β ^ 2 + 11
-
-/-- The truncations `ε_i = 2^{−i}`, `R_i = 2^i = 2^{2i} ε_i`. -/
-private theorem tendsto_two_pow : Tendsto (fun i : ℕ => (((2 : ℝ) ^ i)⁻¹, 2 ^ (2 * i) *
-    ((2 : ℝ) ^ i)⁻¹)) atTop (𝓝[>] 0 ×ˢ atTop) := by
-  have hR : ∀ i : ℕ, 2 ^ (2 * i) * ((2 : ℝ) ^ i)⁻¹ = 2 ^ i := fun i => by
-    rw [two_mul, pow_add, mul_assoc, mul_inv_cancel₀ (by positivity), mul_one]
-  have hpow : Tendsto (fun i : ℕ => (2 : ℝ) ^ i) atTop atTop :=
-    tendsto_pow_atTop_atTop_of_one_lt one_lt_two
-  simp_rw [hR]
-  exact (tendsto_nhdsWithin_iff.2 ⟨hpow.inv_tendsto_atTop, Eventually.of_forall fun i =>
-    inv_pos.2 (pow_pos two_pos i)⟩).prodMk hpow
+/-! ### The multiplier `sgn` -/
 
 /-- `𝓕⁻ (−i sgn · G) = −i 𝓕⁻ (sgn · G)`. -/
 theorem fourierInv_neg_I_smul (G : ℝ → X) :
@@ -551,51 +542,45 @@ theorem fourierInv_neg_I_smul (G : ℝ → X) :
   congr 1
   ring
 
-/-- **The Hilbert transform on UMD spaces** (HNVW I, Theorem 5.1.13 and Proposition 5.2.2): the
-inequality `‖H f‖_p ≤ (4 β² + 11) ‖f‖_p`, `1 < p < ∞`, for the functions `f = 𝓕⁻ G ∈ L^p` with
-`G ∈ L¹` (the book's `L^p ∩ Ľ¹`), where `H f = 𝓕⁻ (−i sgn · G)`. The extension to `L^p (ℝ; X)` by
-density is not part of the statement.
+/-- `sign · G`, the Hilbert transform on the Fourier side, is integrable. -/
+theorem integrable_sign_smul {G : ℝ → X} (hG : Integrable G) :
+    Integrable fun ξ => (Real.sign ξ : ℂ) • G ξ :=
+  hG.bdd_smul 1 (Complex.measurable_ofReal.comp measurable_realSign).aestronglyMeasurable
+    (ae_of_all _ fun ξ => by rcases Real.sign_apply_eq ξ with h | h | h <;> simp [h])
 
-Departure from the source: the book has `H_{ε,R} f → H f` in `L^p`. Here the limit is the pointwise
-one of Proposition 5.2.2, for `ε = 2^{−i}` and `R = 2^i`, and the uniform bound of the truncations
-passes to it by Fatou's lemma. -/
-theorem eLpNorm_fourierInv_neg_I_sign_le_dyadic [CompleteSpace X] {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞}
-    (hβ : IsUMDBound X p β) {G : ℝ → X} (hG : Integrable G)
-    (hf : MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume) :
-    eLpNorm (𝓕⁻ fun ξ => (-Complex.I * (Real.sign ξ : ℂ)) • G ξ) (ENNReal.ofReal p) volume ≤
-      dyadicHilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
-  have hε : ∀ i : ℕ, 0 < ((2 : ℝ) ^ i)⁻¹ := fun i => by positivity
-  -- the truncations are continuous functions
-  have hcont : ∀ i : ℕ,
-      Continuous (truncatedHilbert ((2 : ℝ) ^ i)⁻¹ (2 ^ (2 * i) * ((2 : ℝ) ^ i)⁻¹) (𝓕⁻ G)) := by
-    intro i
-    have hεR := le_mul_of_one_le_left (hε i).le (one_le_pow₀ (n := 2 * i) one_le_two)
-    rw [truncatedHilbert_fourierInv hG (hε i) hεR]
-    exact continuous_fourierInv_of_integrable (integrable_symbol_smul hG
-      (measurable_truncatedSymbol _ _) (norm_truncatedSymbol_le (hε i) hεR))
-  have hsym : Integrable fun ξ => (-Complex.I * (Real.sign ξ : ℂ)) • G ξ :=
-    integrable_symbol_smul hG
-      (measurable_const.mul (Complex.measurable_ofReal.comp measurable_realSign)) (C := 1)
-      fun ξ => by
-        rw [norm_mul, norm_neg, Complex.norm_I, one_mul, Complex.norm_real]
-        exact abs_sign_le ξ
-  -- Fatou's lemma
-  exact (Lp.eLpNorm_lim_le_liminf_eLpNorm (p := ENNReal.ofReal p) (μ := volume)
-    (fun i => (hcont i).aestronglyMeasurable) _
-    (continuous_fourierInv_of_integrable hsym).aestronglyMeasurable
-    (ae_of_all _ fun x => (tendsto_truncatedHilbert_fourierInv hG x).comp tendsto_two_pow)).trans
-      ((liminf_le_liminf (Eventually.of_forall fun i =>
-        eLpNorm_truncatedHilbert_le hp hβ hf (hε i) (2 * i))).trans (liminf_const _).le)
+/-- Reflections of the line preserve the norm of `𝓕⁻ G`. -/
+theorem eLpNorm_fourierInv_comp_neg {G : ℝ → X} (hG : Integrable G) (P : ℝ≥0∞) :
+    eLpNorm (𝓕⁻ fun ξ => G (-ξ)) P volume = eLpNorm (𝓕⁻ G) P volume := by
+  rw [funext (fourierInv_comp_neg G)]
+  exact eLpNorm_comp_measurePreserving
+    (continuous_fourierInv_of_integrable hG).aestronglyMeasurable
+    (Measure.measurePreserving_neg volume)
 
-/-- `eLpNorm_fourierInv_neg_I_sign_le_dyadic` for the multiplier `sgn`:
-`‖𝓕⁻ (sgn · G)‖_p ≤ (4 β² + 11) ‖𝓕⁻ G‖_p`. -/
-theorem eLpNorm_fourierInv_sign_le_dyadic [CompleteSpace X] {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞}
-    (hβ : IsUMDBound X p β) {G : ℝ → X} (hG : Integrable G)
-    (hf : MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume) :
-    eLpNorm (𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G ξ) (ENNReal.ofReal p) volume ≤
-      dyadicHilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
-  have h := eLpNorm_fourierInv_neg_I_sign_le_dyadic hp hβ hG hf
-  rwa [fourierInv_neg_I_smul, eLpNorm_const_smul, enorm_neg, ← ofReal_norm, Complex.norm_I,
-    ENNReal.ofReal_one, one_mul] at h
+/-- The randomised bound for the multiplier `sgn`, from a bound `B` on the functions `𝓕⁻ G ∈ L^p`,
+`G ∈ L¹`, applied for each choice of the signs. -/
+theorem eLpNormRad_fourierInv_sign_le {p : ℝ} (hp : 1 < p) {B : ℝ≥0∞}
+    (hB : ∀ G : ℝ → X, Integrable G → MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume →
+      eLpNorm (𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G ξ) (ENNReal.ofReal p) volume ≤
+        B * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume)
+    {K : ℕ} {G : Fin K → ℝ → X} (hG : ∀ k, Integrable (G k))
+    (hf : ∀ k, MemLp (𝓕⁻ (G k)) (ENNReal.ofReal p) volume) :
+    eLpNormRad (fun k => 𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G k ξ) p volume ≤
+      B * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
+  have hsG := fun k => integrable_sign_smul (hG k)
+  refine eLpNormRad_le_of_forall (by linarith)
+    (fun k => (continuous_fourierInv_of_integrable (hsG k)).aestronglyMeasurable)
+    (fun k => (continuous_fourierInv_of_integrable (hG k)).aestronglyMeasurable) fun ε => ?_
+  have h1 : (fun x => ∑ k, SignCube.coin (ε k) • 𝓕⁻ (fun ξ => (Real.sign ξ : ℂ) • G k ξ) x) =
+      𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • ∑ k, SignCube.coin (ε k) • G k ξ := by
+    funext x
+    rw [← fourierInv_sum_smul hsG]
+    simp only [Finset.smul_sum, smul_comm (_ : ℂ) (_ : ℝ)]
+  have h2 : (fun x => ∑ k, SignCube.coin (ε k) • 𝓕⁻ (G k) x) =
+      𝓕⁻ fun ξ => ∑ k, SignCube.coin (ε k) • G k ξ :=
+    funext fun x => (fourierInv_sum_smul hG _ x).symm
+  rw [h1, h2]
+  refine hB _ (integrable_finsetSum _ fun k _ => (hG k).smul (SignCube.coin (ε k))) ?_
+  rw [← h2]
+  exact memLp_finsetSum _ fun k _ => (hf k).const_smul _
 
 end HarmonicAnalysis

@@ -5,7 +5,7 @@ Authors: The-Anh Vu-Le
 -/
 module
 
-public import HarmonicAnalysis.VectorValued.LittlewoodPaley.Line
+public import HarmonicAnalysis.VectorValued.HilbertTransform.Fourier
 public import Mathlib.Probability.Distributions.Cauchy
 public import Mathlib.MeasureTheory.Group.Convolution
 import Mathlib.Analysis.Calculus.ParametricIntegral

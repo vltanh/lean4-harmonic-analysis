@@ -6,7 +6,7 @@ Authors: The-Anh Vu-Le
 module
 
 public import HarmonicAnalysis.VectorValued.LittlewoodPaley.Signs
-public import HarmonicAnalysis.VectorValued.LittlewoodPaley.Circle
+public import HarmonicAnalysis.VectorValued.Transference
 
 /-!
 # Dyadic multipliers on the circle for every choice of the signs

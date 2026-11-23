@@ -6,6 +6,7 @@ Authors: The-Anh Vu-Le
 module
 
 public import HarmonicAnalysis.VectorValued.Dyadic.Average
+public import HarmonicAnalysis.VectorValued.HilbertTransform.Fourier
 import Mathlib.Analysis.Complex.ExponentialBounds
 import Mathlib.Analysis.Real.Pi.Bounds
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
@@ -15,9 +16,9 @@ import Mathlib.MeasureTheory.Integral.Prod
 /-!
 # The truncated Hilbert transform on UMD spaces
 
-`H_{ε,R} f (x) = π⁻¹ ∫_{ε < |x − y| < R} f (y) / (x − y) dy` (`truncatedHilbert ε R f`). On a UMD
-space the truncations `H_{ε, 2^n ε}` are bounded on `L^p (ℝ; X)`, `1 < p < ∞`, uniformly in `ε > 0`
-and `n` (`eLpNorm_truncatedHilbert_le`).
+`H_{ε,R} f (x) = π⁻¹ ∫_{ε < |x − y| < R} f (y) / (x − y) dy` (`truncatedHilbert ε R f`, defined in
+`VectorValued.HilbertTransform.Fourier`). On a UMD space the truncations `H_{ε, 2^n ε}` are bounded
+on `L^p (ℝ; X)`, `1 < p < ∞`, uniformly in `ε > 0` and `n` (`eLpNorm_truncatedHilbert_le`).
 
 Source: Hytönen–van Neerven–Veraar–Weis (HNVW), *Analysis in Banach spaces I* (2016), Section 5.1.b,
 pp. 384–387: with `φ = haarCorrelation haarSplit`, `Φ (x) = ∫_0^x φ` and
@@ -36,8 +37,8 @@ converge in `L^p` and almost everywhere (Lemma 5.1.8), the error terms, which ar
 only the truncations with `R = 2^n ε` are bounded, uniformly in `ε` and `n`. For them the integral
 over `[ε, R]` itself is an average of dyadic shifts, and the remaining integrals of (5.23) do not
 occur; the terms `ψ_ε * f`, `ψ_R * f` are bounded by Young's inequality, `‖ψ‖_1 ‖f‖_p ≤ 2 ‖f‖_p`.
-The limit is taken on the Fourier side, with Fatou's lemma, in
-`VectorValued.HilbertTransform.Fourier`. In the bound only the constant is affected:
+The limit is taken on the Fourier side (`VectorValued.HilbertTransform.Fourier`), with Fatou's
+lemma, in `VectorValued.HilbertTransform.Dyadic`. In the bound only the constant is affected:
 `(8/π) (2 log 2 · β² + 4) ≤ 4 β² + 11` instead of the book's `(8/π) log 2 · β⁺ β⁻` (the factor `2`
 of `2 log 2` comes from the finitely many generations, see `VectorValued.Dyadic.Shift`); the
 convergence of the truncations in `L^p` and almost everywhere is not proved.
@@ -51,10 +52,6 @@ open scoped ENNReal
 namespace HarmonicAnalysis
 
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
-
-/-- The truncated Hilbert transform `H_{ε,R} f (x) = π⁻¹ ∫_{ε < |x − y| < R} f (y) / (x − y) dy`. -/
-noncomputable def truncatedHilbert (ε R : ℝ) (f : ℝ → X) (x : ℝ) : X :=
-  Real.pi⁻¹ • ∫ y in {y | ε < |x - y| ∧ |x - y| < R}, (x - y)⁻¹ • f y
 
 /-- The function `φ` of HNVW I, Example 5.1.11 and Theorem 5.1.13: the odd one, for the kernel
 (5.19). -/

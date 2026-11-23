@@ -5,6 +5,7 @@ Authors: The-Anh Vu-Le
 -/
 module
 
+public import HarmonicAnalysis.VectorValued.Common
 public import HarmonicAnalysis.VectorValued.Dyadic.Shift
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.Periodic
 import HarmonicAnalysis.FourierMultiplier.Density
@@ -99,18 +100,6 @@ theorem stronglyMeasurable_dilateConv {φ : ℝ → ℝ} (hφ : Measurable φ) (
   rw [dilateConv_congr_ae φ t hf.ae_eq_mk]
   exact (stronglyMeasurable_uncurry_dilateConv hφ hf.stronglyMeasurable_mk).comp_measurable
     (measurable_id.prodMk measurable_const)
-
-/-- The change of variables `y = a x` in the `L^p` norm. -/
-theorem eLpNorm_comp_mul {E : Type*} [NormedAddCommGroup E] {p : ℝ≥0∞} (hp : p ≠ ⊤)
-    {g : ℝ → E} (hg : AEStronglyMeasurable g volume) {a : ℝ} (ha : 0 < a) :
-    eLpNorm (fun x => g (a * x)) p volume =
-      ENNReal.ofReal a⁻¹ ^ (1 / p).toReal * eLpNorm g p volume := by
-  have hmap := Real.map_volume_mul_left ha.ne'
-  rw [abs_of_pos (inv_pos.2 ha)] at hmap
-  have h := eLpNorm_map_measure (p := p) (μ := volume) (f := fun x : ℝ => a * x) (g := g)
-    (by rw [hmap]; exact hg.smul_measure _) (measurable_const_mul a).aemeasurable
-  rw [hmap, eLpNorm_smul_measure_of_ne_top hp _ _ hg, smul_eq_mul] at h
-  exact h.symm
 
 /-- The dilates `φ_t` have the norm of `φ` in `L¹`. -/
 private theorem lintegral_dilate {φ : ℝ → ℝ} (hφ : Measurable φ) {t : ℝ} (ht : 0 < t) :

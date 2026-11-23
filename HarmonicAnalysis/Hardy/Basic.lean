@@ -6,7 +6,7 @@ Authors: The-Anh Vu-Le
 module
 
 public import HarmonicAnalysis.Hardy.Defs
-public import HarmonicAnalysis.VectorValued.LittlewoodPaley.Circle
+public import HarmonicAnalysis.VectorValued.CircPoly
 public import BanachProbability.Schatten.Block
 import Mathlib.MeasureTheory.Measure.HasOuterApproxClosed
 import Mathlib.Order.Filter.AtTopBot.Interval

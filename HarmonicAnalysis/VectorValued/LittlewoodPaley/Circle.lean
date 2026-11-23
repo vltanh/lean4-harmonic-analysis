@@ -124,22 +124,6 @@ private theorem mem_lineBlock_iff {N : ℕ} {ρ : ℝ} (hρ : 1 < ρ) (hρN : ρ
   · obtain ⟨n, rfl⟩ : ∃ n : ℕ, k = (n : ℤ) + 1 := ⟨(k - 1).toNat, by omega⟩
     exact mem_lineBlock_iff_of_pos hρ hρN hj n
 
-/-- The dilation `ρ` for a finite set `s` of frequencies (HNVW I, pp. 465–466): an irrational
-`ρ > 1` with `ρ < 1 + 1 / N`, where `|j| ≤ N` for `j ∈ s`. -/
-theorem exists_irrational_dilation (s : Finset ℤ) : ∃ (N : ℕ) (ρ : ℝ), Irrational ρ ∧ 1 < ρ ∧
-    ρ * N < N + 1 ∧ ∀ j ∈ s, |j| ≤ N := by
-  obtain ⟨N, hN, hs⟩ : ∃ N : ℕ, 1 ≤ N ∧ ∀ j ∈ s, |j| ≤ N := by
-    refine ⟨s.sup Int.natAbs + 1, by omega, fun j hj => ?_⟩
-    have h := Finset.le_sup (f := Int.natAbs) hj
-    rw [Int.abs_eq_natAbs]
-    omega
-  have hN0 : (0 : ℝ) < N := by exact_mod_cast hN
-  obtain ⟨ρ, hρi, hρ1, hρN⟩ := exists_irrational_btwn (lt_add_of_pos_right (1 : ℝ)
-    (one_div_pos.2 hN0))
-  refine ⟨N, ρ, hρi, hρ1, ?_, hs⟩
-  calc ρ * N < (1 + 1 / N) * N := by gcongr
-    _ = N + 1 := by field_simp
-
 /-- The indicators of the dilated intervals are continuous at the integers. -/
 private theorem continuousAt_indicator_lineBlock {ρ : ℝ} (hρ : Irrational ρ) (k j : ℤ) :
     ContinuousAt (fun ξ => (lineBlock k).indicator (1 : ℝ → ℂ) (ρ * ξ)) j := by
@@ -347,11 +331,6 @@ private theorem eLpNormRad_dyadicBlock_le_of_line [CompleteSpace X] {p : ℝ} (h
   · exact h
   · exact (ENNReal.rpow_pos (by positivity) (by simp)).ne'
   · exact ENNReal.rpow_ne_top_of_nonneg (by positivity) (by simp)
-
-/-- The inverse Fourier transforms of Schwartz functions are in `L^r (ℝ; X)`. -/
-theorem memLp_fourierInv (G : 𝓢(ℝ, X)) (r : ℝ≥0∞) : MemLp (𝓕⁻ (G : ℝ → X)) r volume := by
-  rw [← SchwartzMap.fourierInv_coe]
-  exact (𝓕⁻ G : 𝓢(ℝ, X)).memLp r volume
 
 variable [CompleteSpace X]
 

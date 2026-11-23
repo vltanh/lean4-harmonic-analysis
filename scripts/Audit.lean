@@ -54,10 +54,12 @@ import all HarmonicAnalysis.VectorValued.Burkholder.HarmonicPolynomial
 import all HarmonicAnalysis.VectorValued.Burkholder.HilbertTransform
 import all HarmonicAnalysis.VectorValued.Burkholder.RandomWalk
 import all HarmonicAnalysis.VectorValued.CircPoly
+import all HarmonicAnalysis.VectorValued.Common
 import all HarmonicAnalysis.VectorValued.Defs
 import all HarmonicAnalysis.VectorValued.Dyadic.Average
 import all HarmonicAnalysis.VectorValued.Dyadic.Martingale
 import all HarmonicAnalysis.VectorValued.Dyadic.Shift
+import all HarmonicAnalysis.VectorValued.HilbertTransform.Dyadic
 import all HarmonicAnalysis.VectorValued.HilbertTransform.Fourier
 import all HarmonicAnalysis.VectorValued.HilbertTransform.Truncated
 import all HarmonicAnalysis.VectorValued.LittlewoodPaley.Circle

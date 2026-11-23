@@ -34,11 +34,13 @@ public import HarmonicAnalysis.BeurlingAhlfors.Periodic
 public import HarmonicAnalysis.VectorValued.Defs
 public import HarmonicAnalysis.VectorValued.CircPoly
 public import HarmonicAnalysis.VectorValued.RademacherNorm
+public import HarmonicAnalysis.VectorValued.Common
 public import HarmonicAnalysis.VectorValued.Dyadic.Martingale
 public import HarmonicAnalysis.VectorValued.Dyadic.Shift
 public import HarmonicAnalysis.VectorValued.Dyadic.Average
 public import HarmonicAnalysis.VectorValued.HilbertTransform.Truncated
 public import HarmonicAnalysis.VectorValued.HilbertTransform.Fourier
+public import HarmonicAnalysis.VectorValued.HilbertTransform.Dyadic
 public import HarmonicAnalysis.VectorValued.Transference
 public import HarmonicAnalysis.VectorValued.LittlewoodPaley.Line
 public import HarmonicAnalysis.VectorValued.LittlewoodPaley.Circle
