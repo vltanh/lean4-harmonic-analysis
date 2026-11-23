@@ -374,7 +374,7 @@ theorem eLpNormRad_dyadicBlock_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (hβ 
     (c : ℤ →₀ X) (K : ℕ) :
     eLpNormRad (fun k : Fin (2 * K + 1) => trigBlock (dyadicBlock ((k : ℕ) - K)) c) p
         haarAddCircle ≤
-      (2 * littlewoodPaleyBound β + hilbertBound β) *
+      (2 * littlewoodPaleyBound β + dyadicHilbertBound β) *
         eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle :=
   eLpNormRad_dyadicBlock_le_of_line hp (fun k : Fin (2 * K + 1) => ((k : ℕ) : ℤ) - K)
     (fun G => eLpNormRad_lineBlock_le hp hβ G.integrable (memLp_fourierInv G _) K) c

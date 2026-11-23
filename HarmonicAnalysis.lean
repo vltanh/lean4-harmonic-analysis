@@ -39,6 +39,11 @@ public import HarmonicAnalysis.VectorValued.Dyadic.Shift
 public import HarmonicAnalysis.VectorValued.Dyadic.Average
 public import HarmonicAnalysis.VectorValued.HilbertTransform.Truncated
 public import HarmonicAnalysis.VectorValued.HilbertTransform.Fourier
+public import HarmonicAnalysis.VectorValued.Burkholder.HarmonicPolynomial
+public import HarmonicAnalysis.VectorValued.Burkholder.RandomWalk
+public import HarmonicAnalysis.VectorValued.Burkholder.Conjugate
+public import HarmonicAnalysis.VectorValued.Burkholder.ConjugateFunction
+public import HarmonicAnalysis.VectorValued.Burkholder.HilbertTransform
 public import HarmonicAnalysis.VectorValued.Transference
 public import HarmonicAnalysis.VectorValued.LittlewoodPaley.Line
 public import HarmonicAnalysis.VectorValued.LittlewoodPaley.Circle

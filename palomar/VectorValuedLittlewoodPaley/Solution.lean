@@ -52,12 +52,12 @@ theorem hilbert_bounded {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (hβ : Harmonic
     {G : ℝ → X} (hG : Integrable G) (hf : MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume) :
     eLpNorm (𝓕⁻ fun ξ => (-Complex.I * (Real.sign ξ : ℂ)) • G ξ) (ENNReal.ofReal p) volume ≤
       (4 * β ^ 2 + 11) * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume :=
-  eLpNorm_fourierInv_neg_I_sign_le hp (isUMDBound_iff.1 hβ) hG hf
+  eLpNorm_fourierInv_neg_I_sign_le_dyadic hp (isUMDBound_iff.1 hβ) hG hf
 
 /-- The constants of the library. -/
 private theorem littlewoodPaley_const (β : ℝ≥0∞) :
-    2 * littlewoodPaleyBound β + hilbertBound β = (144 * β + 1) * (4 * β ^ 2 + 11) := by
-  rw [littlewoodPaleyBound, hilbertBound]
+    2 * littlewoodPaleyBound β + dyadicHilbertBound β = (144 * β + 1) * (4 * β ^ 2 + 11) := by
+  rw [littlewoodPaleyBound, dyadicHilbertBound]
   ring
 
 theorem littlewoodPaley_line {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞}
@@ -103,9 +103,9 @@ theorem hilbert_bounded_innerProductSpace {H : Type*} [NormedAddCommGroup H]
   have h0 : 0 ≤ max p (p / (p - 1)) - 1 := by
     have := le_max_left p (p / (p - 1))
     linarith
-  refine (eLpNorm_fourierInv_neg_I_sign_le hp hβ hG hf).trans_eq ?_
+  refine (eLpNorm_fourierInv_neg_I_sign_le_dyadic hp hβ hG hf).trans_eq ?_
   rw [ENNReal.ofReal_add (by positivity) (by norm_num), ENNReal.ofReal_mul (by norm_num),
-    ENNReal.ofReal_pow h0, ENNReal.ofReal_ofNat, ENNReal.ofReal_ofNat, hilbertBound]
+    ENNReal.ofReal_pow h0, ENNReal.ofReal_ofNat, ENNReal.ofReal_ofNat, dyadicHilbertBound]
 
 theorem mihlin_multiplier : ∃ C : NNReal, ∀ (X : Type*) [NormedAddCommGroup X] [NormedSpace ℂ X]
     [CompleteSpace X] (p : ℝ), 1 < p → ∀ β : ℝ≥0∞, HarmonicAnalysis.IsUMDBound X p β →

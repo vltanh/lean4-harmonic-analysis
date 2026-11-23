@@ -23,7 +23,7 @@ interval `I`, let `Δ_I f = 𝓕⁻ (1_I G)`. With independent fair signs `ε_k`
   `eLpNormRad_lineBlock_le`), and the same for the dilates `ρ⁻¹ I_k`, `ρ > 0`
   (`eLpNormRad_lineBlock_dilate_le`).
 
-Here `β` is a `UMD_p` constant of `X` and `ħ = hilbertBound β` the bound of the Hilbert transform.
+Here `β` is a `UMD_p` constant of `X` and `ħ = dyadicHilbertBound β` the bound of the Hilbert transform.
 
 Source: Hytönen–van Neerven–Veraar–Weis (HNVW), *Analysis in Banach spaces I* (2016), Section 5.3,
 pp. 404–405 and 412–420: the interval multipliers from the Hilbert transform (Lemma 5.3.9 with
@@ -491,7 +491,7 @@ theorem eLpNormRad_fourierInv_sign_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞}
     (hβ : IsUMDBound X p β) {K : ℕ} {G : Fin K → ℝ → X} (hG : ∀ k, Integrable (G k))
     (hf : ∀ k, MemLp (𝓕⁻ (G k)) (ENNReal.ofReal p) volume) :
     eLpNormRad (fun k => 𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G k ξ) p volume ≤
-      hilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
+      dyadicHilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
   have hsG := fun k => integrable_sign_smul (hG k)
   refine eLpNormRad_le_of_forall (by linarith)
     (fun k => (continuous_fourierInv_of_integrable (hsG k)).aestronglyMeasurable)
@@ -505,7 +505,7 @@ theorem eLpNormRad_fourierInv_sign_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞}
       𝓕⁻ fun ξ => ∑ k, SignCube.coin (ε k) • G k ξ :=
     funext fun x => (fourierInv_sum_smul hG _ x).symm
   rw [h1, h2]
-  refine eLpNorm_fourierInv_sign_le hp hβ
+  refine eLpNorm_fourierInv_sign_le_dyadic hp hβ
     (integrable_finsetSum _ fun k _ => (hG k).smul (SignCube.coin (ε k))) ?_
   rw [← h2]
   exact memLp_finsetSum _ fun k _ => (hf k).const_smul _
@@ -516,7 +516,7 @@ private theorem eLpNormRad_fourierInv_sign_sub_le {p : ℝ} (hp : 1 < p) {β : �
     (hβ : IsUMDBound X p β) {K : ℕ} {G : Fin K → ℝ → X} (hG : ∀ k, Integrable (G k))
     (hf : ∀ k, MemLp (𝓕⁻ (G k)) (ENNReal.ofReal p) volume) (a : Fin K → ℝ) :
     eLpNormRad (fun k => 𝓕⁻ fun ξ => (Real.sign (ξ - a k) : ℂ) • G k ξ) p volume ≤
-      4 * hilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
+      4 * dyadicHilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
   set G' : Fin K → ℝ → X := fun k ξ => G k (ξ + a k)
   have hG' : ∀ k, Integrable (G' k) := fun k => (hG k).comp_add_right (a k)
   have hinv : ∀ k, 𝓕⁻ (G' k) = fun x => expChar (-a k) x • 𝓕⁻ (G k) x := fun k =>
@@ -530,7 +530,7 @@ private theorem eLpNormRad_fourierInv_sign_sub_le {p : ℝ} (hp : 1 < p) {β : �
     fun k => (hcont k).aestronglyMeasurable).trans ?_
   -- the Hilbert transform
   have h1 : eLpNormRad (fun k => 𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G' k ξ) p volume ≤
-      hilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G' k)) p volume :=
+      dyadicHilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G' k)) p volume :=
     eLpNormRad_fourierInv_sign_le hp hβ hG' fun k => by
       rw [hinv]
       exact memLp_expChar_smul (hf k) _
@@ -541,10 +541,10 @@ private theorem eLpNormRad_fourierInv_sign_sub_le {p : ℝ} (hp : 1 < p) {β : �
     exact eLpNormRad_smul_le hp.le (c := fun k => expChar (-a k)) (fun k x => (norm_expChar _ _).le)
       (fun k => (continuous_expChar _).aestronglyMeasurable) fun k => (hf k).aestronglyMeasurable
   calc 2 * eLpNormRad (fun k => 𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G' k ξ) p volume
-      ≤ 2 * (hilbertBound β * (2 * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume)) := by
+      ≤ 2 * (dyadicHilbertBound β * (2 * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume)) := by
         gcongr
         exact h1.trans (by gcongr)
-    _ = 4 * hilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by ring
+    _ = 4 * dyadicHilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by ring
 
 /-- `|± 1/2| = 1/2`, in `[0, ∞]`. -/
 theorem enorm_half {𝕜 : Type*} [RCLike 𝕜] {c : 𝕜} (hc : c = 1 / 2 ∨ c = -1 / 2) : ‖c‖ₑ = 2⁻¹ := by
@@ -563,7 +563,7 @@ theorem eLpNormRad_fourierInv_Ioo_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (h
     (hf : ∀ k, MemLp (𝓕⁻ (G k)) (ENNReal.ofReal p) volume) {a b : Fin K → ℝ}
     (hab : ∀ k, a k ≤ b k) :
     eLpNormRad (fun k => 𝓕⁻ ((Set.Ioo (a k) (b k)).indicator (G k))) p volume ≤
-      4 * hilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
+      4 * dyadicHilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
   have hcont : ∀ (c : Fin K → ℝ) k,
       Continuous (𝓕⁻ fun ξ => (Real.sign (ξ - c k) : ℂ) • G k ξ) := fun c k =>
     continuous_fourierInv_of_integrable (integrable_sign_sub_smul (hG k) (c k))
@@ -582,7 +582,7 @@ theorem eLpNormRad_fourierInv_Ioo_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (h
     eLpNormRad_fun_const_smul (-1 / 2 : ℝ)
       (fun k => 𝓕⁻ fun ξ => (Real.sign (ξ - b k) : ℂ) • G k ξ),
     enorm_half (Or.inl rfl), enorm_half (Or.inr rfl)]
-  set R := 4 * hilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume
+  set R := 4 * dyadicHilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume
   calc _ ≤ (2⁻¹ : ℝ≥0∞) * R + 2⁻¹ * R := by
         gcongr
         · exact eLpNormRad_fourierInv_sign_sub_le hp hβ hG hf a
@@ -746,8 +746,8 @@ private theorem eLpNormRad_fourierInv_div_le_of_stronglyMeasurable {p : ℝ} (hp
     (hf : ∀ k, MemLp (𝓕⁻ (G k)) (ENNReal.ofReal p) volume) {T : Fin K → ℝ} (hT : ∀ k, 0 < T k) :
     eLpNormRad (fun k => 𝓕⁻ ((Set.Ioo (T k / 2) (T k)).indicator fun ξ =>
         (𝓕 (fun x : ℝ => ((haarCorrelation haar x : ℝ) : ℂ)) ((T k)⁻¹ * ξ))⁻¹ • G k ξ)) p volume ≤
-      36 * hilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
-  set R := 4 * hilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume with hR
+      36 * dyadicHilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
+  set R := 4 * dyadicHilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume with hR
   have hFm := fun k => stronglyMeasurable_fourierInv_Ioo (hGm k) (T k)
   have h1 : (fun k => 𝓕⁻ ((Set.Ioo (T k / 2) (T k)).indicator fun ξ =>
       (𝓕 (fun x : ℝ => ((haarCorrelation haar x : ℝ) : ℂ)) ((T k)⁻¹ * ξ))⁻¹ • G k ξ)) =
@@ -794,7 +794,7 @@ private theorem eLpNormRad_fourierInv_div_le_of_stronglyMeasurable {p : ℝ} (hp
         rw [← add_mul]
         gcongr
         exact haarWeight_total_le
-    _ = 36 * hilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
+    _ = 36 * dyadicHilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
         rw [hR]
         ring
 
@@ -807,7 +807,7 @@ theorem eLpNormRad_fourierInv_div_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (h
     eLpNormRad (fun k => 𝓕⁻ ((Set.Ioo ((2 : ℝ) ^ (k : ℕ)) (2 ^ ((k : ℕ) + 1))).indicator fun ξ =>
         (𝓕 (fun x : ℝ => ((haarCorrelation haar x : ℝ) : ℂ)) ((2 ^ ((k : ℕ) + 1))⁻¹ * ξ))⁻¹ •
           G k ξ)) p volume ≤
-      36 * hilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
+      36 * dyadicHilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
   -- replace `G_k` by strongly measurable functions
   set g : Fin K → ℝ → X := fun k => (hG k).aestronglyMeasurable.mk (G k)
   have hgm : ∀ k, StronglyMeasurable (g k) := fun k =>
@@ -829,9 +829,9 @@ theorem eLpNormRad_fourierInv_div_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (h
   exact eLpNormRad_fourierInv_div_le_of_stronglyMeasurable hp hβ
     (fun k => (hG k).congr (hGg k)) hgm hf fun k => by positivity
 
-/-- The constant `72 ħ β` of the Littlewood–Paley inequality on the half-line, `ħ = hilbertBound β`
+/-- The constant `72 ħ β` of the Littlewood–Paley inequality on the half-line, `ħ = dyadicHilbertBound β`
 (the book has `36 ħ β` for the whole line, with complex signs). -/
-noncomputable def littlewoodPaleyBound (β : ℝ≥0∞) : ℝ≥0∞ := 72 * hilbertBound β * β
+noncomputable def littlewoodPaleyBound (β : ℝ≥0∞) : ℝ≥0∞ := 72 * dyadicHilbertBound β * β
 
 omit [CompleteSpace X] in
 /-- `1_I = (1_I / φ̂ (2^{−k−1} ·)) φ̂ (2^{−k−1} ·)` for `I = (2^k, 2^{k+1})`. -/
@@ -891,8 +891,8 @@ theorem eLpNormRad_fourierInv_indicator_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0�
         dilateConv (haarCorrelation haar) (((2 : ℝ) ^ (j : ℕ))⁻¹) (𝓕⁻ G)) fun j => ?_).trans
       (eLpNormRad_dilateConv_le hp hβ hf hfm (K + 1))
     exact (stronglyMeasurable_dilateConv hφ _ hfm.aestronglyMeasurable).aestronglyMeasurable
-  calc 36 * hilbertBound β * eLpNormRad (fun k => 𝓕⁻ (H k)) p volume
-      ≤ 36 * hilbertBound β * (2 * β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume) := by gcongr
+  calc 36 * dyadicHilbertBound β * eLpNormRad (fun k => 𝓕⁻ (H k)) p volume
+      ≤ 36 * dyadicHilbertBound β * (2 * β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume) := by gcongr
     _ = littlewoodPaleyBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
         rw [littlewoodPaleyBound]
         ring
@@ -938,7 +938,7 @@ private theorem eLpNorm_fourierInv_sign_sub_le {p : ℝ} (hp : 1 < p) {β : ℝ�
     (hβ : IsUMDBound X p β) {G : ℝ → X} (hG : Integrable G)
     (hf : MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume) (a : ℝ) :
     eLpNorm (𝓕⁻ fun ξ => (Real.sign (ξ - a) : ℂ) • G ξ) (ENNReal.ofReal p) volume ≤
-      hilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
+      dyadicHilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
   set G' : ℝ → X := fun ξ => G (ξ + a)
   have hG' : Integrable G' := hG.comp_add_right a
   have hinv : 𝓕⁻ G' = fun x => expChar (-a) x • 𝓕⁻ G x :=
@@ -949,7 +949,7 @@ private theorem eLpNorm_fourierInv_sign_sub_le {p : ℝ} (hp : 1 < p) {β : ℝ�
     exact eLpNorm_expChar_smul _ (continuous_fourierInv_of_integrable hG) _
   rw [fourierInv_sign_sub_one, eLpNorm_expChar_smul _
     (continuous_fourierInv_of_integrable (integrable_sign_smul hG')), ← h1]
-  refine eLpNorm_fourierInv_sign_le hp hβ hG' ?_
+  refine eLpNorm_fourierInv_sign_le_dyadic hp hβ hG' ?_
   rw [hinv]
   exact memLp_expChar_smul hf _
 
@@ -957,9 +957,9 @@ private theorem eLpNorm_fourierInv_sign_sub_le {p : ℝ} (hp : 1 < p) {β : ℝ�
 theorem eLpNorm_fourierInv_Ioo_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (hβ : IsUMDBound X p β)
     {G : ℝ → X} (hG : Integrable G) (hf : MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume) {a b : ℝ}
     (hab : a ≤ b) : eLpNorm (𝓕⁻ ((Set.Ioo a b).indicator G)) (ENNReal.ofReal p) volume ≤
-      hilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
+      dyadicHilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
   set T : ℝ → ℝ → X := fun c => 𝓕⁻ fun ξ => (Real.sign (ξ - c) : ℂ) • G ξ
-  set R := hilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume
+  set R := dyadicHilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume
   have h1 : 𝓕⁻ ((Set.Ioo a b).indicator G) = (1 / 2 : ℝ) • T a + (-1 / 2 : ℝ) • T b :=
     funext fun x => fourierInv_indicator_Ioo hG hab x
   rw [h1]
@@ -1081,7 +1081,7 @@ private theorem eLpNormRad_lineBlock_zero_le {p : ℝ} (hp : 1 < p) {β : ℝ≥
     (hf : MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume) (K : ℕ) :
     eLpNormRad ({i : Fin (2 * K + 1) | (i : ℕ) = K}.indicator
         fun i => 𝓕⁻ ((lineBlock ((i : ℕ) - K)).indicator G)) p volume ≤
-      hilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
+      dyadicHilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
   set k₀ : Fin (2 * K + 1) := ⟨K, by omega⟩
   set F : ℝ → X := 𝓕⁻ ((Set.Ioo (-1 : ℝ) 1).indicator G)
   have hF : Continuous F := continuous_fourierInv_of_integrable (hG.indicator measurableSet_Ioo)
@@ -1119,7 +1119,7 @@ Theorem 5.3.24, made here at the beginning, with a reflection for the negative i
 theorem eLpNormRad_lineBlock_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (hβ : IsUMDBound X p β)
     {G : ℝ → X} (hG : Integrable G) (hf : MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume) (K : ℕ) :
     eLpNormRad (fun i : Fin (2 * K + 1) => 𝓕⁻ ((lineBlock ((i : ℕ) - K)).indicator G)) p volume ≤
-      (2 * littlewoodPaleyBound β + hilbertBound β) *
+      (2 * littlewoodPaleyBound β + dyadicHilbertBound β) *
         eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
   set f : Fin (2 * K + 1) → ℝ → X := fun i => 𝓕⁻ ((lineBlock ((i : ℕ) - K)).indicator G)
   have hm : ∀ (s : Set (Fin (2 * K + 1))) i,
@@ -1146,7 +1146,7 @@ theorem eLpNormRad_lineBlock_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (hβ : 
         (eLpNormRad_add_le hp.le (hm P) fun i => (hm Z i).add (hm N i)).trans
           (add_le_add_right (eLpNormRad_add_le hp.le (hm Z) (hm N)) _)
     _ ≤ littlewoodPaleyBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume +
-        (hilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume +
+        (dyadicHilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume +
           littlewoodPaleyBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume) := by
         gcongr
         · exact eLpNormRad_lineBlock_pos_le hp hβ hG hf K
@@ -1194,7 +1194,7 @@ theorem eLpNormRad_lineBlock_dilate_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} 
     (hρ : 0 < ρ) :
     eLpNormRad (fun i : Fin (2 * K + 1) =>
         𝓕⁻ ({ξ | ρ * ξ ∈ lineBlock ((i : ℕ) - K)}.indicator G)) p volume ≤
-      (2 * littlewoodPaleyBound β + hilbertBound β) *
+      (2 * littlewoodPaleyBound β + dyadicHilbertBound β) *
         eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
   have hp0 : 0 < p := by linarith
   set G' : ℝ → X := fun ξ => G (ρ⁻¹ * ξ)
@@ -1221,7 +1221,7 @@ theorem eLpNormRad_lineBlock_dilate_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} 
     simp only [Set.indicator_apply, Set.mem_ofPred_eq, G', inv_mul_cancel_left₀ hρ.ne']
   rw [hset, eLpNormRad_fourierInv_dilate hp0
     (fun i : Fin (2 * K + 1) => (lineBlock ((i : ℕ) - K)).indicator G') hρ, hnorm]
-  calc _ ≤ ‖ρ⁻¹‖ₑ * (ENNReal.ofReal ρ ^ (1 / p) * ((2 * littlewoodPaleyBound β + hilbertBound β) *
+  calc _ ≤ ‖ρ⁻¹‖ₑ * (ENNReal.ofReal ρ ^ (1 / p) * ((2 * littlewoodPaleyBound β + dyadicHilbertBound β) *
         eLpNorm (𝓕⁻ G') (ENNReal.ofReal p) volume)) := by
         gcongr
         exact eLpNormRad_lineBlock_le hp hβ hG' hf' K
