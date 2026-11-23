@@ -42,7 +42,13 @@ inequality, (9) in the source, is `c_p = p* − 1`, `p* = max (p, p / (p − 1))
 as in the source: the transforms of a Paley–Walsh martingale by fixed signs, averaged over the
 signs. For (29) the source says that the transformations `(−r_1, r_2, −r_3, r_4, …)` and
 `(r_2, r_1, r_4, r_3, …)` of the signs have the same distribution; here the average over the signs
-is invariant under their composition `(r_2, −r_1, r_4, −r_3, …)` (`swapSigns`).
+is invariant under their composition `(r_2, −r_1, r_4, −r_3, …)` (`swapSigns`). The hypothesis of
+the source is (8): the inequality for constant signs, and martingales with any start; `IsUMDBound`
+has predictable signs and martingales started at `0`, with the same constant
+(`BanachProbability.isUMDBound_iff_isDeterministicUMDBound`).
+
+Correction to the source: on p. 280 the `k`-th term of the martingale difference sequence of `W^j`
+is said to be bounded by `k² δ²`; the bound is `N² δ² w_k`, as it is used on p. 281.
 -/
 
 @[expose] public section
@@ -59,7 +65,7 @@ noncomputable def walk (δ : ℝ) (ω : ℕ → Bool) (n : ℕ) : ℂ :=
     ((δ * coin (ω (2 * k)) : ℝ) + (δ * coin (ω (2 * k + 1)) : ℝ) * Complex.I)
 
 open scoped Classical in
-/-- The stopped time `τ ∧ n`, `τ = inf {n : |Z_n| ≥ 1}` (p. 278). -/
+/-- The stopped time `τ ∧ n`, `τ = inf {n : |Z_n| ≥ 1}` (p. 278), `inf ∅ = ∞`. -/
 noncomputable def exitTime (δ : ℝ) (ω : ℕ → Bool) (n : ℕ) : ℕ :=
   Nat.find (p := fun m => m = n ∨ 1 ≤ ‖walk δ ω m‖) ⟨n, Or.inl rfl⟩
 
@@ -347,8 +353,8 @@ private theorem abs_re_walk_exitTime_le {δ : ℝ} (hδ0 : 0 < δ) (hδ : δ < 1
     linarith [abs_add_le (walk δ ω k).re (δ * coin (ω (2 * k))),
       Complex.abs_re_le_norm (walk δ ω k)]
 
-/-- (20): `δ ‖(τ ∧ n)^{1/2}‖_p ≤ 2 c_p`, with the constant `c_p = p* − 1` of the square function
-inequality. -/
+/-- (20), `δ ‖τ^{1/2}‖_p = ‖S (f)‖_p ≤ c_p ‖f‖_p ≤ 2 c_p`, with the constant `c_p = p* − 1` of the
+square function inequality, for `τ ∧ n` in place of `τ`, uniformly in `n`. -/
 theorem lpNorm_sqrt_exitTime_le {p : ℝ} (hp : 1 < p) {δ : ℝ} (hδ0 : 0 < δ) (hδ : δ < 1 / 2)
     (n : ℕ) :
     δ * SignCube.lpNorm (fun x => ‖x‖) p
@@ -382,8 +388,8 @@ theorem lpNorm_sqrt_exitTime_le {p : ℝ} (hp : 1 < p) {δ : ℝ} (hδ0 : 0 < δ
   refine h.trans ((mul_le_mul_of_nonneg_left ?_ (sqConst_nonneg hp)).trans_eq (mul_comm _ _))
   exact lpNorm_le_of_norm_le hp0 zero_le_two fun ε => abs_re_walk_exitTime_le hδ0 hδ _ n
 
-/-- (22): `|Z_{τ ∧ n}| ≤ 1 + 2δ`: either `τ ∧ n = 0`, or `|Z_{τ ∧ n − 1}| < 1` and the last step has
-length at most `2δ`. -/
+/-- (22), `|Z_{τ ∧ n}| ≤ 1 + 2δ < 2`: either `τ ∧ n = 0`, or `|Z_{τ ∧ n − 1}| < 1` and the last step
+has length at most `2δ`. -/
 theorem norm_walk_exitTime_le {δ : ℝ} (hδ0 : 0 < δ) (hδ : δ < 1 / 2) (ω : ℕ → Bool) (n : ℕ) :
     ‖walk δ ω (exitTime δ ω n)‖ ≤ 1 + 2 * δ := by
   rcases h : exitTime δ ω n with _ | k
@@ -690,7 +696,8 @@ private theorem decoupledLpNorm_conj (p : ℝ) (N : ℕ) (a b : ℕ → X) (δ :
   exact avg_comp_equiv (swapSigns n) fun ε' =>
     ‖paleyWalsh (fun i _ => martingaleFamily N a b δ n i ε) (2 * n) ε'‖ ^ p
 
-/-- (29): `‖V‖_p ≤ β² ‖U‖_p`. -/
+/-- (29): `‖V‖_p ≤ β² ‖U‖_p`, by two uses of Lemma 1; `V`, the sum `U` for the conjugate `v`, is the
+one for the coefficients `−b_k` and `a_k`. -/
 theorem lpNorm_walkMartingale_conj_le [CompleteSpace X] {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞}
     (hβ : IsUMDBound X p β) (N : ℕ) (a b : ℕ → X) (δ : ℝ) (n : ℕ) :
     ENNReal.ofReal (SignCube.lpNorm (fun x => ‖x‖) p (fun ε : Fin (2 * n) → Bool =>

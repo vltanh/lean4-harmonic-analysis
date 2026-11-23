@@ -5,6 +5,7 @@ Authors: The-Anh Vu-Le
 -/
 module
 
+public import HarmonicAnalysis.VectorValued.Burkholder.HilbertTransform
 public import HarmonicAnalysis.VectorValued.McConnell.Multiplier
 public import Mathlib.Data.Int.Log
 import Mathlib.Analysis.Calculus.BumpFunction.InnerProduct
@@ -20,7 +21,8 @@ transformations of Banach-valued functions*, Trans. Amer. Math. Soc. 285 (1984),
 a complex UMD space with a `UMD_p` constant `β`, `1 < p < ∞`. For all signs `ε_j`, `ε'_j`, `j ∈ ℤ`,
 the multiplier `m = Σ_j ε_j 1_{[2^j, 2^{j+1})} + Σ_j ε'_j 1_{(−2^{j+1}, −2^j]}` satisfies (1.13):
 `c⁻¹ ‖f‖_p ≤ ‖T_m f‖_p ≤ c ‖f‖_p`, with `c = C β⁸ ħ²`, where `C` is an absolute constant and `ħ` is
-the bound of the Hilbert transform (`dyadicHilbertBound β`). Here `f = 𝓕⁻ G ∈ L^p` with `G ∈ L¹` (the
+the bound of the Hilbert transform (`hilbertBound β = 2 β² + 1`, by Burkholder's theorem, which the
+source recalls on p. 741). Here `f = 𝓕⁻ G ∈ L^p` with `G ∈ L¹` (the
 source has Schwartz functions in (3.18)). The converse, which the source deduces from a result of
 Bourgain (p. 756), is not treated.
 
@@ -430,7 +432,7 @@ private theorem eLpNormRad_fourierInv_sign_sub_le {p : ℝ} (hp : 1 < p) {β : �
     (hf : ∀ k, MemLp (𝓕⁻ (G k)) (ENNReal.ofReal p) volume) {s : Fin K → ℝ} (hs : ∀ k, |s k| ≤ 1)
     (α : Fin K → ℝ) :
     eLpNormRad (fun k => 𝓕⁻ fun ξ => ((s k * Real.sign (ξ - α k) : ℝ) : ℂ) • G k ξ) p volume ≤
-      4 * β ^ 2 * dyadicHilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
+      4 * β ^ 2 * hilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
   set G' : Fin K → ℝ → X := fun k ξ => G k (ξ + α k)
   have hG' : ∀ k, Integrable (G' k) := fun k => (hG k).comp_add_right (α k)
   have hinv : ∀ k, 𝓕⁻ (G' k) = fun x => expChar (-α k) x • 𝓕⁻ (G k) x := fun k =>
@@ -448,8 +450,8 @@ private theorem eLpNormRad_fourierInv_sign_sub_le {p : ℝ} (hp : 1 < p) {β : �
     fun k => (hcont k).aestronglyMeasurable
   -- (3.20)
   have h2 : eLpNormRad (fun k => 𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G' k ξ) p volume ≤
-      dyadicHilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G' k)) p volume :=
-    eLpNormRad_fourierInv_sign_le hp hβ hG' fun k => by
+      hilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G' k)) p volume :=
+    eLpNormRad_fourierInv_sign_le hp (fun _ => eLpNorm_fourierInv_sign_le hp hβ) hG' fun k => by
       rw [hinv]
       exact memLp_expChar_smul (hf k) _
   -- (2.1) with the coefficients `e^{−2πiα_j x}`
@@ -460,10 +462,10 @@ private theorem eLpNormRad_fourierInv_sign_sub_le {p : ℝ} (hp : 1 < p) {β : �
       (fun k x => (norm_expChar _ _).le) (fun k => (continuous_expChar _).aestronglyMeasurable)
       fun k => (hf k).aestronglyMeasurable
   calc _ ≤ 2 * β * eLpNormRad (fun k => 𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G' k ξ) p volume := h1
-    _ ≤ 2 * β * (dyadicHilbertBound β * (2 * β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume)) := by
+    _ ≤ 2 * β * (hilbertBound β * (2 * β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume)) := by
         gcongr
         exact h2.trans (by gcongr)
-    _ = 4 * β ^ 2 * dyadicHilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by ring
+    _ = 4 * β ^ 2 * hilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by ring
 
 /-! ### The estimate (3.18) -/
 
@@ -652,7 +654,7 @@ private theorem eLpNorm_bumpSum_dyadicSign_le {p : ℝ} (hp : 1 < p) {β : ℝ�
     (hfin : β ≠ ⊤ ∨ eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume = 0) :
     eLpNorm (𝓕⁻ fun ξ => bumpSum g a (fun _ : Fin K => 1) ξ • ((dyadicSign ε ξ : ℝ) : ℂ) • G ξ)
         (ENNReal.ofReal p) volume ≤
-      4 * (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 3 * β ^ 2 * dyadicHilbertBound β *
+      4 * (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 3 * β ^ 2 * hilbertBound β *
         eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
   set B := ENNReal.ofReal c * (1088 * β ^ 2) with hB
   have hgG : ∀ i : Fin K, Integrable fun ξ => g (dil a i * ξ) • G ξ := fun i =>
@@ -674,15 +676,15 @@ private theorem eLpNorm_bumpSum_dyadicSign_le {p : ℝ} (hp : 1 < p) {β : ℝ�
   -- (2.1), (3.20), (2.1), and Theorem 1.1 twice
   calc _ ≤ B * eLpNormRad (fun i : Fin K => 𝓕⁻ fun ξ =>
         ((s i * Real.sign (ξ - α i) : ℝ) : ℂ) • g (dil a i * ξ) • G ξ) p volume := h1
-    _ ≤ B * (4 * β ^ 2 * dyadicHilbertBound β *
+    _ ≤ B * (4 * β ^ 2 * hilbertBound β *
         eLpNormRad (fun i : Fin K => 𝓕⁻ fun ξ => g (dil a i * ξ) • G ξ) p volume) := by
         gcongr
         exact eLpNormRad_fourierInv_sign_sub_le hp hβ hgG hmem hs1 α
-    _ ≤ B * (4 * β ^ 2 * dyadicHilbertBound β *
+    _ ≤ B * (4 * β ^ 2 * hilbertBound β *
         (B ^ 2 * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume)) := by
         gcongr
         exact eLpNormRad_bump_le hp hβ hρ hg hgs a K hG
-    _ = 4 * B ^ 3 * β ^ 2 * dyadicHilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by ring
+    _ = 4 * B ^ 3 * β ^ 2 * hilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by ring
 
 /-! ### The sum of the four families -/
 
@@ -853,7 +855,7 @@ private theorem eLpNorm_fourierInv_dyadicSign_pos_le {p : ℝ} (hp : 1 < p) {β 
     (hf : MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume)
     (hfin : β ≠ ⊤ ∨ eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume = 0) :
     eLpNorm (𝓕⁻ fun ξ => ((dyadicSign ε ξ : ℝ) : ℂ) • G ξ) (ENNReal.ofReal p) volume ≤
-      16 * (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 3 * β ^ 2 * dyadicHilbertBound β *
+      16 * (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 3 * β ^ 2 * hilbertBound β *
         eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
   have hH := integrable_dyadicSign_smul hε hG
   have hsφ : ∀ ξ, evenBump lpPhi ξ ≠ 0 → 3 / 4 ≤ |ξ| ∧ |ξ| < 2 := fun ξ hξ => by
@@ -864,7 +866,7 @@ private theorem eLpNorm_fourierInv_dyadicSign_pos_le {p : ℝ} (hp : 1 < p) {β 
     constructor <;> linarith
   have hN : ∀ N, eLpNorm (𝓕⁻ fun ξ => fourSum N ξ • ((dyadicSign ε ξ : ℝ) : ℂ) • G ξ)
       (ENNReal.ofReal p) volume ≤
-      4 * (4 * (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 3 * β ^ 2 * dyadicHilbertBound β *
+      4 * (4 * (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 3 * β ^ 2 * hilbertBound β *
         eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume) := fun N =>
     eLpNorm_fourSum_le hp.le hφ hψ hH N fun g hg a K => by
       rcases hg with rfl | rfl
@@ -907,8 +909,8 @@ private theorem half_mul_eLpNorm_add_le {p : ℝ} (hp : 1 ≤ p) {u v : ℝ → 
         exact (eLpNorm_add_le (ENNReal.one_le_ofReal.2 hp)).trans (add_le_add hu hv)
     _ = D := by rw [mul_add, ← add_mul, ENNReal.inv_two_add_inv_two, one_mul]
 
-private theorem one_le_dyadicHilbertBound (β : ℝ≥0∞) : 1 ≤ dyadicHilbertBound β :=
-  le_trans (by norm_num) (le_add_self : (11 : ℝ≥0∞) ≤ 4 * β ^ 2 + 11)
+private theorem one_le_hilbertBound (β : ℝ≥0∞) : 1 ≤ hilbertBound β :=
+  le_add_self
 
 /-- The reduction to functions with spectrum in `(0, ∞)` by the Hilbert transform (p. 754):
 `‖f_+‖_p ≤ ħ ‖f‖_p`. -/
@@ -916,10 +918,10 @@ private theorem eLpNorm_fourierInv_Ioi_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0�
     (hβ : IsUMDBound X p β) {G : ℝ → X} (hG : Integrable G)
     (hf : MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume) :
     eLpNorm (𝓕⁻ ((Set.Ioi (0 : ℝ)).indicator G)) (ENNReal.ofReal p) volume ≤
-      dyadicHilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
+      hilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
   rw [fourierInv_indicator_Ioi hG, eLpNorm_const_smul, enorm_half (Or.inl rfl)]
-  exact half_mul_eLpNorm_add_le hp.le (le_mul_of_one_le_left' (one_le_dyadicHilbertBound β))
-    (eLpNorm_fourierInv_sign_le_dyadic hp hβ hG hf)
+  exact half_mul_eLpNorm_add_le hp.le (le_mul_of_one_le_left' (one_le_hilbertBound β))
+    (eLpNorm_fourierInv_sign_le hp hβ hG hf)
 
 /-- The right-hand inequality of (1.13) for `m = Σ_j ε_j 1_{[2^j, 2^{j+1})}`, if `β < ∞` or
 `f = 0`. -/
@@ -930,7 +932,7 @@ private theorem eLpNorm_fourierInv_dyadicSign_le_aux {p : ℝ} (hp : 1 < p) {β 
     (hf : MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume)
     (hfin : β ≠ ⊤ ∨ eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume = 0) :
     eLpNorm (𝓕⁻ fun ξ => ((dyadicSign ε ξ : ℝ) : ℂ) • G ξ) (ENNReal.ofReal p) volume ≤
-      16 * (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 3 * β ^ 2 * dyadicHilbertBound β ^ 2 *
+      16 * (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 3 * β ^ 2 * hilbertBound β ^ 2 *
         eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
   set G₁ := (Set.Ioi (0 : ℝ)).indicator G with hG₁
   have h1 := eLpNorm_fourierInv_Ioi_le hp hβ hG hf
@@ -941,8 +943,8 @@ private theorem eLpNorm_fourierInv_dyadicSign_le_aux {p : ℝ} (hp : 1 < p) {β 
     · rw [hG₁, Set.indicator_of_mem (Set.mem_Ioi.2 h0)]
     · rw [dyadicSign, ite_eq_right h0]
       simp
-  have hħ : β ≠ ⊤ → dyadicHilbertBound β ≠ ⊤ := fun h => ENNReal.add_ne_top.2
-    ⟨ENNReal.mul_ne_top ENNReal.ofNat_ne_top (ENNReal.pow_ne_top h), ENNReal.ofNat_ne_top⟩
+  have hħ : β ≠ ⊤ → hilbertBound β ≠ ⊤ := fun h => ENNReal.add_ne_top.2
+    ⟨ENNReal.mul_ne_top ENNReal.ofNat_ne_top (ENNReal.pow_ne_top h), ENNReal.one_ne_top⟩
   have h3 := eLpNorm_fourierInv_dyadicSign_pos_le hp hβ hφ hψ hρ hε
     (hG.indicator measurableSet_Ioi) (fun ξ hξ => Set.indicator_of_notMem (by simpa using hξ) G)
     (memLp_of_eLpNorm_le hf hfin hħ h1) (hfin.imp_right fun h0 => by
@@ -950,8 +952,8 @@ private theorem eLpNorm_fourierInv_dyadicSign_le_aux {p : ℝ} (hp : 1 < p) {β 
       exact le_antisymm h1 zero_le)
   rw [h2]
   refine h3.trans ?_
-  calc _ ≤ 16 * (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 3 * β ^ 2 * dyadicHilbertBound β *
-        (dyadicHilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume) := by gcongr
+  calc _ ≤ 16 * (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 3 * β ^ 2 * hilbertBound β *
+        (hilbertBound β * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume) := by gcongr
     _ = _ := by ring
 
 /-! ### The two half-lines -/
@@ -1051,11 +1053,11 @@ private theorem exists_eLpNorm_fourierInv_dyadicSign_le_aux : ∃ C : NNReal, �
     IsUMDBound X p β → ∀ ε : ℤ → ℝ, (∀ j, ε j = 1 ∨ ε j = -1) →
     ∀ G : ℝ → X, Integrable G → MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume →
       eLpNorm (𝓕⁻ fun ξ => ((dyadicSign ε ξ : ℝ) : ℂ) • G ξ) (ENNReal.ofReal p) volume ≤
-        C * β ^ 8 * dyadicHilbertBound β ^ 2 * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
+        C * β ^ 8 * hilbertBound β ^ 2 * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
   obtain ⟨c, hφ, hψ, hρ⟩ := exists_isBump_all
   refine ⟨16 * (c.toNNReal * 1088) ^ 3 + 1, fun X _ _ _ p hp β hβ ε hε G hG hf => ?_⟩
-  have hħ : dyadicHilbertBound β ^ 2 ≠ 0 :=
-    pow_ne_zero 2 (zero_lt_one.trans_le (one_le_dyadicHilbertBound β)).ne'
+  have hħ : hilbertBound β ^ 2 ≠ 0 :=
+    pow_ne_zero 2 (zero_lt_one.trans_le (one_le_hilbertBound β)).ne'
   by_cases hfin : β ≠ ⊤ ∨ eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume = 0
   · refine (eLpNorm_fourierInv_dyadicSign_le_aux hp hβ hφ hψ hρ hε hG hf hfin).trans ?_
     have h : 16 * (ENNReal.ofReal c * (1088 * β ^ 2)) ^ 3 * β ^ 2 =
@@ -1078,21 +1080,21 @@ theorem exists_eLpNorm_fourierInv_dyadicSign_le : ∃ C : NNReal, ∀ (X : Type*
     ∀ G : ℝ → X, Integrable G → MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume →
       eLpNorm (𝓕⁻ fun ξ => ((dyadicSign ε ξ + dyadicSign ε' (-ξ) : ℝ) : ℂ) • G ξ)
           (ENNReal.ofReal p) volume ≤
-        C * β ^ 8 * dyadicHilbertBound β ^ 2 * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume ∧
+        C * β ^ 8 * hilbertBound β ^ 2 * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume ∧
       eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume ≤
-        C * β ^ 8 * dyadicHilbertBound β ^ 2 *
+        C * β ^ 8 * hilbertBound β ^ 2 *
           eLpNorm (𝓕⁻ fun ξ => ((dyadicSign ε ξ + dyadicSign ε' (-ξ) : ℝ) : ℂ) • G ξ)
             (ENNReal.ofReal p) volume := by
   obtain ⟨C, hC⟩ := exists_eLpNorm_fourierInv_dyadicSign_le_aux
   refine ⟨2 * C, fun X _ _ _ p hp β hβ ε ε' hε hε' G hG hf => ?_⟩
-  have hD : ((2 * C : NNReal) : ℝ≥0∞) * β ^ 8 * dyadicHilbertBound β ^ 2 =
-      2 * (C * β ^ 8 * dyadicHilbertBound β ^ 2) := by
+  have hD : ((2 * C : NNReal) : ℝ≥0∞) * β ^ 8 * hilbertBound β ^ 2 =
+      2 * (C * β ^ 8 * hilbertBound β ^ 2) := by
     push_cast
     ring
   rw [hD]
   have h : ∀ G : ℝ → X, Integrable G → MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume →
       eLpNorm (𝓕⁻ fun ξ => ((fullSign ε ε' ξ : ℝ) : ℂ) • G ξ) (ENNReal.ofReal p) volume ≤
-        2 * (C * β ^ 8 * dyadicHilbertBound β ^ 2) * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume :=
+        2 * (C * β ^ 8 * hilbertBound β ^ 2) * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume :=
     fun G hG hf => eLpNorm_fourierInv_fullSign_le hp hε hε' (hC X p hp β hβ) hG hf
   exact ⟨h G hG hf, eLpNorm_le_eLpNorm_fourierInv_fullSign hε hε' h hG hf⟩
 
@@ -1103,7 +1105,7 @@ theorem exists_eLpNorm_fourierInv_dyadicSign_le' : ∃ C : NNReal, ∀ (X : Type
     IsUMDBound X p β → ∀ ε : ℤ → ℝ, (∀ j, ε j = 1 ∨ ε j = 0 ∨ ε j = -1) →
     ∀ G : ℝ → X, Integrable G → MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume →
       eLpNorm (𝓕⁻ fun ξ => ((dyadicSign ε ξ : ℝ) : ℂ) • G ξ) (ENNReal.ofReal p) volume ≤
-        C * β ^ 8 * dyadicHilbertBound β ^ 2 * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
+        C * β ^ 8 * hilbertBound β ^ 2 * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume := by
   obtain ⟨C, hC⟩ := exists_eLpNorm_fourierInv_dyadicSign_le_aux
   refine ⟨C, fun X _ _ _ p hp β hβ ε hε G hG hf => ?_⟩
   -- `ε` is the average of two sequences of signs

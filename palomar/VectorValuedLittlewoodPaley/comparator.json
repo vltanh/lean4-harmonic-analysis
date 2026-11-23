@@ -2,6 +2,9 @@
   "challenge_module": "VectorValuedLittlewoodPaley.Challenge",
   "solution_module": "VectorValuedLittlewoodPaley.Solution",
   "theorem_names": [
+    "VectorValuedLittlewoodPaleyChallenge.conjugate_polynomial",
+    "VectorValuedLittlewoodPaleyChallenge.conjugate_truncated",
+    "VectorValuedLittlewoodPaleyChallenge.hilbertTruncation_bounded",
     "VectorValuedLittlewoodPaleyChallenge.truncatedHilbert_bounded",
     "VectorValuedLittlewoodPaleyChallenge.hilbert_multiplier",
     "VectorValuedLittlewoodPaleyChallenge.hilbert_bounded",

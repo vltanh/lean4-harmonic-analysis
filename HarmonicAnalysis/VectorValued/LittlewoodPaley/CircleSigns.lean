@@ -379,10 +379,10 @@ theorem exists_eLpNorm_blockSign_le : ∃ C : ℝ≥0∞ → ℝ≥0∞, (∀ β
     ∀ c : ℤ →₀ X, eLpNorm (circPoly (mulCoeff (fun n => (a n : ℂ)) c)) (ENNReal.ofReal p)
         haarAddCircle ≤ C β * eLpNorm (circPoly c) (ENNReal.ofReal p) haarAddCircle := by
   obtain ⟨C₀, hC₀⟩ := exists_eLpNorm_fourierInv_dyadicSign_le'
-  set K : ℝ≥0∞ → ℝ≥0∞ := fun β => C₀ * β ^ 8 * dyadicHilbertBound β ^ 2
+  set K : ℝ≥0∞ → ℝ≥0∞ := fun β => C₀ * β ^ 8 * hilbertBound β ^ 2
   refine ⟨fun β => K β + (2⁻¹ * K β + 2⁻¹ * K β ^ 2), fun β hβ => ?_, ?_⟩
   · have h1 : K β ≠ ⊤ := by
-      simp only [K, dyadicHilbertBound]
+      simp only [K, hilbertBound]
       finiteness
     have h2 : (2⁻¹ : ℝ≥0∞) ≠ ⊤ := by simp
     finiteness

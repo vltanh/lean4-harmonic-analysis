@@ -23,7 +23,8 @@ interval `I`, let `Δ_I f = 𝓕⁻ (1_I G)`. With independent fair signs `ε_k`
   `eLpNormRad_lineBlock_le`), and the same for the dilates `ρ⁻¹ I_k`, `ρ > 0`
   (`eLpNormRad_lineBlock_dilate_le`).
 
-Here `β` is a `UMD_p` constant of `X` and `ħ = dyadicHilbertBound β` the bound of the Hilbert transform.
+Here `β` is a `UMD_p` constant of `X` and `ħ = dyadicHilbertBound β` the bound of the Hilbert
+transform (`eLpNorm_fourierInv_sign_le_dyadic`).
 
 Source: Hytönen–van Neerven–Veraar–Weis (HNVW), *Analysis in Banach spaces I* (2016), Section 5.3,
 pp. 404–405 and 412–420: the interval multipliers from the Hilbert transform (Lemma 5.3.9 with
@@ -486,12 +487,16 @@ private theorem fourierInv_sign_sub_one (a : ℝ) (G : ℝ → X) :
 
 variable [CompleteSpace X]
 
-/-- The randomised bound for the Hilbert transform, from the bound for each choice of signs. -/
-theorem eLpNormRad_fourierInv_sign_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞}
-    (hβ : IsUMDBound X p β) {K : ℕ} {G : Fin K → ℝ → X} (hG : ∀ k, Integrable (G k))
+omit [CompleteSpace X] in
+/-- The randomised bound for the Hilbert transform, with the bound `B` for each choice of signs. -/
+theorem eLpNormRad_fourierInv_sign_le {p : ℝ} (hp : 1 < p) {B : ℝ≥0∞}
+    (hB : ∀ G : ℝ → X, Integrable G → MemLp (𝓕⁻ G) (ENNReal.ofReal p) volume →
+      eLpNorm (𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G ξ) (ENNReal.ofReal p) volume ≤
+        B * eLpNorm (𝓕⁻ G) (ENNReal.ofReal p) volume)
+    {K : ℕ} {G : Fin K → ℝ → X} (hG : ∀ k, Integrable (G k))
     (hf : ∀ k, MemLp (𝓕⁻ (G k)) (ENNReal.ofReal p) volume) :
     eLpNormRad (fun k => 𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G k ξ) p volume ≤
-      dyadicHilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
+      B * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
   have hsG := fun k => integrable_sign_smul (hG k)
   refine eLpNormRad_le_of_forall (by linarith)
     (fun k => (continuous_fourierInv_of_integrable (hsG k)).aestronglyMeasurable)
@@ -505,8 +510,7 @@ theorem eLpNormRad_fourierInv_sign_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞}
       𝓕⁻ fun ξ => ∑ k, SignCube.coin (ε k) • G k ξ :=
     funext fun x => (fourierInv_sum_smul hG _ x).symm
   rw [h1, h2]
-  refine eLpNorm_fourierInv_sign_le_dyadic hp hβ
-    (integrable_finsetSum _ fun k _ => (hG k).smul (SignCube.coin (ε k))) ?_
+  refine hB _ (integrable_finsetSum _ fun k _ => (hG k).smul (SignCube.coin (ε k))) ?_
   rw [← h2]
   exact memLp_finsetSum _ fun k _ => (hf k).const_smul _
 
@@ -531,9 +535,10 @@ private theorem eLpNormRad_fourierInv_sign_sub_le {p : ℝ} (hp : 1 < p) {β : �
   -- the Hilbert transform
   have h1 : eLpNormRad (fun k => 𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G' k ξ) p volume ≤
       dyadicHilbertBound β * eLpNormRad (fun k => 𝓕⁻ (G' k)) p volume :=
-    eLpNormRad_fourierInv_sign_le hp hβ hG' fun k => by
-      rw [hinv]
-      exact memLp_expChar_smul (hf k) _
+    eLpNormRad_fourierInv_sign_le hp (fun _ => eLpNorm_fourierInv_sign_le_dyadic hp hβ) hG'
+      fun k => by
+        rw [hinv]
+        exact memLp_expChar_smul (hf k) _
   -- the modulations on the right
   have h2 : eLpNormRad (fun k => 𝓕⁻ (G' k)) p volume ≤
       2 * eLpNormRad (fun k => 𝓕⁻ (G k)) p volume := by
@@ -829,8 +834,8 @@ theorem eLpNormRad_fourierInv_div_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (h
   exact eLpNormRad_fourierInv_div_le_of_stronglyMeasurable hp hβ
     (fun k => (hG k).congr (hGg k)) hgm hf fun k => by positivity
 
-/-- The constant `72 ħ β` of the Littlewood–Paley inequality on the half-line, `ħ = dyadicHilbertBound β`
-(the book has `36 ħ β` for the whole line, with complex signs). -/
+/-- The constant `72 ħ β` of the Littlewood–Paley inequality on the half-line,
+`ħ = dyadicHilbertBound β` (the book has `36 ħ β` for the whole line, with complex signs). -/
 noncomputable def littlewoodPaleyBound (β : ℝ≥0∞) : ℝ≥0∞ := 72 * dyadicHilbertBound β * β
 
 omit [CompleteSpace X] in
@@ -1221,8 +1226,9 @@ theorem eLpNormRad_lineBlock_dilate_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} 
     simp only [Set.indicator_apply, Set.mem_ofPred_eq, G', inv_mul_cancel_left₀ hρ.ne']
   rw [hset, eLpNormRad_fourierInv_dilate hp0
     (fun i : Fin (2 * K + 1) => (lineBlock ((i : ℕ) - K)).indicator G') hρ, hnorm]
-  calc _ ≤ ‖ρ⁻¹‖ₑ * (ENNReal.ofReal ρ ^ (1 / p) * ((2 * littlewoodPaleyBound β + dyadicHilbertBound β) *
-        eLpNorm (𝓕⁻ G') (ENNReal.ofReal p) volume)) := by
+  calc _ ≤ ‖ρ⁻¹‖ₑ * (ENNReal.ofReal ρ ^ (1 / p) *
+        ((2 * littlewoodPaleyBound β + dyadicHilbertBound β) *
+          eLpNorm (𝓕⁻ G') (ENNReal.ofReal p) volume)) := by
         gcongr
         exact eLpNormRad_lineBlock_le hp hβ hG' hf' K
     _ = _ := by ring

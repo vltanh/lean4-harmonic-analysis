@@ -32,7 +32,8 @@ a_k + Im (k z^{k−1}) b_k)`, `u_y` the same with `i k z^{k−1}`, and `u_{xy}` 
 * `norm_harmPoly_sub_le`: the Taylor estimate of p. 279, in which Laplace's equation
   `u_{xx} + u_{yy} = 0` is used. The source bounds the third derivatives of `Re z^k` and `Im z^k` in
   the disc `|z| < 2` by `k³ 2^{k−3}` and refers to Taylor's theorem; here the remainder of the
-  Taylor polynomial of `z^k` is bounded with the same factor `k³ 2^{k−3}`, by induction on `k`.
+  Taylor polynomial of `z^k` is bounded with the same factor `k³ 2^{k−3}`, by induction on `k`. The
+  estimate is printed with `<`, which fails for `u = 0`; it is used with `≤`.
 * `harmPoly_rotate`: `u (e^{iα} z)` is of the form (18), with the conjugate `v (e^{iα} z)`.
 -/
 
@@ -258,7 +259,8 @@ private theorem norm_pow_sub_le {z : ℂ} (hz : ‖z‖ ≤ 1) {δ : ℝ} (hδ :
 
 /-- The Taylor estimate of p. 279:
 `|u (z + h + ik) − u (z) − u_x (z) h − u_y (z) k − u_{xy} (z) h k| ≤ γ δ³` for `|z| ≤ 1`,
-`|h| = |k| = δ ≤ 1/2`. The terms `½ u_{xx} h² + ½ u_{yy} k²` vanish, by Laplace's equation. -/
+`|h| = |k| = δ ≤ 1/2` (in the source `|z| < 1` and `0 < δ < 1/2`). The terms
+`½ u_{xx} h² + ½ u_{yy} k²` vanish, by Laplace's equation. -/
 theorem norm_harmPoly_sub_le (N : ℕ) (a b : ℕ → X) {z : ℂ} (hz : ‖z‖ ≤ 1) {δ : ℝ} (hδ : δ ≤ 1 / 2)
     {h k : ℝ} (hh : |h| = δ) (hk : |k| = δ) :
     ‖harmPoly N a b (z + (h + k * Complex.I)) - harmPoly N a b z - h • harmDx N a b z -

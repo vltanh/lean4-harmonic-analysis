@@ -48,6 +48,11 @@ import all HarmonicAnalysis.Torus.TrigPoly
 import all HarmonicAnalysis.Transference.ContinuousSymbol
 import all HarmonicAnalysis.Transference.Homogeneous
 import all HarmonicAnalysis.Transference.RiemannSum
+import all HarmonicAnalysis.VectorValued.Burkholder.Conjugate
+import all HarmonicAnalysis.VectorValued.Burkholder.ConjugateFunction
+import all HarmonicAnalysis.VectorValued.Burkholder.HarmonicPolynomial
+import all HarmonicAnalysis.VectorValued.Burkholder.HilbertTransform
+import all HarmonicAnalysis.VectorValued.Burkholder.RandomWalk
 import all HarmonicAnalysis.VectorValued.CircPoly
 import all HarmonicAnalysis.VectorValued.Defs
 import all HarmonicAnalysis.VectorValued.Dyadic.Average
@@ -134,6 +139,12 @@ meta def mainResults : List Name :=
    ``HarmonicAnalysis.eLpNorm_truncatedHilbert_le,
    ``HarmonicAnalysis.eLpNorm_fourierInv_neg_I_sign_le_dyadic,
    ``HarmonicAnalysis.eLpNorm_fourierInv_sign_le_dyadic,
+   ``HarmonicAnalysis.eLpNorm_conjHarmPoly_le,
+   ``HarmonicAnalysis.eLpNorm_conj_circPoly_le,
+   ``HarmonicAnalysis.eLpNorm_truncatedConj_le,
+   ``HarmonicAnalysis.eLpNorm_hilbertTrunc_le,
+   ``HarmonicAnalysis.eLpNorm_fourierInv_neg_I_sign_le,
+   ``HarmonicAnalysis.eLpNorm_fourierInv_sign_le,
    ``HarmonicAnalysis.eLpNormRad_lineBlock_le,
    ``HarmonicAnalysis.eLpNormRad_lineBlock_dilate_le,
    ``HarmonicAnalysis.eLpNorm_circPoly_multiplier_le,
@@ -190,6 +201,9 @@ meta def palomarTheorems : List Name :=
    ``PaleySchattenChallenge.khintchine_lower,
    ``PaleySchattenChallenge.schatten_conjTranspose_mul_self,
    ``PaleySchattenChallenge.schatten_two_sq,
+   ``VectorValuedLittlewoodPaleyChallenge.conjugate_polynomial,
+   ``VectorValuedLittlewoodPaleyChallenge.conjugate_truncated,
+   ``VectorValuedLittlewoodPaleyChallenge.hilbertTruncation_bounded,
    ``VectorValuedLittlewoodPaleyChallenge.truncatedHilbert_bounded,
    ``VectorValuedLittlewoodPaleyChallenge.hilbert_multiplier,
    ``VectorValuedLittlewoodPaleyChallenge.hilbert_bounded,

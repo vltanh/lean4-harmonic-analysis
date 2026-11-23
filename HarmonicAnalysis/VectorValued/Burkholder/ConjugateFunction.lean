@@ -6,7 +6,6 @@ Authors: The-Anh Vu-Le
 module
 
 public import HarmonicAnalysis.VectorValued.Burkholder.Conjugate
-public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Cotangent
 import BanachProbability.UMD.Hilbert
 import HarmonicAnalysis.FourierMultiplier.Density
 
@@ -59,11 +58,13 @@ noncomputable def discPoisson (r t : ℝ) : ℝ :=
 noncomputable def discConjPoisson (r t : ℝ) : ℝ :=
   2 * r * Real.sin t / (1 - 2 * r * Real.cos t + r ^ 2)
 
-/-- (30): `u (r e^{iθ}) = (2π)⁻¹ ∫_{−π}^π (1 − r²) / (1 − 2r cos t + r²) f (θ − t) dt`. -/
+/-- (30), after the substitution `t ↦ θ − t`:
+`u (r e^{iθ}) = (2π)⁻¹ ∫_{−π}^π (1 − r²) / (1 − 2r cos t + r²) f (θ − t) dt`. -/
 noncomputable def discPoissonInt (r : ℝ) (f : AddCircle (2 * π) → X) (θ : AddCircle (2 * π)) : X :=
   (2 * π)⁻¹ • ∫ t in -π..π, discPoisson r t • f (θ - t)
 
-/-- (31): `v (r e^{iθ}) = (2π)⁻¹ ∫_{−π}^π 2r sin t / (1 − 2r cos t + r²) f (θ − t) dt`. -/
+/-- (31), after the substitution `t ↦ θ − t`:
+`v (r e^{iθ}) = (2π)⁻¹ ∫_{−π}^π 2r sin t / (1 − 2r cos t + r²) f (θ − t) dt`. -/
 noncomputable def discConjPoissonInt (r : ℝ) (f : AddCircle (2 * π) → X) (θ : AddCircle (2 * π)) :
     X :=
   (2 * π)⁻¹ • ∫ t in -π..π, discConjPoisson r t • f (θ - t)
@@ -652,7 +653,7 @@ private theorem eLpNorm_discConjPoissonInt_le_sub [CompleteSpace X] {p : ℝ} (h
     rw [Pi.sub_apply, norm_sub_rev]
     exact norm_conjHarmPoly_coeff_sub_le hr0 hr1 hf N θ
   have h3 : ∀ N, eLpNorm v q haarAddCircle ≤ β ^ 2 * (eLpNorm w q haarAddCircle + E N) + E N :=
-    fun N => (h2 N).trans (add_le_add_left ((eLpNorm_conjHarmPoly_le hp hβ N _ _ hr0).trans
+    fun N => (h2 N).trans (add_le_add_left ((eLpNorm_conjHarmPoly_le hp hβ N _ _ r).trans
       (mul_le_mul_right (h1 N) _)) _)
   have hE : Tendsto E atTop (𝓝 0) := by
     simpa using ENNReal.tendsto_ofReal (tendsto_approxErr hr0 hr1 f)
@@ -726,7 +727,9 @@ private theorem discConjPoissonInt_eq_zero [CompleteSpace X] {f : AddCircle (2 *
 /-- **Lemma 3** of Burkholder (1983), (32): `‖v (r e^{iθ})‖_p ≤ 2 β² ‖u (r e^{iθ})‖_p` for
 `f ∈ L^p`, `0 ≤ r < 1`. Lemma 2 gives `‖v‖_p ≤ β² ‖u − u (0)‖_p`, because `u − u (0)` and `v` are
 the uniform limits on the circle `|z| = r` of functions of the form (18) and (19), and
-`‖u − u (0)‖_p ≤ 2 ‖u‖_p`. -/
+`‖u − u (0)‖_p ≤ 2 ‖u‖_p`, because `u (0)` is the mean of `u` on this circle (the source: "hence for
+`u` and `v`"). In (32) the `p`-th powers are compared, with a constant `c_p (B)`: here
+`(2 β²)^p`. -/
 theorem eLpNorm_discConjPoissonInt_le [CompleteSpace X] {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞}
     (hβ : IsUMDBound X p β) {f : AddCircle (2 * π) → X}
     (hf : MemLp f (ENNReal.ofReal p) haarAddCircle) {r : ℝ} (hr0 : 0 ≤ r) (hr1 : r < 1) :
@@ -745,9 +748,10 @@ theorem eLpNorm_discConjPoissonInt_le [CompleteSpace X] {p : ℝ} (hp : 1 < p) {
 
 /-! ### The kernel `K_r` -/
 
-/-- The kernel `K_r` of p. 283, `r = 1 − ε`: the difference of the kernels of `f̃_ε` and of
-`v (r e^{iθ})`, with absolute value. (The source says only that there is a nonnegative function
-`K_r` with the properties `norm_truncatedConj_sub_le` and `integral_truncationError_lt`.) -/
+/-- A choice of the kernel `K_r` of p. 283, `r = 1 − ε`: the modulus of the difference of the
+kernels of `f̃_ε` and of `v (r e^{iθ})`. (The source says only that there is a nonnegative function
+`K_r` with the properties `norm_truncatedConj_sub_le`, `integrable_truncationError` and
+`integral_truncationError_lt`.) -/
 noncomputable def truncationError (ε t : ℝ) : ℝ :=
   |Set.indicator {t : ℝ | ε < |t|} (fun t => Real.cot (t / 2)) t - discConjPoisson (1 - ε) t|
 
@@ -768,6 +772,13 @@ private theorem measurable_truncCot (ε : ℝ) : Measurable (truncCot ε) := by
   rw [truncCot, h]
   exact Measurable.indicator (by fun_prop)
     (measurableSet_lt measurable_const continuous_abs.measurable)
+
+/-- `f̃_ε` is strongly measurable. -/
+theorem stronglyMeasurable_truncatedConj {f : AddCircle (2 * π) → X}
+    (hf : AEStronglyMeasurable f haarAddCircle) (ε : ℝ) :
+    StronglyMeasurable (truncatedConj ε f) := by
+  rw [truncatedConj_eq]
+  exact stronglyMeasurable_circConv (measurable_truncCot ε) hf
 
 /-- The kernel of `f̃_ε` is bounded by `π / ε` on `(−π, π)`. -/
 private theorem abs_truncCot_le {ε : ℝ} (hε0 : 0 < ε) {t : ℝ} (ht : |t| ≤ π) :
@@ -816,7 +827,7 @@ private theorem exists_bound_truncationError {ε : ℝ} (hε0 : 0 < ε) (hε1 : 
   exact (abs_sub _ _).trans (add_le_add (abs_truncCot_le hε0 (abs_le.2 ⟨ht.1.le, ht.2⟩)) (hC t ht))
 
 /-- `K_r` is integrable on `(−π, π]`. -/
-private theorem integrable_truncationError {ε : ℝ} (hε0 : 0 < ε) (hε1 : ε < 1) :
+theorem integrable_truncationError {ε : ℝ} (hε0 : 0 < ε) (hε1 : ε < 1) :
     IntegrableOn (truncationError ε) (Set.Ioc (-π) π) volume := by
   obtain ⟨C, hC⟩ := exists_bound_truncationError hε0 hε1
   exact IntegrableOn.of_bound measure_Ioc_lt_top
@@ -1090,7 +1101,8 @@ private theorem eLpNorm_truncatedConj_sub_le {p : ℝ} (hp : 1 ≤ p) {f : AddCi
   refine (eLpNorm_mono_real hm hle).trans (h.trans (mul_le_of_le_one_left' ?_))
   exact ENNReal.ofReal_le_one.2 (integral_truncationError_lt hε0 hε1).le
 
-/-- The bound for the Hilbert transform in terms of a `UMD_p` constant. -/
+/-- The bound `2 β² + 1` for the Hilbert transform in terms of a `UMD_p` constant `β`, the constant
+of (33) and (34). -/
 noncomputable def hilbertBound (β : ℝ≥0∞) : ℝ≥0∞ := 2 * β ^ 2 + 1
 
 /-- Burkholder (1983), (33): `‖f̃_ε‖_p ≤ (2 β² + 1) ‖f‖_p` for `f ∈ L^p`, `0 < ε < 1`. With

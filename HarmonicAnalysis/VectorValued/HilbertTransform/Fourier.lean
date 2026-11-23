@@ -540,7 +540,7 @@ private theorem tendsto_two_pow : Tendsto (fun i : ℕ => (((2 : ℝ) ^ i)⁻¹,
     inv_pos.2 (pow_pos two_pos i)⟩).prodMk hpow
 
 /-- `𝓕⁻ (−i sgn · G) = −i 𝓕⁻ (sgn · G)`. -/
-private theorem fourierInv_neg_I_smul (G : ℝ → X) :
+theorem fourierInv_neg_I_smul (G : ℝ → X) :
     (𝓕⁻ fun ξ => (-Complex.I * (Real.sign ξ : ℂ)) • G ξ) =
       (-Complex.I) • 𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G ξ := by
   funext x

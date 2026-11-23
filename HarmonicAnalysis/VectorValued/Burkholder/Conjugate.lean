@@ -19,7 +19,7 @@ Banach-space-valued functions* (1983), pp. 278–279 and 281–282: the end of t
 `u`, `v` of (18), (19) with coefficients in a Banach space with the `UMD_p` constant `β`,
 `1 < p < ∞`,
 
-`‖v (r e^{iθ})‖_p ≤ β² ‖u (r e^{iθ})‖_p` for `r ≥ 0` (`eLpNorm_conjHarmPoly_le`).
+`‖v (r e^{iθ})‖_p ≤ β² ‖u (r e^{iθ})‖_p` (`eLpNorm_conjHarmPoly_le`).
 
 The walk `Z_n` runs on an infinite sequence of fair signs with the law `signLaw`, the product of the
 uniform laws of the two signs; `eLpNorm_signLaw` says that the norm in `L^p` of a function of the
@@ -61,7 +61,8 @@ theorem fact_zero_lt_two_pi : Fact (0 < 2 * π) :=
 
 attribute [local instance] fact_zero_lt_two_pi
 
-/-- The law of a sequence of independent fair signs. -/
+/-- The law of a sequence of independent fair signs; the source has the Rademacher functions on
+`[0, 1)`. -/
 noncomputable def signLaw : Measure (ℕ → Bool) :=
   Measure.infinitePi fun _ => ProbabilityTheory.uniformOn (Set.univ : Set Bool)
 
@@ -600,15 +601,16 @@ private theorem eLpNorm_conjHarmPoly_fourier_le' [CompleteSpace X] {p : ℝ} (hp
 
 variable [CompleteSpace X]
 
-/-- **Lemma 2** of Burkholder (1983): for `u`, `v` of (18), (19), `1 < p < ∞` and `r ≥ 0`,
-`‖v (r e^{iθ})‖_p ≤ β² ‖u (r e^{iθ})‖_p`, where the norms are those of `L^p (dθ / 2π)`. -/
+/-- **Lemma 2** of Burkholder (1983): for `u`, `v` of (18), (19), `1 < p < ∞` and real `r` (in the
+source `r ≥ 0`), `‖v (r e^{iθ})‖_p ≤ β² ‖u (r e^{iθ})‖_p`, where the norms are those of
+`L^p (dθ / 2π)`. (In (17) these are the `p`-th powers, with a constant `c_p (B)`: here `β^{2p}`.) -/
 theorem eLpNorm_conjHarmPoly_le {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (hβ : IsUMDBound X p β) (N : ℕ)
-    (a b : ℕ → X) {r : ℝ} (_hr : 0 ≤ r) :
+    (a b : ℕ → X) (r : ℝ) :
     eLpNorm (fun θ : AddCircle (2 * π) => conjHarmPoly N a b (r * fourier 1 θ))
         (ENNReal.ofReal p) haarAddCircle ≤
       β ^ 2 * eLpNorm (fun θ : AddCircle (2 * π) => harmPoly N a b (r * fourier 1 θ))
         (ENNReal.ofReal p) haarAddCircle := by
-  -- the case `r = 1` for `r^k a_k`, `r^k b_k`; the hypothesis `r ≥ 0` is not needed
+  -- the case `r = 1` for `r^k a_k`, `r^k b_k`
   simp only [conjHarmPoly_rotate, harmPoly_rotate]
   exact eLpNorm_conjHarmPoly_fourier_le' hp hβ N _ _
 
@@ -689,7 +691,8 @@ private theorem fourier_natCast (k : ℕ) (t : UnitAddCircle) :
     (fourier (k : ℤ) t : ℂ) = fourier 1 t ^ k := by
   rw [fourier_apply, fourier_one, natCast_zsmul, toCircle_nsmul, Circle.coe_pow]
 
-/-- Lemma 2 for a complex space and the functions `e_n (t) = e^{2πi n t}` on `ℝ / ℤ`: if `c_0 = 0`,
+/-- **Lemma 2** for a complex space, in terms of the functions `e_n (t) = e^{2πi n t}` on `ℝ / ℤ` (a
+reformulation that is not in the source): if `c_0 = 0`,
 `‖Σ_n (−i sgn n) c_n e_n‖_p ≤ β² ‖Σ_n c_n e_n‖_p`. -/
 theorem eLpNorm_conj_circPoly_le {X : Type*} [NormedAddCommGroup X] [NormedSpace ℂ X]
     [CompleteSpace X] {p : ℝ} (hp : 1 < p) {β : ℝ≥0∞} (hβ : IsUMDBound X p β) (c : ℤ →₀ X)

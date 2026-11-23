@@ -230,18 +230,6 @@ private theorem stronglyMeasurable_periodize {f : ℝ → X} (hf : StronglyMeasu
   (hf.comp_measurable (measurable_const_mul R)).comp_measurable
     (measurable_subtype_coe.comp (AddCircle.measurableEquivIoc (2 * π) (-π)).measurable)
 
-/-- `f̃_ε` is strongly measurable, if `f` is. -/
-private theorem stronglyMeasurable_truncatedConj {f : AddCircle (2 * π) → X}
-    (hf : StronglyMeasurable f) (ε : ℝ) : StronglyMeasurable (truncatedConj ε f) := by
-  have hcot : Measurable fun z : AddCircle (2 * π) × ℝ => Real.cot (z.2 / 2) := by
-    simp_rw [Real.cot_eq_cos_div_sin]
-    fun_prop
-  have h : StronglyMeasurable (Function.uncurry fun (θ : AddCircle (2 * π)) (t : ℝ) =>
-      Real.cot (t / 2) • f (θ - t)) :=
-    hcot.stronglyMeasurable.smul (hf.comp_measurable
-      (measurable_fst.sub (AddCircle.measurable_mk'.comp measurable_snd)))
-  exact h.integral_prod_right.const_smul _
-
 /-- `H_ε f` is strongly measurable, if `f` is. -/
 private theorem stronglyMeasurable_hilbertTrunc {f : ℝ → X} (hf : StronglyMeasurable f) (ε : ℝ) :
     StronglyMeasurable (hilbertTrunc ε f) := by
@@ -349,7 +337,7 @@ private theorem eLpNorm_truncatedConj_periodize_le [CompleteSpace X] {p : ℝ} (
     refine ENNReal.lt_top_of_mul_ne_top_right (hle.trans_lt hf.eLpNorm_lt_top).ne ?_
     simp [ENNReal.rpow_eq_zero_iff, hR]
   rw [eLpNorm_indicator_comp_coe_div ENNReal.ofReal_ne_top
-    (stronglyMeasurable_truncatedConj hm _) hR]
+    (stronglyMeasurable_truncatedConj hm.aestronglyMeasurable _) hR]
   calc ENNReal.ofReal R ^ (1 / ENNReal.ofReal p).toReal *
         eLpNorm (truncatedConj (ε / R) (periodize R f)) (ENNReal.ofReal p) volume
       ≤ ENNReal.ofReal R ^ (1 / ENNReal.ofReal p).toReal *
@@ -387,8 +375,9 @@ private theorem eLpNorm_hilbertTrunc_le_of_support [CompleteSpace X] {p : ℝ} (
     constructor <;> linarith
   refine (Lp.eLpNorm_lim_le_liminf_eLpNorm (fun n : ℕ => ?_) _
     (stronglyMeasurable_hilbertTrunc hfm ε).aestronglyMeasurable (ae_of_all _ hlim)).trans ?_
-  · exact (((stronglyMeasurable_truncatedConj (stronglyMeasurable_periodize hfm n)
-      _).comp_measurable AddCircle.measurable_mk').indicator measurableSet_Ioc).comp_measurable
+  · exact (((stronglyMeasurable_truncatedConj
+      (stronglyMeasurable_periodize hfm n).aestronglyMeasurable _).comp_measurable
+      AddCircle.measurable_mk').indicator measurableSet_Ioc).comp_measurable
       (measurable_div_const _) |>.aestronglyMeasurable
   · refine (liminf_le_liminf ?_).trans (liminf_const _).le
     filter_upwards [tendsto_natCast_atTop_atTop.eventually_gt_atTop ε] with n hn
@@ -550,17 +539,6 @@ theorem eLpNorm_fourierInv_neg_I_sign_le [CompleteSpace X] {p : ℝ} (hp : 1 < p
       ((liminf_le_liminf ?_).trans (liminf_const _).le)
   filter_upwards [hε0] with i hi
   exact eLpNorm_hilbertTrunc_le hp hβ hf hi
-
-/-- `𝓕⁻ (−i sgn · G) = −i 𝓕⁻ (sgn · G)`. -/
-private theorem fourierInv_neg_I_smul (G : ℝ → X) :
-    (𝓕⁻ fun ξ => (-Complex.I * (Real.sign ξ : ℂ)) • G ξ) =
-      (-Complex.I) • 𝓕⁻ fun ξ => (Real.sign ξ : ℂ) • G ξ := by
-  funext x
-  rw [Pi.smul_apply, Real.fourierInv_eq', Real.fourierInv_eq', ← integral_smul]
-  refine integral_congr_ae (ae_of_all _ fun ξ => ?_)
-  simp only [smul_smul]
-  congr 1
-  ring
 
 /-- `eLpNorm_fourierInv_neg_I_sign_le` for the multiplier `sgn`:
 `‖𝓕⁻ (sgn · G)‖_p ≤ (2 β² + 1) ‖𝓕⁻ G‖_p`. -/
