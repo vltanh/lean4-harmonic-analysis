@@ -262,8 +262,9 @@ The proofs follow the sources; the module docstrings say where they depart.
 | [Pi] | pp. 105–106, `√q` | the type 2 constant for all `q ≥ 2` (the source has even `q`) |
 
 Not consulted: Hoffman's *Banach spaces of analytic functions* and Helson's *Lectures on invariant
-subspaces* (cited in [S]), Wiener (1955), Wiener and Masani (1957, 1958), Lust-Piquard
-(1986), Bourgain (1986).
+subspaces* (cited in [S]), Wiener (1955), Wiener and Masani (1957, 1958), Burkholder
+(1983; the Hilbert transform on UMD spaces, which [MC] recalls from it, is [HNVW, Thm 5.1.13]),
+Lust-Piquard (1986), Bourgain (1986).
 
 ## Planned extensions
 
