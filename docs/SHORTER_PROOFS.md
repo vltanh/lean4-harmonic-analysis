@@ -110,3 +110,9 @@ Item 41, no truncations:
    `v (x, y) = π⁻¹ ∫ t (t² + y²)⁻¹ f (x − t) dt` on the line, whose symbol is
    `−i sgn (ξ) e^{−2π|ξ|y}` (by Fubini for `f ψ (η ·) ∈ L¹`, a cut-off, `η → 0`).
 3. `y → 0` with Fatou's lemma: `ħ ≤ β²`, without `K_r`, (33), `H_ε` and [HNVW, Lemma 5.2.1].
+
+## The Beurling–Ahlfors transform
+
+| # | Result | Shorter proof | Status |
+| --- | --- | --- | --- |
+| 48 | `‖𝓑‖_p ≤ C` if `‖∂u‖_p ≤ C ‖∂̄u‖_p` on `C_c^∞` [BMS, §1 (b)], by the proof of [Gu, Cor. 1.4] | the dense class of [HNVW, Prop. 2.4.23 (ii)] (Fourier transform in `C_c^∞(ℂ∖{0})`) in place of `C_c^∞`: the Cauchy transform `𝓕⁻¹((πiξ)⁻¹ 𝓕g)` is then a Schwartz function, so no Cauchy kernel and no decay estimate of the potential are needed, and the cut-offs work for every Schwartz function. Guerra's own class would also work here: for `g ∈ C_c^∞` the Cauchy transform `f` is `O(1/\|z\|)` and `∂f = 𝓑g = O(1/\|z\|²)`, so `‖f ∇η_R‖_p = O(R^{2/p − 2}) → 0` for every `p > 1`. The change of class is for economy, not forced | in the library |

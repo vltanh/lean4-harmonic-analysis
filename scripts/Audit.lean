@@ -10,6 +10,8 @@ public meta import Lean.Elab.Command
 import all FourierMultipliers.Solution
 import all HardyFactorization.Solution
 import all HarmonicAnalysis.BeurlingAhlfors.Basic
+import all HarmonicAnalysis.BeurlingAhlfors.CauchyTransform
+import all HarmonicAnalysis.BeurlingAhlfors.CompactSupport
 import all HarmonicAnalysis.BeurlingAhlfors.Duality
 import all HarmonicAnalysis.BeurlingAhlfors.LowerBound
 import all HarmonicAnalysis.BeurlingAhlfors.Periodic
@@ -132,6 +134,17 @@ meta def mainResults : List Name :=
    ``HarmonicAnalysis.beurlingKappa_two_pStar_le_beurlingPowNorm_two,
    ``HarmonicAnalysis.pStar_sub_one_lt_beurlingPowNorm_two,
    ``HarmonicAnalysis.twentyOne_div_five_le_beurlingPowNorm_two_four,
+   ``HarmonicAnalysis.exists_schwartzMap_eq_cauchyTransform,
+   ``HarmonicAnalysis.dzbar_cauchyTransform,
+   ``HarmonicAnalysis.dz_cauchyTransform,
+   ``HarmonicAnalysis.exists_hasCompactSupport_tendsto_dz_dzbar,
+   ``HarmonicAnalysis.eLpNorm_dz_le_of_forall_hasCompactSupport,
+   ``HarmonicAnalysis.eLpNorm_beurlingPow_one_le_of_hasCompactFourierSupportOffZero,
+   ``HarmonicAnalysis.beurlingPowNorm_one_le_of_forall_hasCompactSupport,
+   ``HarmonicAnalysis.eLpNorm_beurlingPow_one_le_of_forall_hasCompactSupport,
+   ``HarmonicAnalysis.eLpNorm_dz_le_beurlingPowNorm_one_mul,
+   ``HarmonicAnalysis.beurlingPowNorm_one_le_iff,
+   ``HarmonicAnalysis.isLeast_beurlingPowNorm_one,
    ``UnitAddTorus.cubeFourierCoeff_fderiv,
    ``UnitAddTorus.cubeFourierCoeff_fderiv_of_contDiff,
    ``UnitAddTorus.summable_cubeFourierCoeff,

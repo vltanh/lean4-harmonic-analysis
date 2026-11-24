@@ -9,7 +9,8 @@ In alphabetical order. Entries that the [README](../README.md) cites by a key be
 - [BMS] A. Baernstein II, S. J. Montgomery-Smith, *Some conjectures about integral means of `∂f` and
   `∂̄f`*, in: Complex analysis and differential equations (Uppsala, 1997), ed. C. Kiselman, Acta Univ.
   Upsaliensis C 64 (1999), 92–109, [arXiv:math/9709215](https://arxiv.org/abs/math/9709215): §1, the
-  functions `f_α`.
+  functions `f_α`, Conjecture 3 and remark (b) (stated without proof: Conjecture 3 would give
+  `‖S‖_p = p* − 1`; restated in §2 as (2.4)).
 - K. Ball, E. A. Carlen, E. H. Lieb, *Sharp uniform convexity and smoothness inequalities for trace
   norms*, Invent. Math. 115 (1994), 463–482, [doi:10.1007/BF01231769](https://doi.org/10.1007/BF01231769).
 - [BJ] R. Bañuelos, P. Janakiraman, *`L^p`-bounds for the Beurling–Ahlfors transform*, Trans. Amer.
@@ -93,6 +94,10 @@ In alphabetical order. Entries that the [README](../README.md) cites by a key be
   Chapter 3 (Fourier series on `𝕋^n`). Not consulted: the arguments for smooth periodic functions
   (decay of the coefficients, absolute convergence and uniqueness of the Fourier series) are the
   standard ones.
+- [Gu] A. Guerra, *Quasiconvexity of the Burkholder function on symmetric matrices*, preprint
+  [arXiv:2608.23388](https://arxiv.org/abs/2608.23388) (v1, August 2026): §6, the proofs of
+  Corollaries 1.2 and 1.4 (density, a potential, cut-offs, limit), whose argument is followed for
+  `‖𝓑‖_p` as the best constant of `‖∂u‖_p ≤ C ‖∂̄u‖_p`; the corollaries themselves are not used.
 - U. Haagerup, M. Musat, *On the best constants in noncommutative Khintchine-type inequalities*, J. Funct.
   Anal. 250 (2007), 588–624, [doi:10.1016/j.jfa.2007.05.014](https://doi.org/10.1016/j.jfa.2007.05.014).
 - [HL1] H. Helson, D. Lowdenslager, *Prediction theory and Fourier series in several variables*, Acta Math.

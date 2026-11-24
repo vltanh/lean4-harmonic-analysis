@@ -24,6 +24,8 @@ Fourier transform is Mathlib's, `𝓕 f (ξ) = ∫ e^{−2πi ⟨v, ξ⟩} f (v)
 * `HarmonicAnalysis.continuous_fourierMultiplier`: `T_m f` is continuous for every Schwartz
   function `f` (when `m · 𝓕 f` is not integrable, Lean's integral makes it `0`).
 * `HarmonicAnalysis.eLpNorm_fourierMultiplier_le`: `‖T_m f‖_p ≤ ‖T_m‖_p ‖f‖_p`.
+* `HarmonicAnalysis.enorm_fourierMultiplier_sub_le`: `|T_m f (x) − T_m g (x)| ≤ ‖𝓕 f − 𝓕 g‖₁` for
+  `|m| ≤ 1`, so that `T_m f_j → T_m f` uniformly when `𝓕 f_j → 𝓕 f` in `L¹`.
 * `HarmonicAnalysis.div_le_multiplierNorm_of_tendsto` (density): the norm over Schwartz functions
   bounds the ratio `‖v‖_p / ‖u‖_p` for every pair `(u, v)` that is an `L^p`-limit of pairs
   `(φ_k, T_m φ_k)` with `φ_k` Schwartz, that is, for `T_m` on the closure of its graph over
@@ -92,6 +94,47 @@ theorem eLpNorm_fourierMultiplier_le (m : V → ℂ) (p : ℝ) (f : 𝓢(V, ℂ)
             eLpNorm (f : V → ℂ) (ENNReal.ofReal p) volume :=
           (ENNReal.div_mul_cancel h0 (f.memLp _).eLpNorm_lt_top.ne).symm
       _ ≤ _ := by gcongr
+
+/-- `|T_m f (x) − T_m g (x)| ≤ ‖𝓕 f − 𝓕 g‖₁` for Schwartz `f`, `g` and a measurable symbol with
+`|m| ≤ 1`: `T_m f − T_m g` is the inverse Fourier transform of `m (𝓕 f − 𝓕 g)`. -/
+theorem enorm_fourierMultiplier_sub_le {m : V → ℂ} (hm : Measurable m) (hm1 : ∀ ξ, ‖m ξ‖ ≤ 1)
+    (f g : 𝓢(V, ℂ)) (x : V) :
+    ‖fourierMultiplier m f x - fourierMultiplier m g x‖ₑ ≤
+      eLpNorm (fun ξ => 𝓕 (f : V → ℂ) ξ - 𝓕 (g : V → ℂ) ξ) 1 volume := by
+  have hL : Continuous fun p : V × V ↦ (-innerₗ V) p.1 p.2 := by
+    simp only [LinearMap.neg_apply, innerₗ_apply_apply]
+    fun_prop
+  set a : V → ℂ := fun ξ => m ξ • 𝓕 (f : V → ℂ) ξ
+  set b : V → ℂ := fun ξ => m ξ • 𝓕 (g : V → ℂ) ξ
+  have ha : Integrable a := integrable_smul_fourier hm ⟨1, hm1⟩ f
+  have hb : Integrable b := integrable_smul_fourier hm ⟨1, hm1⟩ g
+  have hadd := VectorFourier.fourierIntegral_add (μ := volume) (L := -innerₗ V)
+    Real.continuous_fourierChar hL (ha.sub hb) hb
+  rw [sub_add_cancel] at hadd
+  have heq : fourierMultiplier m f x - fourierMultiplier m g x =
+      VectorFourier.fourierIntegral 𝐞 volume (-innerₗ V) (a - b) x := by
+    have e := congrFun hadd x
+    simp only [Pi.add_apply] at e
+    change VectorFourier.fourierIntegral 𝐞 volume (-innerₗ V) a x -
+      VectorFourier.fourierIntegral 𝐞 volume (-innerₗ V) b x = _
+    rw [e, add_sub_cancel_right]
+  rw [heq]
+  calc ‖VectorFourier.fourierIntegral 𝐞 volume (-innerₗ V) (a - b) x‖ₑ
+      ≤ ENNReal.ofReal (∫ ξ, ‖(a - b) ξ‖) := by
+        rw [← ofReal_norm]
+        exact ENNReal.ofReal_le_ofReal
+          (VectorFourier.norm_fourierIntegral_le_integral_norm _ _ _ _ _)
+    _ = ∫⁻ ξ, ‖(a - b) ξ‖ₑ := ofReal_integral_norm_eq_lintegral_enorm (ha.sub hb)
+    _ ≤ ∫⁻ ξ, ‖𝓕 (f : V → ℂ) ξ - 𝓕 (g : V → ℂ) ξ‖ₑ := lintegral_mono fun ξ => by
+        simp only [Pi.sub_apply, a, b, ← smul_sub, enorm_smul]
+        calc ‖m ξ‖ₑ * ‖𝓕 (f : V → ℂ) ξ - 𝓕 (g : V → ℂ) ξ‖ₑ
+            ≤ 1 * ‖𝓕 (f : V → ℂ) ξ - 𝓕 (g : V → ℂ) ξ‖ₑ := by
+              gcongr
+              rw [← ofReal_norm]
+              exact ENNReal.ofReal_le_one.2 (hm1 ξ)
+          _ = _ := one_mul _
+    _ = _ := (eLpNorm_one_eq_lintegral_enorm
+        (((𝓕 f).continuous.sub (𝓕 g).continuous).aestronglyMeasurable)).symm
 
 /-- Density: if Schwartz functions `φ_k` satisfy `φ_k → u` and `T_m φ_k → v` in `L^p`, `1 ≤ p`,
 then `‖v‖_p / ‖u‖_p ≤ ‖T_m‖_p`. -/

@@ -19,6 +19,10 @@ Lean 4 with Mathlib `v4.36.0-rc2`. For scalar functions, on `ℂ ≅ ℝ²`, the
   - `𝓑^k(∂̄^k F) = ∂^k F`
   - `‖𝓑^k‖_p = ‖𝓑^k‖_{p'}`
   - transference for `𝓑^k`
+  - the Cauchy transform `𝓕⁻¹((πiξ)⁻¹ 𝓕g)` of the Schwartz functions `g` with `𝓕g ∈ C_c^∞(ℂ∖{0})`:
+    a Schwartz function `f` with `∂̄f = g`, `∂f = 𝓑g`
+  - **`‖𝓑‖_p` is the best constant of `‖∂u‖_p ≤ C ‖∂̄u‖_p` on `C_c^∞`**, `1 < p < ∞` [BMS, §1 (b)],
+    by the cut-offs of Guerra [Gu]
   - **Dragičević's lower bound** `‖𝓑^n‖_p ≥ κ_n(p)` for `n = 1` and `n = 2`:
     - `‖𝓑‖_p ≥ κ₁(p) = p − 1`
     - `‖𝓑²‖_p ≥ κ₂(p) = (p−1)(2p−1)/(p+1)`; with the duality of Carbonaro, Dragičević and Kovač
@@ -82,7 +86,7 @@ the operator norms are suprema in `ℝ≥0∞`.
 | Statement | Lean | Source |
 | --- | --- | --- |
 | `𝓕(∂̄f)(ξ) = πiξ 𝓕f(ξ)`, `𝓕(∂f)(ξ) = πiξ̄ 𝓕f(ξ)` | [`fourier_dzbarCLM`](HarmonicAnalysis/Complex/Wirtinger.lean#L90), [`fourier_dzCLM`](HarmonicAnalysis/Complex/Wirtinger.lean#L103) | |
-| `‖v‖_p / ‖u‖_p ≤ ‖T_m‖_p` if Schwartz `φ_k → u`, `T_m φ_k → v` in `L^p` | [`div_le_multiplierNorm_of_tendsto`](HarmonicAnalysis/FourierMultiplier/Basic.lean#L98) | density |
+| `‖v‖_p / ‖u‖_p ≤ ‖T_m‖_p` if Schwartz `φ_k → u`, `T_m φ_k → v` in `L^p` | [`div_le_multiplierNorm_of_tendsto`](HarmonicAnalysis/FourierMultiplier/Basic.lean#L141) | density |
 | `‖T_m‖_p < ∞` iff `T_m` extends from Schwartz functions to a bounded operator on `L^p`, which is then unique, of norm `‖T_m‖_p` (`m` bounded measurable, `1 ≤ p`) | [`existsUnique_extension_of_multiplierNorm_ne_top`](HarmonicAnalysis/FourierMultiplier/Extension.lean#L80), [`enorm_eq_multiplierNorm`](HarmonicAnalysis/FourierMultiplier/Extension.lean#L116) | density |
 | `‖T_m‖_p = ‖T_m‖_{p'}` (`m` bounded measurable, `1 < p`) | [`multiplierNorm_conjExponent`](HarmonicAnalysis/FourierMultiplier/Duality.lean#L317) | [HNVW, Prop. 5.3.7] |
 | `‖T_{m(−·)}‖_p = ‖T_m‖_p` | [`multiplierNorm_comp_neg`](HarmonicAnalysis/FourierMultiplier/Duality.lean#L250) | reflection; [HNVW, p. 403] |
@@ -110,6 +114,10 @@ the operator norms are suprema in `ℝ≥0∞`.
 | `‖∂²f_{2,α}‖_p / ‖∂̄²f_{2,α}‖_p → κ₂(p)` as `α → 1/p⁻` | [`tendsto_eLpNorm_div_testFun`](HarmonicAnalysis/BeurlingAhlfors/LowerBound.lean#L297) | [D, Thm 1.1] (for `p > 2`) |
 | `κ₂(p) ≤ ‖𝓑²‖_p` for `1 < p` | [`beurlingKappa_two_le_beurlingPowNorm_two`](HarmonicAnalysis/BeurlingAhlfors/LowerBound.lean#L332) | [D, Thm 1.1] (for `p > 2`) |
 | `κ₂(p*) ≤ ‖𝓑²‖_p` for `1 < p` | [`beurlingKappa_two_pStar_le_beurlingPowNorm_two`](HarmonicAnalysis/BeurlingAhlfors/LowerBound.lean#L343) | [D, Thm 1.1] for `p > 2`; [CDK, §1.3.1] for `p < 2` |
+| `C g = 𝓕⁻¹((πiξ)⁻¹ 𝓕g)` is a Schwartz function `f` with `∂̄f = g`, `∂f = 𝓑g`, for Schwartz `g` with `𝓕g ∈ C_c^∞(ℂ∖{0})` | [`exists_schwartzMap_eq_cauchyTransform`](HarmonicAnalysis/BeurlingAhlfors/CauchyTransform.lean#L86), [`dzbar_cauchyTransform`](HarmonicAnalysis/BeurlingAhlfors/CauchyTransform.lean#L117), [`dz_cauchyTransform`](HarmonicAnalysis/BeurlingAhlfors/CauchyTransform.lean#L124) | the Cauchy transform, on the Fourier side (no kernel) |
+| For Schwartz `f`: smooth compactly supported `u_n` with `∂u_n → ∂f`, `∂̄u_n → ∂̄f` in `L^p`; so `‖∂u‖_p ≤ C ‖∂̄u‖_p` passes from `C_c^∞` to Schwartz functions (`1 ≤ p`) | [`exists_hasCompactSupport_tendsto_dz_dzbar`](HarmonicAnalysis/BeurlingAhlfors/CompactSupport.lean#L276), [`eLpNorm_dz_le_of_forall_hasCompactSupport`](HarmonicAnalysis/BeurlingAhlfors/CompactSupport.lean#L310) | the cut-offs of [Gu, proofs of Cors 1.2, 1.4] |
+| `‖𝓑g‖_p ≤ C ‖g‖_p` for Schwartz `g` with `𝓕g ∈ C_c^∞(ℂ∖{0})`, if `‖∂u‖_p ≤ C ‖∂̄u‖_p` for all `u ∈ C_c^∞` (`1 ≤ p`) | [`eLpNorm_beurlingPow_one_le_of_hasCompactFourierSupportOffZero`](HarmonicAnalysis/BeurlingAhlfors/CompactSupport.lean#L373) | [Gu, proof of Cor. 1.4], with the Cauchy transform as the potential |
+| `‖𝓑‖_p ≤ C` if `‖∂u‖_p ≤ C ‖∂̄u‖_p` for all `u ∈ C_c^∞`; conversely `‖∂u‖_p ≤ ‖𝓑‖_p ‖∂̄u‖_p`; so `‖𝓑‖_p` is the least such `C` (`1 < p`) | [`beurlingPowNorm_one_le_of_forall_hasCompactSupport`](HarmonicAnalysis/BeurlingAhlfors/CompactSupport.lean#L450), [`eLpNorm_dz_le_beurlingPowNorm_one_mul`](HarmonicAnalysis/BeurlingAhlfors/CompactSupport.lean#L475), [`beurlingPowNorm_one_le_iff`](HarmonicAnalysis/BeurlingAhlfors/CompactSupport.lean#L497), [`isLeast_beurlingPowNorm_one`](HarmonicAnalysis/BeurlingAhlfors/CompactSupport.lean#L506) | [BMS, §1 (b)] (stated without proof); the proof of [Gu, Cor. 1.4] |
 | `p* − 1 < ‖𝓑²‖_p` for `p ≠ 2`; `21/5 ≤ ‖𝓑²‖₄` | [`pStar_sub_one_lt_beurlingPowNorm_two`](HarmonicAnalysis/BeurlingAhlfors/LowerBound.lean#L366), [`twentyOne_div_five_le_beurlingPowNorm_two_four`](HarmonicAnalysis/BeurlingAhlfors/LowerBound.lean#L373) | |
 | `(∂_v g)^(n) = 2πi⟨n,v⟩ ĝ(n)` for Lipschitz, or `C¹`, `ℤ^ι`-periodic `g` | [`UnitAddTorus.cubeFourierCoeff_fderiv_of_lipschitzWith`](HarmonicAnalysis/Torus/Smooth.lean#L140), [`UnitAddTorus.cubeFourierCoeff_fderiv_of_contDiff`](HarmonicAnalysis/Torus/Smooth.lean#L206) | difference quotients; [G, Ch. 3] |
 | `Σ_n (1 + ‖n‖)^k \|ĝ(n)\| < ∞` for smooth periodic `g` and every `k` | [`UnitAddTorus.exists_norm_cubeFourierCoeff_le`](HarmonicAnalysis/Torus/Smooth.lean#L282), [`UnitAddTorus.summable_cubeFourierCoeff`](HarmonicAnalysis/Torus/Smooth.lean#L361) | integration by parts; [G, Ch. 3] |
@@ -118,7 +126,7 @@ the operator norms are suprema in `ℝ≥0∞`.
 | `h = ∂̄u`, `u` smooth periodic of mean zero, for smooth `ℤ²`-periodic `h` of mean zero | [`UnitAddTorus.exists_dzbarPi_eq`](HarmonicAnalysis/Torus/Smooth.lean#L866) | the symbol `(πiν)⁻¹` |
 | `𝓑(∂̄g) = ∂g` for smooth `ℤ²`-periodic `g` | [`periodicMultiplier_beurlingSymbol_dzbarPi`](HarmonicAnalysis/BeurlingAhlfors/Periodic.lean#L47) | comparison of coefficients |
 
-Two of them in Lean:
+Three of them in Lean:
 
 ```lean
 theorem HarmonicAnalysis.multiplierNorm_le_torusMultiplierNorm {m : ℂ → ℂ}
@@ -127,6 +135,13 @@ theorem HarmonicAnalysis.multiplierNorm_le_torusMultiplierNorm {m : ℂ → ℂ}
 
 theorem HarmonicAnalysis.beurlingKappa_two_le_beurlingPowNorm_two {p : ℝ} (hp : 1 < p) :
     ENNReal.ofReal (beurlingKappa 2 p) ≤ beurlingPowNorm 2 p
+
+theorem HarmonicAnalysis.beurlingPowNorm_one_le_of_forall_hasCompactSupport {p : ℝ} (hp : 1 < p)
+    {C : ℝ≥0∞}
+    (h : ∀ u : ℂ → ℂ, ContDiff ℝ ∞ u → HasCompactSupport u →
+      eLpNorm (dz u) (ENNReal.ofReal p) volume ≤
+        C * eLpNorm (dzbar u) (ENNReal.ofReal p) volume) :
+    beurlingPowNorm 1 p ≤ C
 ```
 
 Here `beurlingKappa n p = (1/q)_n / (1/p)_n`, `1/q = 1 − 1/p`, with the Pochhammer symbol
@@ -278,6 +293,24 @@ The proofs follow the sources; the module docstrings say where they depart.
   `‖𝓑^n‖_p = ‖𝓑^n‖_{p'}`, by `𝓑^{−n} = (𝓑^n)^*` and `𝓑^{−n} f = conj(𝓑^n(conj f))` [CDK, §1.3.1, for
   `R^k`, `𝓑 = R²`], as here (for bounded multipliers, by the standard duality argument: the adjoint of
   `T_m` is `T_{m̄}`, and Schwartz functions norm `L^p`).
+- **`‖𝓑‖_p` as the best constant of `‖∂u‖_p ≤ C ‖∂̄u‖_p` on `C_c^∞`** is stated without proof in
+  [BMS, §1, remark (b)]. The bound `‖∂u‖_p ≤ ‖𝓑‖_p ‖∂̄u‖_p` is `𝓑(∂̄u) = ∂u`. The other direction
+  follows Guerra's proof of Corollary 1.4 of [Gu], which derives an inequality for `𝓑` from one
+  on `C_c^∞`: density, a potential `u`, cut-offs `η_R` (`1` on the disc of radius `R`, `0` off that
+  of radius `2R`, `|Dη_R| ≤ C/R`), the inequality for `η_R u`, and `R → ∞`. It departs from that
+  proof in three ways:
+  - The gradient case: a complex `g` and its Cauchy transform `f`, with `∂̄f = g` and `∂f = 𝓑g`,
+    in place of a real `h` and its logarithmic potential (an inequality for Hessians), since the
+    inequality here is on `∂u`, `∂̄u` for complex `u`.
+  - The dense class of [HNVW, Prop. 2.4.23 (ii)] (Fourier transform in `C_c^∞(ℂ∖{0})`) in place
+    of `C_c^∞`: the Cauchy transform is then a Schwartz function, built on the Fourier side, with
+    no Cauchy kernel and no decay estimate, and the cut-offs work for every Schwartz function
+    (dominated convergence, and `‖f ∂η_R‖_p ≤ (sup |Dχ|/R) ‖f‖_p`). Guerra's class would also work
+    (`f = O(1/|z|)` gives `‖f ∇η_R‖_p = O(R^{2/p−2})`): the change is for economy, not forced
+    ([docs/SHORTER_PROOFS.md](docs/SHORTER_PROOFS.md), item 48).
+  - Guerra's "by density" is made explicit: `𝓕g_j → 𝓕g` in `L¹` gives `𝓑g_j → 𝓑g` uniformly, and
+    Fatou's lemma concludes, without the boundedness of `𝓑` on `L^p`, which the library does not
+    prove.
 - **Duality** `‖T_m‖_p = ‖T_m‖_{p'}` follows [HNVW, Prop. 5.3.7], for scalar symbols:
   - `∫ T_m f · g = ∫ T_{m(−·)} g · f`
   - Hölder's inequality
@@ -553,6 +586,8 @@ For [B83] and [MC], see the table above.
 - Dragičević's bound `‖𝓑^n‖_p ≥ κ_n(p)` for every `n`; here for `n = 1` (`‖𝓑‖_p ≥ p − 1`, half of
   Lehto's `‖𝓑‖_p ≥ p* − 1`) and `n = 2`.
 - General dimension: `EuclideanSpace ℝ (Fin d)` and `UnitAddTorus (Fin d)`; also for the vector-valued part.
+- The kernel formula `C g(z) = (1/π) ∫ g(w)/(z − w) dw` of the Cauchy transform, defined here on the
+  Fourier side.
 - The other inequalities of [HNVW, Cor. 5.7.6]: `‖T_m‖_{L^p_0(𝕋²)} ≤ ‖T_m‖_{L^p(𝕋²)} ≤ ‖T_m‖_{L^p(ℝ²)}`.
 - From [HNVW], vector-valued:
   - the dyadic shifts for all generations and all admissible kernels, and their convergence
@@ -941,6 +976,8 @@ lake env lake comparator --config=palomar/FourierMultipliers/comparator.json   #
 - `LowerBound` (Dragičević, `n = 1` and `n = 2`)
 - [`Transference`](HarmonicAnalysis/BeurlingAhlfors/Transference.lean) (`𝓑^k` on `𝕋²`)
 - `Periodic` (`𝓑` on smooth periodic functions)
+- `CauchyTransform` (the Cauchy transform `𝓕⁻¹((πiξ)⁻¹ 𝓕g)`, on the Fourier side)
+- `CompactSupport` (cut-offs; `‖𝓑‖_p` as the best constant of `‖∂u‖_p ≤ C ‖∂̄u‖_p` on `C_c^∞`)
 
 [`scripts/`](scripts):
 

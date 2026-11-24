@@ -32,6 +32,8 @@ public import HarmonicAnalysis.BeurlingAhlfors.TestFunctions.One
 public import HarmonicAnalysis.BeurlingAhlfors.LowerBound
 public import HarmonicAnalysis.BeurlingAhlfors.Transference
 public import HarmonicAnalysis.BeurlingAhlfors.Periodic
+public import HarmonicAnalysis.BeurlingAhlfors.CauchyTransform
+public import HarmonicAnalysis.BeurlingAhlfors.CompactSupport
 public import HarmonicAnalysis.VectorValued.Defs
 public import HarmonicAnalysis.VectorValued.CircPoly
 public import HarmonicAnalysis.VectorValued.RademacherNorm
