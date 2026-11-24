@@ -5,126 +5,107 @@ Authors: The-Anh Vu-Le
 -/
 module
 
+public import HarmonicAnalysis.Complex.CauchyTransform
 public import HarmonicAnalysis.BeurlingAhlfors.Basic
-public import HarmonicAnalysis.FourierMultiplier.Density
+import HarmonicAnalysis.BeurlingAhlfors.Regularity
+import HarmonicAnalysis.Complex.CauchyPompeiu
+import HarmonicAnalysis.Complex.Liouville
+import HarmonicAnalysis.Complex.WirtingerRadial
 
 /-!
-# The Cauchy transform on the Fourier side
+# The Cauchy transform of `g ∈ C_c^∞`: `∂̄ (C g) = g` and `∂ (C g) = 𝓑 g`
 
-The Cauchy transform of `g : ℂ → ℂ` is `C g (z) = (1/π) ∫ g (w) / (z − w) dw`, the inverse of `∂̄`:
-`∂̄ (C g) = g` and `∂ (C g) = 𝓑 g`. Since `𝓕 (∂̄f) (ξ) = π i ξ 𝓕 f (ξ)`
-(`HarmonicAnalysis.fourier_dzbarCLM`), its Fourier symbol is `(π i ξ)⁻¹`, and it is defined here as
-the Fourier multiplier with that symbol, `C g = 𝓕⁻¹ ((π i ξ)⁻¹ 𝓕 g)` (`0` at `ξ = 0`), with no
-kernel: the formula `(1/π) ∫ g (w) / (z − w) dw` is not proved here.
+For a smooth compactly supported `g : ℂ → ℂ`, its Cauchy transform
+`f = C g`, `f (z) = (1/π) ∫ g (w) / (z − w) dw` (`HarmonicAnalysis.cauchyTransform`), is the
+potential of the gradient case of Guerra's argument (A. Guerra, *Quasiconvexity of the Burkholder
+function on symmetric matrices*, preprint, arXiv:2608.23388, 2026, §6, proofs of Corollaries 1.2
+and 1.4, where the potential of a real `h` is its logarithmic potential `u`, with `Δu = 2h`,
+`Du = O (|x|^{−1})` and `D²u = O (|x|^{−2})`, all stated there without proof). Here:
 
-On the Schwartz functions `g` whose Fourier transform is compactly supported in `ℂ ∖ {0}`
-(`HarmonicAnalysis.HasCompactFourierSupportOffZero`, dense in every `L^p`, `1 < p < ∞`, by
-`HarmonicAnalysis.exists_tendsto_hasCompactFourierSupportOffZero`), the function
-`ξ ↦ (π i ξ)⁻¹ 𝓕 g (ξ)` is smooth with compact support, since `𝓕 g` vanishes near `0`. So `C g` is
-a Schwartz function, and the identities follow on the Fourier side, by the injectivity of `𝓕` on
-`𝓢(ℂ, ℂ)`, with no estimate of the kernel. On this class the Cauchy transform is the potential
-in `HarmonicAnalysis.beurlingPowNorm_one_le_of_forall_hasCompactSupport`
-(`HarmonicAnalysis.BeurlingAhlfors.CompactSupport`).
-
-## Main results
-
-* `HarmonicAnalysis.cauchyTransform`: `C g = 𝓕⁻¹ ((π i ξ)⁻¹ 𝓕 g)`.
-* `HarmonicAnalysis.exists_schwartzMap_eq_cauchyTransform`: for `g` in that class, `C g` is a
-  Schwartz function `f` with `∂̄f = g` and `∂f = 𝓑 g`;
-  `HarmonicAnalysis.dzbar_cauchyTransform`, `HarmonicAnalysis.dz_cauchyTransform`: the same with
-  the pointwise Wirtinger derivatives.
+* `HarmonicAnalysis.dzbar_cauchyTransform_eq`: `∂̄f = g`, by the Cauchy–Pompeiu formula
+  (`HarmonicAnalysis.cauchyTransform_dzbar`), the analogue of `Δu = 2h`;
+* `HarmonicAnalysis.dz_cauchyTransform_eq_beurlingPow_one`: `∂f = 𝓑 g`, the analogue of Guerra's
+  `𝒮 h = 𝒮 (½ Δu) = 2 𝒮 (u_{z z̄}) = 2 u_{zz}`, which applies `𝒮 ∘ ∂_z̄ = ∂_z` to `u_z`. Here
+  `𝓑 (∂̄φ) = ∂φ` is known for Schwartz functions `φ` (`HarmonicAnalysis.beurlingPow_dzbarCLM_pow`),
+  and `f` is not one. The identity is proved through Liouville's theorem:
+  `∂f − 𝓑 g = C (∂g) − 𝓑 g` has `∂̄ (C (∂g)) = C (∂̄∂g) = ∂g` (Cauchy–Pompeiu for `∂g`) and
+  `∂̄ (𝓑 g) = ∂g` (`HarmonicAnalysis.dzbar_beurlingPow_one`), so it is entire
+  (`HarmonicAnalysis.differentiable_complex_of_dzbar_eq_zero`); it tends to `0` at infinity
+  (`C (∂g) = O (1/|z|²)` since `∫ ∂g = 0`, and the Riemann–Lebesgue lemma for `𝓑 g`), so it
+  vanishes (`HarmonicAnalysis.eq_zero_of_dzbar_eq_zero`);
+* the decay: `f = O (1/|z|)` (`HarmonicAnalysis.exists_norm_cauchyTransform_le`) and
+  `∂f = C (∂g) = O (1/|z|²)`, so that `∂f ∈ L^p` for every `1 < p`
+  (`HarmonicAnalysis.memLp_dz_cauchyTransform`), the analogues of Guerra's `Du = O (|x|^{−1})`,
+  `D²u = O (|x|^{−2})`.
 -/
 
 @[expose] public section
 
 noncomputable section
 
-open MeasureTheory
-open scoped SchwartzMap FourierTransform Real ContDiff
+open MeasureTheory Filter Topology
+open scoped SchwartzMap ContDiff
 
 namespace HarmonicAnalysis
 
-/-- The **Cauchy transform** `C g = 𝓕⁻¹ ((π i ξ)⁻¹ 𝓕 g)`, the Fourier multiplier with the symbol
-`(π i ξ)⁻¹` of the inverse of `∂̄` (`0` at `ξ = 0`). It is the Cauchy transform
-`C g (z) = (1/π) ∫ g (w) / (z − w) dw`, whose kernel `1 / (π z)` has the Fourier transform
-`(π i ξ)⁻¹`; that formula is not proved here, and the theory below uses only the Fourier side. -/
-def cauchyTransform (g : ℂ → ℂ) : ℂ → ℂ :=
-  fourierMultiplier (fun ξ => ((π : ℂ) * Complex.I * ξ)⁻¹) g
+variable {g : ℂ → ℂ}
 
-variable {g : 𝓢(ℂ, ℂ)}
+/-- `∂g` is smooth for a smooth `g`. -/
+theorem contDiff_dz (hg : ContDiff ℝ ∞ g) : ContDiff ℝ ∞ (dz g) := by
+  have h : ContDiff ℝ ∞ (fderiv ℝ g) := (contDiff_infty_iff_fderiv.1 hg).2
+  have h1 : ContDiff ℝ ∞ fun z => fderiv ℝ g z 1 := h.clm_apply contDiff_const
+  have h2 : ContDiff ℝ ∞ fun z => fderiv ℝ g z Complex.I := h.clm_apply contDiff_const
+  exact (h1.sub (h2.const_smul Complex.I)).const_smul (2⁻¹ : ℂ)
 
-/-- For `g` with Fourier transform compactly supported in `ℂ ∖ {0}`, `(π i ξ)⁻¹ 𝓕 g (ξ)` is smooth:
-off `0` as a product of smooth functions, and near `0` it vanishes. -/
-theorem contDiff_inv_smul_fourier (hg : HasCompactFourierSupportOffZero g) :
-    ContDiff ℝ ∞ fun ξ : ℂ => ((π : ℂ) * Complex.I * ξ)⁻¹ • 𝓕 (g : ℂ → ℂ) ξ := by
-  have hF : ContDiff ℝ ∞ (𝓕 (g : ℂ → ℂ)) := by
-    rw [← SchwartzMap.fourier_coe]
-    exact (𝓕 g).smooth ⊤
-  refine contDiff_iff_contDiffAt.2 fun x => ?_
-  rcases eq_or_ne x 0 with rfl | hx
-  · have h0 : 𝓕 (g : ℂ → ℂ) =ᶠ[nhds 0] 0 := notMem_tsupport_iff_eventuallyEq.1 hg.2
-    refine contDiffAt_const (c := (0 : ℂ)).congr_of_eventuallyEq ?_
-    filter_upwards [h0] with ξ hξ
-    simp [hξ]
-  · have hπ : ((π : ℂ) * Complex.I * x) ≠ 0 := by
-      simp [Real.pi_ne_zero, hx]
-    have hlin : ContDiffAt ℝ ∞ (fun ξ : ℂ => (π : ℂ) * Complex.I * ξ) x := by fun_prop
-    exact (hlin.inv hπ).smul hF.contDiffAt
+/-- `∂g` has compact support if `g` has. -/
+theorem hasCompactSupport_dz (hgc : HasCompactSupport g) : HasCompactSupport (dz g) :=
+  HasCompactSupport.intro (hgc.fderiv ℝ) fun z hz => by
+    simp [dz, image_eq_zero_of_notMem_tsupport hz]
 
-/-- For `g` with Fourier transform compactly supported in `ℂ ∖ {0}`, `(π i ξ)⁻¹ 𝓕 g (ξ)` has
-compact support. -/
-theorem hasCompactSupport_inv_smul_fourier (hg : HasCompactFourierSupportOffZero g) :
-    HasCompactSupport fun ξ : ℂ => ((π : ℂ) * Complex.I * ξ)⁻¹ • 𝓕 (g : ℂ → ℂ) ξ :=
-  hg.1.smul_left (f := fun ξ : ℂ => ((π : ℂ) * Complex.I * ξ)⁻¹)
-
-/-- For `g` with Fourier transform compactly supported in `ℂ ∖ {0}`, the Cauchy transform `C g` is a
-Schwartz function `f`, with `𝓕 f (ξ) = (π i ξ)⁻¹ 𝓕 g (ξ)`, `∂̄f = g` and `∂f = 𝓑 g`: `f` is the
-inverse Fourier transform of the smooth compactly supported function `(π i ξ)⁻¹ 𝓕 g`;
-`𝓕 (∂̄f) = π i ξ (π i ξ)⁻¹ 𝓕 g = 𝓕 g` (`𝓕 g` vanishes at `0`) and the injectivity of `𝓕` on
-`𝓢(ℂ, ℂ)` give `∂̄f = g`, and `𝓑 (∂̄f) = ∂f` (`HarmonicAnalysis.beurlingPow_dzbarCLM_pow`) gives
-`∂f = 𝓑 g`. -/
-theorem exists_schwartzMap_eq_cauchyTransform (hg : HasCompactFourierSupportOffZero g) :
-    ∃ f : 𝓢(ℂ, ℂ), ⇑f = cauchyTransform g ∧
-      (∀ ξ, 𝓕 (f : ℂ → ℂ) ξ = ((π : ℂ) * Complex.I * ξ)⁻¹ * 𝓕 (g : ℂ → ℂ) ξ) ∧
-      dzbarCLM f = g ∧ ⇑(dzCLM f) = beurlingPow 1 g := by
-  set S : 𝓢(ℂ, ℂ) :=
-    (hasCompactSupport_inv_smul_fourier hg).toSchwartzMap (contDiff_inv_smul_fourier hg)
-  have hS : ∀ ξ, S ξ = ((π : ℂ) * Complex.I * ξ)⁻¹ * 𝓕 (g : ℂ → ℂ) ξ := fun _ => rfl
-  set f : 𝓢(ℂ, ℂ) := 𝓕⁻ S
-  have hfS : 𝓕 f = S := FourierTransform.fourier_fourierInv_eq S
-  have hf : ∀ ξ, 𝓕 (f : ℂ → ℂ) ξ = ((π : ℂ) * Complex.I * ξ)⁻¹ * 𝓕 (g : ℂ → ℂ) ξ := fun ξ => by
-    rw [← SchwartzMap.fourier_coe, hfS, hS]
-  -- `𝓕 (∂̄f) = 𝓕 g`
-  have hg0 : 𝓕 (g : ℂ → ℂ) 0 = 0 := image_eq_zero_of_notMem_tsupport hg.2
-  have hfour : 𝓕 (dzbarCLM f) = 𝓕 g := by
-    ext ξ
-    rw [SchwartzMap.fourier_coe, SchwartzMap.fourier_coe, fourier_dzbarCLM, hf, smul_eq_mul,
-      ← mul_assoc]
-    rcases eq_or_ne ξ 0 with rfl | hξ
-    · simp [hg0]
-    · rw [mul_inv_cancel₀ (by simp [Real.pi_ne_zero, hξ]), one_mul]
-  have hinv : ∀ h : 𝓢(ℂ, ℂ), 𝓕⁻ (𝓕 h) = h := FourierTransform.fourierInv_fourier_eq
-  have hdzbar : dzbarCLM f = g := by
-    rw [← hinv (dzbarCLM f), hfour, hinv]
-  refine ⟨f, ?_, hf, hdzbar, ?_⟩
-  · rw [SchwartzMap.fourierInv_coe]
-    rfl
-  · have h := beurlingPow_dzbarCLM_pow 1 f
-    simp only [pow_one] at h
-    rw [← h, hdzbar]
-
-/-- `∂̄ (C g) = g` for `g` with Fourier transform compactly supported in `ℂ ∖ {0}`. -/
-theorem dzbar_cauchyTransform (hg : HasCompactFourierSupportOffZero g) :
+/-- `∂̄ (C g) = g` for `g ∈ C_c^∞`: `∂̄ (C g) = C (∂̄g)` and the Cauchy–Pompeiu formula. -/
+theorem dzbar_cauchyTransform_eq (hg : ContDiff ℝ ∞ g) (hgc : HasCompactSupport g) :
     dzbar (cauchyTransform g) = g := by
-  obtain ⟨f, hf, -, hdzbar, -⟩ := exists_schwartzMap_eq_cauchyTransform hg
-  funext z
-  rw [← hf, ← dzbarCLM_apply, hdzbar]
+  rw [dzbar_cauchyTransform hg hgc]
+  exact funext (cauchyTransform_dzbar (hg.of_le (by simp)) hgc)
 
-/-- `∂ (C g) = 𝓑 g` for `g` with Fourier transform compactly supported in `ℂ ∖ {0}`. -/
-theorem dz_cauchyTransform (hg : HasCompactFourierSupportOffZero g) :
-    dz (cauchyTransform g) = beurlingPow 1 g := by
-  obtain ⟨f, hf, -, -, hdz⟩ := exists_schwartzMap_eq_cauchyTransform hg
+/-- `∂ (C g) = 𝓑 g` for `g ∈ C_c^∞`: `∂ (C g) − 𝓑 g = C (∂g) − 𝓑 g` is entire, since its `∂̄` is
+`∂g − ∂g = 0`, and tends to `0` at infinity, so it vanishes by Liouville's theorem. -/
+theorem dz_cauchyTransform_eq_beurlingPow_one (hg : ContDiff ℝ ∞ g)
+    (hgc : HasCompactSupport g) : dz (cauchyTransform g) = beurlingPow 1 g := by
+  set G : 𝓢(ℂ, ℂ) := hgc.toSchwartzMap hg
+  have hG : (G : ℂ → ℂ) = g := rfl
+  have hdg := contDiff_dz hg
+  have hdgc := hasCompactSupport_dz hgc
+  rw [dz_cauchyTransform hg hgc]
+  have hd1 : Differentiable ℝ (cauchyTransform (dz g)) :=
+    (contDiff_cauchyTransform hdg hdgc).differentiable (by simp)
+  have hd2 : Differentiable ℝ (beurlingPow 1 g) := by
+    rw [← hG]
+    exact differentiable_beurlingPow_one G
+  have hbar : ∀ w, dzbar (fun z => cauchyTransform (dz g) z - beurlingPow 1 g z) w = 0 := by
+    intro w
+    rw [dzbar_sub (hd1 w) (hd2 w), congrFun (dzbar_cauchyTransform hdg hdgc) w,
+      cauchyTransform_dzbar (hdg.of_le (by simp)) hdgc w, ← hG, dzbar_beurlingPow_one G w,
+      sub_self]
+  have hlim : Tendsto (fun z => cauchyTransform (dz g) z - beurlingPow 1 g z) (cocompact ℂ)
+      (𝓝 0) := by
+    have h1 := tendsto_cauchyTransform_cocompact hdg.continuous hdgc
+    have h2 : Tendsto (beurlingPow 1 g) (cocompact ℂ) (𝓝 0) := by
+      rw [← hG]
+      exact tendsto_beurlingPow_one_cocompact G
+    simpa using h1.sub h2
   funext z
-  rw [← hf, ← dzCLM_apply, hdz]
+  exact sub_eq_zero.1 (eq_zero_of_dzbar_eq_zero (hd1.sub hd2) hbar hlim z)
+
+/-- `∂ (C g) ∈ L^p` for `g ∈ C_c^∞` and `1 < p`: `∂ (C g) = C (∂g)` is continuous and
+`O (1/|z|²)` at infinity, since `∫ ∂g = 0`. -/
+theorem memLp_dz_cauchyTransform (hg : ContDiff ℝ ∞ g) (hgc : HasCompactSupport g) {p : ℝ}
+    (hp : 1 < p) : MemLp (dz (cauchyTransform g)) (ENNReal.ofReal p) volume := by
+  rw [dz_cauchyTransform hg hgc]
+  obtain ⟨A, R, hR, h⟩ := exists_norm_cauchyTransform_le_of_integral_eq_zero
+    (contDiff_dz hg).continuous (hasCompactSupport_dz hgc)
+    (integral_dz_eq_zero (hg.of_le (by simp)) hgc)
+  exact memLp_of_norm_le_div_sq
+    (continuous_cauchyTransform (contDiff_dz hg).continuous (hasCompactSupport_dz hgc)) hR h hp
 
 end HarmonicAnalysis

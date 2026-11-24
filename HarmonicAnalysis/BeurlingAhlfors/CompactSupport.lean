@@ -6,8 +6,10 @@ Authors: The-Anh Vu-Le
 module
 
 public import HarmonicAnalysis.BeurlingAhlfors.CauchyTransform
+public import HarmonicAnalysis.FourierMultiplier.CompactSupport
 import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
 import Mathlib.MeasureTheory.Function.LpSpace.Complete
+import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 
 /-!
 # `‖𝓑‖_p` as the best constant of `‖∂u‖_p ≤ C ‖∂̄u‖_p` on `C_c^∞`
@@ -22,57 +24,43 @@ if and only if it holds with `∂f` and `∂̄f` interchanged, "would show that 
 `L^p (ℂ, ℂ)` is precisely `p* − 1`". They state the inequality on `Ẇ^{1,p}`; here it is on
 `C_c^∞`, which is what the reduction needs.
 
-## Main results
-
-* `HarmonicAnalysis.exists_hasCompactSupport_tendsto_dz_dzbar` (cut-offs): for a Schwartz function
-  `f`, the smooth compactly supported functions `u_n = η_{n+1} f` satisfy `∂u_n → ∂f` and
-  `∂̄u_n → ∂̄f` in `L^p`; hence `‖∂u‖_p ≤ C ‖∂̄u‖_p` passes from `C_c^∞` to the Schwartz
-  functions, `1 ≤ p < ∞` (`HarmonicAnalysis.eLpNorm_dz_le_of_forall_hasCompactSupport`).
-* `HarmonicAnalysis.eLpNorm_beurlingPow_one_le_of_hasCompactFourierSupportOffZero` (the dense
-  class): then `‖𝓑 g‖_p ≤ C ‖g‖_p` for the Schwartz functions `g` with Fourier transform in
-  `C_c^∞ (ℂ ∖ {0})`, by the inequality for their Cauchy transforms.
-* `HarmonicAnalysis.beurlingPowNorm_one_le_of_forall_hasCompactSupport`: then `‖𝓑‖_p ≤ C`, and
-  `‖𝓑 g‖_p ≤ C ‖g‖_p` for every Schwartz function `g`
-  (`HarmonicAnalysis.eLpNorm_beurlingPow_one_le_of_forall_hasCompactSupport`).
-* `HarmonicAnalysis.eLpNorm_dz_le_beurlingPowNorm_one_mul`: conversely,
-  `‖∂u‖_p ≤ ‖𝓑‖_p ‖∂̄u‖_p` for smooth compactly supported `u`, by `𝓑 (∂̄u) = ∂u`; with the
-  above, `HarmonicAnalysis.beurlingPowNorm_one_le_iff` and
-  `HarmonicAnalysis.isLeast_beurlingPowNorm_one`.
-
 ## Proof
 
-The proof follows Guerra's proof of Corollary 1.4 of the preprint (2026, §6), which derives an
-inequality for `𝓑` from one on `C_c^∞`: "by density" take `h` in a dense class, let `u` be a
-potential of `h`, apply the inequality on `C_c^∞` to `η_R u`, where the cut-offs `η_R` (those of
-the proof of Corollary 1.2 there) are `1` on the disc of radius `R`, `0` off that of radius `2R`,
-with `|Dη_R| ≤ C / R`, and let `R → ∞`. Here `η_R (z) = χ (z / R)`, `χ` a smooth bump function, and
-`R = n + 1`. It departs from that proof in three ways.
+Guerra's proof of Corollary 1.4 (A. Guerra, *Quasiconvexity of the Burkholder function on
+symmetric matrices*, preprint, arXiv:2608.23388, 2026, §6), with the cut-offs of the proof of
+Corollary 1.2 there:
 
-1. **The gradient case.** Guerra's `h` is real, in `C_c^∞`, its potential is the logarithmic
-   potential `u = (1/π) ∫ log |x − y| h (y) dy`, and the inequality is one for Hessians: the
-   parts `a₊`, `a₋` of `A = D²u` (`A z = a₊ z + a₋ z̄`) are `h` and `conj (𝓑 h)`. Here `g` is
-   complex, the inequality is the one for `∂u`, `∂̄u` of Baernstein–Montgomery-Smith, and the
-   potential is the Cauchy transform `f` of `g` (`HarmonicAnalysis.cauchyTransform`), with
-   `∂̄f = g` and `∂f = 𝓑 g`. This is the case that the norm of `𝓑` on complex `L^p` needs.
-2. **The dense class.** Guerra's is `C_c^∞`, and the passage to the limit rests on the decay of
-   the potential (`Du = O (|x|^{−1})`, `D²u = O (|x|^{−2})`), from its kernel. Here it is the
-   class of Hytönen–van Neerven–Veraar–Weis, Proposition 2.4.23 (ii): the Schwartz functions with
-   Fourier transform in `C_c^∞ (ℂ ∖ {0})`
-   (`HarmonicAnalysis.exists_tendsto_hasCompactFourierSupportOffZero`). Their Cauchy transforms
-   are Schwartz functions, constructed on the Fourier side, so that no Cauchy kernel and no decay
-   estimate are needed, and the cut-offs work for every Schwartz function `f`: in
-   `∂ (η_R f) − ∂f = (η_R − 1) ∂f + f ∂η_R`, the first term tends to `0` in `L^p` by dominated
-   convergence, and the second is at most `(sup |Dχ| / R) ‖f‖_p`. Guerra's class would also work:
-   for `g ∈ C_c^∞` the Cauchy transform is `O (1/|z|)` and `∂f = 𝓑 g = O (1/|z|²)`, so that
-   `‖f ∇η_R‖_p = O (R^{2/p − 2}) → 0` for every `p > 1`. The change of class is for economy (it
-   avoids the kernel and its estimates), not forced.
-3. **The density step, explicit.** Guerra's "by density", from the dense class to all of `L^p`,
-   is made explicit for the Schwartz functions `g`, over which `‖𝓑‖_p` is a supremum
-   (`HarmonicAnalysis.beurlingPowNorm`): the functions `g_j` of the dense class with `g_j → g` in
-   `L^p` have `𝓕 g_j → 𝓕 g` in `L¹`, so that `𝓑 g_j → 𝓑 g` uniformly
+1. **The dense class `C_c^∞`.** For `g ∈ C_c^∞`, let `f = C g` be its Cauchy transform,
+   `f (z) = (1/π) ∫ g (w) / (z − w) dw`. Then `∂̄f = g`, `∂f = 𝓑 g`, `f = O (1/|z|)` and
+   `∂f = O (1/|z|²)` (`HarmonicAnalysis.BeurlingAhlfors.CauchyTransform`).
+2. **The cut-offs.** `η_R (z) = χ (z / R)`, `χ` a smooth bump function, `1` on the unit disc and
+   `0` off the disc of radius `2`, so that `|Dη_R| ≤ K / R` and `Dη_R` vanishes off
+   `R ≤ |z| ≤ 2R`. By the Leibniz rule `∂ (η_R f) − ∂f = (η_R − 1) ∂f + f ∂η_R`: the first term
+   tends to `0` in `L^p` by dominated convergence (`∂f ∈ L^p`), and the second is at most
+   `(A / R) (K / R)` on the disc of radius `2R` and `0` off it, so its `L^p` norm is at most
+   `A K (4π)^{1/p} R^{2/p − 2} → 0`, since `p > 1`. The same holds for `∂̄`. So `∂ (η_R f) → 𝓑 g`
+   and `∂̄ (η_R f) → g` in `L^p`
+   (`HarmonicAnalysis.exists_hasCompactSupport_tendsto_cauchyTransform`), and the inequality
+   for the `η_R f ∈ C_c^∞` gives `‖𝓑 g‖_p ≤ C ‖g‖_p`
+   (`HarmonicAnalysis.eLpNorm_beurlingPow_one_le_of_hasCompactSupport`).
+3. **Density.** `‖𝓑‖_p` is a supremum over the Schwartz functions `g`. The functions
+   `g_n = η_n g ∈ C_c^∞` have `g_n → g` in `L^p` and `𝓕 g_n → 𝓕 g` in `L¹`
+   (`HarmonicAnalysis.exists_hasCompactSupport_tendsto`), so `𝓑 g_n → 𝓑 g` uniformly
    (`HarmonicAnalysis.enorm_fourierMultiplier_sub_le`, `|ξ̄/ξ| ≤ 1`), and Fatou's lemma gives
-   `‖𝓑 g‖_p ≤ liminf ‖𝓑 g_j‖_p ≤ C ‖g‖_p`. This does not use the boundedness of `𝓑` on `L^p`,
-   which the library does not prove.
+   `‖𝓑 g‖_p ≤ liminf ‖𝓑 g_n‖_p ≤ C ‖g‖_p`.
+
+**The one departure from Guerra's proof, which is forced.** Guerra treats the Hessian case: a
+real `h ∈ C_c^∞`, its logarithmic potential `u = (1/π) ∫ log |x − y| h (y) dy`, and the parts
+`a₊ = h`, `a₋ = conj (𝒮 h)` of `D²u`. The norm of `𝓑` on complex `L^p`, and the inequality for
+`∂u`, `∂̄u` of complex `u` from which it is derived here, are the gradient case: a complex
+`g ∈ C_c^∞` and its Cauchy transform `f`, with `∂̄f = g` and `∂f = 𝓑 g`, in place of `h` and `u`.
+The steps of the proof are Guerra's, with the decay `f = O (1/|z|)`, `∂f = O (1/|z|²)` in place of
+`Du = O (|x|^{−1})`, `D²u = O (|x|^{−2})`.
+
+**Guerra's "by density".** Guerra passes from `C_c^∞` to `L^p` "by density", which presupposes
+that `𝒮` is bounded on `L^p`. The library does not prove that boundedness (a theorem of
+Calderón–Zygmund theory) and does not need it: step 3 passes to the limit by Fatou's lemma, with
+the convergence of the Fourier transforms in `L¹`.
 
 The converse is `𝓑 (∂̄u) = ∂u` (`HarmonicAnalysis.beurlingPow_dzbarCLM_pow`) and the definition
 of `‖𝓑‖_p`.
@@ -86,16 +74,14 @@ of `‖𝓑‖_p`.
 * A. Guerra, *Quasiconvexity of the Burkholder function on symmetric matrices*, preprint,
   [arXiv:2608.23388](https://arxiv.org/abs/2608.23388) (2026), §6: the proofs of Corollaries 1.2
   and 1.4.
-* T. Hytönen, J. van Neerven, M. Veraar, L. Weis, *Analysis in Banach Spaces, Volume I*,
-  Ergebnisse der Mathematik 63, Springer, 2016, Proposition 2.4.23 (ii).
 -/
 
 @[expose] public section
 
 noncomputable section
 
-open MeasureTheory Filter Topology
-open scoped SchwartzMap FourierTransform ENNReal ContDiff
+open MeasureTheory Filter Topology Metric
+open scoped SchwartzMap FourierTransform ENNReal ContDiff Real
 
 namespace HarmonicAnalysis
 
@@ -217,43 +203,128 @@ private lemma tendsto_eLpNorm_mul_of_eventually_zero {c : ℕ → ℂ → ℂ} {
   rw [← eLpNorm_ofReal_rpow_eq_lintegral hp (hmeas n), ← ENNReal.rpow_mul,
     mul_one_div_cancel hp.ne', ENNReal.rpow_one]
 
-/-- For `u_n = η_{n+1} f`: `‖∂u_n − ∂f‖_p → 0` and `‖∂̄u_n − ∂̄f‖_p → 0` (`s = ∓i`). -/
-private lemma tendsto_wirt_cutoff_mul (s : ℂ) (f : 𝓢(ℂ, ℂ)) {p : ℝ} (hp : 0 < p)
-    (hf : MemLp (wirt s f) (ENNReal.ofReal p) volume) :
+/-- `D η_R (z) = 0` where `η_R` is locally constant: for `|z| < R` (`η_R = 1`) and for `|z| > 2R`
+(`η_R = 0`). -/
+private lemma wirt_cutoff_eq_zero (s : ℂ) {R : ℝ} (hR : 0 < R) {z : ℂ}
+    (hz : ‖z‖ < R ∨ 2 * R < ‖z‖) : wirt s (cutoff R) z = 0 := by
+  have h : ∃ c : ℂ, cutoff R =ᶠ[𝓝 z] fun _ => c := by
+    rcases hz with hz | hz
+    · refine ⟨1, ?_⟩
+      filter_upwards [(isOpen_lt continuous_norm continuous_const).mem_nhds hz] with w hw
+      exact cutoff_eq_one hR hw.le
+    · refine ⟨0, ?_⟩
+      filter_upwards [(isOpen_lt continuous_const continuous_norm).mem_nhds hz] with w hw
+      have hw' : 2 * R < ‖w‖ := hw
+      rw [cutoff, bump.zero_of_le_dist, Complex.ofReal_zero]
+      rw [dist_zero_right, norm_smul, Real.norm_of_nonneg (inv_nonneg.2 hR.le)]
+      change 2 ≤ R⁻¹ * ‖w‖
+      rw [le_inv_mul_iff₀ hR]
+      linarith
+  obtain ⟨c, hc⟩ := h
+  simp [wirt, hc.fderiv_eq]
+
+/-- `‖f Dη_R‖_p → 0` as `R → ∞` (`R = n + 1`) if `|f (z)| ≤ A / |z|` for `|z| ≥ R₀` and `1 < p`:
+`f Dη_R` is at most `(A / R) (K / R)` on the disc of radius `2R` and `0` off it, so
+`‖f Dη_R‖_p ≤ A K (4π)^{1/p} R^{2/p − 2}`. -/
+private lemma tendsto_eLpNorm_mul_wirt_cutoff (s : ℂ) {f : ℂ → ℂ} (hf : Continuous f)
+    {A R₀ : ℝ} (hR₀ : 0 < R₀) (hdecay : ∀ z, R₀ ≤ ‖z‖ → ‖f z‖ ≤ A / ‖z‖) {p : ℝ} (hp : 1 < p) :
+    Tendsto (fun n : ℕ => eLpNorm (fun z => f z * wirt s (cutoff ((n : ℝ) + 1)) z)
+      (ENNReal.ofReal p) volume) atTop (𝓝 0) := by
+  have hp0 : 0 < p := by linarith
+  obtain ⟨K, hK⟩ := exists_norm_wirt_cutoff_le s
+  have hK0 : 0 ≤ K := by
+    have := (norm_nonneg _).trans (hK 1 one_pos 0)
+    simpa using this
+  have hA0 : 0 ≤ A := by
+    have h1 := (norm_nonneg _).trans (hdecay (R₀ : ℂ) (by simp [abs_of_pos hR₀]))
+    rw [Complex.norm_real, Real.norm_of_nonneg hR₀.le, le_div_iff₀ hR₀, zero_mul] at h1
+    exact h1
+  set c : ℝ := A * K * (4 * π) ^ (1 / p)
+  set e : ℝ := 2 - 2 / p
+  have he : 0 < e := by
+    have : 2 / p < 2 := by rw [div_lt_iff₀ hp0]; linarith
+    simp only [e]; linarith
+  -- the bound for `R ≥ R₀`
+  have hbound : ∀ R : ℝ, R₀ ≤ R → eLpNorm (fun z => f z * wirt s (cutoff R) z)
+      (ENNReal.ofReal p) volume ≤ ENNReal.ofReal (c * R ^ (-e)) := by
+    intro R hR
+    have hR0 : 0 < R := hR₀.trans_le hR
+    have hpt : ∀ z, ‖f z * wirt s (cutoff R) z‖ ≤
+        (closedBall (0 : ℂ) (2 * R)).indicator (fun _ => A * K / R ^ 2) z := by
+      intro z
+      by_cases hw : wirt s (cutoff R) z = 0
+      · rw [hw, mul_zero, norm_zero]
+        exact Set.indicator_nonneg (fun _ _ => by positivity) z
+      · have h1 : R ≤ ‖z‖ := by
+          by_contra h
+          exact hw (wirt_cutoff_eq_zero s hR0 (Or.inl (not_le.1 h)))
+        have h2 : ‖z‖ ≤ 2 * R := by
+          by_contra h
+          exact hw (wirt_cutoff_eq_zero s hR0 (Or.inr (not_le.1 h)))
+        rw [Set.indicator_of_mem (mem_closedBall_zero_iff.2 h2), norm_mul]
+        calc ‖f z‖ * ‖wirt s (cutoff R) z‖ ≤ (A / R) * (R⁻¹ * K) := by
+              gcongr
+              · exact (hdecay z (hR.trans h1)).trans (div_le_div_of_nonneg_left hA0 hR0 h1)
+              · exact hK R hR0 z
+          _ = A * K / R ^ 2 := by field_simp
+    have hmono := eLpNorm_mono_real (μ := volume) (p := ENNReal.ofReal p)
+      (hf.aestronglyMeasurable.mul (measurable_wirt s _).aestronglyMeasurable) hpt
+    rw [eLpNorm_indicator_const (measurableSet_closedBall (α := ℂ) (x := 0)
+      (ε := 2 * R)).nullMeasurableSet (by simpa using hp0)
+      ENNReal.ofReal_ne_top, Complex.volume_closedBall, ENNReal.toReal_ofReal hp0.le] at hmono
+    refine hmono.trans (le_of_eq ?_)
+    have hπ : ((NNReal.pi : ℝ≥0∞)) = ENNReal.ofReal π := by
+      rw [← ENNReal.ofReal_coe_nnreal, NNReal.coe_real_pi]
+    rw [hπ, ← ENNReal.ofReal_pow (by positivity), ← ENNReal.ofReal_mul (by positivity),
+      ENNReal.ofReal_rpow_of_nonneg (by positivity) (by positivity),
+      Real.enorm_of_nonneg (by positivity), ← ENNReal.ofReal_mul (by positivity)]
+    congr 1
+    have h1 : ((2 * R) ^ 2 * π) ^ (1 / p) = (4 * π) ^ (1 / p) * R ^ (2 / p) := by
+      rw [show (2 * R) ^ 2 * π = (4 * π) * R ^ 2 by ring, Real.mul_rpow (by positivity)
+        (by positivity), ← Real.rpow_natCast R 2, ← Real.rpow_mul hR0.le, Nat.cast_ofNat,
+        mul_one_div]
+    have h2 : R ^ (-e) = R ^ (2 / p) / R ^ 2 := by
+      rw [Real.rpow_neg hR0.le, Real.rpow_sub hR0, Real.rpow_two, inv_div]
+    rw [h1, h2]
+    simp only [c]
+    field_simp
+  -- the bound tends to `0`
+  have hlim : Tendsto (fun n : ℕ => ENNReal.ofReal (c * ((n : ℝ) + 1) ^ (-e))) atTop (𝓝 0) := by
+    have h1 : Tendsto (fun n : ℕ => (n : ℝ) + 1) atTop atTop :=
+      tendsto_atTop_add_const_right _ _ tendsto_natCast_atTop_atTop
+    have h2 := ((tendsto_rpow_neg_atTop he).comp h1).const_mul c
+    rw [mul_zero] at h2
+    simpa using ENNReal.tendsto_ofReal h2
+  obtain ⟨N, hN⟩ := exists_nat_ge R₀
+  refine tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds hlim
+    (Eventually.of_forall fun _ => zero_le) ?_
+  filter_upwards [eventually_ge_atTop N] with n hn
+  refine hbound _ ?_
+  have : (N : ℝ) ≤ n := by exact_mod_cast hn
+  linarith
+
+/-- For `u_n = η_{n+1} f`, `f` smooth with `|f (z)| ≤ A / |z|` for `|z| ≥ R₀`, `1 < p`:
+`‖∂u_n − ∂f‖_p → 0` if `∂f ∈ L^p`, and `‖∂̄u_n − ∂̄f‖_p → 0` if `∂̄f ∈ L^p` (`s = ∓i`). -/
+private lemma tendsto_wirt_cutoff_mul (s : ℂ) {f : ℂ → ℂ} (hf : ContDiff ℝ ∞ f) {A R₀ : ℝ}
+    (hR₀ : 0 < R₀) (hdecay : ∀ z, R₀ ≤ ‖z‖ → ‖f z‖ ≤ A / ‖z‖) {p : ℝ} (hp : 1 < p)
+    (hwf : MemLp (wirt s f) (ENNReal.ofReal p) volume) :
     Tendsto (fun n : ℕ => eLpNorm (fun z => wirt s (fun w => cutoff ((n : ℝ) + 1) w * f w) z -
       wirt s f z) (ENNReal.ofReal p) volume) atTop (𝓝 0) := by
   set P := ENNReal.ofReal p
-  obtain ⟨K, hK⟩ := exists_norm_wirt_cutoff_le s
   have hR : ∀ n : ℕ, (0 : ℝ) < n + 1 := fun n => by positivity
   -- `(η_R − 1) ∂f → 0`, by dominated convergence
   have h1 : Tendsto (fun n : ℕ => eLpNorm (fun z => (cutoff ((n : ℝ) + 1) z - 1) * wirt s f z) P
       volume) atTop (𝓝 0) := by
-    refine tendsto_eLpNorm_mul_of_eventually_zero hp
+    refine tendsto_eLpNorm_mul_of_eventually_zero (by linarith)
       (fun n => (contDiff_cutoff _).continuous.sub continuous_const)
-      (fun n z => norm_cutoff_sub_one_le _ _) (fun z => ?_) hf
+      (fun n z => norm_cutoff_sub_one_le _ _) (fun z => ?_) hwf
     obtain ⟨N, hN⟩ := exists_nat_ge ‖z‖
     filter_upwards [eventually_ge_atTop N] with n hn
     rw [cutoff_eq_one (hR n), sub_self]
     have : (N : ℝ) ≤ n := by exact_mod_cast hn
     linarith
-  -- `‖f ∂η_R‖_p ≤ (K / R) ‖f‖_p → 0`
-  have h2 : Tendsto (fun n : ℕ => eLpNorm (fun z => f z * wirt s (cutoff ((n : ℝ) + 1)) z) P
-      volume) atTop (𝓝 0) := by
-    have hb : ∀ n : ℕ, eLpNorm (fun z => f z * wirt s (cutoff ((n : ℝ) + 1)) z) P volume ≤
-        ENNReal.ofReal (((n : ℝ) + 1)⁻¹ * K) * eLpNorm f P volume := fun n =>
-      eLpNorm_le_mul_eLpNorm_of_ae_le_mul
-        (f.continuous.aestronglyMeasurable.mul (measurable_wirt s _).aestronglyMeasurable)
-        (ae_of_all _ fun z => by
-          rw [Pi.mul_apply, norm_mul, mul_comm]
-          exact mul_le_mul_of_nonneg_right (hK _ (hR n) z) (norm_nonneg _)) P
-    have hlim : Tendsto (fun n : ℕ => ENNReal.ofReal (((n : ℝ) + 1)⁻¹ * K) * eLpNorm f P volume)
-        atTop (𝓝 0) := by
-      have h0 : Tendsto (fun n : ℕ => ((n : ℝ) + 1)⁻¹ * K) atTop (𝓝 0) := by
-        simpa using (tendsto_one_div_add_atTop_nhds_zero_nat).mul_const K
-      have := ENNReal.Tendsto.mul_const (ENNReal.tendsto_ofReal h0)
-        (Or.inr (f.memLp P).eLpNorm_lt_top.ne) (b := eLpNorm f P volume)
-      simpa using this
-    exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hlim (fun _ => zero_le) hb
+  -- `f ∂η_R → 0`
+  have h2 := tendsto_eLpNorm_mul_wirt_cutoff s hf.continuous hR₀ hdecay hp
   -- `∂u_R − ∂f = (η_R − 1) ∂f + f ∂η_R`
   have hlim := ENNReal.Tendsto.const_mul (h1.add h2) (Or.inr (ENNReal.LpAddConst_lt_top P).ne)
   rw [add_zero, mul_zero] at hlim
@@ -261,139 +332,103 @@ private lemma tendsto_wirt_cutoff_mul (s : ℂ) (f : 𝓢(ℂ, ℂ)) {p : ℝ} (
     fun n => le_of_eq_of_le ?_ (eLpNorm_add_le' P)
   congr 1
   funext z
-  rw [wirt_mul s ((contDiff_cutoff _).contDiffAt.differentiableAt (by simp)) f.differentiableAt]
+  rw [wirt_mul s ((contDiff_cutoff _).contDiffAt.differentiableAt (by simp))
+    (hf.differentiable (by simp) z)]
   simp only [Pi.add_apply]
   ring
 
-/-- **Cut-offs.** For a Schwartz function `f`, there are smooth compactly supported `u_n` with
-`∂u_n → ∂f` and `∂̄u_n → ∂̄f` in `L^p`, `0 < p < ∞`: `u_n = η_{n+1} f`, `η_R (z) = χ (z / R)` with
-`χ` a smooth bump function, `1` on the unit disc and `0` off the disc of radius `2`. These are the
-cut-offs of Guerra's proofs of Corollaries 1.2 and 1.4 (2026, preprint), applied to a Schwartz
-function in place of the logarithmic potential there, whose decay that proof uses instead (see
-the module docstring): by the Leibniz rule `∂ (η_R f) − ∂f = (η_R − 1) ∂f + f ∂η_R`, where the
-first term tends to `0` in `L^p` by dominated convergence, and the second is at most
-`(sup |Dχ| / R) ‖f‖_p`. -/
-theorem exists_hasCompactSupport_tendsto_dz_dzbar (f : 𝓢(ℂ, ℂ)) {p : ℝ} (hp : 0 < p) :
+/-- **Cut-offs of the Cauchy transform** (Guerra's step "`D (η_R u) → Du` in `L^p`", in the
+gradient case). For `g ∈ C_c^∞` and `1 < p`, the smooth compactly supported `u_n = η_{n+1} C g`
+have `∂u_n → ∂ (C g) = 𝓑 g` and `∂̄u_n → ∂̄ (C g) = g` in `L^p`. -/
+theorem exists_hasCompactSupport_tendsto_cauchyTransform {g : ℂ → ℂ} (hg : ContDiff ℝ ∞ g)
+    (hgc : HasCompactSupport g) {p : ℝ} (hp : 1 < p) :
     ∃ u : ℕ → ℂ → ℂ, (∀ n, ContDiff ℝ ∞ (u n)) ∧ (∀ n, HasCompactSupport (u n)) ∧
-      Tendsto (fun n => eLpNorm (fun z => dz (u n) z - dz f z) (ENNReal.ofReal p) volume) atTop
-        (𝓝 0) ∧
-      Tendsto (fun n => eLpNorm (fun z => dzbar (u n) z - dzbar f z) (ENNReal.ofReal p) volume)
+      Tendsto (fun n => eLpNorm (fun z => dz (u n) z - beurlingPow 1 g z) (ENNReal.ofReal p)
+        volume) atTop (𝓝 0) ∧
+      Tendsto (fun n => eLpNorm (fun z => dzbar (u n) z - g z) (ENNReal.ofReal p) volume)
         atTop (𝓝 0) := by
-  refine ⟨fun n w => cutoff ((n : ℝ) + 1) w * f w, fun n => (contDiff_cutoff _).mul (f.smooth ⊤),
+  set f := cauchyTransform g
+  have hf : ContDiff ℝ ∞ f := contDiff_cauchyTransform hg hgc
+  obtain ⟨A, R₀, hR₀, hdecay⟩ := exists_norm_cauchyTransform_le hg.continuous hgc
+  refine ⟨fun n w => cutoff ((n : ℝ) + 1) w * f w, fun n => (contDiff_cutoff _).mul hf,
     fun n => (hasCompactSupport_cutoff (by positivity)).mul_right, ?_, ?_⟩
-  · simp only [dz_eq_wirt]
-    refine tendsto_wirt_cutoff_mul _ f hp ?_
-    have h : wirt (-Complex.I) f = dzCLM f := by
+  · have hw : MemLp (wirt (-Complex.I) f) (ENNReal.ofReal p) volume := by
       rw [← dz_eq_wirt]
-      exact funext fun z => (dzCLM_apply f z).symm
-    rw [h]
-    exact (dzCLM f).memLp _ _
-  · simp only [dzbar_eq_wirt]
-    refine tendsto_wirt_cutoff_mul _ f hp ?_
-    have h : wirt Complex.I f = dzbarCLM f := by
-      rw [← dzbar_eq_wirt]
-      exact funext fun z => (dzbarCLM_apply f z).symm
-    rw [h]
-    exact (dzbarCLM f).memLp _ _
+      exact memLp_dz_cauchyTransform hg hgc hp
+    refine (tendsto_wirt_cutoff_mul _ hf hR₀ hdecay hp hw).congr fun n => ?_
+    congr 1
+    funext z
+    rw [← dz_eq_wirt, ← dz_eq_wirt, show dz f = beurlingPow 1 g from
+      dz_cauchyTransform_eq_beurlingPow_one hg hgc]
+  · have hw : MemLp (wirt Complex.I f) (ENNReal.ofReal p) volume := by
+      rw [← dzbar_eq_wirt, show dzbar f = g from dzbar_cauchyTransform_eq hg hgc]
+      exact hg.continuous.memLp_of_hasCompactSupport hgc
+    refine (tendsto_wirt_cutoff_mul _ hf hR₀ hdecay hp hw).congr fun n => ?_
+    congr 1
+    funext z
+    rw [← dzbar_eq_wirt, ← dzbar_eq_wirt, show dzbar f = g from dzbar_cauchyTransform_eq hg hgc]
 
 /-- `𝓑 0 = 0`. -/
 private lemma beurlingPow_one_zero : beurlingPow 1 (0 : ℂ → ℂ) = 0 := by
   funext z
   simp [beurlingPow, fourierMultiplier, Real.fourier_eq, Real.fourierInv_eq]
 
-/-- **From `C_c^∞` to Schwartz functions, by cut-offs.** If `‖∂u‖_p ≤ C ‖∂̄u‖_p` for every smooth
-compactly supported `u`, `1 ≤ p < ∞`, then also for every Schwartz function `f`: apply it to the
-functions `η_R f` of `HarmonicAnalysis.exists_hasCompactSupport_tendsto_dz_dzbar` and let
-`R → ∞`, as Guerra does for `η_R u`, `u` a potential (2026, preprint, proof of Corollary 1.4).
-For `C = ∞` the inequality says only that `∂̄f = 0` implies `∂f = 0`, which holds since
-`∂f = 𝓑 (∂̄f)`. -/
-theorem eLpNorm_dz_le_of_forall_hasCompactSupport {p : ℝ} (hp : 1 ≤ p) {C : ℝ≥0∞}
+/-- **The dense class `C_c^∞`** (Guerra, 2026, preprint, proof of Corollary 1.4, in the gradient
+case): if `‖∂u‖_p ≤ C ‖∂̄u‖_p` for every smooth compactly supported `u`, `1 < p < ∞`, then
+`‖𝓑 g‖_p ≤ C ‖g‖_p` for every smooth compactly supported `g`: apply the inequality to the
+`η_R C g` of `HarmonicAnalysis.exists_hasCompactSupport_tendsto_cauchyTransform` and let
+`R → ∞`. -/
+theorem eLpNorm_beurlingPow_one_le_of_hasCompactSupport {p : ℝ} (hp : 1 < p) {C : ℝ≥0∞}
     (h : ∀ u : ℂ → ℂ, ContDiff ℝ ∞ u → HasCompactSupport u →
       eLpNorm (dz u) (ENNReal.ofReal p) volume ≤
         C * eLpNorm (dzbar u) (ENNReal.ofReal p) volume)
-    (f : 𝓢(ℂ, ℂ)) :
-    eLpNorm (dz f) (ENNReal.ofReal p) volume ≤ C * eLpNorm (dzbar f) (ENNReal.ofReal p) volume := by
+    {g : ℂ → ℂ} (hg : ContDiff ℝ ∞ g) (hgc : HasCompactSupport g) :
+    eLpNorm (beurlingPow 1 g) (ENNReal.ofReal p) volume ≤
+      C * eLpNorm g (ENNReal.ofReal p) volume := by
   set P := ENNReal.ofReal p
-  have hP : 1 ≤ P := by simpa [P] using ENNReal.ofReal_le_ofReal hp
+  have hP : 1 ≤ P := by simpa [P] using ENNReal.ofReal_le_ofReal hp.le
   have hP0 : P ≠ 0 := (zero_lt_one.trans_le hP).ne'
   rcases eq_or_ne C ⊤ with rfl | hC
-  · by_cases h0 : eLpNorm (dzbar f) P volume = 0
-    · -- `∂̄f = 0`, hence `∂f = 𝓑 (∂̄f) = 0`
-      have hz : ⇑(dzbarCLM f) = 0 := by
-        have e : dzbar (f : ℂ → ℂ) = dzbarCLM f := funext fun z => (dzbarCLM_apply f z).symm
-        rw [e, eLpNorm_eq_zero_iff hP0] at h0
-        exact ((dzbarCLM f).continuous.ae_eq_iff_eq volume continuous_zero).1 h0
-      have hdz : dz (f : ℂ → ℂ) = 0 := by
-        have h1 := beurlingPow_dzbarCLM_pow 1 f
-        simp only [pow_one] at h1
-        rw [hz, beurlingPow_one_zero] at h1
-        funext z
-        rw [← dzCLM_apply, ← h1]
-      simp [hdz]
+  · by_cases h0 : eLpNorm g P volume = 0
+    · -- `g = 0`, hence `𝓑 g = 0`
+      have hz : g = 0 := by
+        rw [eLpNorm_eq_zero_iff hP0] at h0
+        exact (hg.continuous.ae_eq_iff_eq volume continuous_zero).1 h0
+      simp [hz, beurlingPow_one_zero]
     · rw [ENNReal.top_mul h0]
       exact le_top
-  · obtain ⟨u, hu, huc, hdz, hdzbar⟩ :=
-      exists_hasCompactSupport_tendsto_dz_dzbar f (by linarith : (0 : ℝ) < p)
-    have hlim : Tendsto (fun n => eLpNorm (fun z => dz (u n) z - dz f z) P volume +
-        C * (eLpNorm (fun z => dzbar (u n) z - dzbar f z) P volume +
-          eLpNorm (dzbar f) P volume)) atTop (𝓝 (C * eLpNorm (dzbar f) P volume)) := by
+  · obtain ⟨u, hu, huc, hdz, hdzbar⟩ := exists_hasCompactSupport_tendsto_cauchyTransform hg hgc hp
+    have hlim : Tendsto (fun n => eLpNorm (fun z => dz (u n) z - beurlingPow 1 g z) P volume +
+        C * (eLpNorm (fun z => dzbar (u n) z - g z) P volume + eLpNorm g P volume)) atTop
+        (𝓝 (C * eLpNorm g P volume)) := by
       simpa using hdz.add (ENNReal.Tendsto.const_mul (hdzbar.add_const _) (Or.inr hC))
     refine ge_of_tendsto' hlim fun n => ?_
-    calc eLpNorm (dz f) P volume
-        ≤ eLpNorm (fun z => dz (u n) z - dz f z) P volume + eLpNorm (dz (u n)) P volume := by
+    calc eLpNorm (beurlingPow 1 g) P volume
+        ≤ eLpNorm (fun z => dz (u n) z - beurlingPow 1 g z) P volume +
+            eLpNorm (dz (u n)) P volume := by
           have e := eLpNorm_sub_le (μ := volume) (f := dz (u n))
-            (g := fun z => dz (u n) z - dz f z) hP
+            (g := fun z => dz (u n) z - beurlingPow 1 g z) hP
           rw [add_comm]
           convert e using 2
           funext z
           simp
-      _ ≤ eLpNorm (fun z => dz (u n) z - dz f z) P volume +
+      _ ≤ eLpNorm (fun z => dz (u n) z - beurlingPow 1 g z) P volume +
           C * eLpNorm (dzbar (u n)) P volume := by
           gcongr
           exact h _ (hu n) (huc n)
       _ ≤ _ := by
           gcongr
-          have e := eLpNorm_add_le (μ := volume) (f := fun z => dzbar (u n) z - dzbar f z)
-            (g := dzbar f) hP
+          have e := eLpNorm_add_le (μ := volume) (f := fun z => dzbar (u n) z - g z) (g := g) hP
           convert e using 2
           funext z
           simp
 
-/-! ### The dense class -/
+/-! ### Density -/
 
-/-- **The dense class.** If `‖∂u‖_p ≤ C ‖∂̄u‖_p` for every smooth compactly supported `u`,
-`1 ≤ p < ∞`, then `‖𝓑 g‖_p ≤ C ‖g‖_p` for the Schwartz functions `g` whose Fourier transform is
-compactly supported in `ℂ ∖ {0}`: the inequality for Schwartz functions
-(`HarmonicAnalysis.eLpNorm_dz_le_of_forall_hasCompactSupport`) applied to the Cauchy transform `f`
-of `g`, a Schwartz function with `∂̄f = g` and `∂f = 𝓑 g`. This is Guerra's step "apply the
-inequality to the potential `η_R u` and let `R → ∞`" (2026, preprint, proof of Corollary 1.4),
-with the Cauchy transform in place of the logarithmic potential of a real `h ∈ C_c^∞` there (the
-gradient case), and the dense class of Hytönen–van Neerven–Veraar–Weis, Proposition 2.4.23 (ii),
-in place of `C_c^∞`, so that `f` is a Schwartz function and needs no decay estimate. -/
-theorem eLpNorm_beurlingPow_one_le_of_hasCompactFourierSupportOffZero {p : ℝ} (hp : 1 ≤ p)
-    {C : ℝ≥0∞}
-    (h : ∀ u : ℂ → ℂ, ContDiff ℝ ∞ u → HasCompactSupport u →
-      eLpNorm (dz u) (ENNReal.ofReal p) volume ≤
-        C * eLpNorm (dzbar u) (ENNReal.ofReal p) volume)
-    {g : 𝓢(ℂ, ℂ)} (hg : HasCompactFourierSupportOffZero g) :
-    eLpNorm (beurlingPow 1 g) (ENNReal.ofReal p) volume ≤
-      C * eLpNorm g (ENNReal.ofReal p) volume := by
-  obtain ⟨f, -, -, hdzbar, hdz⟩ := exists_schwartzMap_eq_cauchyTransform hg
-  have h1 : dz (f : ℂ → ℂ) = beurlingPow 1 g := by
-    rw [← hdz]
-    exact funext fun z => (dzCLM_apply f z).symm
-  have h2 : dzbar (f : ℂ → ℂ) = g := by
-    rw [← hdzbar]
-    exact funext fun z => (dzbarCLM_apply f z).symm
-  have e := eLpNorm_dz_le_of_forall_hasCompactSupport hp h f
-  rwa [h1, h2] at e
-
-/-! ### All Schwartz functions -/
-
-/-- The step from the dense class to all Schwartz functions, for `C < ∞`: Guerra's "by density"
-(2026, preprint, proof of Corollary 1.4), made explicit. HNVW's `g_j → g` in `L^p` have
-`𝓕 g_j → 𝓕 g` in `L¹`, hence `𝓑 g_j → 𝓑 g` pointwise, and Fatou's lemma gives
-`‖𝓑 g‖_p ≤ liminf ‖𝓑 g_j‖_p ≤ C ‖g‖_p`, without the boundedness of `𝓑` on `L^p`. -/
+/-- The step from `C_c^∞` to all Schwartz functions, for `C < ∞` (Guerra's "by density"): the
+`g_n = η_n g ∈ C_c^∞` of `HarmonicAnalysis.exists_hasCompactSupport_tendsto` have `g_n → g` in
+`L^p` and `𝓕 g_n → 𝓕 g` in `L¹`, hence `𝓑 g_n → 𝓑 g` pointwise, and Fatou's lemma gives
+`‖𝓑 g‖_p ≤ liminf ‖𝓑 g_n‖_p ≤ C ‖g‖_p`. -/
 private theorem eLpNorm_beurlingPow_one_le_of_ne_top {p : ℝ} (hp : 1 < p) {C : ℝ≥0∞}
     (hC : C ≠ ⊤)
     (h : ∀ u : ℂ → ℂ, ContDiff ℝ ∞ u → HasCompactSupport u →
@@ -404,7 +439,7 @@ private theorem eLpNorm_beurlingPow_one_le_of_ne_top {p : ℝ} (hp : 1 < p) {C :
       C * eLpNorm g (ENNReal.ofReal p) volume := by
   set P := ENNReal.ofReal p
   have hP : 1 ≤ P := by simpa [P] using ENNReal.ofReal_le_ofReal hp.le
-  obtain ⟨φ, hφ, hφp, hφ1⟩ := exists_tendsto_hasCompactFourierSupportOffZero g
+  obtain ⟨φ, hφ, hφp, hφ1⟩ := exists_hasCompactSupport_tendsto g
   have hm : Measurable fun ξ => beurlingSymbol ξ ^ 1 := measurable_beurlingSymbol.pow_const 1
   have hm1 : ∀ ξ, ‖beurlingSymbol ξ ^ 1‖ ≤ 1 := fun ξ => by
     simpa using norm_beurlingSymbol_le ξ
@@ -422,7 +457,8 @@ private theorem eLpNorm_beurlingPow_one_le_of_ne_top {p : ℝ} (hp : 1 < p) {C :
     (continuous_fourierMultiplier _ g).aestronglyMeasurable (ae_of_all _ hlim)
   have hbound : ∀ j, eLpNorm (beurlingPow 1 (φ j)) P volume ≤
       C * (eLpNorm (fun x => φ j x - g x) P volume + eLpNorm g P volume) := fun j => by
-    refine (eLpNorm_beurlingPow_one_le_of_hasCompactFourierSupportOffZero hp.le h (hφ j)).trans ?_
+    refine (eLpNorm_beurlingPow_one_le_of_hasCompactSupport hp h ((φ j).smooth ⊤)
+      (hφ j)).trans ?_
     gcongr
     have e := eLpNorm_add_le (μ := volume) (f := fun x => φ j x - g x) (g := g) hP
     convert e using 2
@@ -430,7 +466,7 @@ private theorem eLpNorm_beurlingPow_one_le_of_ne_top {p : ℝ} (hp : 1 < p) {C :
     simp
   have hlim2 : Tendsto (fun j => C * (eLpNorm (fun x => φ j x - g x) P volume +
       eLpNorm g P volume)) atTop (𝓝 (C * eLpNorm g P volume)) := by
-    simpa using ENNReal.Tendsto.const_mul ((hφp p hp).add_const _) (Or.inr hC)
+    simpa using ENNReal.Tendsto.const_mul ((hφp p hp.le).add_const _) (Or.inr hC)
   calc eLpNorm (beurlingPow 1 g) P volume
       ≤ atTop.liminf fun j => eLpNorm (beurlingPow 1 (φ j)) P volume := hfatou
     _ ≤ atTop.liminf fun j => C * (eLpNorm (fun x => φ j x - g x) P volume +
@@ -443,10 +479,9 @@ private theorem eLpNorm_beurlingPow_one_le_of_ne_top {p : ℝ} (hp : 1 < p) {C :
 `1 < p < ∞`: if `‖∂u‖_p ≤ C ‖∂̄u‖_p` for every smooth compactly supported `u`, then
 `‖𝓑‖_p ≤ C`. Baernstein–Montgomery-Smith state it without proof (1999, §1, remark (b): their
 Conjecture 3 "would show that the norm of `S` on `L^p (ℂ, ℂ)` is precisely `p* − 1`"). The proof
-follows Guerra's proof of Corollary 1.4 (2026, preprint): density, a potential, cut-offs,
-limit; in the gradient case, with the Cauchy transform as the potential, on the dense class of
-Hytönen–van Neerven–Veraar–Weis, and with the density step made explicit by Fatou's lemma (see the
-module docstring for these departures and their reasons). -/
+is Guerra's proof of Corollary 1.4 (2026, preprint) in the gradient case: the dense class
+`C_c^∞`, the Cauchy transform as the potential, the cut-offs `η_R`, the limit `R → ∞`, and
+density (see the module docstring). -/
 theorem beurlingPowNorm_one_le_of_forall_hasCompactSupport {p : ℝ} (hp : 1 < p) {C : ℝ≥0∞}
     (h : ∀ u : ℂ → ℂ, ContDiff ℝ ∞ u → HasCompactSupport u →
       eLpNorm (dz u) (ENNReal.ofReal p) volume ≤

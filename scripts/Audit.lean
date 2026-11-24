@@ -15,16 +15,21 @@ import all HarmonicAnalysis.BeurlingAhlfors.CompactSupport
 import all HarmonicAnalysis.BeurlingAhlfors.Duality
 import all HarmonicAnalysis.BeurlingAhlfors.LowerBound
 import all HarmonicAnalysis.BeurlingAhlfors.Periodic
+import all HarmonicAnalysis.BeurlingAhlfors.Regularity
 import all HarmonicAnalysis.BeurlingAhlfors.TestFunctions
 import all HarmonicAnalysis.BeurlingAhlfors.TestFunctions.Approx
 import all HarmonicAnalysis.BeurlingAhlfors.TestFunctions.One
 import all HarmonicAnalysis.BeurlingAhlfors.TestFunctions.Profile
 import all HarmonicAnalysis.BeurlingAhlfors.Transference
+import all HarmonicAnalysis.Complex.CauchyPompeiu
+import all HarmonicAnalysis.Complex.CauchyTransform
+import all HarmonicAnalysis.Complex.Liouville
 import all HarmonicAnalysis.Complex.RadialIntegral
 import all HarmonicAnalysis.Complex.Wirtinger
 import all HarmonicAnalysis.Complex.WirtingerRadial
 import all HarmonicAnalysis.Defs
 import all HarmonicAnalysis.FourierMultiplier.Basic
+import all HarmonicAnalysis.FourierMultiplier.CompactSupport
 import all HarmonicAnalysis.FourierMultiplier.Density
 import all HarmonicAnalysis.FourierMultiplier.Duality
 import all HarmonicAnalysis.FourierMultiplier.Extension
@@ -134,12 +139,22 @@ meta def mainResults : List Name :=
    ``HarmonicAnalysis.beurlingKappa_two_pStar_le_beurlingPowNorm_two,
    ``HarmonicAnalysis.pStar_sub_one_lt_beurlingPowNorm_two,
    ``HarmonicAnalysis.twentyOne_div_five_le_beurlingPowNorm_two_four,
-   ``HarmonicAnalysis.exists_schwartzMap_eq_cauchyTransform,
-   ``HarmonicAnalysis.dzbar_cauchyTransform,
+   ``HarmonicAnalysis.locallyIntegrable_cauchyKernel,
+   ``HarmonicAnalysis.contDiff_cauchyTransform,
    ``HarmonicAnalysis.dz_cauchyTransform,
-   ``HarmonicAnalysis.exists_hasCompactSupport_tendsto_dz_dzbar,
-   ``HarmonicAnalysis.eLpNorm_dz_le_of_forall_hasCompactSupport,
-   ``HarmonicAnalysis.eLpNorm_beurlingPow_one_le_of_hasCompactFourierSupportOffZero,
+   ``HarmonicAnalysis.dzbar_cauchyTransform,
+   ``HarmonicAnalysis.exists_norm_cauchyTransform_le,
+   ``HarmonicAnalysis.exists_norm_cauchyTransform_le_of_integral_eq_zero,
+   ``HarmonicAnalysis.cauchyTransform_dzbar,
+   ``HarmonicAnalysis.eq_zero_of_dzbar_eq_zero,
+   ``HarmonicAnalysis.dzbar_beurlingPow_one,
+   ``HarmonicAnalysis.tendsto_beurlingPow_one_cocompact,
+   ``HarmonicAnalysis.exists_hasCompactSupport_tendsto,
+   ``HarmonicAnalysis.dzbar_cauchyTransform_eq,
+   ``HarmonicAnalysis.dz_cauchyTransform_eq_beurlingPow_one,
+   ``HarmonicAnalysis.memLp_dz_cauchyTransform,
+   ``HarmonicAnalysis.exists_hasCompactSupport_tendsto_cauchyTransform,
+   ``HarmonicAnalysis.eLpNorm_beurlingPow_one_le_of_hasCompactSupport,
    ``HarmonicAnalysis.beurlingPowNorm_one_le_of_forall_hasCompactSupport,
    ``HarmonicAnalysis.eLpNorm_beurlingPow_one_le_of_forall_hasCompactSupport,
    ``HarmonicAnalysis.eLpNorm_dz_le_beurlingPowNorm_one_mul,
