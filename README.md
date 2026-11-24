@@ -19,9 +19,11 @@ Lean 4 with Mathlib `v4.36.0-rc2`. For scalar functions, on `ℂ ≅ ℝ²`, the
   - `𝓑^k(∂̄^k F) = ∂^k F`
   - `‖𝓑^k‖_p = ‖𝓑^k‖_{p'}`
   - transference for `𝓑^k`
-  - **Dragičević's lower bound** for `n = 2`, `‖𝓑²‖_p ≥ κ₂(p) = (p−1)(2p−1)/(p+1)`; with the
-    duality of Carbonaro, Dragičević and Kovač for `p < 2`, `‖𝓑²‖_p ≥ κ₂(p*)`, `p* = max(p, p')`,
-    hence `‖𝓑²‖_p > p* − 1` for `p ≠ 2`, and `‖𝓑²‖₄ ≥ 21/5`
+  - **Dragičević's lower bound** `‖𝓑^n‖_p ≥ κ_n(p)` for `n = 1` and `n = 2`:
+    - `‖𝓑‖_p ≥ κ₁(p) = p − 1`
+    - `‖𝓑²‖_p ≥ κ₂(p) = (p−1)(2p−1)/(p+1)`; with the duality of Carbonaro, Dragičević and Kovač
+      for `p < 2`, `‖𝓑²‖_p ≥ κ₂(p*)`, `p* = max(p, p')`, hence `‖𝓑²‖_p > p* − 1` for `p ≠ 2`, and
+      `‖𝓑²‖₄ ≥ 21/5`
 - **Smooth periodic functions** on `ℝ^ι`, `ι` finite:
   - the derivative formula `(∂_v g)^(n) = 2πi⟨n,v⟩ ĝ(n)`
   - rapid decay of the Fourier coefficients
@@ -101,11 +103,14 @@ the operator norms are suprema in `ℝ≥0∞`.
 | `‖v‖_p / ‖u‖_p ≤ ‖𝓑^k‖_p` if Schwartz `∂̄^k φ_j → u`, `∂^k φ_j → v` in `L^p` | [`div_le_beurlingPowNorm_of_tendsto`](HarmonicAnalysis/BeurlingAhlfors/Basic.lean#L132) | density; [D, p. 465]; [D-LN, Ex. 2.19, §4.1] |
 | `‖𝓑^k‖_p = ‖𝓑^k‖_{p'}` (`1 < p`) | [`beurlingPowNorm_conjExponent`](HarmonicAnalysis/BeurlingAhlfors/Duality.lean#L39) | [CDK, §1.3.1] |
 | `‖𝓑^k‖_{L^p(ℝ²)} ≤ ‖𝓑^k‖_{L^p_0(𝕋²)}` (`1 < p`) | [`beurlingPowNorm_le_torusBeurlingPowNorm`](HarmonicAnalysis/BeurlingAhlfors/Transference.lean#L50) | [HNVW, Cor. 5.7.6] (`I ≤ II`) |
-| `f_{2,α}`, what is used of `f_{2,α} ∈ W^{2,p}`: Schwartz `φ_k` with `∂̄²φ_k → ∂̄²f_{2,α}`, `∂²φ_k → ∂²f_{2,α}` in `L^p` (`1 ≤ p`, `0 < α < 1/p`) | [`BeurlingAhlfors.exists_schwartz_tendsto_testFun`](HarmonicAnalysis/BeurlingAhlfors/TestFunctions.lean#L395) | asserted in [D, p. 465], [D-LN, Ex. 4.1] (for `p > 2`) |
-| `‖∂²f_{2,α}‖_p / ‖∂̄²f_{2,α}‖_p → κ₂(p)` as `α → 1/p⁻` | [`tendsto_eLpNorm_div_testFun`](HarmonicAnalysis/BeurlingAhlfors/LowerBound.lean#L107) | [D, Thm 1.1] (for `p > 2`) |
-| `κ₂(p) ≤ ‖𝓑²‖_p` for `1 < p` | [`beurlingKappa_two_le_beurlingPowNorm_two`](HarmonicAnalysis/BeurlingAhlfors/LowerBound.lean#L226) | [D, Thm 1.1] (for `p > 2`) |
-| `κ₂(p*) ≤ ‖𝓑²‖_p` for `1 < p` | [`beurlingKappa_two_pStar_le_beurlingPowNorm_two`](HarmonicAnalysis/BeurlingAhlfors/LowerBound.lean#L237) | [D, Thm 1.1] for `p > 2`; [CDK, §1.3.1] for `p < 2` |
-| `p* − 1 < ‖𝓑²‖_p` for `p ≠ 2`; `21/5 ≤ ‖𝓑²‖₄` | [`pStar_sub_one_lt_beurlingPowNorm_two`](HarmonicAnalysis/BeurlingAhlfors/LowerBound.lean#L260), [`twentyOne_div_five_le_beurlingPowNorm_two_four`](HarmonicAnalysis/BeurlingAhlfors/LowerBound.lean#L267) | |
+| `f_{1,α}` (with the cutoff `g₂`), what is used of `f_{1,α} ∈ W^{1,p}`: Schwartz `φ_k` with `∂̄φ_k → ∂̄f_{1,α}`, `∂φ_k → ∂f_{1,α}` in `L^p` (`1 ≤ p`, `0 < α < 1/p`) | [`BeurlingAhlfors.exists_schwartz_tendsto_testFunOne`](HarmonicAnalysis/BeurlingAhlfors/TestFunctions/One.lean#L448) | asserted in [D, p. 465] (for `p > 2`); [D-LN, Ex. 2.19] |
+| `‖∂f_{1,α}‖_p / ‖∂̄f_{1,α}‖_p → κ₁(p) = p − 1` as `α → 1/p⁻` | [`tendsto_eLpNorm_div_testFunOne`](HarmonicAnalysis/BeurlingAhlfors/LowerBound.lean#L248) | [D, Thm 1.1] (for `p > 2`); on the unit disc, [BMS, §1] |
+| `κ₁(p) = p − 1 ≤ ‖𝓑‖_p` for `1 < p` | [`beurlingKappa_one_le_beurlingPowNorm_one`](HarmonicAnalysis/BeurlingAhlfors/LowerBound.lean#L279), [`sub_one_le_beurlingPowNorm_one`](HarmonicAnalysis/BeurlingAhlfors/LowerBound.lean#L288) | [D, Thm 1.1] (for `p > 2`) |
+| `f_{2,α}`, what is used of `f_{2,α} ∈ W^{2,p}`: Schwartz `φ_k` with `∂̄²φ_k → ∂̄²f_{2,α}`, `∂²φ_k → ∂²f_{2,α}` in `L^p` (`1 ≤ p`, `0 < α < 1/p`) | [`BeurlingAhlfors.exists_schwartz_tendsto_testFun`](HarmonicAnalysis/BeurlingAhlfors/TestFunctions.lean#L396) | asserted in [D, p. 465], [D-LN, Ex. 4.1] (for `p > 2`) |
+| `‖∂²f_{2,α}‖_p / ‖∂̄²f_{2,α}‖_p → κ₂(p)` as `α → 1/p⁻` | [`tendsto_eLpNorm_div_testFun`](HarmonicAnalysis/BeurlingAhlfors/LowerBound.lean#L297) | [D, Thm 1.1] (for `p > 2`) |
+| `κ₂(p) ≤ ‖𝓑²‖_p` for `1 < p` | [`beurlingKappa_two_le_beurlingPowNorm_two`](HarmonicAnalysis/BeurlingAhlfors/LowerBound.lean#L332) | [D, Thm 1.1] (for `p > 2`) |
+| `κ₂(p*) ≤ ‖𝓑²‖_p` for `1 < p` | [`beurlingKappa_two_pStar_le_beurlingPowNorm_two`](HarmonicAnalysis/BeurlingAhlfors/LowerBound.lean#L343) | [D, Thm 1.1] for `p > 2`; [CDK, §1.3.1] for `p < 2` |
+| `p* − 1 < ‖𝓑²‖_p` for `p ≠ 2`; `21/5 ≤ ‖𝓑²‖₄` | [`pStar_sub_one_lt_beurlingPowNorm_two`](HarmonicAnalysis/BeurlingAhlfors/LowerBound.lean#L366), [`twentyOne_div_five_le_beurlingPowNorm_two_four`](HarmonicAnalysis/BeurlingAhlfors/LowerBound.lean#L373) | |
 | `(∂_v g)^(n) = 2πi⟨n,v⟩ ĝ(n)` for Lipschitz, or `C¹`, `ℤ^ι`-periodic `g` | [`UnitAddTorus.cubeFourierCoeff_fderiv_of_lipschitzWith`](HarmonicAnalysis/Torus/Smooth.lean#L140), [`UnitAddTorus.cubeFourierCoeff_fderiv_of_contDiff`](HarmonicAnalysis/Torus/Smooth.lean#L206) | difference quotients; [G, Ch. 3] |
 | `Σ_n (1 + ‖n‖)^k \|ĝ(n)\| < ∞` for smooth periodic `g` and every `k` | [`UnitAddTorus.exists_norm_cubeFourierCoeff_le`](HarmonicAnalysis/Torus/Smooth.lean#L282), [`UnitAddTorus.summable_cubeFourierCoeff`](HarmonicAnalysis/Torus/Smooth.lean#L361) | integration by parts; [G, Ch. 3] |
 | `g(x) = Σ_n ĝ(n) e^{2πi⟨n,x⟩}` absolutely, for smooth periodic `g`; uniqueness | [`UnitAddTorus.hasSum_cubeFourierCoeff_mul_mFourier`](HarmonicAnalysis/Torus/Smooth.lean#L376), [`UnitAddTorus.eq_of_cubeFourierCoeff_eq`](HarmonicAnalysis/Torus/Smooth.lean#L390) | [G, Ch. 3], [K, Ch. I] |
@@ -125,7 +130,9 @@ theorem HarmonicAnalysis.beurlingKappa_two_le_beurlingPowNorm_two {p : ℝ} (hp 
 ```
 
 Here `beurlingKappa n p = (1/q)_n / (1/p)_n`, `1/q = 1 − 1/p`, with the Pochhammer symbol
-`(a)_n = a(a+1)⋯(a+n−1)`; `κ₂(p) = (p−1)(2p−1)/(p+1)`.
+`(a)_n = a(a+1)⋯(a+n−1)`; `κ₁(p) = p − 1`, `κ₂(p) = (p−1)(2p−1)/(p+1)`. Dragičević's test
+functions are `f_{n,α}(z) = z^n |z|^{−2α} g_n(|z|)`; `f_{1,α}` is taken here with the cutoff `g₂`
+(see Method).
 
 ### Vector-valued harmonic analysis
 
@@ -247,17 +254,27 @@ The proofs follow the sources; the module docstrings say where they depart.
 ### Fourier multipliers, transference, the Beurling–Ahlfors transform
 
 - **Dragičević's lower bound** follows his proof [D, pp. 466–467], which [D-LN, Prop. 4.2] repeats,
-  with his test functions `f_{2,α}(z) = z² |z|^{−2α} g₂(|z|)` (here `0 < α < 1/p`, and his example of a
-  cutoff, `g₂ = 1` on `[0, 1]`, `g₂(x) = exp(−(x−1)²)` for `x > 1`): `𝓑²(∂̄²f) = ∂²f`, explicit
-  integrals over the disc, of order `(1 − αp)⁻¹`, a bounded contribution outside it, and `α → 1/p`. The
-  norms here are suprema over Schwartz functions, which `f_{2,α}` is not; that `f_{2,α} ∈ W^{2,p}`, "which ensures
-  that `T^n(∂̄^n f) = ∂^n f`", is asserted without proof in [D, p. 465] (and is [D-LN, Ex. 4.1]).
-  What is used of it is proved here: `f_{2,α}` is approximated by Schwartz functions, and the density
+  with his test functions `f_{n,α}(z) = z^n |z|^{−2α} g_n(|z|)` for `n = 2` and `n = 1` (here
+  `0 < α < 1/p`, and his example of a cutoff, `g₂ = 1` on `[0, 1]`, `g₂(x) = exp(−(x−1)²)` for
+  `x > 1`, also for `n = 1`, where his example `g₁(x) = exp(−(x−1))` is not `C¹` at `1`; the cutoff
+  changes no limit): `𝓑^n(∂̄^n f) = ∂^n f`, explicit integrals over the disc, of order `(1 − αp)⁻¹`,
+  a bounded contribution outside it, and `α → 1/p`, by one lemma for both `n`
+  ([`tendsto_eLpNorm_div_of_lintegral_ball`](HarmonicAnalysis/BeurlingAhlfors/LowerBound.lean#L141)). On the
+  unit disc, `f_{1,α}(z) = z |z|^{−2α}` are the functions `f_α` of [BMS, §1], who continue them by
+  `1/z̄` outside it and compute `∫ |∂f_α|^p / ∫ |∂̄f_α|^p → (p − 1)^p`. The
+  norms here are suprema over Schwartz functions, which `f_{n,α}` is not; that `f_{n,α} ∈ W^{n,p}`, "which ensures
+  that `T^n(∂̄^n f) = ∂^n f`", is asserted without proof in [D, p. 465] (and is [D-LN, Ex. 4.1]; for
+  `n = 1`, [D-LN, Ex. 2.19]).
+  What is used of it is proved here: `f_{n,α}` is approximated by Schwartz functions, and the density
   statements carry the bound over, as the hint of [D-LN, Ex. 2.19] does ("first consider smooth `h`
-  and then approximate"). The approximation is the standard one: `z²(|z|² + ε)^{−α}` near `0`, the
+  and then approximate"). The approximation is the standard one: `z^n(|z|² + ε)^{−α}` near `0`, the
   cutoff smoothed near `|z| = 1` (where `g₂` is only `C¹`) and truncated at infinity, and dominated
-  convergence. [D] states the bound for `p > 2` (its standing assumption, p. 464), and the argument
-  works for every `p > 1`; the bound with `p*` for `p < 2` is not in [D]. It comes from
+  convergence; for `n = 1` the profiles of `n = 2` serve as they are. For `n = 1`, `p − 1 ≤ ‖𝓑‖_p`
+  is half of the classical bound `‖𝓑‖_p ≥ p* − 1`, which is Lehto's [Le] (not read here); the other
+  half, `‖𝓑‖_p ≥ p' − 1`, follows by `‖𝓑‖_p = ‖𝓑‖_{p'}`, and [BMS, §1] obtain it from the
+  conjugates of the `f_α`. [D] states the bound for `p > 2` (its standing assumption, p. 464), and
+  the argument works for every `p > 1`; the bound for `n = 2` with `p*` for `p < 2` is not in [D].
+  It comes from
   `‖𝓑^n‖_p = ‖𝓑^n‖_{p'}`, by `𝓑^{−n} = (𝓑^n)^*` and `𝓑^{−n} f = conj(𝓑^n(conj f))` [CDK, §1.3.1, for
   `R^k`, `𝓑 = R²`], as here (for bounded multipliers, by the standard duality argument: the adjoint of
   `T_m` is `T_{m̄}`, and Schwartz functions norm `L^p`).
@@ -533,7 +550,8 @@ For [B83] and [MC], see the table above.
 
 ## Planned extensions
 
-- Dragičević's bound for every `n`: `‖𝓑^n‖_p ≥ κ_n(p)` (`n = 1` is Lehto's `‖𝓑‖_p ≥ p* − 1`).
+- Dragičević's bound `‖𝓑^n‖_p ≥ κ_n(p)` for every `n`; here for `n = 1` (`‖𝓑‖_p ≥ p − 1`, half of
+  Lehto's `‖𝓑‖_p ≥ p* − 1`) and `n = 2`.
 - General dimension: `EuclideanSpace ℝ (Fin d)` and `UnitAddTorus (Fin d)`; also for the vector-valued part.
 - The other inequalities of [HNVW, Cor. 5.7.6]: `‖T_m‖_{L^p_0(𝕋²)} ≤ ‖T_m‖_{L^p(𝕋²)} ≤ ‖T_m‖_{L^p(ℝ²)}`.
 - From [HNVW], vector-valued:
@@ -918,7 +936,9 @@ lake env lake comparator --config=palomar/FourierMultipliers/comparator.json   #
 - `Duality`
 - `TestFunctions` (Dragičević's `f_{2,α}`; with `TestFunctions/Profile`, one-variable calculus, and
   `TestFunctions/Approx`, its Schwartz approximations)
-- `LowerBound` (Dragičević, `n = 2`)
+- `TestFunctions/One` (Dragičević's `f_{1,α}`, with the cutoff `g₂`, and its Schwartz
+  approximations)
+- `LowerBound` (Dragičević, `n = 1` and `n = 2`)
 - [`Transference`](HarmonicAnalysis/BeurlingAhlfors/Transference.lean) (`𝓑^k` on `𝕋²`)
 - `Periodic` (`𝓑` on smooth periodic functions)
 

@@ -15,6 +15,7 @@ import all HarmonicAnalysis.BeurlingAhlfors.LowerBound
 import all HarmonicAnalysis.BeurlingAhlfors.Periodic
 import all HarmonicAnalysis.BeurlingAhlfors.TestFunctions
 import all HarmonicAnalysis.BeurlingAhlfors.TestFunctions.Approx
+import all HarmonicAnalysis.BeurlingAhlfors.TestFunctions.One
 import all HarmonicAnalysis.BeurlingAhlfors.TestFunctions.Profile
 import all HarmonicAnalysis.BeurlingAhlfors.Transference
 import all HarmonicAnalysis.Complex.RadialIntegral
@@ -119,6 +120,11 @@ meta def mainResults : List Name :=
    ``HarmonicAnalysis.div_le_beurlingPowNorm_of_tendsto,
    ``HarmonicAnalysis.beurlingPowNorm_conjExponent,
    ``HarmonicAnalysis.beurlingPowNorm_le_torusBeurlingPowNorm,
+   ``HarmonicAnalysis.BeurlingAhlfors.exists_schwartz_tendsto_testFunOne,
+   ``HarmonicAnalysis.tendsto_eLpNorm_div_testFunOne,
+   ``HarmonicAnalysis.eLpNorm_div_le_beurlingPowNorm_one,
+   ``HarmonicAnalysis.beurlingKappa_one_le_beurlingPowNorm_one,
+   ``HarmonicAnalysis.sub_one_le_beurlingPowNorm_one,
    ``HarmonicAnalysis.BeurlingAhlfors.exists_schwartz_tendsto_testFun,
    ``HarmonicAnalysis.tendsto_eLpNorm_div_testFun,
    ``HarmonicAnalysis.eLpNorm_div_le_beurlingPowNorm_two,

@@ -7,24 +7,34 @@ module
 
 public import HarmonicAnalysis.BeurlingAhlfors.Duality
 public import HarmonicAnalysis.BeurlingAhlfors.TestFunctions
+public import HarmonicAnalysis.BeurlingAhlfors.TestFunctions.One
 public import HarmonicAnalysis.Complex.RadialIntegral
 
 /-!
-# Dragičević's lower bound for `‖𝓑²‖_p`
+# Dragičević's lower bounds for `‖𝓑‖_p` and `‖𝓑²‖_p`
 
 With the Pochhammer symbol `(a)_n = a (a + 1) ⋯ (a + n − 1)` and `q = p / (p − 1)`, Dragičević's
-constant is `κ_n (p) = (1/q)_n / (1/p)_n` (`HarmonicAnalysis.beurlingKappa`); for `n = 2`,
-`κ₂ (p) = (p − 1)(2p − 1) / (p + 1)`. Let `p* = max (p, q)` (`HarmonicAnalysis.pStar`).
+constant is `κ_n (p) = (1/q)_n / (1/p)_n` (`HarmonicAnalysis.beurlingKappa`); `κ₁ (p) = p − 1`
+and `κ₂ (p) = (p − 1)(2p − 1) / (p + 1)`. Let `p* = max (p, q)` (`HarmonicAnalysis.pStar`).
 
 ## Main results
 
-* `HarmonicAnalysis.tendsto_eLpNorm_div_testFun` (Dragičević's limit, `n = 2`): for the source's
-  test functions `f_{2,α} (z) = z² |z|^{−2α} g₂ (|z|)`,
-  `‖∂²f_{2,α}‖_p / ‖∂̄²f_{2,α}‖_p → κ₂ (p)` as `α → 1/p` from below.
-* `HarmonicAnalysis.eLpNorm_div_le_beurlingPowNorm_two`: `‖∂²f_{2,α}‖_p / ‖∂̄²f_{2,α}‖_p ≤ ‖𝓑²‖_p`
-  for `0 < α < 1/p`, by Schwartz approximations of `f_{2,α}` and `𝓑² (∂̄²φ) = ∂²φ` for these.
-* `HarmonicAnalysis.beurlingKappa_two_le_beurlingPowNorm_two` (Dragičević's theorem, `n = 2`):
-  `κ₂ (p) ≤ ‖𝓑²‖_p` for `1 < p < ∞`.
+* `HarmonicAnalysis.tendsto_eLpNorm_div_of_lintegral_ball`: the limit of the ratio of the norms in
+  Dragičević's proof, from the integrals over the unit disc and those outside it.
+* `HarmonicAnalysis.tendsto_eLpNorm_div_testFunOne`, `HarmonicAnalysis.tendsto_eLpNorm_div_testFun`
+  (Dragičević's limit, `n = 1` and `n = 2`): for the test functions
+  `f_{1,α} (z) = z |z|^{−2α} g₂ (|z|)` and `f_{2,α} (z) = z² |z|^{−2α} g₂ (|z|)`,
+  `‖∂f_{1,α}‖_p / ‖∂̄f_{1,α}‖_p → κ₁ (p)` and `‖∂²f_{2,α}‖_p / ‖∂̄²f_{2,α}‖_p → κ₂ (p)` as
+  `α → 1/p` from below. On the unit disc, `f_{1,α}` is the function `f_α` of
+  Baernstein–Montgomery-Smith (1999, §1), and the limit for `n = 1` is theirs.
+* `HarmonicAnalysis.eLpNorm_div_le_beurlingPowNorm_one`,
+  `HarmonicAnalysis.eLpNorm_div_le_beurlingPowNorm_two`:
+  `‖∂^n f_{n,α}‖_p / ‖∂̄^n f_{n,α}‖_p ≤ ‖𝓑^n‖_p` for `0 < α < 1/p`, by Schwartz approximations of
+  `f_{n,α}` and `𝓑^n (∂̄^n φ) = ∂^n φ` for these.
+* `HarmonicAnalysis.beurlingKappa_one_le_beurlingPowNorm_one`,
+  `HarmonicAnalysis.beurlingKappa_two_le_beurlingPowNorm_two` (Dragičević's theorem, `n = 1` and
+  `n = 2`): `κ_n (p) ≤ ‖𝓑^n‖_p` for `1 < p < ∞`; for `n = 1`, `p − 1 ≤ ‖𝓑‖_p`
+  (`HarmonicAnalysis.sub_one_le_beurlingPowNorm_one`).
 * `HarmonicAnalysis.beurlingKappa_two_pStar_le_beurlingPowNorm_two`: `κ₂ (p*) ≤ ‖𝓑²‖_p` for
   `1 < p < ∞`. Dragičević's Theorem 1.1 is for `p > 2`, and the article does not state the bound
   with `κ_n` for `p < 2`; that case is `‖𝓑²‖_p = ‖𝓑²‖_q`
@@ -38,19 +48,23 @@ constant is `κ_n (p) = (1/q)_n / (1/p)_n` (`HarmonicAnalysis.beurlingKappa`); f
   (`HarmonicAnalysis.twentyOne_div_five_le_beurlingPowNorm_two_four`).
 
 Dragičević's Theorem 1.1 is `‖T^n‖_p ≥ κ_n (p)` for every `n` and `p > 2` (the article's standing
-assumption, p. 464), where it is the informative bound; the same argument gives `κ₂ (p) ≤ ‖𝓑²‖_p`
-for every `p > 1`. Only `n = 2` is proved here; general `n` is a planned extension.
+assumption, p. 464), where it is the informative bound; the same argument gives
+`κ_n (p) ≤ ‖𝓑^n‖_p` for every `p > 1`. Only `n = 1` and `n = 2` are proved here; general `n` is a
+planned extension.
 
 The proof is the article's (pp. 466–467; repeated in the lecture notes, Proposition 4.2), with its
-test functions (`HarmonicAnalysis.BeurlingAhlfors.testFun`): explicit integrals over the unit disc,
-of order `(1 − αp)⁻¹`, and integrals outside it that stay bounded, in the identity (2.1) for the
-ratio of the `p`-th powers of the norms. The norm `‖𝓑²‖_p` is a supremum over Schwartz functions,
-and `f_{2,α}` is not one. The article asserts without proof that `f_{n,α}` "belongs to `W^{n,p}`,
+test functions (`HarmonicAnalysis.BeurlingAhlfors.testFun`; for `n = 1`,
+`HarmonicAnalysis.BeurlingAhlfors.testFunOne`, with the cutoff `g₂` in place of the article's
+example `g₁`, which is not `C¹` at `1`): explicit integrals over the unit disc, of order
+`(1 − αp)⁻¹`, and integrals outside it that stay bounded, in the identity (2.1) for the ratio of
+the `p`-th powers of the norms. The norm `‖𝓑^n‖_p` is a supremum over Schwartz functions, and
+`f_{n,α}` is not one. The article asserts without proof that `f_{n,α}` "belongs to `W^{n,p}`,
 which ensures that `T^n (∂̄^n f) = ∂^n f`" (p. 465; lecture notes, §4.1 and Exercise 4.1; for
 `n = 1`, Exercise 2.19, whose hint is to approximate by smooth functions). What is used of it,
-`‖∂²f‖_p ≤ ‖𝓑²‖_p ‖∂̄²f‖_p`, is proved here by the density step
+`‖∂^n f‖_p ≤ ‖𝓑^n‖_p ‖∂̄^n f‖_p`, is proved here by the density step
 `HarmonicAnalysis.div_le_beurlingPowNorm_of_tendsto`, applied to Schwartz approximations of
-`f_{2,α}` in `W^{2,p}` (`HarmonicAnalysis.BeurlingAhlfors.exists_schwartz_tendsto_testFun`).
+`f_{n,α}` in `W^{n,p}` (`HarmonicAnalysis.BeurlingAhlfors.exists_schwartz_tendsto_testFunOne`,
+`HarmonicAnalysis.BeurlingAhlfors.exists_schwartz_tendsto_testFun`).
 
 ## References
 
@@ -62,6 +76,10 @@ which ensures that `T^n (∂̄^n f) = ∂^n f`" (p. 465; lecture notes, §4.1 an
 * A. Carbonaro, O. Dragičević, V. Kovač, *Sharp `L^p` estimates of powers of the complex Riesz
   transform*, Math. Ann. 386 (2023), 1081–1125,
   [arXiv:2109.08369](https://arxiv.org/abs/2109.08369), §1.3.1 and §2.1.
+* A. Baernstein II and S. J. Montgomery-Smith, *Some conjectures about integral means of `∂f` and
+  `∂̄f`*, in: Complex analysis and differential equations (Uppsala, 1997), ed. C. Kiselman, Acta
+  Univ. Upsaliensis C 64 (1999), 92–109, [arXiv:math/9709215](https://arxiv.org/abs/math/9709215),
+  §1.
 -/
 
 @[expose] public section
@@ -74,6 +92,11 @@ open scoped ENNReal
 namespace HarmonicAnalysis
 
 open BeurlingAhlfors
+
+/-- `κ₁ (p) = p − 1`. -/
+theorem beurlingKappa_one {p : ℝ} (hp : p ≠ 0) : beurlingKappa 1 p = p - 1 := by
+  simp only [beurlingKappa, ascPochhammer_one, Polynomial.eval_X]
+  field_simp
 
 /-- `κ₂ (p) = (p − 1)(2p − 1) / (p + 1)`. -/
 theorem beurlingKappa_two {p : ℝ} (hp : 0 < p) :
@@ -102,59 +125,71 @@ theorem two_lt_pStar {p : ℝ} (hp : 1 < p) (hp2 : p ≠ 2) : 2 < pStar p := by
   · rw [pStar_of_two_le h.le]
     exact h
 
-/-- Dragičević's limit (Theorem 1.1, for `p > 2`), `n = 2`:
-`‖∂²f_{2,α}‖_p / ‖∂̄²f_{2,α}‖_p → κ₂ (p)` as `α → 1/p` from below, for `1 < p < ∞`. -/
-theorem tendsto_eLpNorm_div_testFun {p : ℝ} (hp : 1 < p) :
-    Tendsto (fun α : ℝ =>
-        eLpNorm (dz (dz (testFun 2 α))) (ENNReal.ofReal p) volume /
-          eLpNorm (dzbar (dzbar (testFun 2 α))) (ENNReal.ofReal p) volume)
-      (𝓝[<] p⁻¹) (𝓝 (ENNReal.ofReal (beurlingKappa 2 p))) := by
+/-! ### The limit of the ratio -/
+
+/-- `αp < 1` for `0 < α < 1/p`. -/
+theorem mul_lt_one_of_mem_Ioo_inv {p α : ℝ} (hp : 0 < p) (hα : α ∈ Set.Ioo 0 p⁻¹) : α * p < 1 :=
+  calc α * p < p⁻¹ * p := mul_lt_mul_of_pos_right hα.2 hp
+    _ = 1 := inv_mul_cancel₀ hp.ne'
+
+/-- The limit in Dragičević's proof of Theorem 1.1 (pp. 466–467, with the identity (2.1)): if, for
+`0 < α < 1/p`, `∫_Δ |u_α|^p = π / (1 − αp) a (α)^p` and `∫_Δ |v_α|^p = π / (1 − αp) b (α)^p` on
+the unit disc `Δ`, and the integrals of `|u_α|^p` and `|v_α|^p` outside `Δ` stay bounded, then
+`‖u_α‖_p / ‖v_α‖_p → a (1/p) / b (1/p)` as `α → 1/p` from below (`a`, `b` continuous, `a ≥ 0`
+and `b > 0` on `(0, 1/p]`): the integrals over `Δ` grow like `(1 − αp)⁻¹`, and the others
+disappear in the ratio. -/
+theorem tendsto_eLpNorm_div_of_lintegral_ball {p : ℝ} (hp : 1 < p) {u v : ℝ → ℂ → ℂ}
+    {a b : ℝ → ℝ} (hu : ∀ α, Measurable (u α)) (hv : ∀ α, Measurable (v α))
+    (ha : Continuous a) (hb : Continuous b) (ha0 : ∀ α ∈ Set.Ioc 0 p⁻¹, 0 ≤ a α)
+    (hb0 : ∀ α ∈ Set.Ioc 0 p⁻¹, 0 < b α)
+    (huB : ∀ α ∈ Set.Ioo 0 p⁻¹, ∫⁻ z in Metric.ball (0 : ℂ) 1, ‖u α z‖ₑ ^ p =
+      ENNReal.ofReal (Real.pi / (1 - α * p) * a α ^ p))
+    (hvB : ∀ α ∈ Set.Ioo 0 p⁻¹, ∫⁻ z in Metric.ball (0 : ℂ) 1, ‖v α z‖ₑ ^ p =
+      ENNReal.ofReal (Real.pi / (1 - α * p) * b α ^ p))
+    (hC : ∃ C : ℝ, ∀ α ∈ Set.Ioo 0 p⁻¹,
+      ∫⁻ z in (Metric.ball (0 : ℂ) 1)ᶜ, ‖u α z‖ₑ ^ p ≤ ENNReal.ofReal C ∧
+        ∫⁻ z in (Metric.ball (0 : ℂ) 1)ᶜ, ‖v α z‖ₑ ^ p ≤ ENNReal.ofReal C) :
+    Tendsto (fun α => eLpNorm (u α) (ENNReal.ofReal p) volume /
+        eLpNorm (v α) (ENNReal.ofReal p) volume)
+      (𝓝[<] p⁻¹) (𝓝 (ENNReal.ofReal (a p⁻¹ / b p⁻¹))) := by
   have hp0 : 0 < p := zero_lt_one.trans hp
-  have hpi : p⁻¹ < 1 := inv_lt_one_of_one_lt₀ hp
   have hB : MeasurableSet (Metric.ball (0 : ℂ) 1) := Metric.isOpen_ball.measurableSet
-  have hIoo : ∀ α ∈ Set.Ioo 0 p⁻¹, 0 < α ∧ α * p < 1 ∧ α ∈ Set.Icc (0 : ℝ) 1 := fun α hα =>
-    ⟨hα.1, by
-      calc α * p < p⁻¹ * p := mul_lt_mul_of_pos_right hα.2 hp0
-        _ = 1 := inv_mul_cancel₀ hp0.ne', hα.1.le, (hα.2.trans hpi).le⟩
   -- the integrals over `Δᶜ`, bounded uniformly in `α`
-  obtain ⟨C, hC⟩ := exists_bound_testFun_compl_ball hp0
+  obtain ⟨C, hC⟩ := hC
   obtain ⟨iOut, hiOut⟩ : ∃ g : ℝ → ℝ, ∀ α, g α =
-      (∫⁻ z in (Metric.ball (0 : ℂ) 1)ᶜ, ‖dz (dz (testFun 2 α)) z‖ₑ ^ p).toReal :=
+      (∫⁻ z in (Metric.ball (0 : ℂ) 1)ᶜ, ‖u α z‖ₑ ^ p).toReal :=
     ⟨_, fun _ => rfl⟩
   obtain ⟨jOut, hjOut⟩ : ∃ g : ℝ → ℝ, ∀ α, g α =
-      (∫⁻ z in (Metric.ball (0 : ℂ) 1)ᶜ, ‖dzbar (dzbar (testFun 2 α)) z‖ₑ ^ p).toReal :=
+      (∫⁻ z in (Metric.ball (0 : ℂ) 1)ᶜ, ‖v α z‖ₑ ^ p).toReal :=
     ⟨_, fun _ => rfl⟩
   -- the article's (2.1): the ratio of the `p`-th powers of the norms, with numerator and
   -- denominator multiplied by `1 − αp`
   have heq : ∀ α ∈ Set.Ioo 0 p⁻¹,
-      eLpNorm (dz (dz (testFun 2 α))) (ENNReal.ofReal p) volume /
-          eLpNorm (dzbar (dzbar (testFun 2 α))) (ENNReal.ofReal p) volume =
-        ENNReal.ofReal (((Real.pi * ((2 - α) * (1 - α)) ^ p + (1 - α * p) * iOut α) /
-          (Real.pi * (α * (α + 1)) ^ p + (1 - α * p) * jOut α)) ^ (1 / p)) := by
+      eLpNorm (u α) (ENNReal.ofReal p) volume / eLpNorm (v α) (ENNReal.ofReal p) volume =
+        ENNReal.ofReal (((Real.pi * a α ^ p + (1 - α * p) * iOut α) /
+          (Real.pi * b α ^ p + (1 - α * p) * jOut α)) ^ (1 / p)) := by
     intro α hα
-    obtain ⟨hα0, hαp, hα1⟩ := hIoo α hα
-    obtain ⟨hI, hJ⟩ := hC α hα1
-    have hε : 0 < 1 - α * p := by linarith
-    have hα1' : α < 1 := hα.2.trans hpi
-    have ha : 0 < Real.pi / (1 - α * p) * ((2 - α) * (1 - α)) ^ p :=
-      mul_pos (div_pos Real.pi_pos hε) (Real.rpow_pos_of_pos (by nlinarith) _)
-    have hb : 0 < Real.pi / (1 - α * p) * (α * (α + 1)) ^ p :=
-      mul_pos (div_pos Real.pi_pos hε) (Real.rpow_pos_of_pos (by positivity) _)
+    obtain ⟨hI, hJ⟩ := hC α hα
+    have hε : 0 < 1 - α * p := by linarith [mul_lt_one_of_mem_Ioo_inv hp0 hα]
+    have hα' : α ∈ Set.Ioc 0 p⁻¹ := Set.Ioo_subset_Ioc_self hα
+    have ha : 0 ≤ Real.pi / (1 - α * p) * a α ^ p :=
+      mul_nonneg (div_pos Real.pi_pos hε).le (Real.rpow_nonneg (ha0 α hα') _)
+    have hb : 0 < Real.pi / (1 - α * p) * b α ^ p :=
+      mul_pos (div_pos Real.pi_pos hε) (Real.rpow_pos_of_pos (hb0 α hα') _)
     have hp' : ENNReal.ofReal p ≠ 0 := by simpa using hp0
     rw [eLpNorm_eq_lintegral_rpow_enorm_toReal hp' ENNReal.ofReal_ne_top
-        (measurable_dz _).aestronglyMeasurable,
+        (hu α).aestronglyMeasurable,
       eLpNorm_eq_lintegral_rpow_enorm_toReal hp' ENNReal.ofReal_ne_top
-        (measurable_dzbar _).aestronglyMeasurable,
+        (hv α).aestronglyMeasurable,
       ENNReal.toReal_ofReal hp0.le, ← lintegral_add_compl (μ := volume) _ hB,
-      ← lintegral_add_compl (μ := volume) _ hB, lintegral_dz_dz_testFun_ball hp hα0 hαp,
-      lintegral_dzbar_dzbar_testFun_ball hp hα0 hαp,
+      ← lintegral_add_compl (μ := volume) _ hB, huB α hα, hvB α hα,
       ← ENNReal.ofReal_toReal (ne_top_of_le_ne_top ENNReal.ofReal_ne_top hI),
       ← ENNReal.ofReal_toReal (ne_top_of_le_ne_top ENNReal.ofReal_ne_top hJ),
-      ← ENNReal.ofReal_add ha.le ENNReal.toReal_nonneg,
+      ← ENNReal.ofReal_add ha ENNReal.toReal_nonneg,
       ← ENNReal.ofReal_add hb.le ENNReal.toReal_nonneg,
       ← ENNReal.div_rpow_of_nonneg _ _ (one_div_nonneg.2 hp0.le),
       ← ENNReal.ofReal_div_of_pos (add_pos_of_pos_of_nonneg hb ENNReal.toReal_nonneg),
-      ENNReal.ofReal_rpow_of_nonneg (div_nonneg (add_nonneg ha.le ENNReal.toReal_nonneg)
+      ENNReal.ofReal_rpow_of_nonneg (div_nonneg (add_nonneg ha ENNReal.toReal_nonneg)
         (add_nonneg hb.le ENNReal.toReal_nonneg)) (one_div_nonneg.2 hp0.le)]
     congr 2
     rw [hiOut, hjOut]
@@ -174,42 +209,113 @@ theorem tendsto_eLpNorm_div_testFun {p : ℝ} (hp : 1 < p) :
     rw [zero_mul] at h0
     refine squeeze_zero' ?_ ?_ h0
     · filter_upwards [hev] with α hα
-      exact mul_nonneg (by linarith [(hIoo α hα).2.1]) (hg α hα).1
+      exact mul_nonneg (by linarith [mul_lt_one_of_mem_Ioo_inv hp0 hα]) (hg α hα).1
     · filter_upwards [hev] with α hα
-      exact mul_le_mul_of_nonneg_left (hg α hα).2 (by linarith [(hIoo α hα).2.1])
+      exact mul_le_mul_of_nonneg_left (hg α hα).2
+        (by linarith [mul_lt_one_of_mem_Ioo_inv hp0 hα])
   have hi := hvanish iOut fun α hα => ⟨(hiOut α).symm ▸ ENNReal.toReal_nonneg,
-    (hiOut α).symm ▸ ENNReal.toReal_mono ENNReal.ofReal_ne_top (hC α (hIoo α hα).2.2).1⟩
+    (hiOut α).symm ▸ ENNReal.toReal_mono ENNReal.ofReal_ne_top (hC α hα).1⟩
   have hj := hvanish jOut fun α hα => ⟨(hjOut α).symm ▸ ENNReal.toReal_nonneg,
-    (hjOut α).symm ▸ ENNReal.toReal_mono ENNReal.ofReal_ne_top (hC α (hIoo α hα).2.2).2⟩
+    (hjOut α).symm ▸ ENNReal.toReal_mono ENNReal.ofReal_ne_top (hC α hα).2⟩
   have hcont : ∀ g : ℝ → ℝ, Continuous g →
       Tendsto (fun α => Real.pi * g α ^ p) (𝓝[<] p⁻¹) (𝓝 (Real.pi * g p⁻¹ ^ p)) := fun g hg =>
     ((continuous_const.mul (hg.rpow_const fun _ => Or.inr hp0.le)).tendsto p⁻¹).mono_left
       nhdsWithin_le_nhds
-  have hnum : Tendsto (fun α => Real.pi * ((2 - α) * (1 - α)) ^ p + (1 - α * p) * iOut α)
-      (𝓝[<] p⁻¹) (𝓝 (Real.pi * ((2 - p⁻¹) * (1 - p⁻¹)) ^ p + 0)) :=
-    (hcont (fun α => (2 - α) * (1 - α)) (by fun_prop)).add hi
-  have hden : Tendsto (fun α => Real.pi * (α * (α + 1)) ^ p + (1 - α * p) * jOut α)
-      (𝓝[<] p⁻¹) (𝓝 (Real.pi * (p⁻¹ * (p⁻¹ + 1)) ^ p + 0)) :=
-    (hcont (fun α => α * (α + 1)) (by fun_prop)).add hj
-  have ha : 0 < (2 - p⁻¹) * (1 - p⁻¹) := mul_pos (by linarith) (by linarith)
-  have hb : 0 < p⁻¹ * (p⁻¹ + 1) := by positivity
-  have hlim := (hnum.div hden (by
+  have hp1 : p⁻¹ ∈ Set.Ioc 0 p⁻¹ := ⟨inv_pos.2 hp0, le_rfl⟩
+  have ha1 := ha0 _ hp1
+  have hb1 := hb0 _ hp1
+  have hlim := (((hcont a ha).add hi).div ((hcont b hb).add hj) (by
     rw [add_zero]
-    exact (mul_pos Real.pi_pos (Real.rpow_pos_of_pos hb p)).ne')).rpow_const
+    exact (mul_pos Real.pi_pos (Real.rpow_pos_of_pos hb1 p)).ne')).rpow_const
     (Or.inr (one_div_nonneg.2 hp0.le))
-  -- the limit is `κ₂ (p)`
-  have hval : ((Real.pi * ((2 - p⁻¹) * (1 - p⁻¹)) ^ p + 0) /
-      (Real.pi * (p⁻¹ * (p⁻¹ + 1)) ^ p + 0)) ^ (1 / p) = beurlingKappa 2 p := by
-    rw [add_zero, add_zero, mul_div_mul_left _ _ Real.pi_ne_zero, ← Real.div_rpow ha.le hb.le,
-      ← Real.rpow_mul (div_pos ha hb).le, mul_one_div_cancel hp0.ne', Real.rpow_one]
-    simp only [beurlingKappa, ascPochhammer_succ_eval, ascPochhammer_zero, Polynomial.eval_one,
-      one_mul]
-    push_cast
-    ring
+  -- the limit is `a (1/p) / b (1/p)`
+  have hval : ((Real.pi * a p⁻¹ ^ p + 0) / (Real.pi * b p⁻¹ ^ p + 0)) ^ (1 / p) =
+      a p⁻¹ / b p⁻¹ := by
+    rw [add_zero, add_zero, mul_div_mul_left _ _ Real.pi_ne_zero, ← Real.div_rpow ha1 hb1.le,
+      ← Real.rpow_mul (div_nonneg ha1 hb1.le), mul_one_div_cancel hp0.ne', Real.rpow_one]
   rw [hval] at hlim
   refine (ENNReal.tendsto_ofReal hlim).congr' ?_
   filter_upwards [hev] with α hα
   exact (heq α hα).symm
+
+/-! ### `n = 1` -/
+
+/-- Dragičević's limit (Theorem 1.1, for `p > 2`), `n = 1`:
+`‖∂f_{1,α}‖_p / ‖∂̄f_{1,α}‖_p → κ₁ (p) = p − 1` as `α → 1/p` from below, for `1 < p < ∞`, by
+the article's argument (`HarmonicAnalysis.tendsto_eLpNorm_div_of_lintegral_ball`). It is the limit
+that Baernstein–Montgomery-Smith (1999, §1) compute for their `f_α`, equal to `f_{1,α}` on the unit
+disc and to `1/z̄` outside it. -/
+theorem tendsto_eLpNorm_div_testFunOne {p : ℝ} (hp : 1 < p) :
+    Tendsto (fun α : ℝ =>
+        eLpNorm (dz (testFunOne α)) (ENNReal.ofReal p) volume /
+          eLpNorm (dzbar (testFunOne α)) (ENNReal.ofReal p) volume)
+      (𝓝[<] p⁻¹) (𝓝 (ENNReal.ofReal (beurlingKappa 1 p))) := by
+  have hp0 : 0 < p := zero_lt_one.trans hp
+  have hpi : p⁻¹ < 1 := inv_lt_one_of_one_lt₀ hp
+  obtain ⟨C, hC⟩ := exists_bound_testFunOne_compl_ball hp0
+  have h := tendsto_eLpNorm_div_of_lintegral_ball hp (u := fun α => dz (testFunOne α))
+    (v := fun α => dzbar (testFunOne α)) (a := fun α => 1 - α) (b := fun α => α)
+    (fun _ => measurable_dz _) (fun _ => measurable_dzbar _) (by fun_prop) (by fun_prop)
+    (fun α hα => by linarith [hα.2]) (fun α hα => hα.1)
+    (fun α hα => lintegral_dz_testFunOne_ball hp hα.1 (mul_lt_one_of_mem_Ioo_inv hp0 hα))
+    (fun α hα => lintegral_dzbar_testFunOne_ball hp hα.1 (mul_lt_one_of_mem_Ioo_inv hp0 hα))
+    ⟨C, fun α hα => hC α ⟨hα.1.le, (hα.2.trans hpi).le⟩⟩
+  rwa [show (1 - p⁻¹) / p⁻¹ = beurlingKappa 1 p by
+    rw [beurlingKappa_one hp0.ne']
+    field_simp] at h
+
+/-- `‖∂f_{1,α}‖_p / ‖∂̄f_{1,α}‖_p ≤ ‖𝓑‖_p` for `1 < p < ∞` and `0 < α < 1/p`: Schwartz
+approximations of `f_{1,α}` and `𝓑 ∂̄ = ∂` on Schwartz functions. -/
+theorem eLpNorm_div_le_beurlingPowNorm_one {p α : ℝ} (hp : 1 < p) (hα0 : 0 < α)
+    (hα : α * p < 1) :
+    eLpNorm (dz (testFunOne α)) (ENNReal.ofReal p) volume /
+        eLpNorm (dzbar (testFunOne α)) (ENNReal.ofReal p) volume ≤
+      beurlingPowNorm 1 p := by
+  obtain ⟨φ, hu, hv⟩ := exists_schwartz_tendsto_testFunOne hp.le hα0 hα
+  exact div_le_beurlingPowNorm_of_tendsto 1 hp.le hu hv
+
+/-- Dragičević's lower bound (Theorem 1.1, for `p > 2`), the case `n = 1`:
+`κ₁ (p) ≤ ‖𝓑‖_{L^p}` for `1 < p < ∞`. -/
+theorem beurlingKappa_one_le_beurlingPowNorm_one {p : ℝ} (hp : 1 < p) :
+    ENNReal.ofReal (beurlingKappa 1 p) ≤ beurlingPowNorm 1 p := by
+  have hp0 : 0 < p := zero_lt_one.trans hp
+  refine le_of_tendsto (tendsto_eLpNorm_div_testFunOne hp) ?_
+  filter_upwards [Ioo_mem_nhdsLT (inv_pos.mpr hp0)] with α hα
+  exact eLpNorm_div_le_beurlingPowNorm_one hp hα.1 (mul_lt_one_of_mem_Ioo_inv hp0 hα)
+
+/-- `p − 1 ≤ ‖𝓑‖_{L^p}` for `1 < p < ∞`: Dragičević's lower bound for `n = 1`,
+`κ₁ (p) = p − 1`. -/
+theorem sub_one_le_beurlingPowNorm_one {p : ℝ} (hp : 1 < p) :
+    ENNReal.ofReal (p - 1) ≤ beurlingPowNorm 1 p := by
+  rw [← beurlingKappa_one (zero_lt_one.trans hp).ne']
+  exact beurlingKappa_one_le_beurlingPowNorm_one hp
+
+/-! ### `n = 2` -/
+
+/-- Dragičević's limit (Theorem 1.1, for `p > 2`), `n = 2`:
+`‖∂²f_{2,α}‖_p / ‖∂̄²f_{2,α}‖_p → κ₂ (p)` as `α → 1/p` from below, for `1 < p < ∞`. -/
+theorem tendsto_eLpNorm_div_testFun {p : ℝ} (hp : 1 < p) :
+    Tendsto (fun α : ℝ =>
+        eLpNorm (dz (dz (testFun 2 α))) (ENNReal.ofReal p) volume /
+          eLpNorm (dzbar (dzbar (testFun 2 α))) (ENNReal.ofReal p) volume)
+      (𝓝[<] p⁻¹) (𝓝 (ENNReal.ofReal (beurlingKappa 2 p))) := by
+  have hp0 : 0 < p := zero_lt_one.trans hp
+  have hpi : p⁻¹ < 1 := inv_lt_one_of_one_lt₀ hp
+  obtain ⟨C, hC⟩ := exists_bound_testFun_compl_ball hp0
+  have h := tendsto_eLpNorm_div_of_lintegral_ball hp (u := fun α => dz (dz (testFun 2 α)))
+    (v := fun α => dzbar (dzbar (testFun 2 α))) (a := fun α => (2 - α) * (1 - α))
+    (b := fun α => α * (α + 1)) (fun _ => measurable_dz _) (fun _ => measurable_dzbar _)
+    (by fun_prop) (by fun_prop)
+    (fun α hα => mul_nonneg (by linarith [hα.2]) (by linarith [hα.2]))
+    (fun α hα => mul_pos hα.1 (by linarith [hα.1]))
+    (fun α hα => lintegral_dz_dz_testFun_ball hp hα.1 (mul_lt_one_of_mem_Ioo_inv hp0 hα))
+    (fun α hα => lintegral_dzbar_dzbar_testFun_ball hp hα.1 (mul_lt_one_of_mem_Ioo_inv hp0 hα))
+    ⟨C, fun α hα => hC α ⟨hα.1.le, (hα.2.trans hpi).le⟩⟩
+  rwa [show (2 - p⁻¹) * (1 - p⁻¹) / (p⁻¹ * (p⁻¹ + 1)) = beurlingKappa 2 p by
+    simp only [beurlingKappa, ascPochhammer_succ_eval, ascPochhammer_zero, Polynomial.eval_one,
+      one_mul]
+    push_cast
+    ring] at h
 
 /-- `‖∂²f_{2,α}‖_p / ‖∂̄²f_{2,α}‖_p ≤ ‖𝓑²‖_p` for `1 < p < ∞` and `0 < α < 1/p`: Schwartz
 approximations of `f_{2,α}` and `𝓑² ∂̄² = ∂²` on Schwartz functions. -/

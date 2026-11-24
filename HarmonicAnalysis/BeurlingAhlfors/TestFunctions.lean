@@ -22,7 +22,8 @@ For `n ∈ ℕ` and `α ∈ ℝ`, Dragičević's test functions (2011 article, p
 `f_{n,α} (z) = z^n |z|^{−2α} g_n (|z|)` (`HarmonicAnalysis.BeurlingAhlfors.testFun`), where
 `g_n (x) = 1` for `x ≤ 1` and `g_n (x) = exp (−(x − 1)^n)` for `x > 1`
 (`HarmonicAnalysis.BeurlingAhlfors.testCutoff`; the source's example of a sufficiently smooth,
-rapidly decaying `g_n` equal to `1` on `[0, 1]`). Only `n = 2` is used below. The derivatives are
+rapidly decaying `g_n` equal to `1` on `[0, 1]`). Only `n = 2` is used below; `n = 1`, with the
+cutoff `g₂`, is in `HarmonicAnalysis.BeurlingAhlfors.TestFunctions.One`. The derivatives are
 the pointwise Wirtinger derivatives `HarmonicAnalysis.dz`, `HarmonicAnalysis.dzbar`. A remark, not
 used or proved here: for `α < 1` they agree almost everywhere with the weak ones, since `f_{2,α}`
 is `C¹` off `0` (`g₂` is `C¹` at `1`) and `C²` off `0` and the unit circle, and near `0`,

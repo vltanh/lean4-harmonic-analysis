@@ -28,6 +28,7 @@ public import HarmonicAnalysis.BeurlingAhlfors.Duality
 public import HarmonicAnalysis.BeurlingAhlfors.TestFunctions.Profile
 public import HarmonicAnalysis.BeurlingAhlfors.TestFunctions.Approx
 public import HarmonicAnalysis.BeurlingAhlfors.TestFunctions
+public import HarmonicAnalysis.BeurlingAhlfors.TestFunctions.One
 public import HarmonicAnalysis.BeurlingAhlfors.LowerBound
 public import HarmonicAnalysis.BeurlingAhlfors.Transference
 public import HarmonicAnalysis.BeurlingAhlfors.Periodic
