@@ -18,7 +18,7 @@ References are in [REFERENCES.md](REFERENCES.md).
 
 | # | Result | Shorter proof | Status |
 | --- | --- | --- | --- |
-| 1 | [HNVW, Cor. 5.7.6], `I ≤ II` | the torus series with coefficients `R⁻² m(n) 𝓕f(n/R)`, `n ≠ 0`, at `x/R` are, up to the term `n = 0`, Riemann sums of `T_m f(x)`, and Fatou's lemma concludes, with no second test function, duality or density on `ℝ²`; the torus bound is extended to absolutely summable coefficients instead. This is Igari's proof of his Theorem 2 [I], there for `f ∈ C_c^∞(ℝ)` and the full norm on `𝕋`; here for Schwartz `f` and mean-zero polynomials | history (`bf215c5`) |
+| 1 | [HNVW, Cor. 5.7.6], `I ≤ II` | the torus series with coefficients `R⁻² m(n) 𝓕f(n/R)`, `n ≠ 0`, at `x/R` are, up to the term `n = 0`, Riemann sums of `T_m f(x)`, and Fatou's lemma concludes, with no second test function, duality or density on `ℝ²`; the torus bound is extended to absolutely summable coefficients instead. This is the proof of Theorem 2 of Igari [I], there for `f ∈ C_c^∞(ℝ)` and the full norm on `𝕋`; here for Schwartz `f` and mean-zero polynomials | history (`bf215c5`) |
 | 2 | [HNVW, Prop. 5.7.4] | `g` can be any Schwartz function, since `m 𝓕f 𝓕⁻¹g` is already continuous with compact support and the mean of the (then infinite, absolutely convergent) sum `Σ_n 𝓕g(n/R) e_n` plays no role; this removes the density step for `g` and the correction on norming | on paper |
 | 3 | [HNVW, Prop. 2.4.23 (ii)] | `‖h‖_p ≤ ‖h‖_1^{1/p} ‖h‖_∞^{1−1/p}` gives the `L^p` limits from `‖𝓕f_j − 𝓕f‖_1 → 0` and `‖ϕ_t ∗ f‖_1 ≤ ‖ϕ‖_1 ‖f‖_1` | on paper |
 

@@ -268,10 +268,10 @@ The proofs follow the sources; the module docstrings say where they depart.
 
 ### Fourier multipliers, transference, the Beurling–Ahlfors transform
 
-- **Dragičević's lower bound** follows his proof [D, pp. 466–467], which [D-LN, Prop. 4.2] repeats,
-  with his test functions `f_{n,α}(z) = z^n |z|^{−2α} g_n(|z|)` for `n = 2` and `n = 1` (here
-  `0 < α < 1/p`, and his example of a cutoff, `g₂ = 1` on `[0, 1]`, `g₂(x) = exp(−(x−1)²)` for
-  `x > 1`, also for `n = 1`, where his example `g₁(x) = exp(−(x−1))` is not `C¹` at `1`; the cutoff
+- **Dragičević's lower bound** follows the proof of [D, pp. 466–467], which [D-LN, Prop. 4.2] repeats,
+  with the test functions of [D] `f_{n,α}(z) = z^n |z|^{−2α} g_n(|z|)` for `n = 2` and `n = 1` (here
+  `0 < α < 1/p`, and the example of a cutoff in [D], `g₂ = 1` on `[0, 1]`, `g₂(x) = exp(−(x−1)²)` for
+  `x > 1`, also for `n = 1`, where the example `g₁(x) = exp(−(x−1))` is not `C¹` at `1`; the cutoff
   changes no limit): `𝓑^n(∂̄^n f) = ∂^n f`, explicit integrals over the disc, of order `(1 − αp)⁻¹`,
   a bounded contribution outside it, and `α → 1/p`, by one lemma for both `n`
   ([`tendsto_eLpNorm_div_of_lintegral_ball`](HarmonicAnalysis/BeurlingAhlfors/LowerBound.lean#L141)). On the
@@ -524,7 +524,7 @@ Facts that [B83] and [MC] recall, or state without proof, and the arguments used
 | Step | Fact | Cited work | Read | Argument here |
 | --- | --- | --- | --- | --- |
 | [B83] (9), p. 275 | "(8) implies (9)" where Khintchine's inequality is valid | none | — | the argument of Lemma 1 (pp. 277–278) for `B = ℝ`, with Khintchine's inequality at each point |
-| [B83] (9), p. 275 | (8) for `B = ℝ`: "By Theorem 1, inequality (8) does hold" | Theorem 1; Burkholder, Ann. Probab. 9 (1981) (below) | read for BanachProbability; not followed | BanachProbability's `p* − 1` inequality, `dyadicUMDConst_le_of_innerProductSpace` (Burkholder's inequality, by Osękowski's proof of his Theorem 3.5) |
+| [B83] (9), p. 275 | (8) for `B = ℝ`: "By Theorem 1, inequality (8) does hold" | Theorem 1; Burkholder, Ann. Probab. 9 (1981) (below) | read for BanachProbability; not followed | BanachProbability's `p* − 1` inequality, `dyadicUMDConst_le_of_innerProductSpace` (Burkholder's inequality, by the proof of Theorem 3.5 of Osękowski's book) |
 | [B83] (9), p. 275 | Khintchine's inequality for real Rademacher sums | none | — | BanachProbability's Kahane–Khintchine inequality between `p` and `2` ([HNVW II, Thm 6.2.4], by hypercontractivity), and the orthonormality of the signs |
 | [B83] p. 279 | the Taylor estimate, the third derivatives of `Re z^k`, `Im z^k` bounded by `k³ 2^{k−3}` | Taylor's theorem | — | the remainder of the Taylor polynomial of `z^k`, by induction on `k` |
 | [B83] (29), pp. 281–282 | two transformations of the signs have the same distribution | none | — | the average over the cube is invariant under their composition |
@@ -650,7 +650,7 @@ of the vector-valued part.
 
 - **Transference.** Restriction from `ℝ` to `𝕋` is de Leeuw's [dL, Prop. 3.3]. The converse used
   here, `‖m‖_{M_p(ℝ)} ≤ lim_{λ→0} ‖(m(λn))_n‖_{M_p(ℤ)}`, is Igari's ([I, Thm 2], for `1 ≤ p ≤ 2`, by
-  Riemann sums and Fatou's lemma; from his lectures of 1968), and Jodeit [J, p. 215] states that a
+  Riemann sums and Fatou's lemma; from Igari's lectures of 1968), and Jodeit [J, p. 215] states that a
   symbol continuous off `0` and homogeneous of degree `0` is a multiplier on `ℝ^N` iff its
   restriction to `ℤ^N` is one. Equality of the norms, mean-zero functions included, is in
   [GMS, Lemma 2.2] (smooth symbols, vector-valued) and [HNVW, Cor. 5.7.6] (operator-valued symbols,
