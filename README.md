@@ -19,9 +19,10 @@ Lean 4 with Mathlib `v4.36.0-rc2`. For scalar functions, on `ℂ ≅ ℝ²`, the
   - `𝓑^k(∂̄^k F) = ∂^k F`
   - `‖𝓑^k‖_p = ‖𝓑^k‖_{p'}`
   - transference for `𝓑^k`
-  - the Cauchy transform `C g(z) = (1/π) ∫ g(w)/(z − w) dw` of `g ∈ C_c^∞`: smooth, with
-    `∂̄(C g) = g` (the Cauchy–Pompeiu formula), `∂(C g) = 𝓑g`, `C g = O(1/|z|)`,
-    `∂(C g) = O(1/|z|²)`
+  - the Cauchy transform `C g(z) = (1/π) ∫ g(w)/(z − w) dw` of `g ∈ C_c^∞`, which is smooth:
+    - `∂̄(C g) = g` (the Cauchy–Pompeiu formula)
+    - `∂(C g) = 𝓑g`
+    - `C g = O(1/|z|)` and `∂(C g) = O(1/|z|²)`
   - **`‖𝓑‖_p` is the best constant of `‖∂u‖_p ≤ C ‖∂̄u‖_p` on `C_c^∞`**, `1 < p < ∞` [BMS, §1 (b)],
     by the cut-offs of Guerra [Gu]
   - **Dragičević's lower bound** `‖𝓑^n‖_p ≥ κ_n(p)` for `n = 1` and `n = 2`:
@@ -300,9 +301,11 @@ The proofs follow the sources; the module docstrings say where they depart.
 - **`‖𝓑‖_p` as the best constant of `‖∂u‖_p ≤ C ‖∂̄u‖_p` on `C_c^∞`** is stated without proof in
   [BMS, §1, remark (b)]. The bound `‖∂u‖_p ≤ ‖𝓑‖_p ‖∂̄u‖_p` is `𝓑(∂̄u) = ∂u`. The other direction
   follows Guerra's proof of Corollary 1.4 of [Gu], with the cut-offs of the proof of Corollary 1.2:
-  - the dense class `C_c^∞`, and the potential of `g ∈ C_c^∞`: its Cauchy transform
-    `f = C g`, with `∂̄f = g` (the Cauchy–Pompeiu formula, by polar coordinates), `∂f = 𝓑g`, and
-    the decay `f = O(1/|z|)`, `∂f = O(1/|z|²)` (elementary bounds; `∫ ∂g = 0`);
+  - the dense class `C_c^∞`, and the potential of `g ∈ C_c^∞`: its Cauchy transform `f = C g`,
+    with:
+    - `∂̄f = g` (the Cauchy–Pompeiu formula, by polar coordinates);
+    - `∂f = 𝓑g`;
+    - the decay `f = O(1/|z|)`, `∂f = O(1/|z|²)` (elementary bounds; `∫ ∂g = 0`);
   - cut-offs `η_R` (`1` on the disc of radius `R`, `0` off that of radius `2R`, `|Dη_R| ≤ K/R`):
     `∂(η_R f) − ∂f = (η_R − 1) ∂f + f ∂η_R`, the first term `→ 0` in `L^p` by dominated
     convergence and the second `O(R^{2/p − 2}) → 0` since `p > 1`; the same for `∂̄`; the
@@ -312,11 +315,15 @@ The proofs follow the sources; the module docstrings say where they depart.
 
   One departure is forced: Guerra treats Hessians (a real `h`, its logarithmic potential `u`,
   `a₊ = h`, `a₋ = conj(𝒮h)` for `D²u`), while the inequality here is on `∂u`, `∂̄u` for complex
-  `u`, so the potential is the Cauchy transform of a complex `g`. Guerra's statements about the
-  potential, made without proof (`Δu = 2h`, the decay, and `𝒮h = 2u_{zz}`, which applies
-  `𝒮∂̄ = ∂` to a function that is not Schwartz), have gradient analogues that are proved here; the
-  last one, `∂(C g) = 𝓑g`, by Liouville's theorem: `∂(C g) − 𝓑g` has `∂̄ = 0` and tends to `0`
-  at infinity. Guerra's "by density" presupposes the boundedness of `𝒮` on `L^p`, which the
+  `u`, so the potential is the Cauchy transform of a complex `g`. Guerra states three facts about
+  the potential without proof, and their gradient analogues are proved here:
+  - `Δu = 2h`: here `∂̄(C g) = g`;
+  - the decay: here `C g = O(1/|z|)`, `∂(C g) = O(1/|z|²)`;
+  - `𝒮h = 2u_{zz}`, which applies `𝒮∂̄ = ∂` to a function that is not Schwartz: here
+    `∂(C g) = 𝓑g`, by Liouville's theorem, since `∂(C g) − 𝓑g` has `∂̄ = 0` and tends to `0` at
+    infinity.
+
+  Guerra's "by density" presupposes the boundedness of `𝒮` on `L^p`, which the
   library does not prove: the density step uses the convergence of the Fourier transforms in
   `L¹` and Fatou's lemma instead. A shorter route through a Fourier-supported dense class is
   recorded in [docs/SHORTER_PROOFS.md](docs/SHORTER_PROOFS.md), item 48.
