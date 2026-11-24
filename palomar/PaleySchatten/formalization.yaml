@@ -28,7 +28,7 @@ project:
 
 classification:
   arxiv: ["math.FA", "math.OA"]
-  msc2020: ["46L52", "47B10", "42A55", "42B30", "46B09", "46L53", "68V20"]
+  msc2020: ["46L52", "47B10", "42A55", "42B30", "46B09", "46L53"]
 
 sources:
   - title: "Non commutative Khintchine and Paley inequalities"

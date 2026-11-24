@@ -32,7 +32,7 @@ project:
 
 classification:
   arxiv: ["math.FA", "math.CV"]
-  msc2020: ["47A68", "30H10", "47A56", "42B30", "60G25", "15A23", "68V20"]
+  msc2020: ["47A68", "30H10", "47A56", "42B30", "60G25", "15A23"]
 
 sources:
   - title: "Prediction theory and Fourier series in several variables"
