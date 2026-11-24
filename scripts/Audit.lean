@@ -10,8 +10,10 @@ public meta import Lean.Elab.Command
 import all FourierMultipliers.Solution
 import all HardyFactorization.Solution
 import all HarmonicAnalysis.BeurlingAhlfors.Basic
+import all HarmonicAnalysis.BeurlingAhlfors.Beltrami
 import all HarmonicAnalysis.BeurlingAhlfors.CauchyTransform
 import all HarmonicAnalysis.BeurlingAhlfors.CompactSupport
+import all HarmonicAnalysis.BeurlingAhlfors.L2
 import all HarmonicAnalysis.BeurlingAhlfors.Duality
 import all HarmonicAnalysis.BeurlingAhlfors.LowerBound
 import all HarmonicAnalysis.BeurlingAhlfors.Periodic
@@ -25,6 +27,7 @@ import all HarmonicAnalysis.Complex.CauchyPompeiu
 import all HarmonicAnalysis.Complex.CauchyTransform
 import all HarmonicAnalysis.Complex.Liouville
 import all HarmonicAnalysis.Complex.RadialIntegral
+import all HarmonicAnalysis.Complex.RadialStretch
 import all HarmonicAnalysis.Complex.Wirtinger
 import all HarmonicAnalysis.Complex.WirtingerRadial
 import all HarmonicAnalysis.Defs
@@ -47,6 +50,9 @@ import all HarmonicAnalysis.Hardy.Szego
 import all HarmonicAnalysis.NoncommutativeKhintchine
 import all HarmonicAnalysis.Paley.Rademacher
 import all HarmonicAnalysis.Paley.Schatten
+import all HarmonicAnalysis.Sobolev.Basic
+import all HarmonicAnalysis.Sobolev.Embedding
+import all HarmonicAnalysis.Sobolev.Mollify
 import all HarmonicAnalysis.Torus.Cube
 import all HarmonicAnalysis.Torus.Lattice
 import all HarmonicAnalysis.Torus.Lipschitz
@@ -160,6 +166,24 @@ meta def mainResults : List Name :=
    ``HarmonicAnalysis.eLpNorm_dz_le_beurlingPowNorm_one_mul,
    ``HarmonicAnalysis.beurlingPowNorm_one_le_iff,
    ``HarmonicAnalysis.isLeast_beurlingPowNorm_one,
+   ``HarmonicAnalysis.HasWeakLineDerivOn.ae_eq,
+   ``HarmonicAnalysis.HasWeakFDerivOn.smul_of_tsupport_subset,
+   ``HarmonicAnalysis.eLpNorm_convolution_le,
+   ``HarmonicAnalysis.tendsto_eLpNorm_convolution_sub,
+   ``HarmonicAnalysis.hasFDerivAt_convolution_of_hasWeakFDerivOn,
+   ``HarmonicAnalysis.memLp_of_hasWeakFDerivOn_univ,
+   ``HarmonicAnalysis.MemLpLoc.of_hasWeakFDerivOn,
+   ``HarmonicAnalysis.beurlingPowNorm_one_two_le,
+   ``HarmonicAnalysis.beurlingL2_toLp,
+   ``HarmonicAnalysis.norm_beurlingL2_le,
+   ``HarmonicAnalysis.eLpNorm_beurlingL2_le,
+   ``HarmonicAnalysis.beurlingL2_dzbar,
+   ``HarmonicAnalysis.memLpLoc_of_beltrami,
+   ``HarmonicAnalysis.exists_homeomorph_radialStretch,
+   ``HarmonicAnalysis.hasWeakFDerivOn_radialStretch,
+   ``HarmonicAnalysis.memLpLoc_fderiv_radialStretch,
+   ``HarmonicAnalysis.norm_dzbarPart_fderiv_radialStretch,
+   ``HarmonicAnalysis.not_memLp_fderiv_radialStretch_apply_one,
    ``UnitAddTorus.cubeFourierCoeff_fderiv,
    ``UnitAddTorus.cubeFourierCoeff_fderiv_of_contDiff,
    ``UnitAddTorus.summable_cubeFourierCoeff,

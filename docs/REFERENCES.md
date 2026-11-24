@@ -6,6 +6,12 @@ In alphabetical order. Entries that the [README](../README.md) cites by a key be
   Z. 240 (2002), 311–343, [doi:10.1007/s002090100384](https://doi.org/10.1007/s002090100384).
 - W. Arveson, *Analyticity in operator algebras*, Amer. J. Math. 89 (1967), 578–642,
   [doi:10.2307/2373237](https://doi.org/10.2307/2373237).
+- [AIM] K. Astala, T. Iwaniec, G. Martin, *Elliptic partial differential equations and quasiconformal
+  mappings in the plane*, Princeton University Press, 2009:
+  Chapters 13–14, the higher integrability of quasiregular maps from the `L^p` norm of `𝓑`, and the
+  radial stretch (not read; the standard argument is followed).
+- [Ast] K. Astala, *Area distortion of quasiconformal mappings*, Acta Math. 173 (1994), 37–60: the
+  sharp higher integrability of quasiconformal maps (not read).
 - [BMS] A. Baernstein II, S. J. Montgomery-Smith, *Some conjectures about integral means of `∂f` and
   `∂̄f`*, in: Complex analysis and differential equations (Uppsala, 1997), ed. C. Kiselman, Acta Univ.
   Upsaliensis C 64 (1999), 92–109, [arXiv:math/9709215](https://arxiv.org/abs/math/9709215): §1, the

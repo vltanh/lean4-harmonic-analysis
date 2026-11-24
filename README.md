@@ -25,11 +25,21 @@ Lean 4 with Mathlib `v4.36.0-rc2`. For scalar functions, on `ℂ ≅ ℝ²`, the
     - `C g = O(1/|z|)` and `∂(C g) = O(1/|z|²)`
   - **`‖𝓑‖_p` is the best constant of `‖∂u‖_p ≤ C ‖∂̄u‖_p` on `C_c^∞`**, `1 < p < ∞` [BMS, §1 (b)],
     by the cut-offs of Guerra [Gu]
+  - `𝓑` on `L²`, with `‖𝓑u‖_p ≤ ‖𝓑‖_p ‖u‖_p` on `L² ∩ L^p` and `𝓑(∂̄g) = ∂g` for compactly
+    supported `g ∈ W^{1,2}`
+  - **Iwaniec's higher integrability** [Iw; AIM, Ch. 13–14]: if `0 ≤ k < 1`, `2 ≤ p` and
+    `k ‖𝓑‖_p < 1`, every `f ∈ W^{1,2}_loc(Ω)` with `|∂̄f| ≤ k |∂f|` a.e. has `Df ∈ L^p_loc(Ω)`; the
+    radial stretch `z |z|^{α−1}` is quasiconformal and its derivative is not in `L^{2/(1−α)}` near
+    `0`
   - **Dragičević's lower bound** `‖𝓑^n‖_p ≥ κ_n(p)` for `n = 1` and `n = 2`:
     - `‖𝓑‖_p ≥ κ₁(p) = p − 1`
     - `‖𝓑²‖_p ≥ κ₂(p) = (p−1)(2p−1)/(p+1)`; with the duality of Carbonaro, Dragičević and Kovač
       for `p < 2`, `‖𝓑²‖_p ≥ κ₂(p*)`, `p* = max(p, p')`, hence `‖𝓑²‖_p > p* − 1` for `p ≠ 2`, and
       `‖𝓑²‖₄ ≥ 21/5`
+- **Sobolev functions**: weak derivatives, `L^p_loc` and `W^{1,p}_loc` on open sets; the Leibniz
+  rule with smooth cut-offs; mollification, which converges in `L^p` (`1 ≤ p < ∞`) and commutes
+  with weak derivatives; in the plane, Sobolev's embedding `W^{1,2}_loc ⊂ L^q_loc`, `q < ∞`, from
+  Mathlib's Gagliardo–Nirenberg–Sobolev inequality
 - **Smooth periodic functions** on `ℝ^ι`, `ι` finite:
   - the derivative formula `(∂_v g)^(n) = 2πi⟨n,v⟩ ĝ(n)`
   - rapid decay of the Fourier coefficients
@@ -123,6 +133,12 @@ the operator norms are suprema in `ℝ≥0∞`.
 | For Schwartz `f`: `f_n = η_n f ∈ C_c^∞` with `f_n → f` in every `L^p`, `1 ≤ p`, and `𝓕f_n → 𝓕f` in `L¹` | [`exists_hasCompactSupport_tendsto`](HarmonicAnalysis/FourierMultiplier/CompactSupport.lean#L57) | cut-offs; `𝓕 f_n` is a mollification of `𝓕f` |
 | For `g ∈ C_c^∞`: `u_n = η_n C g ∈ C_c^∞` with `∂u_n → 𝓑g`, `∂̄u_n → g` in `L^p` (`1 < p`); so `‖𝓑g‖_p ≤ C ‖g‖_p` if `‖∂u‖_p ≤ C ‖∂̄u‖_p` for all `u ∈ C_c^∞` | [`exists_hasCompactSupport_tendsto_cauchyTransform`](HarmonicAnalysis/BeurlingAhlfors/CompactSupport.lean#L343), [`eLpNorm_beurlingPow_one_le_of_hasCompactSupport`](HarmonicAnalysis/BeurlingAhlfors/CompactSupport.lean#L381) | the cut-offs of [Gu, proofs of Cors 1.2, 1.4], in the gradient case |
 | `‖𝓑‖_p ≤ C` if `‖∂u‖_p ≤ C ‖∂̄u‖_p` for all `u ∈ C_c^∞`; conversely `‖∂u‖_p ≤ ‖𝓑‖_p ‖∂̄u‖_p`; so `‖𝓑‖_p` is the least such `C` (`1 < p`) | [`beurlingPowNorm_one_le_of_forall_hasCompactSupport`](HarmonicAnalysis/BeurlingAhlfors/CompactSupport.lean#L485), [`eLpNorm_dz_le_beurlingPowNorm_one_mul`](HarmonicAnalysis/BeurlingAhlfors/CompactSupport.lean#L510), [`beurlingPowNorm_one_le_iff`](HarmonicAnalysis/BeurlingAhlfors/CompactSupport.lean#L532), [`isLeast_beurlingPowNorm_one`](HarmonicAnalysis/BeurlingAhlfors/CompactSupport.lean#L541) | [BMS, §1 (b)] (stated without proof); the proof of [Gu, Cor. 1.4], in the gradient case |
+| Weak derivatives are unique a.e.; the Leibniz rule `D(η f) = η Df + Dη ⊗ f` for `η ∈ C_c^∞(Ω)` | [`HasWeakLineDerivOn.ae_eq`](HarmonicAnalysis/Sobolev/Basic.lean#L159), [`HasWeakFDerivOn.smul_of_tsupport_subset`](HarmonicAnalysis/Sobolev/Basic.lean#L178) | the fundamental lemma of the calculus of variations |
+| `‖ρ ⋆ f‖_p ≤ ‖f‖_p`; `ρ_i ⋆ f → f` in `L^p` (`1 ≤ p < ∞`) as the radii of the mollifiers `ρ_i` tend to `0`; `D(ρ ⋆ f) = ρ ⋆ Df` for weakly differentiable `f` | [`eLpNorm_convolution_le`](HarmonicAnalysis/Sobolev/Mollify.lean#L64), [`tendsto_eLpNorm_convolution_sub`](HarmonicAnalysis/Sobolev/Mollify.lean#L137), [`hasFDerivAt_convolution_of_hasWeakFDerivOn`](HarmonicAnalysis/Sobolev/Mollify.lean#L200) | Young's inequality; density of `C_c` |
+| `W^{1,2}_loc(Ω) ⊂ L^q_loc(Ω)` for every `q < ∞`, `Ω ⊆ ℂ` open | [`memLp_of_hasWeakFDerivOn_univ`](HarmonicAnalysis/Sobolev/Embedding.lean#L200), [`MemLpLoc.of_hasWeakFDerivOn`](HarmonicAnalysis/Sobolev/Embedding.lean#L210) | Sobolev's embedding; Mathlib's Gagliardo–Nirenberg–Sobolev inequality and mollification |
+| `𝓑` on `L²`: `‖𝓑‖₂ ≤ 1`; `‖𝓑u‖_p ≤ ‖𝓑‖_p ‖u‖_p` for `u ∈ L² ∩ L^p`, `1 ≤ p`; `𝓑(∂̄g) = ∂g` for compactly supported `g ∈ L²` with `Dg ∈ L²` | [`beurlingPowNorm_one_two_le`](HarmonicAnalysis/BeurlingAhlfors/L2.lean#L90), [`beurlingL2`](HarmonicAnalysis/BeurlingAhlfors/L2.lean#L125), [`norm_beurlingL2_le`](HarmonicAnalysis/BeurlingAhlfors/L2.lean#L158), [`eLpNorm_beurlingL2_le`](HarmonicAnalysis/BeurlingAhlfors/L2.lean#L263), [`beurlingL2_dzbar`](HarmonicAnalysis/BeurlingAhlfors/L2.lean#L368) | Plancherel; simultaneous approximation in `L²` and `L^p`, Fatou; mollification |
+| If `0 ≤ k < 1`, `2 ≤ p`, `‖𝓑‖_p < ∞` and `k ‖𝓑‖_p < 1`, every `f ∈ W^{1,2}_loc(Ω)` with `\|∂̄f\| ≤ k \|∂f\|` a.e. in `Ω` has `Df ∈ L^p_loc(Ω)` | [`memLpLoc_of_beltrami`](HarmonicAnalysis/BeurlingAhlfors/Beltrami.lean#L246) | [Iw]; [AIM, Ch. 13–14]: a cut-off, `∂g = 𝓑∂̄g`, a Neumann series on `L^p` compared with the `L²` solution |
+| The radial stretch `f(z) = z \|z\|^{α−1}`, `0 < α ≤ 1`: a homeomorphism, `f ∈ W^{1,2}_loc(ℂ)` with its pointwise derivative, `\|∂̄f\| = ((1−α)/(1+α)) \|∂f\|` off `0`, and (`α < 1`) `∂_x f ∉ L^{2/(1−α)}` near `0` | [`exists_homeomorph_radialStretch`](HarmonicAnalysis/Complex/RadialStretch.lean#L106), [`hasWeakFDerivOn_radialStretch`](HarmonicAnalysis/Complex/RadialStretch.lean#L413), [`memLpLoc_fderiv_radialStretch`](HarmonicAnalysis/Complex/RadialStretch.lean#L463), [`norm_dzbarPart_fderiv_radialStretch`](HarmonicAnalysis/Complex/RadialStretch.lean#L219), [`not_memLp_fderiv_radialStretch_apply_one`](HarmonicAnalysis/Complex/RadialStretch.lean#L478) | [AIM]; smooth approximations `(\|z\|² + ε²)^{(α−1)/2} z` and dominated convergence |
 | `p* − 1 < ‖𝓑²‖_p` for `p ≠ 2`; `21/5 ≤ ‖𝓑²‖₄` | [`pStar_sub_one_lt_beurlingPowNorm_two`](HarmonicAnalysis/BeurlingAhlfors/LowerBound.lean#L366), [`twentyOne_div_five_le_beurlingPowNorm_two_four`](HarmonicAnalysis/BeurlingAhlfors/LowerBound.lean#L373) | |
 | `(∂_v g)^(n) = 2πi⟨n,v⟩ ĝ(n)` for Lipschitz, or `C¹`, `ℤ^ι`-periodic `g` | [`UnitAddTorus.cubeFourierCoeff_fderiv_of_lipschitzWith`](HarmonicAnalysis/Torus/Smooth.lean#L140), [`UnitAddTorus.cubeFourierCoeff_fderiv_of_contDiff`](HarmonicAnalysis/Torus/Smooth.lean#L206) | difference quotients; [G, Ch. 3] |
 | `Σ_n (1 + ‖n‖)^k \|ĝ(n)\| < ∞` for smooth periodic `g` and every `k` | [`UnitAddTorus.exists_norm_cubeFourierCoeff_le`](HarmonicAnalysis/Torus/Smooth.lean#L282), [`UnitAddTorus.summable_cubeFourierCoeff`](HarmonicAnalysis/Torus/Smooth.lean#L361) | integration by parts; [G, Ch. 3] |
@@ -327,6 +343,21 @@ The proofs follow the sources; the module docstrings say where they depart.
   library does not prove: the density step uses the convergence of the Fourier transforms in
   `L¹` and Fatou's lemma instead. A shorter route through a Fourier-supported dense class is
   recorded in [docs/SHORTER_PROOFS.md](docs/SHORTER_PROOFS.md), item 48.
+- **Iwaniec's higher integrability** ([`memLpLoc_of_beltrami`](HarmonicAnalysis/BeurlingAhlfors/Beltrami.lean#L246)) follows the standard argument of
+  [Iw], as presented in [AIM, Ch. 13–14]; neither was read. For a compact `K ⊆ Ω`, a cut-off
+  `η ∈ C_c^∞(Ω)` equal to `1` near `K`, and `g = η f`:
+  - `∂̄g − μ ∂g = h`, with `μ = ∂̄f/∂f` (`|μ| ≤ k`) and `h = f (∂̄η − μ ∂η)`, which is in `L² ∩ L^p`
+    by Sobolev's embedding;
+  - `∂g = 𝓑(∂̄g)` for the compactly supported `g ∈ W^{1,2}` ([`beurlingL2_dzbar`](HarmonicAnalysis/BeurlingAhlfors/L2.lean#L368), by mollification),
+    so `ω = ∂̄g` solves `ω − μ𝓑ω = h` in `L²`;
+  - the partial sums of the Neumann series `Σ (μ𝓑)ⁿ h` converge to `ω` in `L²`
+    (`‖μ𝓑‖_{L²} ≤ k < 1`) and are bounded in `L^p` (`‖μ𝓑u‖_p ≤ k ‖𝓑‖_p ‖u‖_p` on `L² ∩ L^p`), so
+    Fatou's lemma along an a.e. convergent subsequence gives `ω ∈ L^p`; then `∂g = 𝓑ω ∈ L^p`.
+
+  `𝓑` on `L²` is the bounded extension from the Schwartz functions, and its `L^p` bound on
+  `L² ∩ L^p` comes from approximating `u ∈ L² ∩ L^p` in both norms at once by mollified
+  truncations. Sobolev's embedding is Mathlib's Gagliardo–Nirenberg–Sobolev inequality, for
+  `W^{1,s}`, `s < 2`, with compact support, through mollification and Fatou's lemma.
 - **Duality** `‖T_m‖_p = ‖T_m‖_{p'}` follows [HNVW, Prop. 5.3.7], for scalar symbols:
   - `∫ T_m f · g = ∫ T_{m(−·)} g · f`
   - Hölder's inequality
@@ -920,6 +951,7 @@ lake env lake comparator --config=palomar/FourierMultipliers/comparator.json   #
 | [`HarmonicAnalysis/Hardy/`](HarmonicAnalysis/Hardy) | matrix-valued Hardy functions (below) |
 | [`HarmonicAnalysis/Paley/`](HarmonicAnalysis/Paley), [`HarmonicAnalysis/NoncommutativeKhintchine.lean`](HarmonicAnalysis/NoncommutativeKhintchine.lean) | Paley's inequality in the Schatten classes, its form for signs, the noncommutative Khintchine inequality |
 | [`HarmonicAnalysis/BeurlingAhlfors/`](HarmonicAnalysis/BeurlingAhlfors) | the Beurling–Ahlfors transform (below) |
+| [`HarmonicAnalysis/Sobolev/`](HarmonicAnalysis/Sobolev) | `Basic` (weak derivatives, `L^p_loc`, the Leibniz rule, the Wirtinger parts [`dzPart`](HarmonicAnalysis/Sobolev/Basic.lean#L231), [`dzbarPart`](HarmonicAnalysis/Sobolev/Basic.lean#L235) of a real-linear map of `ℂ`), `Mollify`, `Embedding` (Sobolev's embedding in the plane) |
 | [`palomar/`](palomar) | the four Palomar entries |
 | [`docs/`](docs) | references, shorter proofs |
 | [`scripts/`](scripts) | the axiom audit and other tools (below) |
@@ -933,6 +965,7 @@ lake env lake comparator --config=palomar/FourierMultipliers/comparator.json   #
 - `CauchyTransform` (the Cauchy transform `(1/π) ∫ g(w)/(z − w) dw`: smoothness, derivatives, decay)
 - `CauchyPompeiu` (`C(∂̄g) = g`)
 - `Liouville` (`∂̄u = 0` and `u → 0` at infinity imply `u = 0`)
+- `RadialStretch` (the radial stretch `z |z|^{α−1}`)
 
 [`HarmonicAnalysis/FourierMultiplier/`](HarmonicAnalysis/FourierMultiplier):
 
@@ -997,6 +1030,8 @@ lake env lake comparator --config=palomar/FourierMultipliers/comparator.json   #
 - `Regularity` (`𝓑g` differentiable, `∂̄(𝓑g) = ∂g`, `𝓑g → 0` at infinity)
 - `CauchyTransform` (`∂̄(C g) = g`, `∂(C g) = 𝓑g` for `g ∈ C_c^∞`)
 - `CompactSupport` (cut-offs; `‖𝓑‖_p` as the best constant of `‖∂u‖_p ≤ C ‖∂̄u‖_p` on `C_c^∞`)
+- `L2` (`𝓑` on `L²`, its `L^p` bound on `L² ∩ L^p`, `𝓑(∂̄g) = ∂g` for compactly supported `W^{1,2}`)
+- `Beltrami` (Iwaniec's higher integrability for the Beltrami equation)
 
 [`scripts/`](scripts):
 
